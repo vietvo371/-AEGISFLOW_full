@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: aegisflow-mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: aegisflow_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+      MYSQL_USER: root
+    networks:
+      - aegisflow_network
+
+  # Redis for Laravel Cache/Session/Queue
+  redis:
+    image: redis:alpine
+    container_name: aegisflow-redis
+    restart: unless-stopped
+    networks:
+      - aegisflow_network
+
+  # Laravel Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aegisflow-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: aegisflow_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      REDIS_HOST: redis
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - aegisflow_network
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aegisflow-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - aegisflow_network
+
+  # FastAPI AI Service
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: aegisflow-ai-service
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./ai-service:/app
+    networks:
+      - aegisflow_network
+
+networks:
+  aegisflow_network:
+    driver: bridge

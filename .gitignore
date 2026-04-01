@@ -1,0 +1,40 @@
+# Common
+.DS_Store
+.env
+.env.local
+.env.*.local
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node
+node_modules/
+dist/
+.next/
+out/
+build/
+
+# PHP (Laravel)
+/vendor/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/.phpunit.result.cache
+
+# Python (AI Service)
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+.pytest_cache/
+
+# Docker
+docker/.env
