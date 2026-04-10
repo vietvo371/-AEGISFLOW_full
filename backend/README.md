@@ -1,58 +1,154 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# AegisFlow AI Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel 13 API backend cho hệ thống giám sát lũ lụt và điều phối cứu hộ thông minh.
 
-## About Laravel
+## Yêu cầu
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3+
+- Composer 2.x
+- PostgreSQL 16 + PostGIS 3.4 (Production)
+- SQLite (Development)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Cài đặt
 
 ```bash
-composer require laravel/boost --dev
+# Cài đặt dependencies
+composer install
 
-php artisan boost:install
+# Copy env
+cp .env.example .env
+
+# Generate key
+php artisan key:generate
+
+# Chạy migrations (SQLite dev)
+php artisan migrate
+
+# Seed data mẫu
+php artisan db:seed
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Migrations PostgreSQL + PostGIS
 
-## Contributing
+```bash
+php artisan migrate
+php artisan db:seed
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Test
 
-## Code of Conduct
+```bash
+php artisan test
+# hoặc
+./vendor/bin/phpunit
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## API Documentation
 
-## Security Vulnerabilities
+### Authentication
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Method | Endpoint | Description |
+|--------|---------|------------|
+| POST | `/api/auth/login` | Đăng nhập |
+| POST | `/api/auth/register` | Đăng ký |
+| GET | `/api/auth/me` | Thông tin user |
+| PUT | `/api/auth/profile` | Cập nhật profile |
+| POST | `/api/auth/fcm-token` | Cập nhật FCM token |
+| POST | `/api/auth/logout` | Đăng xuất |
 
-## License
+### Incidents
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Method | Endpoint | Description |
+|--------|---------|------------|
+| GET | `/api/incidents` | Danh sách sự cố |
+| POST | `/api/incidents` | Tạo sự cố |
+| GET | `/api/incidents/{id}` | Chi tiết |
+| PATCH | `/api/incidents/{id}` | Cập nhật |
+
+### Rescue Requests
+
+| Method | Endpoint | Description |
+|--------|---------|------------|
+| GET | `/api/rescue-requests` | Danh sách yêu cầu |
+| POST | `/api/rescue-requests` | Tạo yêu cầu |
+| PUT | `/api/rescue-requests/{id}/assign` | Phân công đội |
+| PUT | `/api/rescue-requests/{id}/status` | Cập nhật trạng thái |
+
+### Flood Zones
+
+| Method | Endpoint | Description |
+|--------|---------|------------|
+| GET | `/api/flood-zones` | Danh sách vùng ngập |
+| POST | `/api/flood-zones` | Tạo vùng ngập |
+| GET | `/api/flood-zones/geojson` | GeoJSON |
+| PUT | `/api/flood-zones/{id}` | Cập nhật |
+
+### Rescue Teams & Shelters
+
+| Method | Endpoint | Description |
+|--------|---------|------------|
+| GET | `/api/rescue-teams` | Danh sách đội cứu hộ |
+| PUT | `/api/rescue-teams/{id}/location` | Cập nhật GPS |
+| GET | `/api/shelters` | Danh sách trú ẩn |
+
+### AI Predictions
+
+| Method | Endpoint | Description |
+|--------|---------|------------|
+| POST | `/api/predictions/trigger` | Kích hoạt dự báo |
+| GET | `/api/predictions` | Danh sách dự báo |
+| PUT | `/api/predictions/{id}/verify` | Xác nhận dự báo |
+
+### Map
+
+| Method | Endpoint | Description |
+|--------|---------|------------|
+| GET | `/api/map/all` | Tất cả dữ liệu map |
+| GET | `/api/map/incidents` | Incidents GeoJSON |
+| GET | `/api/map/flood-zones` | Flood zones GeoJSON |
+| GET | `/api/map/rescue-teams` | Rescue teams GeoJSON |
+| GET | `/api/map/shelters` | Shelters GeoJSON |
+
+### Analytics
+
+| Method | Endpoint | Description |
+|--------|---------|------------|
+| GET | `/api/analytics/overview` | Dashboard KPIs |
+
+### Admin
+
+| Method | Endpoint | Description |
+|--------|---------|------------|
+| GET | `/api/admin/users` | User management |
+| POST | `/api/admin/users` | Tạo user |
+| GET | `/api/admin/stats` | System stats |
+| GET | `/api/admin/logs` | Activity logs |
+
+## Roles & Permissions
+
+| Role | Permissions |
+|------|-------------|
+| `city_admin` | Toàn quyền |
+| `rescue_operator` | Điều phối cứu hộ |
+| `rescue_team` | Thực địa |
+| `citizen` | Gửi báo cáo, yêu cầu cứu hộ |
+| `ai_operator` | Vận hành AI |
+
+## Default Users (after seed)
+
+| Email | Password | Role |
+|-------|---------|------|
+| admin@aegisflow.ai | password | city_admin |
+| operator@aegisflow.ai | password | rescue_operator |
+| rescue@aegisflow.ai | password | rescue_team |
+| ai@aegisflow.ai | password | ai_operator |
+| citizen@example.com | password | citizen |
+
+## Tech Stack
+
+- Laravel 13
+- Laravel Sanctum (API token auth)
+- Laravel Spatie Permission (RBAC)
+- Laravel Reverb (WebSocket realtime)
+- PostgreSQL 16 + PostGIS 3.4
+- PHPUnit 12

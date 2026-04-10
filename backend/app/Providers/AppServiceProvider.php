@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\FloodAutoDetector;
+use App\Services\RecommendationGenerator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +13,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Singletons cho Services
+        $this->app->singleton(FloodAutoDetector::class, function () {
+            return new FloodAutoDetector();
+        });
+
+        $this->app->singleton(RecommendationGenerator::class, function () {
+            return new RecommendationGenerator();
+        });
     }
 
     /**

@@ -1,0 +1,217 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+
+use App\Enums\AlertTypeEnum;
+use App\Enums\AlertStatusEnum;
+use App\Helpers\ApiResponse;
+use App\Models\Alert;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class AlertController extends Controller
+{
+    /**
+     * Danh sách cảnh báo
+     * GET /api/alerts
+     */
+    public function index(Request $request)
+    {
+        $query = Alert::with('issuer')
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('alert_type')) {
+            $query->where('alert_type', $request->alert_type);
+        }
+
+        if ($request->filled('severity')) {
+            $query->where('severity', $request->severity);
+        }
+
+        if ($request->filled('district_id')) {
+            $query->whereJsonContains('affected_districts', (string) $request->district_id);
+        }
+
+        $alerts = $query->paginate($request->get('per_page', 20));
+
+        $data = $alerts->map(fn ($a) => $this->formatAlert($a));
+
+        return ApiResponse::paginate($alerts->setCollection($data));
+    }
+
+    /**
+     * Chi tiết cảnh báo
+     * GET /api/alerts/{id}
+     */
+    public function show(int $id)
+    {
+        $alert = Alert::with(['issuer', 'resolver', 'relatedIncident', 'relatedPrediction'])
+            ->find($id);
+
+        if (! $alert) {
+            return ApiResponse::notFound('Không tìm thấy cảnh báo');
+        }
+
+        return ApiResponse::success($this->formatAlert($alert, true));
+    }
+
+    /**
+     * Tạo cảnh báo
+     * POST /api/alerts
+     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'alert_type' => 'required|in:'.implode(',', AlertTypeEnum::values()),
+            'severity' => 'required|in:low,medium,high,critical',
+            'geometry' => 'nullable|string',
+            'affected_districts' => 'nullable|array',
+            'affected_districts.*' => 'exists:districts,id',
+            'affected_wards' => 'nullable|array',
+            'affected_flood_zones' => 'nullable|array',
+            'radius_km' => 'nullable|numeric|min:0',
+            'effective_from' => 'nullable|date',
+            'effective_until' => 'nullable|date|after:effective_from',
+            'related_prediction_id' => 'nullable|exists:predictions,id',
+            'related_incident_id' => 'nullable|exists:incidents,id',
+        ]);
+
+        $user = $request->user();
+
+        $alert = Alert::create([
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+            'alert_type' => $data['alert_type'],
+            'severity' => $data['severity'],
+            'status' => AlertStatusEnum::ACTIVE->value,
+            'geometry' => $data['geometry'] ?? null,
+            'affected_districts' => $data['affected_districts'] ?? [],
+            'affected_wards' => $data['affected_wards'] ?? [],
+            'affected_flood_zones' => $data['affected_flood_zones'] ?? [],
+            'radius_km' => $data['radius_km'] ?? null,
+            'effective_from' => $data['effective_from'] ?? null,
+            'effective_until' => $data['effective_until'] ?? null,
+            'related_prediction_id' => $data['related_prediction_id'] ?? null,
+            'related_incident_id' => $data['related_incident_id'] ?? null,
+            'source' => 'operator',
+            'issued_by' => $user->id,
+        ]);
+
+        // Lưu geometry PostGIS
+        if (! empty($data['geometry']) && DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement(
+                "UPDATE alerts SET geometry = ST_GeomFromText(?, 4326) WHERE id = ?",
+                [$data['geometry'], $alert->id]
+            );
+        }
+
+        return ApiResponse::created($this->formatAlert($alert), 'Cảnh báo đã được phát');
+    }
+
+    /**
+     * Cập nhật trạng thái cảnh báo
+     * PUT /api/alerts/{id}/status
+     */
+    public function updateStatus(Request $request, int $id)
+    {
+        $alert = Alert::find($id);
+
+        if (! $alert) {
+            return ApiResponse::notFound('Không tìm thấy cảnh báo');
+        }
+
+        $data = $request->validate([
+            'status' => 'required|in:draft,active,updated,resolved,expired',
+        ]);
+
+        $user = $request->user();
+
+        if ($data['status'] === AlertStatusEnum::RESOLVED->value) {
+            $alert->resolve($user->id);
+        } else {
+            $alert->update(['status' => $data['status']]);
+        }
+
+        return ApiResponse::success($this->formatAlert($alert->fresh()), 'Cập nhật trạng thái thành công');
+    }
+
+    /**
+     * GeoJSON cảnh báo đang hoạt động
+     * GET /api/alerts/geojson
+     */
+    public function geojson()
+    {
+        $alerts = Alert::active()->get();
+
+        $features = $alerts->map(function ($alert) {
+            $geometry = null;
+            if (DB::connection()->getDriverName() === 'pgsql') {
+                $result = DB::selectOne(
+                    "SELECT ST_AsGeoJSON(geometry) as geojson FROM alerts WHERE id = ?",
+                    [$alert->id]
+                );
+                $geometry = $result?->geojson ? json_decode($result->geojson) : null;
+            }
+
+            return [
+                'type' => 'Feature',
+                'id' => $alert->id,
+                'properties' => [
+                    'id' => $alert->id,
+                    'title' => $alert->title,
+                    'alert_type' => $alert->alert_type,
+                    'severity' => $alert->severity,
+                    'status' => $alert->status,
+                ],
+                'geometry' => $geometry,
+            ];
+        });
+
+        return response()->json([
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ]);
+    }
+
+    /**
+     * Format alert response
+     */
+    protected function formatAlert(Alert $alert, bool $detailed = false): array
+    {
+        $data = [
+            'id' => $alert->id,
+            'alert_number' => $alert->alert_number,
+            'title' => $alert->title,
+            'description' => $alert->description,
+            'alert_type' => $alert->alert_type,
+            'alert_type_label' => $alert->translated('alert_type'),
+            'severity' => $alert->severity,
+            'severity_label' => $alert->translated('severity'),
+            'status' => $alert->status,
+            'status_label' => $alert->translated('status'),
+            'affected_districts' => $alert->affected_districts ?? [],
+            'effective_from' => $alert->effective_from?->toIso8601String(),
+            'effective_until' => $alert->effective_until?->toIso8601String(),
+            'issuer' => $alert->issuer ? ['id' => $alert->issuer->id, 'name' => $alert->issuer->name] : null,
+            'created_at' => $alert->created_at?->toIso8601String(),
+        ];
+
+        if ($detailed) {
+            $data['affected_wards'] = $alert->affected_wards ?? [];
+            $data['affected_flood_zones'] = $alert->affected_flood_zones ?? [];
+            $data['radius_km'] = $alert->radius_km;
+            $data['resolved_by'] = $alert->resolver ? ['id' => $alert->resolver->id, 'name' => $alert->resolver->name] : null;
+            $data['resolved_at'] = $alert->resolved_at?->toIso8601String();
+        }
+
+        return $data;
+    }
+}
