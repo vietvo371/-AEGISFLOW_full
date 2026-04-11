@@ -39,4 +39,4 @@ async def optimize_evacuation(start_node: str, end_node: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5005)

@@ -24,8 +24,10 @@ Route::prefix('public')->group(function () {
 // AUTH ROUTES
 // ============================================================
 Route::prefix('auth')->group(function () {
-    Route::post('login', [App\Http\Controllers\Api\AuthController::class, 'login']);
-    Route::post('register', [App\Http\Controllers\Api\AuthController::class, 'register']);
+    Route::middleware('throttle:auth')->group(function () {
+        Route::post('login', [App\Http\Controllers\Api\AuthController::class, 'login']);
+        Route::post('register', [App\Http\Controllers\Api\AuthController::class, 'register']);
+    });
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('me', [App\Http\Controllers\Api\AuthController::class, 'me']);
@@ -60,7 +62,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('flood-zones/geojson', [App\Http\Controllers\Api\FloodZoneController::class, 'geojson']);
 
     // ── Sensors ─────────────────────────────────────────────
-    Route::get('sensors', [App\Http\Controllers\Api\FloodZoneController::class, 'index']);
+    Route::get('sensors', [App\Http\Controllers\Api\SensorController::class, 'index']);
+    Route::get('sensors/{id}', [App\Http\Controllers\Api\SensorController::class, 'show']);
+    Route::get('sensors/{id}/readings', [App\Http\Controllers\Api\SensorController::class, 'readings']);
+
+    // ── Weather Data ───────────────────────────────────────
+    Route::get('weather/current', [App\Http\Controllers\Api\WeatherDataController::class, 'current']);
+    Route::get('weather/history', [App\Http\Controllers\Api\WeatherDataController::class, 'history']);
+    Route::get('weather/summary', [App\Http\Controllers\Api\WeatherDataController::class, 'summary']);
 
     // ── Rescue Teams ────────────────────────────────────────
     Route::apiResource('rescue-teams', App\Http\Controllers\Api\RescueTeamController::class)
@@ -106,6 +115,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Analytics ──────────────────────────────────────────
     Route::get('analytics/overview', [App\Http\Controllers\Api\AnalyticsController::class, 'overview']);
 
+    // ── Evacuation Routes ──────────────────────────────────
+    Route::get('evacuation-routes', [App\Http\Controllers\Api\EvacuationRouteController::class, 'index']);
+    Route::get('evacuation-routes/{id}', [App\Http\Controllers\Api\EvacuationRouteController::class, 'show']);
+
     // ============================================================
     // OPERATOR ROUTES (role: city_admin, rescue_operator)
     // ============================================================
@@ -129,6 +142,15 @@ Route::middleware('auth:sanctum')->group(function () {
         // CRUD Rescue Requests (quản lý)
         Route::put('rescue-requests/{id}/assign', [App\Http\Controllers\Api\RescueRequestController::class, 'assign']);
         Route::put('rescue-requests/{id}/status', [App\Http\Controllers\Api\RescueRequestController::class, 'updateStatus']);
+
+        // Weather data ingestion
+        Route::post('weather', [App\Http\Controllers\Api\WeatherDataController::class, 'store']);
+        Route::post('weather/batch', [App\Http\Controllers\Api\WeatherDataController::class, 'batchStore']);
+
+        // CRUD Evacuation Routes
+        Route::post('evacuation-routes', [App\Http\Controllers\Api\EvacuationRouteController::class, 'store']);
+        Route::put('evacuation-routes/{id}', [App\Http\Controllers\Api\EvacuationRouteController::class, 'update']);
+        Route::delete('evacuation-routes/{id}', [App\Http\Controllers\Api\EvacuationRouteController::class, 'destroy']);
     });
 
     // ============================================================
