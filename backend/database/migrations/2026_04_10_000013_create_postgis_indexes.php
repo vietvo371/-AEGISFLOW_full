@@ -56,8 +56,8 @@ return new class extends Migration
                 continue;
             }
 
+            DB::statement("DROP TRIGGER IF EXISTS trigger_{$table}_updated_at ON {$table}");
             DB::statement("
-                DROP TRIGGER IF EXISTS trigger_{$table}_updated_at ON {$table};
                 CREATE TRIGGER trigger_{$table}_updated_at
                 BEFORE UPDATE ON {$table}
                 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
@@ -76,8 +76,8 @@ return new class extends Migration
         ");
 
         if (Schema::hasTable('flood_zones')) {
+            DB::statement("DROP TRIGGER IF EXISTS trigger_flood_zone_centroid ON flood_zones");
             DB::statement("
-                DROP TRIGGER IF EXISTS trigger_flood_zone_centroid ON flood_zones;
                 CREATE TRIGGER trigger_flood_zone_centroid
                 BEFORE INSERT OR UPDATE OF geometry ON flood_zones
                 FOR EACH ROW EXECUTE FUNCTION update_flood_zone_centroid()

@@ -44,9 +44,9 @@ return new class extends Migration
         if (Schema::hasTable('incidents')) {
             Schema::table('alerts', function (Blueprint $table) {
                 $table->foreignId('related_prediction_id')->nullable()->after('source')
-                    ->constrained()->nullOnDelete();
+                    ->constrained('predictions')->nullOnDelete();
                 $table->foreignId('related_incident_id')->nullable()->after('related_prediction_id')
-                    ->constrained()->nullOnDelete();
+                    ->constrained('incidents')->nullOnDelete();
             });
         }
 

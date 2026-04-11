@@ -9,11 +9,15 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Drop existing tables if they exist (resilience)
+        Schema::dropIfExists('wards');
+        Schema::dropIfExists('districts');
+
         // Districts
         Schema::create('districts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('code', 10)->unique();
+            $table->string('code', 20)->unique();
             $table->bigInteger('population')->nullable();
             $table->decimal('area_km2', 10, 2)->nullable();
             $table->string('risk_level', 20)->nullable();
@@ -25,7 +29,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('district_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('code', 10)->unique();
+            $table->string('code', 20)->unique();
             $table->bigInteger('population')->nullable();
             $table->timestamps();
         });

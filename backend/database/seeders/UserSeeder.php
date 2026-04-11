@@ -67,7 +67,7 @@ class UserSeeder extends Seeder
                 $userData
             );
 
-            $roleModel = \Spatie\Permission\Models\Role::where('slug', $role)->first();
+            $roleModel = \Spatie\Permission\Models\Role::where('name', $role)->first();
             if ($roleModel) {
                 $user->assignRole($roleModel);
             }

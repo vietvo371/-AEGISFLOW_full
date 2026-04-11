@@ -43,7 +43,7 @@ return new class extends Migration
         // Evacuation route segments
         Schema::create('evacuation_route_segments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('route_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('route_id')->constrained('evacuation_routes')->cascadeOnDelete();
             $table->foreignId('edge_id')->constrained('map_edges')->cascadeOnDelete();
             $table->smallInteger('sequence_order');
             $table->boolean('is_flood_prone')->default(false);

@@ -18,15 +18,6 @@ use Illuminate\Support\Facades\Lang;
 trait HasTranslatedEnums
 {
     /**
-     * Khai báo trong model con:
-     *   protected static array $translatedEnums = [
-     *       'status' => 'enums.incident_status',
-     *       'type' => 'enums.incident_type',
-     *   ];
-     */
-    protected static array $translatedEnums = [];
-
-    /**
      * Lấy label dịch cho giá trị enum
      *
      * @param  string  $field
@@ -35,12 +26,13 @@ trait HasTranslatedEnums
     public function translated(string $field): string
     {
         $value = $this->{$field};
+        $map = property_exists(static::class, 'translatedEnums') ? static::$translatedEnums : [];
 
-        if (! isset(static::$translatedEnums[$field])) {
+        if (! isset($map[$field])) {
             return $value;
         }
 
-        $key = static::$translatedEnums[$field].'.'.$value;
+        $key = $map[$field].'.'.$value;
 
         return Lang::has($key) ? __($key) : $value;
     }
@@ -56,7 +48,8 @@ trait HasTranslatedEnums
         $options = self::getEnumCases($field);
 
         return array_map(function ($option) use ($field) {
-            $key = static::$translatedEnums[$field].'.'.$option;
+            $map = property_exists(static::class, 'translatedEnums') ? static::$translatedEnums : [];
+            $key = $map[$field].'.'.$option;
 
             return [
                 'value' => $option,
@@ -70,7 +63,8 @@ trait HasTranslatedEnums
      */
     public function enumGroup(string $field): ?string
     {
-        return static::$translatedEnums[$field] ?? null;
+        $map = property_exists(static::class, 'translatedEnums') ? static::$translatedEnums : [];
+        return $map[$field] ?? null;
     }
 
     /**
@@ -96,8 +90,9 @@ trait HasTranslatedEnums
         }
 
         // Fallback: lấy từ translation file
-        if (isset(static::$translatedEnums[$field])) {
-            $group = static::$translatedEnums[$field];
+        $map = property_exists(static::class, 'translatedEnums') ? static::$translatedEnums : [];
+        if (isset($map[$field])) {
+            $group = $map[$field];
             $translations = __($group);
 
             if (is_array($translations)) {

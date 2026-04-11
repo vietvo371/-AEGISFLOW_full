@@ -45,8 +45,9 @@ return [
     'column_names' => [
         'role_pivot_key' => null,
         'permission_pivot_key' => null,
-        'morph_type' => 'model_type',
-        'morph_key' => 'model_id',
+        'model_morph_type' => 'model_type',
+        'model_morph_key' => 'model_id',
+        'team_foreign_key' => 'team_id',
     ],
 
     /*
@@ -82,6 +83,8 @@ return [
     'cache' => [
 
         'expiration_time' => DateInterval::createFromDateString('24 hours'),
+
+        'key' => 'spatie.permission.cache',
 
         'store' => env('CACHE_STORE', 'database'),
 

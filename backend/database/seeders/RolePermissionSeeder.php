@@ -55,8 +55,8 @@ class RolePermissionSeeder extends Seeder
 
         foreach ($permissions as $perm) {
             Permission::firstOrCreate(
-                ['slug' => $perm['slug']],
-                ['name' => $perm['name'], 'group_name' => $perm['group']]
+                ['name' => $perm['slug'], 'guard_name' => 'sanctum'],
+                ['display_name' => $perm['name'], 'group_name' => $perm['group']]
             );
         }
 
@@ -73,8 +73,8 @@ class RolePermissionSeeder extends Seeder
 
         foreach ($roles as $roleData) {
             Role::firstOrCreate(
-                ['slug' => $roleData['slug']],
-                ['name' => $roleData['name']]
+                ['name' => $roleData['slug'], 'guard_name' => 'sanctum'],
+                ['display_name' => $roleData['name']]
             );
         }
 
@@ -82,12 +82,11 @@ class RolePermissionSeeder extends Seeder
         // GÁN PERMISSIONS CHO ROLES
         // ============================================================
 
-        // city_admin: toàn quyền
-        $cityAdmin = Role::where('slug', 'city_admin')->first();
+        $cityAdmin = Role::where('name', 'city_admin')->first();
         $cityAdmin->syncPermissions(Permission::all());
 
         // rescue_operator: điều phối
-        $rescueOp = Role::where('slug', 'rescue_operator')->first();
+        $rescueOp = Role::where('name', 'rescue_operator')->first();
         $rescueOp->syncPermissions([
             'dashboard.view',
             'flood.zones.view', 'flood.sensors.view', 'flood.predictions.view', 'flood.predictions.verify',
@@ -101,7 +100,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // rescue_team: thực địa
-        $rescueTeam = Role::where('slug', 'rescue_team')->first();
+        $rescueTeam = Role::where('name', 'rescue_team')->first();
         $rescueTeam->syncPermissions([
             'dashboard.view',
             'flood.zones.view', 'flood.sensors.view',
@@ -113,7 +112,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // ai_operator: vận hành AI
-        $aiOp = Role::where('slug', 'ai_operator')->first();
+        $aiOp = Role::where('name', 'ai_operator')->first();
         $aiOp->syncPermissions([
             'dashboard.view',
             'flood.predictions.view', 'flood.predictions.verify',
@@ -121,7 +120,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // citizen: công dân
-        $citizen = Role::where('slug', 'citizen')->first();
+        $citizen = Role::where('name', 'citizen')->first();
         $citizen->syncPermissions([
             'flood.zones.view',
             'incidents.view', 'incidents.create',

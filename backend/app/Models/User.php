@@ -153,23 +153,23 @@ class User extends Authenticatable
      */
     public function hasRole(string $role): bool
     {
-        return $this->roles()->where('slug', $role)->exists();
+        return $this->roles()->where('name', $role)->exists();
     }
 
     /**
      * Lấy danh sách permission của user
      */
-    public function getPermissionsAttribute(): array
+    public function getPermissionNamesAttribute(): array
     {
-        return $this->getAllPermissions()->pluck('slug')->toArray();
+        return $this->getAllPermissions()->pluck('name')->toArray();
     }
 
     /**
      * Lấy danh sách roles của user
      */
-    public function getRolesAttribute(): array
+    public function getRoleNamesAttribute(): array
     {
-        return $this->roles->pluck('slug')->toArray();
+        return $this->roles()->pluck('name')->toArray();
     }
 
     /**
@@ -183,8 +183,8 @@ class User extends Authenticatable
             'email' => $this->email,
             'phone' => $this->phone,
             'avatar' => $this->avatar,
-            'roles' => $this->roles,
-            'permissions' => $this->permissions,
+            'roles' => $this->role_names,
+            'permissions' => $this->permission_names,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at?->toIso8601String(),
         ];

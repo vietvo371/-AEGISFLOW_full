@@ -168,10 +168,13 @@ class DataSeeder extends Seeder
              'status' => 'in_progress', 'reported_by' => 4],
         ];
 
-        foreach ($requests as $r) {
+        foreach ($requests as $index => $r) {
             RescueRequest::firstOrCreate(
                 ['caller_name' => $r['caller_name'], 'address' => $r['address']],
-                array_merge($r, ['created_at' => now()->subHours(rand(1, 12))])
+                array_merge($r, [
+                    'request_number' => 'REQ-' . date('Ymd') . '-' . str_pad($index + 1, 4, '0', STR_PAD_LEFT),
+                    'created_at' => now()->subHours(rand(1, 12))
+                ])
             );
         }
 

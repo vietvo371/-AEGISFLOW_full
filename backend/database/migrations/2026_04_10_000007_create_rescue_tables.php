@@ -40,7 +40,7 @@ return new class extends Migration
         Schema::create('rescue_members', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('team_id')->constrained('rescue_teams')->cascadeOnDelete();
             $table->string('role', 50);
             $table->string('badge_number', 50)->nullable();
             $table->json('certifications')->nullable();
@@ -125,7 +125,7 @@ return new class extends Migration
         // Rescue request events
         Schema::create('rescue_request_events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('request_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('request_id')->constrained('rescue_requests')->cascadeOnDelete();
             $table->string('event_type', 50);
             $table->text('description')->nullable();
             $table->foreignId('actor_id')->nullable()->constrained('users')->nullOnDelete();

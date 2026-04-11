@@ -8,6 +8,22 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // AI Datasets
+        Schema::create('ai_datasets', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->string('file_path')->nullable();
+            $table->integer('record_count')->nullable();
+            $table->json('features')->nullable();
+            $table->json('labels')->nullable();
+            $table->date('train_start_date')->nullable();
+            $table->date('train_end_date')->nullable();
+            $table->timestamp('created_at')->useCurrent();
+
+            $table->index('name');
+        });
+
         // AI Models
         Schema::create('ai_models', function (Blueprint $table) {
             $table->id();
@@ -32,26 +48,10 @@ return new class extends Migration
             $table->index('output_type');
         });
 
-        // AI Datasets
-        Schema::create('ai_datasets', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->string('file_path')->nullable();
-            $table->integer('record_count')->nullable();
-            $table->json('features')->nullable();
-            $table->json('labels')->nullable();
-            $table->date('train_start_date')->nullable();
-            $table->date('train_end_date')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-
-            $table->index('name');
-        });
-
         // Predictions
         Schema::create('predictions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('model_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('model_id')->nullable()->constrained('ai_models')->nullOnDelete();
             $table->string('model_version', 20)->nullable();
             $table->string('prediction_type', 50);
             $table->foreignId('district_id')->nullable()->constrained()->nullOnDelete();

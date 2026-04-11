@@ -43,21 +43,44 @@ return new class extends Migration
             DB::statement('ALTER TABLE sensors ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
         }
 
-        // Sensor readings (partitioned by month — chỉ cấu trúc, partition tạo riêng)
-        Schema::create('sensor_readings', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('sensor_id')->constrained()->cascadeOnDelete();
-            $table->timestamp('recorded_at');
-            $table->decimal('value', 10, 2);
-            $table->json('raw_data')->nullable();
-            $table->boolean('is_anomaly')->default(false);
-            $table->decimal('quality_score', 3, 2)->nullable();
-            $table->string('source', 30)->default('sensor');
+        // Sensor readings (partitioned by month for PostgreSQL)
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement('
+                CREATE TABLE sensor_readings (
+                    id bigserial,
+                    sensor_id bigint NOT NULL,
+                    recorded_at timestamp(0) NOT NULL,
+                    value decimal(10, 2) NOT NULL,
+                    raw_data jsonb,
+                    is_anomaly boolean DEFAULT false,
+                    quality_score decimal(3, 2),
+                    source varchar(30) DEFAULT \'sensor\',
+                    PRIMARY KEY (id, recorded_at)
+                ) PARTITION BY RANGE (recorded_at)
+            ');
 
-            $table->primary(['id', 'recorded_at']);
-            $table->index(['sensor_id', 'recorded_at']);
-            $table->index(['sensor_id', 'is_anomaly']);
-        });
+            // Add foreign key separately
+            DB::statement('ALTER TABLE sensor_readings ADD CONSTRAINT sensor_readings_sensor_id_foreign FOREIGN KEY (sensor_id) REFERENCES sensors(id) ON DELETE CASCADE');
+            
+            // Add indexes
+            DB::statement('CREATE INDEX idx_sensor_readings_sensor_recorded ON sensor_readings (sensor_id, recorded_at)');
+            DB::statement('CREATE INDEX idx_sensor_readings_anomaly ON sensor_readings (sensor_id, is_anomaly)');
+        } else {
+            Schema::create('sensor_readings', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('sensor_id')->constrained()->cascadeOnDelete();
+                $table->timestamp('recorded_at');
+                $table->decimal('value', 10, 2);
+                $table->json('raw_data')->nullable();
+                $table->boolean('is_anomaly')->default(false);
+                $table->decimal('quality_score', 3, 2)->nullable();
+                $table->string('source', 30)->default('sensor');
+
+                $table->primary(['id', 'recorded_at']);
+                $table->index(['sensor_id', 'recorded_at']);
+                $table->index(['sensor_id', 'is_anomaly']);
+            });
+        }
 
         // Weather data
         Schema::create('weather_data', function (Blueprint $table) {

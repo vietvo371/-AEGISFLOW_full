@@ -29,7 +29,7 @@ return new class extends Migration
         // Supply stocks
         Schema::create('supply_stocks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supply_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('supply_id')->constrained('relief_supplies')->cascadeOnDelete();
             $table->string('stockable_type', 50);
             $table->bigInteger('stockable_id');
             $table->decimal('quantity', 12, 2)->default(0);
@@ -45,8 +45,8 @@ return new class extends Migration
         // Supply allocations
         Schema::create('supply_allocations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('request_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->foreignId('supply_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('request_id')->nullable()->constrained('rescue_requests')->cascadeOnDelete();
+            $table->foreignId('supply_id')->constrained('relief_supplies')->cascadeOnDelete();
             $table->bigInteger('from_stock_id')->nullable();
             $table->bigInteger('to_shelter_id')->nullable();
             $table->bigInteger('to_team_id')->nullable();
