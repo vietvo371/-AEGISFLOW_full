@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 
 use App\Enums\AlertTypeEnum;
 use App\Enums\AlertStatusEnum;
+use App\Events\AlertCreated;
 use App\Helpers\ApiResponse;
 use App\Http\Resources\AlertResource;
 use App\Models\Alert;
@@ -113,6 +114,9 @@ class AlertController extends Controller
                 [$data['geometry'], $alert->id]
             );
         }
+
+        // Broadcast event
+        broadcast(new AlertCreated($alert->fresh()))->toOthers();
 
         return ApiResponse::created(new AlertResource($alert->fresh()), 'Cảnh báo đã được phát');
     }

@@ -145,6 +145,9 @@ class FloodZone extends Model
 
         $this->save();
 
+        // Broadcast event
+        broadcast(new \App\Events\FloodZoneUpdated($this->fresh()))->toOthers();
+
         return $this;
     }
 

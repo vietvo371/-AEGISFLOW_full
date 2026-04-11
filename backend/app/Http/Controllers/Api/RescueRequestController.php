@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 
 use App\Enums\RescueRequestStatusEnum;
+use App\Events\RescueRequestCreated;
+use App\Events\RescueRequestUpdated;
 use App\Helpers\ApiResponse;
 use App\Models\RescueRequest;
 use App\Models\RescueTeam;
@@ -153,12 +155,14 @@ class RescueRequestController extends Controller
         // Tính priority score
         $req->calculatePriorityScore();
 
-        // Log event
         $req->events()->create([
             'event_type' => 'created',
             'description' => 'Yêu cầu được tạo bởi '.$user->name,
             'actor_id' => $user->id,
         ]);
+
+        // Broadcast event
+        broadcast(new RescueRequestCreated($req->fresh()))->toOthers();
 
         return ApiResponse::created($this->formatRequest($req->fresh()), 'Yêu cầu cứu hộ đã được gửi');
     }
@@ -212,12 +216,14 @@ class RescueRequestController extends Controller
 
         $req->assignTeam($team);
 
-        // Log event
         $req->events()->create([
             'event_type' => 'assigned',
             'description' => 'Được phân công cho đội: '.$team->name,
             'actor_id' => $request->user()->id,
         ]);
+
+        // Broadcast event
+        broadcast(new RescueRequestUpdated($req->fresh()))->toOthers();
 
         return ApiResponse::success($this->formatRequest($req->fresh()), 'Phân công thành công');
     }
@@ -264,6 +270,9 @@ class RescueRequestController extends Controller
             'old_status' => $oldStatus,
             'new_status' => $data['status'],
         ]);
+
+        // Broadcast event
+        broadcast(new RescueRequestUpdated($req->fresh()))->toOthers();
 
         return ApiResponse::success($this->formatRequest($req->fresh()), 'Cập nhật trạng thái thành công');
     }
