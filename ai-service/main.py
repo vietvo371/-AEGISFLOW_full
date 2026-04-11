@@ -1,35 +1,21 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import List, Optional
+from api.calculations import router as calculations_router
 
-app = FastAPI(title="AegisFlow AI Service")
+app = FastAPI(
+    title="AegisFlow AI Service",
+    description="AI and calculation services for flood prediction and rescue optimization",
+    version="1.0.0"
+)
 
-class FloodRequest(BaseModel):
-    location: str
-    rainfall_mm: float
-    duration_hours: int
+# Include real routers
+app.include_router(calculations_router, prefix="/api", tags=["calculations"])
 
 @app.get("/")
 async def root():
-    return {"message": "AegisFlow AI Service is running", "status": "online"}
+    return {"message": "AegisFlow AI Service is running", "status": "online", "version": "1.0.0"}
 
-@app.post("/predict-flood")
-async def predict_flood(request: FloodRequest):
-    # Mock prediction logic
-    risk_level = "Medium"
-    if request.rainfall_mm > 100:
-        risk_level = "High"
-    elif request.rainfall_mm < 30:
-        risk_level = "Low"
-        
-    return {
-        "location": request.location,
-        "risk_level": risk_level,
-        "predicted_depth_cm": request.rainfall_mm * 0.5,
-        "estimated_arrival_time": "2 hours"
-    }
-
-@app.get("/optimize-evacuation")
+# Keep the mock optimize-evacuation for now as placeholder for later routing implementation
+@app.get("/api/optimize-evacuation", tags=["routing"])
 async def optimize_evacuation(start_node: str, end_node: str):
     return {
         "route": [start_node, "Node_A", "Node_B", end_node],
@@ -40,3 +26,4 @@ async def optimize_evacuation(start_node: str, end_node: str):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5005)
+

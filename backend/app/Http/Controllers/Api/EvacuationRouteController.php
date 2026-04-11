@@ -6,6 +6,8 @@ use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EvacuationRouteResource;
 use App\Models\EvacuationRoute;
+use App\Models\MapNode;
+use App\Services\AI\AIServiceClient;
 use Illuminate\Http\Request;
 
 class EvacuationRouteController extends Controller
@@ -56,7 +58,7 @@ class EvacuationRouteController extends Controller
      * Tạo tuyến sơ tán mới
      * POST /api/evacuation-routes
      */
-    public function store(Request $request)
+    public function store(Request $request, AIServiceClient $aiService)
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
@@ -69,16 +71,43 @@ class EvacuationRouteController extends Controller
             'color' => 'nullable|string|max:7',
         ]);
 
-        // Tạm tạo route (chưa tính toán geometry, distance, time)
+        $startNode = MapNode::findOrFail($data['start_node_id']);
+        $endNode = MapNode::findOrFail($data['end_node_id']);
+
+        $startLoc = $startNode->location;
+        $endLoc = $endNode->location;
+
+        $distance = 0;
+        $estimatedTime = 0;
+        $isSafe = true;
+        $safetyRating = 1.0;
+
+        if ($startLoc && $endLoc) {
+            $aiResult = $aiService->optimizeRoute(
+                (float)$startLoc['lat'], 
+                (float)$startLoc['lng'], 
+                (float)$endLoc['lat'], 
+                (float)$endLoc['lng']
+            );
+
+            if ($aiResult) {
+                $distance = $aiResult['total_distance_meters'] ?? $distance;
+                $estimatedTime = $aiResult['estimated_time_seconds'] ?? $estimatedTime;
+                $isSafe = $aiResult['is_safe'] ?? $isSafe;
+                $safetyRating = $aiResult['safety_score'] ?? $safetyRating;
+            }
+        }
+
+        // Tạm tạo route array
         $route = EvacuationRoute::create(array_merge($data, [
             'geometry' => \DB::raw("ST_MakeLine(
                 (SELECT geometry FROM map_nodes WHERE id = {$data['start_node_id']}),
                 (SELECT geometry FROM map_nodes WHERE id = {$data['end_node_id']})
             )"),
-            'distance_m' => 0,
-            'estimated_time_seconds' => 0,
-            'is_safe' => true,
-            'safety_rating' => 1.0,
+            'distance_m' => $distance,
+            'estimated_time_seconds' => $estimatedTime,
+            'is_safe' => $isSafe,
+            'safety_rating' => $safetyRating,
             'status' => 'active',
         ]));
 
