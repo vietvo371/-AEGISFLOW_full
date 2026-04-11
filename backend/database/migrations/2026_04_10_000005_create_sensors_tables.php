@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('model', 100)->nullable();
             $table->foreignId('flood_zone_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('district_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('edge_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('edge_id')->nullable()->constrained('map_edges')->nullOnDelete();
             $table->string('status', 20)->default('online');
             $table->decimal('min_value', 10, 2)->nullable();
             $table->decimal('max_value', 10, 2)->nullable();

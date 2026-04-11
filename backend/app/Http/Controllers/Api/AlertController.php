@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Enums\AlertTypeEnum;
 use App\Enums\AlertStatusEnum;
 use App\Helpers\ApiResponse;
+use App\Http\Resources\AlertResource;
 use App\Models\Alert;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,9 +41,9 @@ class AlertController extends Controller
 
         $alerts = $query->paginate($request->get('per_page', 20));
 
-        $data = $alerts->map(fn ($a) => $this->formatAlert($a));
-
-        return ApiResponse::paginate($alerts->setCollection($data));
+        return ApiResponse::paginate($alerts->setCollection(
+            AlertResource::collection($alerts->getCollection())
+        ));
     }
 
     /**
@@ -58,7 +59,7 @@ class AlertController extends Controller
             return ApiResponse::notFound('Không tìm thấy cảnh báo');
         }
 
-        return ApiResponse::success($this->formatAlert($alert, true));
+        return ApiResponse::success(new AlertResource($alert));
     }
 
     /**
@@ -113,7 +114,7 @@ class AlertController extends Controller
             );
         }
 
-        return ApiResponse::created($this->formatAlert($alert), 'Cảnh báo đã được phát');
+        return ApiResponse::created(new AlertResource($alert->fresh()), 'Cảnh báo đã được phát');
     }
 
     /**
@@ -140,7 +141,7 @@ class AlertController extends Controller
             $alert->update(['status' => $data['status']]);
         }
 
-        return ApiResponse::success($this->formatAlert($alert->fresh()), 'Cập nhật trạng thái thành công');
+        return ApiResponse::success(new AlertResource($alert->fresh()), 'Cập nhật trạng thái thành công');
     }
 
     /**
@@ -179,39 +180,5 @@ class AlertController extends Controller
             'type' => 'FeatureCollection',
             'features' => $features,
         ]);
-    }
-
-    /**
-     * Format alert response
-     */
-    protected function formatAlert(Alert $alert, bool $detailed = false): array
-    {
-        $data = [
-            'id' => $alert->id,
-            'alert_number' => $alert->alert_number,
-            'title' => $alert->title,
-            'description' => $alert->description,
-            'alert_type' => $alert->alert_type,
-            'alert_type_label' => $alert->translated('alert_type'),
-            'severity' => $alert->severity,
-            'severity_label' => $alert->translated('severity'),
-            'status' => $alert->status,
-            'status_label' => $alert->translated('status'),
-            'affected_districts' => $alert->affected_districts ?? [],
-            'effective_from' => $alert->effective_from?->toIso8601String(),
-            'effective_until' => $alert->effective_until?->toIso8601String(),
-            'issuer' => $alert->issuer ? ['id' => $alert->issuer->id, 'name' => $alert->issuer->name] : null,
-            'created_at' => $alert->created_at?->toIso8601String(),
-        ];
-
-        if ($detailed) {
-            $data['affected_wards'] = $alert->affected_wards ?? [];
-            $data['affected_flood_zones'] = $alert->affected_flood_zones ?? [];
-            $data['radius_km'] = $alert->radius_km;
-            $data['resolved_by'] = $alert->resolver ? ['id' => $alert->resolver->id, 'name' => $alert->resolver->name] : null;
-            $data['resolved_at'] = $alert->resolved_at?->toIso8601String();
-        }
-
-        return $data;
     }
 }

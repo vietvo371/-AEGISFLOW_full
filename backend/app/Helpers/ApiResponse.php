@@ -27,7 +27,7 @@ class ApiResponse
     {
         $response = [
             'success' => true,
-            'message' => $message,
+            'message' => __($message),
         ];
 
         if ($data !== null) {
@@ -44,7 +44,7 @@ class ApiResponse
     {
         $response = [
             'success' => false,
-            'message' => $message,
+            'message' => __($message),
         ];
 
         if (! empty($errors)) {
@@ -61,7 +61,7 @@ class ApiResponse
     {
         return response()->json([
             'success' => true,
-            'message' => $message,
+            'message' => __($message),
             'data' => $paginator->items(),
             'meta' => [
                 'current_page' => $paginator->currentPage(),

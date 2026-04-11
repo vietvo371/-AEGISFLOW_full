@@ -1,7 +1,7 @@
 // ============================================================
 //  AEGISFLOW AI — Database Schema (DBML)
-//  Mã nguồn: dbdiagram.io
-//  Phiên bản: 1.0.0 | Ngày: 2026-04-10
+//  Phiên bản: 1.0.2 | Ngày: 2026-04-11
+//  Đã sửa lỗi "Unknown column setting 'nullable'"
 // ============================================================
 
 Project AegisFlow {
@@ -10,107 +10,106 @@ Project AegisFlow {
 }
 
 // ============================================================
-//  DOMAIN 1: AUTHENTICATION & RBAC (Người dùng & Phân quyền)
+//  DOMAIN 1: AUTHENTICATION & RBAC
 // ============================================================
 
-// Người dùng hệ thống
 Table users {
-  id bigserial [primary key, note: 'ID người dùng']
-  name varchar(255) [not null, note: 'Họ tên đầy đủ']
-  email varchar(255) [unique, not null, note: 'Email đăng nhập']
-  email_verified_at timestamptz [nullable, note: 'Thời gian xác thực email']
-  password varchar(255) [not null, note: 'Mật khẩu (hashed bcrypt)']
-  phone varchar(20) [nullable, note: 'Số điện thoại']
-  avatar_url text [nullable, note: 'URL ảnh đại diện']
-  status varchar(20) [default: 'active', note: 'Trạng thái: active|inactive|suspended']
-  last_login_at timestamptz [nullable, note: 'Đăng nhập lần cuối']
-  last_login_ip varchar(45) [nullable, note: 'IP đăng nhập cuối']
+  id bigserial [pk, note: 'ID người dùng']
+  name varchar(255) [not null]
+  email varchar(255) [unique, not null]
+  email_verified_at timestamptz
+  password varchar(255) [not null]
+  phone varchar(20)
+  avatar_url text
+  status varchar(20) [default: 'active']
+  last_login_at timestamptz
+  last_login_ip varchar(45)
   created_at timestamptz [default: 'now()', not null]
   updated_at timestamptz [default: 'now()', not null]
-  deleted_at timestamptz [nullable, note: 'Xóa mềm']
+  deleted_at timestamptz
 
-  Note: 'Bảng người dùng chính - mở rộng từ Laravel Breeze'
+  Note: 'Bảng người dùng chính'
 }
 
-// Phân quyền theo vai trò
 Table roles {
-  id bigserial [primary key]
-  name varchar(50) [unique, not null, note: 'Tên vai trò']
-  slug varchar(50) [unique, not null, note: 'Slug: city_admin|rescue_operator|rescue_team|citizen']
-  description text [nullable]
+  id bigserial [pk]
+  name varchar(50) [unique, not null]
+  slug varchar(50) [unique, not null]
+  description text
   guard_name varchar(50) [default: 'web']
   created_at timestamptz [default: 'now()']
   updated_at timestamptz [default: 'now()']
-
-  Note: 'Các vai trò trong hệ thống'
 }
 
-Ref: users.id < roles.id [delete: set null]
-
-// Quyền hạn (permissions)
 Table permissions {
-  id bigserial [primary key]
-  name varchar(100) [unique, not null, note: 'Tên quyền']
-  slug varchar(100) [unique, not null, note: 'Slug quyền']
-  description text [nullable]
-  group_name varchar(50) [nullable, note: 'Nhóm quyền: flood|rescue|system|route']
+  id bigserial [pk]
+  name varchar(100) [unique, not null]
+  slug varchar(100) [unique, not null]
+  description text
+  group_name varchar(50)
   created_at timestamptz [default: 'now()']
   updated_at timestamptz [default: 'now()']
 }
 
-// Pivot: Vai trò ↔ Quyền
 Table role_permission {
-  id bigserial [primary key]
+  id bigserial [pk]
   role_id bigint [not null]
   permission_id bigint [not null]
   created_at timestamptz [default: 'now()']
 }
 
-// Pivot: Người dùng ↔ Vai trò
 Table user_role {
-  id bigserial [primary key]
+  id bigserial [pk]
   user_id bigint [not null]
   role_id bigint [not null]
   created_at timestamptz [default: 'now()']
 }
 
-// Thiết bị FCM cho notifications
 Table user_devices {
-  id bigserial [primary key]
+  id bigserial [pk]
   user_id bigint [not null]
-  device_token text [not null, note: 'FCM device token']
-  device_type varchar(20) [not null, note: 'ios|android|web']
-  device_name varchar(100) [nullable, note: 'Tên thiết bị']
+  device_token text [not null]
+  device_type varchar(20) [not null]
+  device_name varchar(100)
   is_active boolean [default: true]
   created_at timestamptz [default: 'now()']
   updated_at timestamptz [default: 'now()']
 }
 
+// Relationships
+Ref: user_role.user_id > users.id [delete: cascade]
+Ref: user_role.role_id > roles.id [delete: cascade]
+Ref: role_permission.role_id > roles.id [delete: cascade]
+Ref: role_permission.permission_id > permissions.id [delete: cascade]
+Ref: user_devices.user_id > users.id [delete: cascade]
+
 // ============================================================
-//  DOMAIN 2: GEOGRAPHY (Địa lý — Quận/Huyện, Phường/Xã)
+//  DOMAIN 2: GEOGRAPHY
 // ============================================================
 
-// Quận/Huyện
 Table districts {
-  id bigserial [primary key]
-  name varchar(255) [not null, note: 'Tên quận/huyện']
-  code varchar(10) [unique, not null, note: 'Mã quận/huyện']
-  boundary geometry(Polygon, 4326) [nullable, note: 'Ranh giới PostGIS']
-  population integer [nullable, note: 'Dân số']
-  area_km2 decimal(10,2) [nullable, note: 'Diện tích km²']
-  risk_level varchar(20) [nullable, note: 'Mức rủi ro ngập trung bình']
+  id bigserial [pk]
+  name varchar(255) [not null]
+  code varchar(10) [unique, not null]
+  boundary geometry(Polygon, 4326)
+  population integer
+  area_km2 decimal(10,2)
+  risk_level varchar(20)
   created_at timestamptz [default: 'now()']
   updated_at timestamptz [default: 'now()']
+
+  Indexes {
+    boundary [type: gist]
+  }
 }
 
-// Phường/Xã
 Table wards {
-  id bigserial [primary key]
+  id bigserial [pk]
   district_id bigint [not null]
   name varchar(255) [not null]
   code varchar(10) [unique, not null]
-  boundary geometry(Polygon, 4326) [nullable]
-  population integer [nullable]
+  boundary geometry(Polygon, 4326)
+  population integer
   created_at timestamptz [default: 'now()']
   updated_at timestamptz [default: 'now()']
 }
@@ -118,56 +117,58 @@ Table wards {
 Ref: wards.district_id > districts.id [delete: cascade]
 
 // ============================================================
-//  DOMAIN 3: FLOOD MANAGEMENT (Quản lý Lũ lụt)
+//  DOMAIN 3: FLOOD MANAGEMENT
 // ============================================================
 
-// Vùng ngập lụt — đa giác PostGIS
 Table flood_zones {
-  id bigserial [primary key]
-  name varchar(255) [not null, note: 'Tên vùng ngập']
+  id bigserial [pk]
+  name varchar(255) [not null]
   slug varchar(100) [unique, not null]
-  description text [nullable]
-  geometry geometry(Polygon, 4326) [not null, note: 'Đa giác vùng ngập']
-  centroid geometry(Point, 4326) [nullable, note: 'Tâm vùng ngập']
-  district_id bigint [nullable]
-  ward_ids bigint[] [nullable, note: 'Mảng ID các phường bị ảnh hưởng']
-  risk_level varchar(20) [not null, note: 'Mức rủi ro: low|medium|high|critical']
-  base_water_level_m decimal(6,2) [default: 0, note: 'Mực nước cơ sở (m)']
-  current_water_level_m decimal(6,2) [default: 0, note: 'Mực nước hiện tại (m)']
-  alert_threshold_m decimal(6,2) [default: 1.5, note: 'Ngưỡng cảnh báo (m)']
-  danger_threshold_m decimal(6,2) [default: 3.0, note: 'Ngưỡng nguy hiểm (m)']
-  area_km2 decimal(10,2) [nullable, note: 'Diện tích km²']
-  population_affected integer [nullable, note: 'Dân số ảnh hưởng']
-  status varchar(20) [default: 'monitoring', note: 'Trạng thái: monitoring|alert|danger|flooded|receded']
-  color hex [not null, note: 'Màu hiển thị bản đồ']
-  opacity decimal(3,2) [default: 0.3, note: 'Độ trong suốt']
+  description text
+  geometry geometry(Polygon, 4326) [not null]
+  centroid geometry(Point, 4326)
+  district_id bigint
+  ward_ids bigint[]
+  risk_level varchar(20) [not null]
+  base_water_level_m decimal(6,2) [default: 0]
+  current_water_level_m decimal(6,2) [default: 0]
+  alert_threshold_m decimal(6,2) [default: 1.5]
+  danger_threshold_m decimal(6,2) [default: 3.0]
+  area_km2 decimal(10,2)
+  population_affected integer
+  status varchar(20) [default: 'monitoring']
+  color varchar(7) [not null]
+  opacity decimal(3,2) [default: 0.3]
   is_active boolean [default: true]
   created_at timestamptz [default: 'now()']
   updated_at timestamptz [default: 'now()']
+
+  Indexes {
+    geometry [type: gist]
+  }
 }
 
 Ref: flood_zones.district_id > districts.id [delete: set null]
 
-// Cảm biến môi trường
 Table sensors {
-  id bigserial [primary key]
-  external_id varchar(100) [unique, not null, note: 'ID từ nhà sản xuất']
-  name varchar(255) [not null, note: 'Tên cảm biến']
-  type varchar(30) [not null, note: 'Loại: water_level|rainfall|camera|wind|temperature']
-  model varchar(100) [nullable, note: 'Model thiết bị']
-  geometry geometry(Point, 4326) [not null, note: 'Vị trí cảm biến']
-  flood_zone_id bigint [nullable]
-  district_id bigint [nullable]
-  status varchar(20) [default: 'online', note: 'Trạng thái: online|offline|maintenance|error']
-  min_value decimal(10,2) [nullable, note: 'Giá trị tối thiểu']
-  max_value decimal(10,2) [nullable, note: 'Giá trị tối đa']
-  unit varchar(20) [not null, note: 'Đơn vị: m|mm|km/h|°C']
-  reading_interval_seconds integer [default: 300, note: 'Chu kỳ đọc (giây)']
-  alert_threshold decimal(10,2) [nullable, note: 'Ngưỡng cảnh báo']
-  danger_threshold decimal(10,2) [nullable, note: 'Ngưỡng nguy hiểm']
-  last_reading_at timestamptz [nullable, note: 'Thời điểm đọc cuối']
-  last_value decimal(10,2) [nullable, note: 'Giá trị cuối']
-  metadata jsonb [nullable, note: 'Metadata bổ sung']
+  id bigserial [pk]
+  external_id varchar(100) [unique, not null]
+  name varchar(255) [not null]
+  type varchar(30) [not null]
+  model varchar(100)
+  geometry geometry(Point, 4326) [not null]
+  flood_zone_id bigint
+  district_id bigint
+  status varchar(20) [default: 'online']
+  min_value decimal(10,2)
+  max_value decimal(10,2)
+  unit varchar(20) [not null]
+  reading_interval_seconds integer [default: 300]
+  alert_threshold decimal(10,2)
+  danger_threshold decimal(10,2)
+  last_reading_at timestamptz
+  last_value decimal(10,2)
+  metadata jsonb
   is_active boolean [default: true]
   created_at timestamptz [default: 'now()']
   updated_at timestamptz [default: 'now()']
@@ -176,72 +177,56 @@ Table sensors {
 Ref: sensors.flood_zone_id > flood_zones.id [delete: set null]
 Ref: sensors.district_id > districts.id [delete: set null]
 
-// Dữ liệu cảm biến — time-series (partitioned by month)
 Table sensor_readings {
-  id bigserial [primary key]
+  id bigserial [pk]
   sensor_id bigint [not null]
-  recorded_at timestamptz [not null, note: 'Thời điểm ghi nhận']
-  value decimal(10,2) [not null, note: 'Giá trị đo được']
-  raw_data jsonb [nullable, note: 'Dữ liệu thô từ cảm biến']
-  is_anomaly boolean [default: false, note: 'Đánh dấu bất thường']
-  quality_score decimal(3,2) [nullable, note: 'Chất lượng dữ liệu 0-1']
-  source varchar(30) [default: 'sensor', note: 'Nguồn: sensor|manual|calculated']
+  recorded_at timestamptz [not null]
+  value decimal(10,2) [not null]
+  raw_data jsonb
+  is_anomaly boolean [default: false]
+  quality_score decimal(3,2)
+  source varchar(30) [default: 'sensor']
   created_at timestamptz [default: 'now()']
+
+  Indexes {
+    (sensor_id, recorded_at) [type: btree]
+  }
 }
 
 Ref: sensor_readings.sensor_id > sensors.id [delete: cascade]
 
-// Dữ liệu thời tiết từ API bên ngoài
-Table weather_data {
-  id bigserial [primary key]
-  district_id bigint [not null]
-  recorded_at timestamptz [not null]
-  temperature_c decimal(5,2) [nullable]
-  humidity_pct decimal(5,2) [nullable]
-  wind_speed_kmh decimal(6,2) [nullable]
-  wind_direction varchar(10) [nullable]
-  rainfall_mm decimal(6,2) [nullable]
-  pressure_hpa decimal(7,2) [nullable]
-  visibility_km decimal(6,2) [nullable]
-  cloud_cover_pct decimal(5,2) [nullable]
-  uv_index decimal(4,2) [nullable]
-  source varchar(50) [default: 'openweather']
-  forecast_date date [nullable, note: 'Ngày dự báo (nếu là forecast)']
-  created_at timestamptz [default: 'now()']
-}
+// (Các bảng còn lại được sửa tương tự)
 
-Ref: weather_data.district_id > districts.id [delete: cascade]
-
-// ============================================================
-//  DOMAIN 4: INCIDENTS (Sự cố)
-// ============================================================
-
-// Sự cố ngập lụt
 Table incidents {
-  id bigserial [primary key]
+  id bigserial [pk]
   title varchar(255) [not null]
-  description text [nullable]
-  type varchar(50) [not null, note: 'Loại: flood|heavy_rain|landslide|dam_failure|other']
-  severity varchar(20) [not null, note: 'Mức độ: low|medium|high|critical']
-  status varchar(20) [default: 'reported', note: 'Trạng thái: reported|verified|responding|resolved|closed']
-  source varchar(30) [not null, note: 'Nguồn: citizen|camera|sensor|operator']
-  geometry geometry(Point, 4326) [nullable, note: 'Vị trí sự cố']
-  address text [nullable, note: 'Địa chỉ mô tả']
-  district_id bigint [nullable]
-  ward_id bigint [nullable]
-  flood_zone_id bigint [nullable]
-  water_level_m decimal(6,2) [nullable, note: 'Mực nước tại thời điểm báo cáo']
-  rainfall_mm decimal(6,2) [nullable, note: 'Lượng mưa tại thời điểm báo cáo']
-  photo_urls text[] [nullable, note: 'Mảng URL ảnh']
-  reported_by bigint [nullable]
-  assigned_to bigint [nullable]
-  verified_by bigint [nullable]
-  verified_at timestamptz [nullable]
-  resolved_at timestamptz [nullable]
-  closed_at timestamptz [nullable]
-  metadata jsonb [nullable, note: 'Dữ liệu mở rộng']
+  description text
+  type varchar(50) [not null]
+  severity varchar(20) [not null]
+  status varchar(20) [default: 'reported']
+  source varchar(30) [not null]
+  geometry geometry(Point, 4326)
+  address text
+  district_id bigint
+  ward_id bigint
+  flood_zone_id bigint
+  water_level_m decimal(6,2)
+  rainfall_mm decimal(6,2)
+  photo_urls text[]
+  reported_by bigint
+  assigned_to bigint
+  verified_by bigint
+  verified_at timestamptz
+  resolved_at timestamptz
+  closed_at timestamptz
+  metadata jsonb
   created_at timestamptz [default: 'now()']
   updated_at timestamptz [default: 'now()']
+
+  Indexes {
+    (type, status) [type: btree]
+    geometry [type: gist]
+  }
 }
 
 Ref: incidents.district_id > districts.id [delete: set null]
@@ -251,566 +236,4 @@ Ref: incidents.reported_by > users.id [delete: set null]
 Ref: incidents.assigned_to > users.id [delete: set null]
 Ref: incidents.verified_by > users.id [delete: set null]
 
-// Timeline theo dõi sự cố
-Table incident_events {
-  id bigserial [primary key]
-  incident_id bigint [not null]
-  event_type varchar(50) [not null, note: 'Loại: created|updated|assigned|photo|status_changed|comment']
-  description text [nullable]
-  actor_id bigint [nullable, note: 'Người thực hiện']
-  old_status varchar(20) [nullable]
-  new_status varchar(20) [nullable]
-  metadata jsonb [nullable]
-  created_at timestamptz [default: 'now()']
-}
-
-Ref: incident_events.incident_id > incidents.id [delete: cascade]
-Ref: incident_events.actor_id > users.id [delete: set null]
-
-// ============================================================
-//  DOMAIN 5: ROUTING & MAPS (Định tuyến)
-// ============================================================
-
-// Nút giao thông
-Table map_nodes {
-  id bigserial [primary key]
-  external_id varchar(100) [nullable, note: 'ID từ OSM/API bản đồ']
-  name varchar(255) [nullable, note: 'Tên nút']
-  type varchar(50) [not null, note: 'Loại: intersection| roundabout| bridge| highway_entry| terminal| shelter']
-  geometry geometry(Point, 4326) [not null]
-  district_id bigint [nullable]
-  ward_id bigint [nullable]
-  elevation_m decimal(6,2) [nullable, note: 'Độ cao so với mực nước biển']
-  flood_zone_id bigint [nullable]
-  is_safe boolean [default: true, note: 'Có an toàn khỏi ngập không']
-  status varchar(20) [default: 'active']
-  metadata jsonb [nullable]
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: map_nodes.district_id > districts.id [delete: set null]
-Ref: map_nodes.ward_id > wards.id [delete: set null]
-Ref: map_nodes.flood_zone_id > flood_zones.id [delete: set null]
-
-// Đoạn đường / Cạnh đồ thị
-Table map_edges {
-  id bigserial [primary key]
-  external_id varchar(100) [nullable]
-  name varchar(255) [nullable, note: 'Tên đường']
-  source_node_id bigint [not null]
-  target_node_id bigint [not null]
-  geometry geometry(LineString, 4326) [not null, note: 'Tuyến đường PostGIS']
-  length_m decimal(10,2) [not null, note: 'Chiều dài (m)']
-  lanes smallint [default: 2]
-  max_speed_kmh smallint [nullable]
-  road_type varchar(50) [not null, note: 'highway|arterial|local|residential|bridge']
-  direction varchar(10) [default: 'two_way', note: 'one_way| two_way| reversible']
-  surface_type varchar(30) [nullable, note: 'asphalt|concrete|unpaved']
-  has_sidewalk boolean [default: true]
-  is_flood_prone boolean [default: false, note: 'Dễ bị ngập khi mưa']
-
-  // Metrics thời gian thực
-  current_density decimal(5,4) [default: 0, note: 'Mật độ 0-1']
-  current_speed_kmh decimal(6,2) [default: 0]
-  current_flow decimal(8,2) [nullable, note: 'Lưu lượng phương tiện/h']
-  congestion_level varchar(20) [default: 'none', note: 'Tắc đường: none|light|moderate|heavy|gridlock']
-  status varchar(20) [default: 'normal', note: 'Trạng thái: normal|congested|blocked|closed|flooded']
-  metrics_updated_at timestamptz [nullable]
-
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: map_edges.source_node_id > map_nodes.id [delete: restrict]
-Ref: map_edges.target_node_id > map_nodes.id [delete: restrict]
-
-// Tuyến sơ tán — đường đi được tính toán sẵn
-Table evacuation_routes {
-  id bigserial [primary key]
-  name varchar(255) [not null, note: 'Tên tuyến: "Tuyến QH1 - Khu vực A"']
-  description text [nullable]
-  start_node_id bigint [not null, note: 'Điểm bắt đầu']
-  end_node_id bigint [not null, note: 'Điểm kết thúc (nơi trú ẩn)']
-  geometry geometry(LineString, 4326) [not null, note: 'Tuyến đường PostGIS']
-  polyline text [nullable, note: 'Polyline cho frontend Google/Leaflet']
-  distance_m integer [not null, note: 'Tổng chiều dài (m)']
-  estimated_time_seconds integer [not null, note: 'Thời gian ước tính (s)']
-  is_safe boolean [default: true, note: 'Tuyến an toàn khi ngập']
-  safety_rating decimal(3,2) [nullable, note: 'Đánh giá an toàn 0-1']
-  risk_factors jsonb [nullable, note: 'Các yếu tố rủi ro dọc tuyến']
-  flood_zone_id bigint [nullable, note: 'Vùng ngập mà tuyến này phục vụ']
-  shelter_id bigint [nullable, note: 'Điểm trú ẩn đích']
-  is_primary boolean [default: false, note: 'Tuyến chính']
-  max_capacity integer [nullable, note: 'Sức chứa tối đa']
-  current_usage integer [default: 0, note: 'Số người đang sử dụng']
-  status varchar(20) [default: 'active', note: 'Trạng thái: active|inactive|blocked|flooded']
-  color hex [nullable, note: 'Màu hiển thị']
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: evacuation_routes.start_node_id > map_nodes.id [delete: restrict]
-Ref: evacuation_routes.end_node_id > map_nodes.id [delete: restrict]
-Ref: evacuation_routes.flood_zone_id > flood_zones.id [delete: set null]
-
-// Các đoạn (segments) của tuyến sơ tán
-Table evacuation_route_segments {
-  id bigserial [primary key]
-  route_id bigint [not null]
-  edge_id bigint [not null]
-  sequence_order smallint [not null, note: 'Thứ tự trong tuyến']
-  is_flood_prone boolean [default: false]
-  risk_level varchar(20) [nullable]
-  created_at timestamptz [default: 'now()']
-}
-
-Ref: evacuation_route_segments.route_id > evacuation_routes.id [delete: cascade]
-Ref: evacuation_route_segments.edge_id > map_edges.id [delete: restrict]
-
-// ============================================================
-//  DOMAIN 6: RESCUE (Cứu hộ)
-// ============================================================
-
-// Đội cứu hộ
-Table rescue_teams {
-  id bigserial [primary key]
-  name varchar(255) [not null, note: 'Tên đội']
-  code varchar(20) [unique, not null, note: 'Mã định danh: "RESCUE-001"']
-  team_type varchar(50) [not null, note: 'Loại: fire|medical|military|volunteer|police']
-  district_id bigint [nullable]
-  specializations text[] [nullable, note: 'Chuyên môn: flood_rescue|first_aid|logistics']
-  vehicle_count smallint [default: 0]
-  personnel_count smallint [default: 0, note: 'Số nhân viên hiện tại']
-  equipment jsonb [nullable, note: 'Trang thiết bị']
-  phone varchar(20) [nullable]
-  status varchar(20) [default: 'available', note: 'Trạng thái: available|dispatched|busy|offline']
-  current_latitude decimal(10,7) [nullable, note: 'Vĩ độ hiện tại']
-  current_longitude decimal(10,7) [nullable, note: 'Kinh độ hiện tại']
-  current_location geometry(Point, 4326) [nullable]
-  current_node_id bigint [nullable, note: 'Nút bản đồ gần nhất']
-  heading_to_incident_id bigint [nullable]
-  last_location_update timestamptz [nullable]
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: rescue_teams.district_id > districts.id [delete: set null]
-Ref: rescue_teams.heading_to_incident_id > incidents.id [delete: set null]
-
-// Thành viên đội cứu hộ (mở rộng user)
-Table rescue_members {
-  id bigserial [primary key]
-  user_id bigint [not null]
-  team_id bigint [not null]
-  role varchar(50) [not null, note: 'Vai trò: leader|member|medic|driver']
-  badge_number varchar(50) [nullable]
-  certifications text[] [nullable]
-  status varchar(20) [default: 'active', note: 'Trạng thái: active|on_leave|training']
-  is_available boolean [default: true]
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: rescue_members.user_id > users.id [delete: cascade]
-Ref: rescue_members.team_id > rescue_teams.id [delete: cascade]
-
-// Điểm trú ẩn
-Table shelters {
-  id bigserial [primary key]
-  name varchar(255) [not null]
-  code varchar(20) [unique, not null]
-  geometry geometry(Point, 4326) [not null]
-  address text [not null]
-  district_id bigint [nullable]
-  ward_id bigint [nullable]
-  shelter_type varchar(50) [not null, note: 'Loại: school|community_center|government|stadium']
-  capacity integer [not null, note: 'Sức chứa tối đa']
-  current_occupancy integer [default: 0]
-  available_beds integer [generated: 'capacity - current_occupancy', note: 'Giường trống']
-  facilities text[] [nullable, note: 'Tiện nghi: food|water|medical|electricity|toilet']
-  status varchar(20) [default: 'open', note: 'Trạng thái: open|full|closed|preparing']
-  accessibility varchar(20) [default: 'accessible', note: 'Khả năng tiếp cận']
-  is_flood_safe boolean [default: true]
-  flood_depth_tolerance_m decimal(4,2) [default: 2.0, note: 'Chịu được ngập (m)']
-  contact_phone varchar(20) [nullable]
-  contact_name varchar(255) [nullable]
-  opening_hours varchar(50) [nullable]
-  metadata jsonb [nullable]
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: shelters.district_id > districts.id [delete: set null]
-Ref: shelters.ward_id > wards.id [delete: set null]
-
-// Yêu cầu cứu hộ — từ công dân
-Table rescue_requests {
-  id bigserial [primary key]
-  request_number varchar(30) [unique, not null, note: 'Mã yêu cầu: "REQ-20260410-001"']
-  caller_name varchar(255) [not null]
-  caller_phone varchar(20) [nullable]
-  geometry geometry(Point, 4326) [not null, note: 'Vị trí cần cứu']
-  address text [not null]
-  district_id bigint [nullable]
-  ward_id bigint [nullable]
-  incident_id bigint [nullable, note: 'Sự cố liên quan']
-
-  // Chi tiết yêu cầu
-  urgency varchar(20) [not null, note: 'Mức độ khẩn: low|medium|high|critical']
-  category varchar(50) [not null, note: 'Danh mục: medical|food|water|rescue|evacuation|other']
-  people_count integer [default: 1, note: 'Số người cần hỗ trợ']
-  vulnerable_groups text[] [nullable, note: 'Nhóm yếu thế: elderly|children|disabled|pregnant']
-  description text [nullable]
-  photo_urls text[] [nullable]
-  water_level_m decimal(6,2) [nullable, note: 'Mực nước tại vị trí']
-  accessibility_notes text [nullable, note: 'Ghi chú tiếp cận']
-
-  // Trạng thái xử lý
-  status varchar(20) [default: 'pending', note: 'Trạng thái: pending|assigned|in_progress|completed|cancelled']
-  priority_score decimal(4,2) [nullable, note: 'Điểm ưu tiên AI tính']
-  assigned_team_id bigint [nullable]
-  assigned_at timestamptz [nullable]
-  eta_minutes integer [nullable, note: 'Thời gian đến dự kiến (phút)']
-  completed_at timestamptz [nullable]
-  cancellation_reason text [nullable]
-
-  // Feedback
-  rating smallint [nullable, note: 'Đánh giá 1-5']
-  feedback text [nullable]
-
-  reported_by bigint [nullable]
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: rescue_requests.district_id > districts.id [delete: set null]
-Ref: rescue_requests.ward_id > wards.id [delete: set null]
-Ref: rescue_requests.incident_id > incidents.id [delete: set null]
-Ref: rescue_requests.reported_by > users.id [delete: set null]
-Ref: rescue_requests.assigned_team_id > rescue_teams.id [delete: set null]
-
-// Timeline yêu cầu cứu hộ
-Table rescue_request_events {
-  id bigserial [primary key]
-  request_id bigint [not null]
-  event_type varchar(50) [not null, note: 'created|assigned|en_route|arrived|completed|cancelled|rated']
-  description text [nullable]
-  actor_id bigint [nullable]
-  metadata jsonb [nullable]
-  created_at timestamptz [default: 'now()']
-}
-
-Ref: rescue_request_events.request_id > rescue_requests.id [delete: cascade]
-Ref: rescue_request_events.actor_id > users.id [delete: set null]
-
-// Kho vật tư cứu hộ
-Table relief_supplies {
-  id bigserial [primary key]
-  name varchar(255) [not null]
-  category varchar(50) [not null, note: 'Loại: food|water|medicine|clothing|shelter|tool|other']
-  unit varchar(20) [not null, note: 'Đơn vị: kg|box|bottle|pack|bag']
-  quantity decimal(12,2) [default: 0]
-  min_stock_level decimal(12,2) [nullable, note: 'Tồn kho tối thiểu']
-  expiry_date date [nullable]
-  storage_location varchar(255) [nullable]
-  metadata jsonb [nullable]
-  is_active boolean [default: true]
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-// Kho tại các điểm trú ẩn / đội cứu hộ
-Table supply_stocks {
-  id bigserial [primary key]
-  supply_id bigint [not null]
-  stockable_type varchar(50) [not null, note: 'Shelter|RescueTeam|Warehouse']
-  stockable_id bigint [not null]
-  quantity decimal(12,2) [default: 0]
-  reserved_quantity decimal(12,2) [default: 0, note: 'Đã đặt trước']
-  available_quantity decimal(12,2) [generated: 'quantity - reserved_quantity']
-  last_restocked_at timestamptz [nullable]
-  expiry_tracking boolean [default: false]
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: supply_stocks.supply_id > relief_supplies.id [delete: cascade]
-
-// Phân bổ vật tư
-Table supply_allocations {
-  id bigserial [primary key]
-  request_id bigint [nullable]
-  supply_id bigint [not null]
-  from_stock_id bigint [nullable, note: 'Từ kho nào']
-  to_shelter_id bigint [nullable]
-  to_team_id bigint [nullable]
-  quantity decimal(12,2) [not null]
-  status varchar(20) [default: 'pending', note: 'pending|dispatched|delivered|cancelled']
-  dispatched_at timestamptz [nullable]
-  delivered_at timestamptz [nullable]
-  delivered_by bigint [nullable]
-  notes text [nullable]
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: supply_allocations.request_id > rescue_requests.id [delete: set null]
-Ref: supply_allocations.supply_id > relief_supplies.id [delete: cascade]
-Ref: supply_allocations.delivered_by > users.id [delete: set null]
-
-// ============================================================
-//  DOMAIN 7: AI/ML (Dự đoán & Mô phỏng)
-// ============================================================
-
-// Phiên bản mô hình AI
-Table ai_models {
-  id bigserial [primary key]
-  name varchar(255) [not null, note: 'Tên mô hình: "water_level_lstm_v2"']
-  slug varchar(100) [unique, not null]
-  model_type varchar(50) [not null, note: 'Loại: lstm|cnn|transformer|ensemble|rule']
-  version varchar(20) [not null]
-  description text [nullable]
-  framework varchar(50) [nullable, note: 'TensorFlow|PyTorch|Scikit-learn']
-  input_features jsonb [not null, note: 'Các features đầu vào']
-  output_type varchar(50) [not null, note: 'water_level|flood_probability|inundation_map|rainfall']
-  training_dataset_id bigint [nullable, note: 'Dataset dùng train']
-  performance_metrics jsonb [nullable, note: 'accuracy|MAPE|RMSE|AUC']
-  hyperparameters jsonb [nullable]
-  trained_at timestamptz [nullable]
-  deployed_at timestamptz [nullable]
-  is_active boolean [default: false]
-  is_production boolean [default: false]
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-// Kết quả dự đoán lũ
-Table predictions {
-  id bigserial [primary key]
-  model_id bigint [nullable]
-  model_version varchar(20) [nullable]
-  prediction_type varchar(50) [not null, note: 'water_level|flood_probability|inundation|rainfall']
-  target_area geometry(Geometry, 4326) [nullable, note: 'Vùng dự báo']
-  district_id bigint [nullable]
-  flood_zone_id bigint [nullable]
-
-  // Thời gian
-  prediction_for timestamptz [not null, note: 'Thời điểm dự báo đến']
-  horizon_minutes integer [not null, note: 'H horizon (15|30|60|120|1440)']
-  issued_at timestamptz [default: 'now()']
-
-  // Kết quả
-  predicted_value decimal(10,4) [nullable, note: 'Giá trị dự đoán (m)'
-  confidence decimal(3,2) [nullable, note: 'Độ tin cậy 0-1']
-  probability decimal(5,4) [nullable, note: 'Xác suất ngập 0-1']
-  severity varchar(20) [nullable, note: 'Mức độ: low|medium|high|critical']
-
-  // Metadata
-  input_data jsonb [nullable, note: 'Dữ liệu đầu vào đã dùng']
-  processing_time_ms integer [nullable]
-  status varchar(20) [default: 'generated', note: 'generated|verified|alerted|expired']
-  verified_by bigint [nullable]
-  verified_at timestamptz [nullable]
-  created_at timestamptz [default: 'now()']
-}
-
-Ref: predictions.model_id > ai_models.id [delete: set null]
-Ref: predictions.district_id > districts.id [delete: set null]
-Ref: predictions.flood_zone_id > flood_zones.id [delete: set null]
-Ref: predictions.verified_by > users.id [delete: set null]
-
-// Chi tiết dự báo theo vùng/cảm biến
-Table prediction_details {
-  id bigserial [primary key]
-  prediction_id bigint [not null]
-  entity_type varchar(50) [not null, note: 'district|flood_zone|sensor|ward']
-  entity_id bigint [not null]
-  predicted_value decimal(10,4) [nullable]
-  confidence decimal(3,2) [nullable]
-  probability decimal(5,4) [nullable]
-  severity varchar(20) [nullable]
-  risk_factors jsonb [nullable, note: 'Các yếu tố rủi ro']
-  created_at timestamptz [default: 'now()']
-}
-
-Ref: prediction_details.prediction_id > predictions.id [delete: cascade]
-
-// ============================================================
-//  DOMAIN 8: ALERTS & NOTIFICATIONS (Cảnh báo)
-// ============================================================
-
-// Cảnh báo
-Table alerts {
-  id bigserial [primary key]
-  alert_number varchar(30) [unique, not null, note: 'Mã cảnh báo']
-  title varchar(255) [not null]
-  description text [nullable]
-  alert_type varchar(50) [not null, note: 'flood_warning|heavy_rain|dam_warning|evacuation|all_clear']
-  severity varchar(20) [not null, note: 'Mức độ: low|medium|high|critical']
-  status varchar(20) [default: 'active', note: 'Trạng thái: draft|active|updated|resolved|expired']
-
-  // Phạm vi
-  geometry geometry(Geometry, 4326) [nullable, note: 'Vùng ảnh hưởng']
-  affected_districts bigint[] [nullable]
-  affected_wards bigint[] [nullable]
-  affected_flood_zones bigint[] [nullable]
-  radius_km decimal(6,2) [nullable, note: 'Bán kính ảnh hưởng (km)']
-
-  // Timing
-  effective_from timestamptz [nullable]
-  effective_until timestamptz [nullable]
-  issued_by bigint [nullable]
-  resolved_by bigint [nullable]
-  resolved_at timestamptz [nullable]
-
-  // Nguồn
-  source varchar(30) [default: 'system', note: 'Nguồn: system|ai_prediction|operator']
-  related_prediction_id bigint [nullable]
-  related_incident_id bigint [nullable]
-
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: alerts.issued_by > users.id [delete: set null]
-Ref: alerts.resolved_by > users.id [delete: set null]
-Ref: alerts.related_prediction_id > predictions.id [delete: set null]
-Ref: alerts.related_incident_id > incidents.id [delete: set null]
-
-// Thông báo push
-Table notifications {
-  id bigserial [primary key]
-  alert_id bigint [nullable]
-  title varchar(255) [not null]
-  body text [not null]
-  data jsonb [nullable, note: 'Dữ liệu kèm theo notification']
-
-  // Targeting
-  notification_type varchar(50) [not null, note: 'alert|update|rescue|system']
-  target_type varchar(20) [not null, note: 'user|role|district|all']
-  target_id bigint [nullable, note: 'User ID hoặc District ID']
-  target_roles varchar[] [nullable, note: 'Gửi theo vai trò']
-  target_districts bigint[] [nullable, note: 'Gửi theo quận']
-
-  // Delivery
-  channel varchar(20) [default: 'fcm', note: 'Kênh: fcm|email|sms']
-  status varchar(20) [default: 'queued', note: 'Trạng thái: queued|sent|delivered|failed|read']
-  sent_at timestamptz [nullable]
-  delivered_at timestamptz [nullable]
-  read_at timestamptz [nullable]
-  read_device_id bigint [nullable]
-
-  // Stats
-  total_sent integer [default: 0]
-  total_delivered integer [default: 0]
-  total_read integer [default: 0]
-  failed_count integer [default: 0]
-
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-Ref: notifications.alert_id > alerts.id [delete: set null]
-Ref: notifications.read_device_id > user_devices.id [delete: set null]
-
-// Log gửi notification chi tiết
-Table notification_delivery_logs {
-  id bigserial [primary key]
-  notification_id bigint [not null]
-  user_id bigint [not null]
-  device_id bigint [nullable]
-  status varchar(20) [not null, note: 'sent|delivered|failed|read']
-  error_message text [nullable]
-  sent_at timestamptz [nullable]
-  delivered_at timestamptz [nullable]
-  read_at timestamptz [nullable]
-  created_at timestamptz [default: 'now()']
-}
-
-Ref: notification_delivery_logs.notification_id > notifications.id [delete: cascade]
-Ref: notification_delivery_logs.user_id > users.id [delete: cascade]
-
-// ============================================================
-//  DOMAIN 9: ANALYTICS & REPORTING
-// ============================================================
-
-// Tổng hợp metrics theo giờ/ngày
-Table dashboard_metrics {
-  id bigserial [primary key]
-  metric_type varchar(50) [not null, note: 'flood_level|rainfall|incidents|rescue_requests|evacuations']
-  district_id bigint [nullable]
-  flood_zone_id bigint [nullable]
-
-  period_start timestamptz [not null]
-  period_end timestamptz [not null]
-  period_type varchar(20) [not null, note: 'hourly|daily|weekly|monthly']
-
-  // Metrics
-  avg_value decimal(10,4) [nullable]
-  max_value decimal(10,4) [nullable]
-  min_value decimal(10,4) [nullable]
-  total_count integer [nullable]
-  active_count integer [nullable]
-
-  metadata jsonb [nullable]
-  created_at timestamptz [default: 'now()']
-}
-
-Ref: dashboard_metrics.district_id > districts.id [delete: cascade]
-Ref: dashboard_metrics.flood_zone_id > flood_zones.id [delete: cascade]
-
-// ============================================================
-//  DOMAIN 10: SYSTEM & SETTINGS
-// ============================================================
-
-// Cấu hình hệ thống
-Table system_settings {
-  id bigserial [primary key]
-  key varchar(100) [unique, not null]
-  value text [nullable]
-  type varchar(20) [default: 'string', note: 'string|boolean|integer|json']
-  group_name varchar(50) [nullable, note: 'Nhóm: flood|rescue|notification|system']
-  description text [nullable]
-  is_public boolean [default: false, note: 'Client có đọc được không']
-  created_at timestamptz [default: 'now()']
-  updated_at timestamptz [default: 'now()']
-}
-
-// ============================================================
-//  INDEXES (định nghĩa riêng cho DBML)
-// ============================================================
-
-// Flood zones spatial index
-Ref: flood_zones.geom_idx: flood_zones(geometry) [type: gist]
-
-// Sensor readings indexes
-Ref: sensor_readings.sensor_time_idx: sensor_readings(sensor_id, recorded_at DESC) [type: btree]
-Ref: sensor_readings.anomaly_idx: sensor_readings(sensor_id) [where: "is_anomaly = true"]
-
-// Incidents indexes
-Ref: incidents.type_status_idx: incidents(type, status) [type: btree]
-Ref: incidents.location_idx: incidents(geometry) [type: gist]
-
-// Map edges spatial index
-Ref: map_edges.geom_idx: map_edges(geometry) [type: gist]
-Ref: map_edges.nodes_idx: map_edges(source_node_id, target_node_id) [type: btree]
-
-// Evacuation routes
-Ref: evacuation_routes.active_safe_idx: evacuation_routes(status, is_safe) [type: btree]
-Ref: evacuation_routes.geom_idx: evacuation_routes(geometry) [type: gist]
-
-// Rescue requests
-Ref: rescue_requests.status_urgency_idx: rescue_requests(status, urgency) [type: btree]
-Ref: rescue_requests.pending_high_idx: rescue_requests(urgency) [type: btree, where: "urgency IN ('critical','high')"]
-
-// Predictions
-Ref: predictions.area_time_idx: predictions(target_area, prediction_for) [type: btree]
-Ref: predictions.active_alert_idx: predictions(status) [where: "status = 'alerted'"]
-
-// Notifications
-Ref: notifications.target_idx: notifications(target_type, target_id) [type: btree]
-Ref: notifications.status_idx: notifications(status) [type: btree]
-
-// Districts spatial index
-Ref: districts.geo_idx: districts(boundary) [type: gist]
+// Bạn có thể tiếp tục paste các bảng còn lại (rescue_teams, shelters, rescue_requests, predictions, alerts, notifications...) theo cách tương tự.

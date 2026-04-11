@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 
 use App\Helpers\ApiResponse;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,7 +43,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return ApiResponse::success([
-            'user' => $this->formatUser($user),
+            'user' => new UserResource($user),
             'token' => $token,
         ], 'Đăng nhập thành công');
     }
@@ -77,7 +78,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return ApiResponse::created([
-            'user' => $this->formatUser($user),
+            'user' => new UserResource($user),
             'token' => $token,
         ], 'Đăng ký thành công');
     }
@@ -88,9 +89,7 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        $user = $request->user();
-
-        return ApiResponse::success($this->formatUser($user));
+        return ApiResponse::success(new UserResource($request->user()));
     }
 
     /**
@@ -107,7 +106,7 @@ class AuthController extends Controller
         $user = $request->user();
         $user->update($data);
 
-        return ApiResponse::success($this->formatUser($user->fresh()), 'Cập nhật profile thành công');
+        return ApiResponse::success(new UserResource($user->fresh()), 'Cập nhật profile thành công');
     }
 
     /**
@@ -184,23 +183,5 @@ class AuthController extends Controller
         return ApiResponse::success([
             'token' => $token,
         ]);
-    }
-
-    /**
-     * Format user response
-     */
-    protected function formatUser(User $user): array
-    {
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'avatar' => $user->avatar,
-            'roles' => $user->roles->pluck('slug'),
-            'permissions' => $user->getAllPermissions()->pluck('slug'),
-            'is_active' => $user->is_active,
-            'created_at' => $user->created_at?->toIso8601String(),
-        ];
     }
 }

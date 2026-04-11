@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 
 use App\Helpers\ApiResponse;
+use App\Http\Resources\SensorResource;
 use App\Models\Sensor;
 use App\Models\SensorReading;
 use Illuminate\Http\Request;
@@ -39,9 +40,9 @@ class SensorController extends Controller
 
         $sensors = $query->paginate($request->get('per_page', 50));
 
-        $data = $sensors->map(fn ($s) => $this->formatSensor($s));
-
-        return ApiResponse::paginate($sensors->setCollection($data));
+        return ApiResponse::paginate($sensors->setCollection(
+            SensorResource::collection($sensors->getCollection())
+        ));
     }
 
     /**
@@ -57,7 +58,7 @@ class SensorController extends Controller
             return ApiResponse::notFound('Không tìm thấy cảm biến');
         }
 
-        return ApiResponse::success($this->formatSensor($sensor, true));
+        return ApiResponse::success(new SensorResource($sensor));
     }
 
     /**
@@ -171,40 +172,5 @@ class SensorController extends Controller
         }
 
         return ApiResponse::success(['processed' => count($results), 'readings' => $results], 'Đã xử lý '.count($results).' readings');
-    }
-
-    /**
-     * Format sensor response
-     */
-    protected function formatSensor(Sensor $sensor, bool $detailed = false): array
-    {
-        $data = [
-            'id' => $sensor->id,
-            'external_id' => $sensor->external_id,
-            'name' => $sensor->name,
-            'type' => $sensor->type,
-            'type_label' => $sensor->translated('type'),
-            'model' => $sensor->model,
-            'status' => $sensor->status,
-            'status_label' => $sensor->translated('status'),
-            'unit' => $sensor->unit,
-            'last_value' => $sensor->last_value,
-            'last_reading_at' => $sensor->last_reading_at?->toIso8601String(),
-            'location' => $sensor->location,
-            'flood_zone' => $sensor->floodZone ? ['id' => $sensor->floodZone->id, 'name' => $sensor->floodZone->name] : null,
-            'district' => $sensor->district ? ['id' => $sensor->district->id, 'name' => $sensor->district->name] : null,
-            'alert_threshold' => $sensor->alert_threshold,
-            'danger_threshold' => $sensor->danger_threshold,
-        ];
-
-        if ($detailed) {
-            $data['reading_interval_seconds'] = $sensor->reading_interval_seconds;
-            $data['min_value'] = $sensor->min_value;
-            $data['max_value'] = $sensor->max_value;
-            $data['metadata'] = $sensor->metadata;
-            $data['installed_at'] = $sensor->created_at?->toIso8601String();
-        }
-
-        return $data;
     }
 }

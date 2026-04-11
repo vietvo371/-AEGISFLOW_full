@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Enums\FloodZoneRiskEnum;
 use App\Enums\FloodZoneStatusEnum;
 use App\Helpers\ApiResponse;
+use App\Http\Resources\FloodZoneResource;
 use App\Models\FloodZone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,11 +38,9 @@ class FloodZoneController extends Controller
 
         $zones = $query->paginate($request->get('per_page', 20));
 
-        $data = $zones->map(function ($zone) {
-            return $this->formatZone($zone);
-        });
-
-        return ApiResponse::paginate($zones->setCollection($data));
+        return ApiResponse::paginate($zones->setCollection(
+            FloodZoneResource::collection($zones->getCollection())
+        ));
     }
 
     /**
@@ -57,7 +56,7 @@ class FloodZoneController extends Controller
             return ApiResponse::notFound('Không tìm thấy vùng ngập');
         }
 
-        return ApiResponse::success($this->formatZone($zone, true));
+        return ApiResponse::success(new FloodZoneResource($zone));
     }
 
     /**
@@ -104,7 +103,7 @@ class FloodZoneController extends Controller
             );
         }
 
-        return ApiResponse::created($this->formatZone($zone->fresh()));
+        return ApiResponse::created(new FloodZoneResource($zone->fresh()));
     }
 
     /**
@@ -144,7 +143,7 @@ class FloodZoneController extends Controller
             );
         }
 
-        return ApiResponse::success($this->formatZone($zone->fresh()), 'Cập nhật thành công');
+        return ApiResponse::success(new FloodZoneResource($zone->fresh()), 'Cập nhật thành công');
     }
 
     /**
@@ -184,67 +183,5 @@ class FloodZoneController extends Controller
             'type' => 'FeatureCollection',
             'features' => $features,
         ]);
-    }
-
-    /**
-     * Format zone response
-     */
-    protected function formatZone(FloodZone $zone, bool $detailed = false): array
-    {
-        $data = [
-            'id' => $zone->id,
-            'name' => $zone->name,
-            'slug' => $zone->slug,
-            'description' => $zone->description,
-            'risk_level' => $zone->risk_level,
-            'risk_level_label' => $zone->translated('risk_level'),
-            'status' => $zone->status,
-            'status_label' => $zone->translated('status'),
-            'current_water_level_m' => $zone->current_water_level_m,
-            'alert_threshold_m' => $zone->alert_threshold_m,
-            'danger_threshold_m' => $zone->danger_threshold_m,
-            'color' => $zone->color,
-            'opacity' => $zone->opacity,
-            'is_active' => $zone->is_active,
-            'district' => $zone->district ? [
-                'id' => $zone->district->id,
-                'name' => $zone->district->name,
-            ] : null,
-            'sensor_count' => $zone->sensors->count(),
-            'online_sensor_count' => $zone->sensors->where('status', 'online')->count(),
-            'created_at' => $zone->created_at?->toIso8601String(),
-            'updated_at' => $zone->updated_at?->toIso8601String(),
-        ];
-
-        // Chi tiết thêm
-        if ($detailed) {
-            $data['area_km2'] = $zone->area_km2;
-            $data['population_affected'] = $zone->population_affected;
-            $data['centroid'] = $zone->centroid_array;
-            $data['sensors'] = $zone->sensors->map(fn ($s) => [
-                'id' => $s->id,
-                'name' => $s->name,
-                'type' => $s->type,
-                'status' => $s->status,
-                'last_value' => $s->last_value,
-                'last_reading_at' => $s->last_reading_at?->toIso8601String(),
-            ]);
-            $data['incidents'] = $zone->incidents->map(fn ($i) => [
-                'id' => $i->id,
-                'title' => $i->title,
-                'severity' => $i->severity,
-                'status' => $i->status,
-                'created_at' => $i->created_at?->toIso8601String(),
-            ]);
-            $data['evacuation_routes'] = $zone->evacuationRoutes->map(fn ($r) => [
-                'id' => $r->id,
-                'name' => $r->name,
-                'distance_m' => $r->distance_m,
-                'is_safe' => $r->is_safe,
-                'status' => $r->status,
-            ]);
-        }
-
-        return $data;
     }
 }
