@@ -26,6 +26,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $avatar
  * @property bool $is_active
  * @property \Carbon\Carbon|null $last_login_at
+ * @property string|null $last_login_ip
  * @property string|null $provider
  * @property string|null $provider_id
  * @property \Carbon\Carbon $created_at
@@ -37,7 +38,7 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, HasRoles, SoftDeletes;
 
-    #[Fillable(['name', 'email', 'password', 'phone', 'avatar', 'provider', 'provider_id'])]
+    #[Fillable(['name', 'email', 'password', 'phone', 'avatar', 'is_active', 'last_login_at', 'last_login_ip', 'provider', 'provider_id'])]
     #[Hidden(['password', 'remember_token'])]
     protected $fillable = [
         'name',
@@ -47,6 +48,7 @@ class User extends Authenticatable
         'avatar',
         'is_active',
         'last_login_at',
+        'last_login_ip',
         'provider',
         'provider_id',
     ];

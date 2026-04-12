@@ -70,7 +70,7 @@ class AuthController extends Controller
         ]);
 
         // Gán vai trò mặc định: citizen
-        $citizenRole = \Spatie\Permission\Models\Role::where('slug', 'citizen')->first();
+        $citizenRole = \Spatie\Permission\Models\Role::where('name', 'citizen')->first();
         if ($citizenRole) {
             $user->assignRole($citizenRole);
         }

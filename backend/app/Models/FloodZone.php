@@ -190,7 +190,7 @@ class FloodZone extends Model
                 'status_label' => FloodZoneStatusEnum::from($this->status)->label(),
                 'current_water_level_m' => $this->current_water_level_m,
                 'color' => $this->color,
-                'opacity' => $this->opacity,
+                'opacity' => (float) $this->opacity,
             ],
             'geometry' => $geometry ? json_decode($geometry->geojson) : null,
         ];

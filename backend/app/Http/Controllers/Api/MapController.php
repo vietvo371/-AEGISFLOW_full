@@ -140,7 +140,40 @@ class MapController extends Controller
             'flood_zones' => $this->floodZones($request)->getData(),
             'rescue_teams' => $this->rescueTeams()->getData(),
             'shelters' => $this->shelters()->getData(),
+            'sensors' => $this->sensors()->getData(),
             'generated_at' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Cảm biến dạng GeoJSON
+     * GET /api/map/sensors
+     */
+    public function sensors()
+    {
+        $sensors = \App\Models\Sensor::active()->get();
+
+        $features = $sensors->map(function ($s) {
+            return [
+                'type' => 'Feature',
+                'id' => $s->id,
+                'properties' => [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'type' => $s->type,
+                    'status' => $s->status,
+                    'last_value' => $s->last_value,
+                ],
+                'geometry' => [
+                    'type' => 'Point',
+                    'coordinates' => [$s->longitude, $s->latitude],
+                ],
+            ];
+        });
+
+        return response()->json([
+            'type' => 'FeatureCollection',
+            'features' => $features,
         ]);
     }
 }
