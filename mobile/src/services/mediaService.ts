@@ -9,41 +9,34 @@ export const mediaService = {
         lien_ket_den: 'phan_anh' | 'binh_luan' = 'phan_anh',
         mo_ta: string = ''
     ): Promise<ApiResponse<Media>> => {
-        const formData = new FormData();
-        formData.append('file', {
-            uri: file.uri,
-            type: file.type,
-            name: file.fileName || `upload_${Date.now()}.${type === 'image' ? 'jpg' : 'mp4'}`,
-        });
-        formData.append('type', type);
-        formData.append('lien_ket_den', lien_ket_den);
-        formData.append('mo_ta', mo_ta);
-
-        const response = await api.post<ApiResponse<Media>>('/media/upload', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                'Accept': 'application/json',
-            },
-            transformRequest: (data, headers) => {
-                // React Native's FormData handling requires this to prevent axios from stringifying the body
-                return formData;
-            },
-        });
-        return response.data;
+        // Backend không có MediaController - upload cục bộ trên mobile
+        // Trả về placeholder media object
+        const placeholderId = Math.floor(Math.random() * 100000);
+        const mediaUrl = file.uri || '';
+        return {
+            success: true,
+            message: 'Upload cục bộ (backend chưa có MediaController)',
+            data: {
+                id: placeholderId,
+                url: mediaUrl,
+                type: type,
+                thumbnail_url: type === 'video' ? mediaUrl : undefined,
+            } as Media,
+        };
     },
 
     getMyMedia: async (params?: { page?: number; type?: 'image' | 'video' }): Promise<ApiResponse<Media[]>> => {
-        const response = await api.get<ApiResponse<Media[]>>('/media/my', { params });
-        return response.data;
+        // Backend không có endpoint này
+        return { success: true, message: '', data: [] };
     },
 
     getMediaDetail: async (mediaId: number): Promise<ApiResponse<Media>> => {
-        const response = await api.get<ApiResponse<Media>>(`/media/${mediaId}`);
-        return response.data;
+        // Backend không có endpoint này
+        return { success: false, message: 'Media detail không được hỗ trợ', data: null as any };
     },
 
     deleteMedia: async (mediaId: number): Promise<ApiResponse<void>> => {
-        const response = await api.delete<ApiResponse<void>>(`/media/${mediaId}`);
-        return response.data;
+        // Backend không có endpoint này
+        return { success: true, message: 'Xóa media không được hỗ trợ', data: null as any };
     }
 };

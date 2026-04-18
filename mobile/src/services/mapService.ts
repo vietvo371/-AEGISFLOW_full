@@ -20,50 +20,43 @@ export const mapService = {
     },
 
     getHeatmap: async (days: number = 7): Promise<ApiResponse<HeatmapPoint[]>> => {
-        const response = await api.get<ApiResponse<HeatmapPoint[]>>('/map/heatmap', {
-            params: { days }
-        });
-        return response.data;
+        // Backend không có heatmap endpoint - trả về empty
+        return { success: true, message: '', data: [] };
     },
 
     getTrafficEdges: async (): Promise<any> => {
-        const response = await api.get('/edges/geojson');
-        return response.data;
+        // Backend không có edges endpoint
+        return { type: 'FeatureCollection', features: [] };
     },
 
     getClusters: async (zoom: number): Promise<ApiResponse<import('../types/api/map').ClusterMarker[]>> => {
-        const response = await api.get<ApiResponse<import('../types/api/map').ClusterMarker[]>>('/map/clusters', {
-            params: { zoom }
-        });
+        // Backend không có clusters endpoint - dùng incidents thường
+        const response = await api.get<ApiResponse<any[]>>('/map/incidents');
         return response.data;
     },
 
     getRoutes: async (): Promise<ApiResponse<Route[]>> => {
-        // Note: API returns "coming soon" - placeholder for future GTFS routes
-        const response = await api.get<ApiResponse<Route[]>>('/map/routes');
-        return response.data;
+        // Backend không có routes endpoint - trả về empty
+        return { success: true, message: '', data: [] };
     },
 
     reverseGeocode: async (lat: number, long: number): Promise<string> => {
         try {
-            // Using OpenStreetMap Nominatim API
             const response = await fetch(
                 `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}&zoom=18&addressdetails=1`,
                 {
                     headers: {
-                        'User-Agent': 'AegisFlowAI/1.0', // Required by Nominatim usage policy
-                        'Accept-Language': 'vi' // Request Vietnamese results
+                        'User-Agent': 'AegisFlowAI/1.0',
+                        'Accept-Language': 'vi'
                     }
                 }
             );
             const data = await response.json();
-            console.log('Reverse geocoding response:', data);
             if (data.display_name) {
                 return data.display_name;
             }
             return `${lat.toFixed(6)}, ${long.toFixed(6)}`;
         } catch (error) {
-            console.error('Reverse geocoding error:', error);
             return `${lat.toFixed(6)}, ${long.toFixed(6)}`;
         }
     }

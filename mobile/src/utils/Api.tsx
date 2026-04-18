@@ -82,20 +82,21 @@ const api = axios.create({
 
 api.interceptors.request.use(async (config) => {
   const token = await getToken();
-  console.log('language', i18n.language);
   config.headers['x-Language'] = i18n.language || 'vi';
 
   if (token) {
-    console.log('token', token);
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  getCurrentLocation().then((location) => {
-    if (location) {
-      config.headers['x-location'] = JSON.stringify(location);
-    }
-  }).catch((error) => {
-  });
+  // Chỉ gọi location cho các request cần location (không phải auth)
+  const isAuthRequest = config.url?.includes('/auth/');
+  if (!isAuthRequest) {
+    getCurrentLocation().then((location) => {
+      if (location) {
+        config.headers['x-location'] = JSON.stringify(location);
+      }
+    }).catch(() => {});
+  }
 
   return config;
 });
@@ -106,12 +107,13 @@ const shouldRetry = (error: any, retryCount: number) => {
   if (retryCount >= MAX_RETRY_ATTEMPTS) return false;
   if (error.response?.status === 422) return false;
   if (error.response?.status === 403) return false;
+  const status = error.response?.status;
   return (
     !error.response ||
     error.code === 'ECONNABORTED' ||
     /timeout/i.test(error.message) ||
-    error.response.status === 401 ||
-    (error.response.status >= 500 && error.response.status <= 599)
+    status === 401 ||
+    (status !== undefined && status >= 500 && status <= 599)
   );
 };
 

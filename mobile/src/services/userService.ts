@@ -5,19 +5,30 @@ import { Report } from '../types/api/report';
 
 export const userService = {
     getUserProfile: async (userId: number): Promise<ApiResponse<UserProfile>> => {
-        const response = await api.get<ApiResponse<UserProfile>>(`/users/${userId}`);
+        // Backend /users/{id} chỉ có ở admin routes
+        // Dùng /auth/me thay thế
+        const response = await api.get<ApiResponse<any>>('/auth/me');
         return response.data;
     },
 
     getUserReports: async (userId: number, page: number = 1): Promise<ApiResponse<Report[]>> => {
-        const response = await api.get<ApiResponse<Report[]>>(`/users/${userId}/reports`, {
-            params: { page }
+        // Backend không có endpoint này - dùng /incidents thay thế
+        const response = await api.get<ApiResponse<any>>('/incidents', {
+            params: { per_page: 20, page }
         });
         return response.data;
     },
 
     getUserStats: async (userId: number): Promise<ApiResponse<UserStats>> => {
-        const response = await api.get<ApiResponse<UserStats>>(`/users/${userId}/stats`);
-        return response.data;
+        // Backend không có endpoint này - trả về placeholder
+        return {
+            success: true,
+            message: '',
+            data: {
+                total_reports: 0,
+                resolved_reports: 0,
+                pending_reports: 0,
+            }
+        };
     }
 };

@@ -1,4 +1,5 @@
 import api, { API_BASE_URL } from '../utils/Api';
+import { Platform } from 'react-native';
 import { LoginRequest, LoginResponse, RegisterRequest, User, ChangePasswordRequest, ResetPasswordRequest, UpdateProfileRequest } from '../types/api/auth';
 import { ApiResponse } from '../types/api/common';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -79,7 +80,11 @@ export const authService = {
   },
 
   updateFcmToken: async (fcmToken: string): Promise<void> => {
-    await api.post('/auth/fcm-token', { fcm_token: fcmToken });
+    await api.post('/auth/fcm-token', {
+      device_token: fcmToken,
+      device_type: Platform.OS === 'ios' ? 'ios' : 'android',
+      device_name: Platform.OS === 'ios' ? 'iPhone' : 'Android',
+    });
   },
 
   refreshToken: async (): Promise<string> => {

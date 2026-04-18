@@ -1,5 +1,93 @@
 import { User } from './auth';
 
+// Backend Incident types - khớp với IncidentController.php formatIncident()
+
+export type IncidentType = 'flood' | 'heavy_rain' | 'landslide' | 'dam_failure' | 'other';
+export type IncidentSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type IncidentStatus = 'reported' | 'verified' | 'responding' | 'resolved' | 'closed';
+export type IncidentSource = 'citizen' | 'sensor' | 'system' | 'social_media';
+
+export interface Incident {
+    id: number;
+    title: string;
+    type: IncidentType;
+    type_label: string;
+    severity: IncidentSeverity;
+    severity_label: string;
+    status: IncidentStatus;
+    status_label: string;
+    source: IncidentSource;
+    address: string | null;
+    location: any;
+    water_level_m: number | null;
+    district: { id: number; name: string } | null;
+    flood_zone: { id: number; name: string } | null;
+    assignee: { id: number; name: string } | null;
+    created_at: string;
+}
+
+export interface IncidentEvent {
+    id: number;
+    event_type: string;
+    description: string;
+    actor: string | null;
+    created_at: string;
+}
+
+export interface IncidentDetail extends Incident {
+    description: string | null;
+    rainfall_mm: number | null;
+    photo_urls: string[];
+    reporter: { id: number; name: string } | null;
+    verifier: { id: number; name: string } | null;
+    verified_at: string | null;
+    resolved_at: string | null;
+    events: IncidentEvent[];
+}
+
+// Backend expects these fields on POST /incidents
+export interface CreateIncidentRequest {
+    title: string;
+    description?: string;
+    type: IncidentType;
+    severity: IncidentSeverity;
+    latitude: number;
+    longitude: number;
+    address?: string;
+    district_id?: number;
+    flood_zone_id?: number;
+    water_level_m?: number;
+    rainfall_mm?: number;
+    photo_urls?: string[];
+}
+
+export interface IncidentFilterParams {
+    page?: number;
+    per_page?: number;
+    status?: IncidentStatus;
+    severity?: IncidentSeverity;
+    type?: IncidentType;
+    district_id?: number;
+}
+
+// Legacy types (giữ lại cho tương thích ngược)
+export interface Report extends Incident {}
+export interface ReportDetail extends IncidentDetail {}
+export interface CreateReportRequest {
+    tieu_de: string;
+    mo_ta: string;
+    danh_muc: number;
+    uu_tien?: number;
+    vi_do: number;
+    kinh_do: number;
+    dia_chi: string;
+    la_cong_khai?: boolean;
+    the_tags?: string[];
+    media_ids?: number[];
+}
+export interface ReportFilterParams extends IncidentFilterParams {}
+
+// Các types cũ - giữ lại nếu còn code nào reference
 export interface Category {
     id: number;
     ten_danh_muc: string;
@@ -40,43 +128,6 @@ export interface Agency {
     deleted_at?: string | null;
 }
 
-export interface Report {
-    id: number;
-    nguoi_dung_id: number;
-    tieu_de: string;
-    mo_ta: string;
-    danh_muc_id: number;
-    trang_thai: number;
-    uu_tien_id: number;
-    vi_do: string;
-    kinh_do: string;
-    dia_chi: string;
-    luot_ung_ho: number;
-    luot_khong_ung_ho: number;
-    luot_xem: number;
-    nhan_ai?: string | string[] | null;
-    do_tin_cay?: number | null;
-    co_quan_phu_trach_id?: number | null;
-    la_cong_khai: boolean;
-    han_phan_hoi?: string | null;
-    thoi_gian_phan_hoi_thuc_te?: string | null;
-    thoi_gian_giai_quyet?: number | null;
-    danh_gia_hai_long?: number | null;
-    la_trung_lap: boolean;
-    trung_lap_voi_id?: number | null;
-    the_tags?: string[];
-    du_lieu_mo_rong?: any;
-    created_at: string;
-    updated_at: string;
-    deleted_at?: string | null;
-    // Nested objects
-    nguoi_dung?: User;
-    danh_muc?: Category;
-    uu_tien?: Priority;
-    co_quan_xu_ly?: Agency | null;
-    media?: Media[];
-}
-
 export interface Media {
     id: number;
     url: string;
@@ -84,7 +135,6 @@ export interface Media {
     thumbnail_url?: string;
 }
 
-// Vietnamese field names from Laravel API
 export interface MediaItem {
     id: number;
     phan_anh_id: number;
@@ -107,50 +157,13 @@ export interface MediaListParams {
     type?: 'image' | 'video';
 }
 
-export interface ReportDetail extends Report {
-    user_voted?: number | null; // 1: upvoted, 0: downvoted, null: not voted (from API)
-    // Vietnamese field names from actual API
-    hinh_anhs?: MediaItem[];
-    binh_luans?: Comment[];
-    votes?: {
-        total_upvotes: number;
-        total_downvotes: number;
-        user_voted: number | null; // 1: upvoted, -1: downvoted, null: not voted
-    };
-}
-
 export interface Comment {
     id: number;
     noi_dung: string;
-    user?: User;  // English field name
-    nguoi_dung?: User;  // Vietnamese field name from API
+    user?: User;
+    nguoi_dung?: User;
     luot_thich: number;
     user_liked: boolean;
-    created_at?: string;  // New API format
-    ngay_tao?: string;    // Old format - fallback
-}
-
-export interface CreateReportRequest {
-    tieu_de: string;
-    mo_ta: string;
-    danh_muc: number;
-    uu_tien?: number;
-    vi_do: number;
-    kinh_do: number;
-    dia_chi: string;
-    la_cong_khai?: boolean;
-    the_tags?: string[];
-    media_ids?: number[];
-}
-
-export interface ReportFilterParams {
-    page?: number;
-    per_page?: number;
-    danh_muc_id?: number;
-    trang_thai?: number;
-    uu_tien_id?: number;
-    sort_by?: string;
-    sort_order?: 'asc' | 'desc';
-    search?: string;
-    tu_khoa?: string; // Keyword search
+    created_at?: string;
+    ngay_tao?: string;
 }

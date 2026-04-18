@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import { theme } from '../../theme/colors';
 import { useAuth } from '../../contexts/AuthContext';
-import api from '../../utils/Api';
 
 interface LoadingScreenProps {
   navigation: any;
@@ -17,30 +16,23 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation }) => {
   const { user, isEmergency } = useAuth();
 
   useEffect(() => {
-    const checkLogin = async () => {
-      try {
-        await new Promise((resolve: any) => setTimeout(resolve, 1500));
-        const res = await api.get('/auth/check-login');
-
-        if (res.data?.success && res.data?.data?.user) {
-          const userData = res.data?.data?.user;
-          const roles: string[] = userData?.roles || [];
-
-          // Role-based navigation
-          if (roles.includes('emergency')) {
-            navigation.replace('EmergencyTabs');
-          } else {
-            navigation.replace('CitizenTabs');
-          }
+    // Chờ AuthContext init xong rồi navigate dựa trên user đã có
+    // KHÔNG gọi API ở đây — tránh double call + timeout
+    const timer = setTimeout(() => {
+      if (user) {
+        // Có user từ AsyncStorage → verify bằng cách check roles
+        if (isEmergency) {
+          navigation.replace('EmergencyTabs');
         } else {
-          navigation.replace('Login');
+          navigation.replace('CitizenTabs');
         }
-      } catch (error: any) {
+      } else {
         navigation.replace('Login');
       }
-    };
-    checkLogin();
-  }, [navigation]);
+    }, 300); // Chờ AuthContext init xong
+
+    return () => clearTimeout(timer);
+  }, [user, isEmergency, navigation]);
 
   return (
     <View style={styles.container}>

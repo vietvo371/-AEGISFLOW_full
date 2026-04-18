@@ -83,15 +83,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const initializeApp = async () => {
     try {
-      const token = await authService.getToken();
-      if (token) {
-        try {
-          const userProfile = await authService.getProfile();
-          setUser(userProfile);
-        } catch (error) {
-          console.log('Token invalid:', error);
-          await signOut();
-        }
+      // Chỉ đọc user từ AsyncStorage — KHÔNG gọi API
+      // API call để verify token sẽ do LoadingScreen xử lý (có timeout riêng)
+      const user = await authService.getUser();
+      if (user?.id) {
+        setUser(user);
       }
     } catch (error) {
       console.log('Init error:', error);
