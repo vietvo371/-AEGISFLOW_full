@@ -21,7 +21,7 @@ import { RootStackParamList } from '../../navigation/types';
 import env from '../../config/env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const DRAFT_KEY = '@civictwin_report_draft';
+const DRAFT_KEY = '@aegisflowai_report_draft';
 
 // Initialize Mapbox
 MapboxGL.setAccessToken(env.MAPBOX_ACCESS_TOKEN);
@@ -31,7 +31,7 @@ const CATEGORIES = [
   { value: 1, label: 'Giao thông', icon: 'car', color: '#EF4444' },
   { value: 2, label: 'Môi trường', icon: 'leaf', color: '#10B981' },
   { value: 3, label: 'Cháy nổ', icon: 'fire', color: '#F97316' },
-  { value: 4, label: 'Rác thải', icon: 'delete', color: '#8B5CF6' },
+  { value: 4, label: 'Rác thải', icon: 'delete', color: '#7a5af8' },
   { value: 5, label: 'Ngập lụt', icon: 'water', color: '#3B82F6' },
   { value: 6, label: 'Khác', icon: 'dots-horizontal', color: '#6B7280' },
 ];
@@ -48,7 +48,7 @@ const CreateReportScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<RootStackParamList, 'CreateReport'>>();
   const isRescue = route.params?.isRescue === true;
-  
+
   const [loading, setLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -74,7 +74,7 @@ const CreateReportScreen = () => {
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
-  
+
   // Animation for category modal
   const categorySlideAnim = useRef(new Animated.Value(500)).current;
   const categoryBackdropAnim = useRef(new Animated.Value(0)).current;
@@ -115,14 +115,14 @@ const CreateReportScreen = () => {
   useEffect(() => {
     if (!isMounted.current) return;
     const saveable = {
-      tieu_de:    formData.tieu_de,
-      mo_ta:      formData.mo_ta,
-      dia_chi:    formData.dia_chi,
-      danh_muc:   formData.danh_muc,
-      uu_tien:    formData.uu_tien,
-      vi_do:      formData.vi_do,
-      kinh_do:    formData.kinh_do,
-      the_tags:   formData.the_tags,
+      tieu_de: formData.tieu_de,
+      mo_ta: formData.mo_ta,
+      dia_chi: formData.dia_chi,
+      danh_muc: formData.danh_muc,
+      uu_tien: formData.uu_tien,
+      vi_do: formData.vi_do,
+      kinh_do: formData.kinh_do,
+      the_tags: formData.the_tags,
       la_cong_khai: formData.la_cong_khai,
     };
     AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(saveable));
@@ -231,19 +231,19 @@ const CreateReportScreen = () => {
     setUploadingMedia(true);
     setUploadProgress(0);
     setUploadStatus('Đang chuẩn bị...');
-    
+
     const newMedia: Media[] = [];
     const newMediaIds: number[] = [];
     let aiAnalysisData: any = null;
 
     const totalAssets = assets.length;
-    
+
     for (let i = 0; i < assets.length; i++) {
       const asset = assets[i];
       try {
         setUploadStatus(`Đang tải ${i + 1}/${totalAssets} file...`);
         setUploadProgress((i / totalAssets) * 50); // 50% for upload
-        
+
         console.log('🚀 [API Request] Upload Media:', asset.fileName);
         const response = await mediaService.uploadMedia(
           asset,
@@ -267,42 +267,42 @@ const CreateReportScreen = () => {
         console.error('❌ [API Error] Upload Media:', error);
       }
     }
-    
+
     setUploadProgress(50);
     setUploadingMedia(false);
 
     if (newMedia.length > 0) {
       setUploadedMedia([...uploadedMedia, ...newMedia]);
-      
+
       // Auto-fill form with AI analysis if available
       if (aiAnalysisData) {
         // Start AI analysis animation
         setAiAnalyzing(true);
         setUploadStatus('🤖 AI đang phân tích ảnh...');
         setUploadProgress(60);
-        
+
         // Simulate AI processing time with progress
         await new Promise<void>(resolve => setTimeout(resolve, 500));
         setUploadProgress(70);
-        
+
         await new Promise<void>(resolve => setTimeout(resolve, 500));
         setUploadProgress(85);
-        
+
         const categoryLabel = CATEGORIES.find(c => c.value === aiAnalysisData.danh_muc_id)?.label || 'Khác';
         const priorityLabel = PRIORITIES.find(p => p.value === mapPriorityLevel(aiAnalysisData.muc_do_uu_tien || 'medium'))?.label || 'Trung bình';
-        
+
         // Track which fields are auto-filled by AI
         const filledFields: string[] = [];
-        
+
         setUploadStatus('📝 Đang điền thông tin...');
         setUploadProgress(95);
-        
+
         setFormData(prev => {
           const newData = {
             ...prev,
             media_ids: [...(prev.media_ids || []), ...newMediaIds],
           };
-          
+
           // Only fill if current values are empty
           if (!prev.tieu_de && aiAnalysisData.tieu_de) {
             newData.tieu_de = aiAnalysisData.tieu_de;
@@ -320,20 +320,20 @@ const CreateReportScreen = () => {
             newData.uu_tien = mapPriorityLevel(aiAnalysisData.muc_do_uu_tien);
             filledFields.push('uu_tien');
           }
-          
+
           return newData;
         });
-        
+
         setAiFilledFields(filledFields);
         setUploadProgress(100);
         setUploadStatus('✅ Hoàn tất!');
 
         // Prepare AI analysis message
         const detectedObjects = aiAnalysisData.ai_analysis?.detected_objects || [];
-        const objectsText = detectedObjects.length > 0 
-          ? `\n\n🔍 Phát hiện: ${detectedObjects.slice(0, 5).join(', ')}${detectedObjects.length > 5 ? '...' : ''}` 
+        const objectsText = detectedObjects.length > 0
+          ? `\n\n🔍 Phát hiện: ${detectedObjects.slice(0, 5).join(', ')}${detectedObjects.length > 5 ? '...' : ''}`
           : '';
-        
+
         setAiAnalysisMessage(
           `AI đã tự động phân tích và điền:\n\n` +
           `📁 Danh mục: ${categoryLabel}\n` +
@@ -341,7 +341,7 @@ const CreateReportScreen = () => {
           `📝 Tiêu đề & Mô tả${objectsText}\n\n` +
           `Bạn có thể chỉnh sửa nếu cần.`
         );
-        
+
         await new Promise<void>(resolve => setTimeout(resolve, 500));
         setAiAnalyzing(false);
         setShowAIModal(true);
@@ -568,7 +568,7 @@ const CreateReportScreen = () => {
   const handleSuccessClose = () => {
     AsyncStorage.removeItem(DRAFT_KEY); // Clear draft after submit
     setShowSuccessModal(false);
-    
+
     // Reset form data
     setFormData({
       tieu_de: '',
@@ -582,13 +582,13 @@ const CreateReportScreen = () => {
       the_tags: [],
       media_ids: []
     });
-    
+
     // Clear uploaded media
     setUploadedMedia([]);
     setCurrentTag('');
     setErrors({});
     setAiFilledFields([]);
-    
+
     // Navigate back
     navigation.goBack();
   };
@@ -635,7 +635,7 @@ const CreateReportScreen = () => {
       {/* Draft Restored Banner */}
       {draftRestored && (
         <View style={styles.draftBanner}>
-          <Icon name="content-save-outline" size={15} color="#6366F1" />
+          <Icon name="content-save-outline" size={15} color="#7a5af8" />
           <Text style={styles.draftBannerText}>Đã khôi phục bản nháp trước đó của bạn</Text>
           <TouchableOpacity onPress={() => {
             setDraftRestored(false);
@@ -649,7 +649,7 @@ const CreateReportScreen = () => {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Media Upload */}
-         <View style={styles.card}>
+        <View style={styles.card}>
           <View style={styles.sectionTitleRow}>
             <View style={styles.sectionTitleWithIcon}>
               <Icon name="image-multiple" size={20} color={theme.colors.primary} />
@@ -732,7 +732,7 @@ const CreateReportScreen = () => {
             )}
           </View>
           <Text style={styles.sectionSubtitle}>Chọn danh mục phù hợp với vấn đề</Text>
-          
+
           <TouchableOpacity
             style={styles.categorySelectButton}
             onPress={() => setShowCategoryModal(true)}
@@ -882,7 +882,7 @@ const CreateReportScreen = () => {
             <Text style={styles.sectionTitle}>Vị trí sự việc</Text>
           </View>
           <Text style={styles.sectionSubtitle}>Xác định chính xác vị trí xảy ra sự việc</Text>
-          
+
           <View style={styles.inputGroup}>
             <InputCustom
               label="Địa chỉ"
@@ -930,7 +930,7 @@ const CreateReportScreen = () => {
             )}
           </View>
           <Text style={styles.sectionSubtitle}>Đánh giá mức độ nghiêm trọng của vấn đề</Text>
-          
+
           <View style={styles.priorityContainer}>
             {PRIORITIES.map((priority) => {
               const isActive = formData.uu_tien === priority.value;
@@ -940,7 +940,7 @@ const CreateReportScreen = () => {
                   key={priority.value}
                   style={[
                     styles.priorityChip,
-                    isActive && { 
+                    isActive && {
                       backgroundColor: priority.color,
                       borderColor: priority.color,
                     },
@@ -973,7 +973,7 @@ const CreateReportScreen = () => {
           </View>
         </View>
 
-       
+
 
         {/* Settings */}
         <View style={styles.card}>
@@ -982,15 +982,15 @@ const CreateReportScreen = () => {
             <Text style={styles.sectionTitle}>Quyền riêng tư</Text>
           </View>
           <Text style={styles.sectionSubtitle}>Ai có thể xem phản ánh này?</Text>
-          
+
           <View style={styles.privacyCard}>
             <View style={[
               styles.privacyIconBox,
               { backgroundColor: formData.la_cong_khai ? theme.colors.success + '15' : theme.colors.warning + '15' }
             ]}>
-              <Icon 
-                name={formData.la_cong_khai ? "eye" : "eye-off"} 
-                size={24} 
+              <Icon
+                name={formData.la_cong_khai ? "eye" : "eye-off"}
+                size={24}
                 color={formData.la_cong_khai ? theme.colors.success : theme.colors.warning}
               />
             </View>
@@ -1168,7 +1168,7 @@ const CreateReportScreen = () => {
                 <Icon name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
             </View>
-            
+
             <ScrollView style={styles.categoryModalScroll} showsVerticalScrollIndicator={false}>
               <View style={styles.categoryOptionsContainer}>
                 {CATEGORIES.map((category) => {
@@ -2060,9 +2060,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: '#6366F110',
+    backgroundColor: '#7a5af810',
     borderBottomWidth: 1,
-    borderBottomColor: '#6366F120',
+    borderBottomColor: '#7a5af820',
     paddingHorizontal: SCREEN_PADDING.horizontal,
     paddingVertical: SPACING.sm,
   },
@@ -2070,7 +2070,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FONT_SIZE.xs,
     fontWeight: '600',
-    color: '#6366F1',
+    color: '#7a5af8',
   },
   draftBannerDiscard: {
     fontSize: FONT_SIZE.xs,

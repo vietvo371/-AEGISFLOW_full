@@ -300,13 +300,13 @@ const IncidentDetailScreen = () => {
         {/* ── Reporter & Assigned ── */}
         <View style={styles.twoColRow}>
           {/* Reporter */}
-          <View style={[styles.card, styles.halfCard, { borderLeftColor: '#8B5CF6', borderLeftWidth: 3 }]}>
+          <View style={[styles.card, styles.halfCard, { borderLeftColor: '#7a5af8', borderLeftWidth: 3 }]}>
             <Text style={styles.cardLabel}>NGƯỜI BÁO CÁO</Text>
             {incident.reporter ? (
               <>
                 <View style={styles.personRow}>
-                  <View style={[styles.avatar, { backgroundColor: '#8B5CF620' }]}>
-                    <Icon name="account" size={18} color="#8B5CF6" />
+                  <View style={[styles.avatar, { backgroundColor: '#7a5af820' }]}>
+                    <Icon name="account" size={18} color="#7a5af8" />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.personName}>{incident.reporter.name}</Text>
@@ -405,14 +405,14 @@ const IncidentDetailScreen = () => {
                 <View style={styles.aiCard}>
                   <View style={styles.aiCardHeader}>
                     <View style={[styles.aiIconBox, { backgroundColor: '#EEF2FF' }]}>
-                      <Icon name="brain" size={18} color="#6366F1" />
+                      <Icon name="brain" size={18} color="#7a5af8" />
                     </View>
-                    <Text style={[styles.aiCardTitle, { color: '#6366F1' }]}>Gợi ý xử lý AI</Text>
+                    <Text style={[styles.aiCardTitle, { color: '#7a5af8' }]}>Gợi ý xử lý AI</Text>
                   </View>
                   <View style={styles.aiContentBox}>
                     {incident.recommendations.map((rec: any, idx: number) => (
                       <View key={idx} style={styles.recListItem}>
-                        <View style={[styles.bullet, { backgroundColor: '#6366F1' }]} />
+                        <View style={[styles.bullet, { backgroundColor: '#7a5af8' }]} />
                         <Text style={styles.aiResultText}>{parseAIContent(rec)}</Text>
                       </View>
                     ))}
@@ -425,14 +425,14 @@ const IncidentDetailScreen = () => {
                 <View style={[styles.aiCard, { marginTop: SPACING.md }]}>
                   <View style={styles.aiCardHeader}>
                     <View style={[styles.aiIconBox, { backgroundColor: '#F5F3FF' }]}>
-                      <Icon name="chart-timeline-variant" size={18} color="#8B5CF6" />
+                      <Icon name="chart-timeline-variant" size={18} color="#7a5af8" />
                     </View>
-                    <Text style={[styles.aiCardTitle, { color: '#8B5CF6' }]}>Dự báo tác động AI</Text>
+                    <Text style={[styles.aiCardTitle, { color: '#7a5af8' }]}>Dự báo tác động AI</Text>
                   </View>
                   <View style={styles.aiContentBox}>
                     {incident.predictions.map((pred: any, idx: number) => (
                       <View key={idx} style={styles.recListItem}>
-                        <View style={[styles.bullet, { backgroundColor: '#8B5CF6' }]} />
+                        <View style={[styles.bullet, { backgroundColor: '#7a5af8' }]} />
                         <Text style={styles.aiResultText}>{parseAIContent(pred)}</Text>
                       </View>
                     ))}

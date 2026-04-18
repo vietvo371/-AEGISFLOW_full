@@ -2,22 +2,23 @@ import { Platform } from 'react-native';
 
 /**
  * Color System - AegisFlow AI
- * Primary brand color: #1E40AF (Deep Blue) - Safety & Reliability
+ * Brand color: #7a5af8 (Violet/Purple) - đồng bộ với frontend web
+ * Ref: frontend/src/app/globals.css --color-brand-500
  */
 export const COLORS = {
   // Brand Colors
-  primary: '#1E40AF',
-  primaryLight: '#3B82F6',
-  primaryDark: '#1E3A8A',
+  primary: '#7a5af8',
+  primaryLight: '#9b8afb',
+  primaryDark: '#6938ef',
   secondary: '#F59E0B',
   accent: '#EF4444',
-  
+
   // Background Colors
   background: '#FFFFFF',
   backgroundSecondary: '#F8F9FB',
   backgroundTertiary: '#F0F2F5',
   backgroundDark: '#1A1D1F',
-  
+
   // Text Colors (Fintech-optimized contrast)
   text: '#111827',
   textSecondary: '#6B7280',
@@ -25,40 +26,40 @@ export const COLORS = {
   textLight: '#D1D5DB',
   textWhite: '#FFFFFF',
   textDark: '#030712',
-  
+
   // Status Colors
-  success: '#10B981',
+  success: '#17b26a',
   successLight: '#D1FAE5',
-  error: '#EF4444',
+  error: '#f04438',
   errorLight: '#FEE2E2',
-  warning: '#F59E0B',
+  warning: '#f79009',
   warningLight: '#FEF3C7',
-  info: '#3B82F6',
-  infoLight: '#DBEAFE',
-  
+  info: '#7a5af8',
+  infoLight: '#f4f3ff',
+
   // UI Elements
-  border: '#E5E7EB',
-  borderLight: '#F3F4F6',
-  borderDark: '#D1D5DB',
+  border: '#e5e7eb',
+  borderLight: '#f3f4f6',
+  borderDark: '#d1d5db',
   disabled: '#9CA3AF',
   disabledBackground: '#F3F4F6',
-  
+
   // Card & Surface (Fintech elevation)
   card: '#FFFFFF',
   cardHover: '#F9FAFB',
   surface: '#FFFFFF',
   surfaceSecondary: '#FAFBFC',
   surfaceElevated: '#FFFFFF',
-  
+
   // Base Colors
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',
   overlay: 'rgba(0, 0, 0, 0.5)',
   overlayLight: 'rgba(0, 0, 0, 0.3)',
-  
-  // Gradients
-  gradientPrimary: ['#1E40AF', '#3B82F6'],
+
+  // Gradients - đồng bộ brand violet
+  gradientPrimary: ['#7a5af8', '#9b8afb'],
   gradientSecondary: ['#F59E0B', '#D97706'],
   gradientDark: ['#0F172A', '#1E293B'],
 };

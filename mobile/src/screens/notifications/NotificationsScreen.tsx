@@ -222,7 +222,7 @@ const NotificationsScreen = () => {
       case 'incident_created':
         return '#EF4444';
       case 'new_nearby_report':
-        return '#8B5CF6';
+        return '#7a5af8';
       default:
         return theme.colors.textSecondary;
     }

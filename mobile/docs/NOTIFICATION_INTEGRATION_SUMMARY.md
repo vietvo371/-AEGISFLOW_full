@@ -40,7 +40,7 @@
    - Thêm handlers cho notification
    - Tích hợp NotificationService vào app tree
 
-3. **ios/CityResQ360App/AppDelegate.swift**
+3. **ios/AegisFlowAI/AppDelegate.swift**
    - Import Firebase và UserNotifications
    - Cấu hình Firebase khi app khởi động
    - Implement UNUserNotificationCenterDelegate
@@ -119,7 +119,7 @@ cd ios && pod install && cd ..
 ```
 
 ### 2. Cấu hình Firebase:
-- iOS: Copy `GoogleService-Info.plist` vào `ios/CityResQ360App/`
+- iOS: Copy `GoogleService-Info.plist` vào `ios/AegisFlowAI/`
 - Android: Copy `google-services.json` vào `android/app/`
 
 ### 3. Xcode Configuration:

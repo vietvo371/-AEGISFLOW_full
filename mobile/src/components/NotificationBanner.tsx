@@ -144,8 +144,8 @@ export const NotificationBanner = () => {
         return {
           backgroundColor: '#EDE7F6', // Purple light
           icon: 'map-marker-alert',
-          iconColor: '#8B5CF6',
-          borderColor: '#8B5CF6',
+          iconColor: '#7a5af8',
+          borderColor: '#7a5af8',
         };
       default:
         return {

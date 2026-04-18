@@ -7,9 +7,8 @@ require Pod::Executable.execute_command('node', ['-p',
 
 # Mapbox configuration
 $RNMapboxMapsImpl = 'mapbox'
-# Let @rnmapbox/maps choose compatible MapboxMaps SDK version automatically
 
-platform :ios, '15.1'  # React Native 0.81.1 requires iOS 15.1+, Mapbox works with iOS 14.0+
+platform :ios, '15.1'
 prepare_react_native_project!
 
 # Add pre_install hook for Mapbox
@@ -17,7 +16,7 @@ pre_install do |installer|
   $RNMapboxMaps.pre_install(installer)
 end
 
-# Enable New Architecture (required by Reanimated) - DISABLED for Xcode 16.3 compatibility
+# Enable New Architecture (disabled for Xcode 16.3 compatibility)
 # ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -32,44 +31,45 @@ target 'AegisFlowAI' do
 
   pod 'GoogleUtilities', :modular_headers => true
   pod 'FirebaseCore', :modular_headers => true
+  pod 'FirebaseCoreInternal', :modular_headers => true
+  pod 'FirebaseMessaging', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/..",
-    # Hermes is required for React Native 0.81.1+
     :hermes_enabled => true
   )
 
   post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
-    )
-    
-    # Mapbox post_install hook - MUST be after react_native_post_install
+    react_native_post_install(installer, config[:reactNativePath], :mac_catalyst_enabled => false)
     $RNMapboxMaps.post_install(installer)
+
+    # ============================================================
+    # Fix for Xcode 16.3: disable -Werror=non-modular-include
+    # by patching ALL xcconfig files after pod install
+    # ============================================================
+    fix_non_modular_includes(installer)
     
-    # Fix for Xcode 16.3 Sandbox issues
+    # Global build settings for all pods
     installer.pods_project.build_configurations.each do |config|
       config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
       config.build_settings['DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING'] = 'YES'
       config.build_settings['ENABLE_BITCODE'] = 'NO'
       config.build_settings['COMPILER_INDEX_STORE_ENABLE'] = 'NO'
-      config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+      config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'NO'
       config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
       config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
       config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386'
-      # Disable module verification completely (CRITICAL for MapboxMaps in Xcode 16.3)
       config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
+      config.build_settings['OTHER_MODULE_VERIFIER_FLAGS'] = ''
       config.build_settings['MODULE_VERIFIER_SUPPORTED_LANGUAGES'] = ''
       config.build_settings['MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS'] = ''
       config.build_settings['VALIDATE_WORKSPACE'] = 'NO'
+      config.build_settings['VALIDATE_PRODUCT'] = 'NO'
+      config.build_settings['CLANG_WARN_NON_MODULAR_INCLUDE_IN_FRAMEWORK_MODULE'] = 'NO'
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+      config.build_settings['GCC_WARN_NON_MODULAR_INCLUDE_IN_FRAMEWORK_MODULE'] = 'NO'
       
-      # Ensure dSYM generation in Release
       if config.name == 'Release'
         config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
         config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'YES'
@@ -77,94 +77,83 @@ target 'AegisFlowAI' do
         config.build_settings['COPY_PHASE_STRIP'] = 'NO'
       end
     end
-    
-    # Fix for Xcode 16.3 archive issues
+
+    # Per-target settings
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'  # React Native 0.81.1 requires iOS 15.1+
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
-        # config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'RCT_NEW_ARCH_ENABLED=1' # Disabled for Old Architecture
-        
-        # Fix for hermes-engine target - Disable completely since Hermes is disabled
-        if target.name == 'hermes-engine'
-          config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
-          config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
-          config.build_settings['DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING'] = 'YES'
-          config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
-          config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
-          if config.name == 'Release'
-            config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
-            config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'YES'
-          end
-        end
-        
-
-        # Fix for all Mapbox-related targets
-        if target.name.start_with?('Mapbox') || target.name == 'rnmapbox-maps'
-          config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
-          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-          config.build_settings['DEFINES_MODULE'] = 'YES'
-          
-          # Add framework search paths
-          config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= ['$(inherited)']
-          config.build_settings['FRAMEWORK_SEARCH_PATHS'] << '$(BUILT_PRODUCTS_DIR)'
-          config.build_settings['FRAMEWORK_SEARCH_PATHS'] << '$(PODS_CONFIGURATION_BUILD_DIR)/MapboxCoreMaps'
-          config.build_settings['FRAMEWORK_SEARCH_PATHS'] << '$(PODS_CONFIGURATION_BUILD_DIR)/MapboxCommon'
-          
-          # Disable module verification completely (for all configs)
-          config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
-          config.build_settings['MODULE_VERIFIER_SUPPORTED_LANGUAGES'] = ''
-          config.build_settings['MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS'] = ''
-          config.build_settings['VALIDATE_WORKSPACE'] = 'NO'
-          config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
-          config.build_settings['CLANG_ENABLE_MODULE_DEBUGGING'] = 'NO'
-        end
-        
-        # Specific fix for rnmapbox-maps - needs Swift include paths
-        if target.name == 'rnmapbox-maps'
-          config.build_settings['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']
-          config.build_settings['SWIFT_INCLUDE_PATHS'] << '$(PODS_CONFIGURATION_BUILD_DIR)/MapboxMaps'
-          config.build_settings['SWIFT_INCLUDE_PATHS'] << '$(PODS_CONFIGURATION_BUILD_DIR)/MapboxCoreMaps'
-          
-          config.build_settings['OTHER_SWIFT_FLAGS'] ||= ['$(inherited)']
-          config.build_settings['OTHER_SWIFT_FLAGS'] << '-D' << 'RNMBX_11'
-        end
-        
-        # Fix for Xcode 16.3 archive issues with New Architecture
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
         config.build_settings['DEVELOPMENT_TEAM'] = '' if config.build_settings['DEVELOPMENT_TEAM'].nil?
         config.build_settings['CODE_SIGN_STYLE'] = 'Automatic'
-        
-        # Fix for build system issues
-        if target.name.include?('React') || target.name.include?('hermes') || target.name.include?('Folly')
-          config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
-          config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
-        end
-        
-        # Fix for Xcode 16.3 archive issues
         config.build_settings['ENABLE_BITCODE'] = 'NO'
         config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
         config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386'
-        
-        # Fix for parallel build issues
         config.build_settings['COMPILER_INDEX_STORE_ENABLE'] = 'NO'
         config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
-        
-        # Fix for hermes-engine specific issues
+        config.build_settings['OTHER_MODULE_VERIFIER_FLAGS'] = ''
+        config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'NO'
+
+        # Hermes settings
         if target.name == 'hermes-engine'
+          config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'HERMES_ENABLE_DEBUGGER=0'
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'HERMES_ENABLE_LIBFUZZER=0'
         end
-        
-        # Fix for React targets
+
+        # React Native targets
         if target.name.include?('React') || target.name.include?('RCT')
           config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
-          config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
-          config.build_settings['ENABLE_BITCODE'] = 'NO'
-          config.build_settings['COMPILER_INDEX_STORE_ENABLE'] = 'NO'
           config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+          config.build_settings['COMPILER_INDEX_STORE_ENABLE'] = 'NO'
+        end
+
+        # Mapbox targets
+        if target.name.start_with?('Mapbox') || target.name == 'rnmapbox-maps'
+          config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
+          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+          config.build_settings['DEFINES_MODULE'] = 'YES'
+          config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
+          config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
+          config.build_settings['CLANG_ENABLE_MODULE_DEBUGGING'] = 'NO'
+          config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= ['$(inherited)']
+          config.build_settings['FRAMEWORK_SEARCH_PATHS'] << '$(BUILT_PRODUCTS_DIR)'
+          config.build_settings['FRAMEWORK_SEARCH_PATHS'] << '$(PODS_CONFIGURATION_BUILD_DIR)/MapboxCoreMaps'
+          config.build_settings['FRAMEWORK_SEARCH_PATHS'] << '$(PODS_CONFIGURATION_BUILD_DIR)/MapboxCommon'
+        end
+
+        if target.name == 'rnmapbox-maps'
+          config.build_settings['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']
+          config.build_settings['SWIFT_INCLUDE_PATHS'] << '$(PODS_CONFIGURATION_BUILD_DIR)/MapboxMaps'
+          config.build_settings['SWIFT_INCLUDE_PATHS'] << '$(PODS_CONFIGURATION_BUILD_DIR)/MapboxCoreMaps'
+          config.build_settings['OTHER_SWIFT_FLAGS'] ||= ['$(inherited)']
+          config.build_settings['OTHER_SWIFT_FLAGS'] << '-D' << 'RNMBX_11'
         end
       end
+    end
+  end
+end
+
+# Helper function to patch xcconfig files and remove -Werror=non-modular
+def fix_non_modular_includes(installer)
+  xcconfigs_dir = File.join(installer.sandbox.root, 'Target Support Files')
+  return unless File.directory?(xcconfigs_dir)
+
+  # Find all xcconfig files in Target Support Files
+  Dir.glob(File.join(xcconfigs_dir, '**', '*.xcconfig')).each do |xcconfig_path|
+    begin
+      content = File.read(xcconfig_path)
+      modified = false
+
+      # Replace -Werror=non-modular-include-in-framework-module with -Wno-error=...
+      if content.include?('-Werror=non-modular-include-in-framework-module')
+        content = content.gsub('-Werror=non-modular-include-in-framework-module', '-Wno-error=non-modular-include-in-framework-module')
+        modified = true
+        Pod::UI.puts "Patched -Werror->-Wno-error in: #{File.basename(xcconfig_path)}"
+      end
+
+      File.write(xcconfig_path, content) if modified
+    rescue => e
+      Pod::UI.warn "Failed to patch #{xcconfig_path}: #{e.message}"
     end
   end
 end

@@ -292,7 +292,7 @@ const HomeScreen = () => {
       1: '#EF4444',   // Giao thông
       2: '#10B981',   // Môi trường
       3: '#F97316',   // Cháy nổ
-      4: '#8B5CF6',   // Rác thải
+      4: '#7a5af8',   // Rác thải
       5: '#3B82F6',   // Ngập lụt
       6: '#6B7280',   // Khác
     };

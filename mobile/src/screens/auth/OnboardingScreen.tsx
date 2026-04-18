@@ -15,7 +15,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const getOnboardingData = (t: any) => [
   {
     id: 1,
-    title: 'Chào mừng đến CityResQ360',
+    title: 'Chào mừng đến AegisFlow AI',
     description: 'Hệ thống báo cáo và xử lý sự cố đô thị thông minh, kết nối người dân và chính quyền',
     image: require('../../assets/images/started/welcom.jpg'),
   },

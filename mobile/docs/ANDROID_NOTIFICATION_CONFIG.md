@@ -74,10 +74,10 @@ File `android/app/src/main/AndroidManifest.xml`:
 
 ## 5. Tạo FirebaseMessagingService (Optional)
 
-Tạo file `android/app/src/main/java/com/cityresq360app/MyFirebaseMessagingService.kt`:
+Tạo file `android/app/src/main/java/com/aegisflowai/MyFirebaseMessagingService.kt`:
 
 ```kotlin
-package com.cityresq360app
+package com.aegisflowai
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage

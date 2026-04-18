@@ -20,7 +20,7 @@ const EmergencyProfileScreen = () => {
         { id: 1, label: 'Đang xử lý', value: '12', icon: 'clock-outline', color: '#F59E0B' },
         { id: 2, label: 'Hoàn thành ca', value: '8', icon: 'check-circle-outline', color: '#10B981' },
         { id: 3, label: 'Tốc độ phản hồi', value: '2.5m', icon: 'lightning-bolt-outline', color: '#3B82F6' },
-        { id: 4, label: 'Độ tin cậy', value: '98%', icon: 'shield-check-outline', color: '#8B5CF6' },
+        { id: 4, label: 'Độ tin cậy', value: '98%', icon: 'shield-check-outline', color: '#7a5af8' },
     ];
 
     const handleLogout = () => {
@@ -147,8 +147,8 @@ const EmergencyProfileScreen = () => {
 
                     <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]}>
                         <View style={styles.menuItemLeft}>
-                            <View style={[styles.menuIcon, { backgroundColor: '#8B5CF615' }]}>
-                                <Icon name="shield-key-outline" size={20} color="#8B5CF6" />
+                            <View style={[styles.menuIcon, { backgroundColor: '#7a5af815' }]}>
+                                <Icon name="shield-key-outline" size={20} color="#7a5af8" />
                             </View>
                             <Text style={styles.menuText}>Bảo mật & Tài khoản</Text>
                         </View>

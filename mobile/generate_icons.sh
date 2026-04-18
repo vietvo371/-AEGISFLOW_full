@@ -2,7 +2,7 @@
 
 # Đường dẫn đến ảnh gốc (thay thế path_to_original_image.png bằng đường dẫn thật)
 ORIGINAL_IMAGE="./src/assets/images/logo.png"
-OUTPUT_DIR="ios/CityResQ360App/Images.xcassets/AppIcon.appiconset"
+OUTPUT_DIR="ios/AegisFlowAI/Images.xcassets/AppIcon.appiconset"
 
 # Tạo các icon với kích thước khác nhau
 sips -z 40 40 "${ORIGINAL_IMAGE}" --out "${OUTPUT_DIR}/Icon-40.png"

@@ -18,23 +18,23 @@ const HelpCenterScreen = () => {
     const navigation = useNavigation();
 
     const handleContactSupport = () => {
-        Linking.openURL('mailto:support@cityresq360.com?subject=Hỗ trợ CityResQ360');
+        Linking.openURL('mailto:support@aegisflow.ai?subject=Hỗ trợ AegisFlow AI');
     };
 
     const handleOpenFAQ = () => {
-        Linking.openURL('https://cityresq360.com/faq');
+        Linking.openURL('https://aegisflow.ai/faq');
     };
 
     const handleOpenGuide = () => {
-        Linking.openURL('https://cityresq360.com/guide');
+        Linking.openURL('https://aegisflow.ai/guide');
     };
 
     const handleOpenCommunity = () => {
-        Linking.openURL('https://community.cityresq360.com');
+        Linking.openURL('https://community.aegisflow.ai');
     };
 
     const handleReportBug = () => {
-        Linking.openURL('mailto:bugs@cityresq360.com?subject=Báo lỗi CityResQ360');
+        Linking.openURL('mailto:bugs@aegisflow.ai?subject=Báo lỗi AegisFlow AI');
     };
 
     const helpItems: HelpItem[] = [
@@ -63,7 +63,7 @@ const HelpCenterScreen = () => {
             id: 'community',
             icon: 'account-group',
             title: 'Cộng đồng',
-            description: 'Tham gia cộng đồng người dùng CityResQ360',
+            description: 'Tham gia cộng đồng người dùng AegisFlow AI',
             action: handleOpenCommunity,
         },
         {
@@ -76,9 +76,9 @@ const HelpCenterScreen = () => {
     ];
 
     const quickLinks = [
-        { title: 'Chính sách bảo mật', url: 'https://cityresq360.com/privacy' },
-        { title: 'Điều khoản sử dụng', url: 'https://cityresq360.com/terms' },
-        { title: 'Quy định cộng đồng', url: 'https://cityresq360.com/community-guidelines' },
+        { title: 'Chính sách bảo mật', url: 'https://aegisflow.ai/privacy' },
+        { title: 'Điều khoản sử dụng', url: 'https://aegisflow.ai/terms' },
+        { title: 'Quy định cộng đồng', url: 'https://aegisflow.ai/community-guidelines' },
     ];
 
     return (
@@ -140,7 +140,7 @@ const HelpCenterScreen = () => {
                     <Text style={styles.contactTitle}>Liên hệ trực tiếp</Text>
                     <View style={styles.contactItem}>
                         <Icon name="email" size={ICON_SIZE.md} color={theme.colors.primary} />
-                        <Text style={styles.contactText}>support@cityresq360.com</Text>
+                        <Text style={styles.contactText}>support@aegisflow.ai</Text>
                     </View>
                     <View style={styles.contactItem}>
                         <Icon name="phone" size={ICON_SIZE.md} color={theme.colors.primary} />

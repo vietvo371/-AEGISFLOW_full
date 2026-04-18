@@ -51,7 +51,7 @@ export const mapService = {
                 `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}&zoom=18&addressdetails=1`,
                 {
                     headers: {
-                        'User-Agent': 'CityResQ360App/1.0', // Required by Nominatim usage policy
+                        'User-Agent': 'AegisFlowAI/1.0', // Required by Nominatim usage policy
                         'Accept-Language': 'vi' // Request Vietnamese results
                     }
                 }

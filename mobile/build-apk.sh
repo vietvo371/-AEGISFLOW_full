@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script build APK cho CityResQ360App
+# Script build APK cho AegisFlow AI
 # Tạo bởi: Build Script Generator
 
 echo "🚀 Bắt đầu build APK..."
@@ -37,7 +37,7 @@ if [ $? -eq 0 ]; then
         
         # Copy APK ra thư mục gốc với tên dễ nhớ hơn
         TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-        OUTPUT_APK="../apk-output/CityResQ360_${TIMESTAMP}.apk"
+        OUTPUT_APK="../apk-output/AegisFlowAI_${TIMESTAMP}.apk"
         cp "$APK_PATH" "$OUTPUT_APK"
         
         # Lấy kích thước file

@@ -152,7 +152,7 @@ const ReportDetailScreen = () => {
     switch (status) {
       case 0: return theme.colors.warning;     // Tiếp nhận
       case 1: return theme.colors.info;        // Đã xác minh
-      case 2: return '#8B5CF6';                // Đang xử lý - Purple
+      case 2: return '#7a5af8';                // Đang xử lý - Purple
       case 3: return theme.colors.success;     // Hoàn thành
       case 4: return theme.colors.error;       // Từ chối
       default: return theme.colors.textSecondary;

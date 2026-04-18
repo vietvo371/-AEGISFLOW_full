@@ -73,7 +73,7 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
       case 'success': return '#10B981'; // Green-500
       case 'warning': return '#F59E0B'; // Amber-500
       case 'confirm': return '#3B82F6'; // Blue-500
-      default: return '#6366F1'; // Indigo-500
+      default: return '#7a5af8'; // Indigo-500
     }
   };
 

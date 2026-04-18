@@ -9,11 +9,11 @@ cd ios && pod install && cd ..
 ```
 
 ### 2. Cấu hình Firebase (5 phút)
-- iOS: Copy `GoogleService-Info.plist` vào `ios/CityResQ360App/`
+- iOS: Copy `GoogleService-Info.plist` vào `ios/AegisFlowAI/`
 - Android: Copy `google-services.json` vào `android/app/`
 
 ### 3. Xcode Setup (2 phút)
-- Mở `ios/CityResQ360App.xcworkspace`
+- Mở `ios/AegisFlowAI.xcworkspace`
 - Bật "Push Notifications" capability
 - Bật "Background Modes" > "Remote notifications"
 

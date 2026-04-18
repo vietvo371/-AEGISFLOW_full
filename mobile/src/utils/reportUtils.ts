@@ -58,7 +58,7 @@ export const getStatusColor = (trang_thai: number): string => {
     const colorMap: Record<number, string> = {
         0: '#F59E0B', // Amber - Tiếp nhận (Pending)
         1: '#3B82F6', // Blue - Đã xác minh (Verified)
-        2: '#8B5CF6', // Purple - Đang xử lý (In Progress)
+        2: '#7a5af8', // Purple - Đang xử lý (In Progress)
         3: '#10B981', // Green - Hoàn thành (Resolved)
         4: '#EF4444', // Red - Từ chối (Rejected)
     };

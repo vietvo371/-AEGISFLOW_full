@@ -76,7 +76,7 @@ const MapScreen = () => {
       { key: 'icon_trash',        name: 'trash-can-outline',          color: '#8B6F4E' },
       { key: 'icon_flood',        name: 'weather-pouring',            color: '#3B82F6' },
       { key: 'icon_shelter',      name: 'home-heart',                 color: '#10B981' },
-      { key: 'icon_default',      name: 'alert-circle-outline',       color: '#8B5CF6' },
+      { key: 'icon_default',      name: 'alert-circle-outline',       color: '#7a5af8' },
     ];
 
     Promise.all(
@@ -153,7 +153,7 @@ const MapScreen = () => {
     switch (status) {
       case 0: return theme.colors.warning;     // Tiếp nhận
       case 1: return theme.colors.info;        // Đã xác minh
-      case 2: return '#8B5CF6';                // Đang xử lý - Purple
+      case 2: return '#7a5af8';                // Đang xử lý - Purple
       case 3: return theme.colors.success;     // Hoàn thành
       case 4: return theme.colors.error;       // Từ chối
       default: return theme.colors.textSecondary;
@@ -805,7 +805,7 @@ const MapScreen = () => {
               </TouchableOpacity>
             )) : (
               // Emergency mode — type filter with counts
-              [{ id: -1, label: 'Tất cả', icon: 'view-grid-outline', type: null, color: '#6366F1' },
+              [{ id: -1, label: 'Tất cả', icon: 'view-grid-outline', type: null, color: '#7a5af8' },
                { id: 1, label: 'Ùn tắc', icon: 'car-brake-alert', type: 'congestion', color: '#F97316' },
                { id: 2, label: 'Tai nạn', icon: 'alert-octagon', type: 'accident', color: '#EF4444' },
                { id: 3, label: 'Camera', icon: 'cctv', type: 'camera', color: '#06B6D4' },
@@ -1019,7 +1019,7 @@ const MapScreen = () => {
                   <View style={styles.sheetHeader}>
                     <View style={{ flex: 1 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-                        <Icon name="access-point" size={12} color="#6366F1" />
+                        <Icon name="access-point" size={12} color="#7a5af8" />
                         <Text style={styles.dtLabel}>DIGITAL TWIN · LIVE</Text>
                       </View>
                       <Text style={styles.sheetTitle} numberOfLines={2}>
@@ -1060,9 +1060,9 @@ const MapScreen = () => {
                         </Text>
                       </View>
 
-                      <View style={[styles.sheetBadge, { backgroundColor: '#6366F115' }]}>
-                        <Icon name="clock-fast" size={13} color="#6366F1" />
-                        <Text style={[styles.sheetBadgeText, { color: '#6366F1' }]}>
+                      <View style={[styles.sheetBadge, { backgroundColor: '#7a5af815' }]}>
+                        <Icon name="clock-fast" size={13} color="#7a5af8" />
+                        <Text style={[styles.sheetBadgeText, { color: '#7a5af8' }]}>
                           {new Date(selectedIncident.created_at || new Date()).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                         </Text>
                       </View>
@@ -1090,7 +1090,7 @@ const MapScreen = () => {
                         const stepIdx   = statusOrder.indexOf(step.key);
                         const isDone    = stepIdx < currentIdx;
                         const isActive  = stepIdx === currentIdx;
-                        const color     = isActive ? '#6366F1' : isDone ? '#10B981' : theme.colors.textSecondary;
+                        const color     = isActive ? '#7a5af8' : isDone ? '#10B981' : theme.colors.textSecondary;
                         return (
                           <React.Fragment key={step.key}>
                             <View style={styles.timelineStep}>
@@ -1124,7 +1124,7 @@ const MapScreen = () => {
                     <View style={styles.aiPanel}>
                       <View style={styles.aiPanelHeader}>
                         <View style={styles.aiIconWrap}>
-                          <Icon name="brain" size={16} color="#A78BFA" />
+                          <Icon name="brain" size={16} color="#9b8afb" />
                         </View>
                         <View style={{ flex: 1 }}>
                           <Text style={styles.aiPanelTitle}>AegisFlow AI · Phân tích Tình huống</Text>
@@ -1163,10 +1163,10 @@ const MapScreen = () => {
 
                       {/* Graph Simulation Preview */}
                       <View style={styles.aiGraphRow}>
-                        <Icon name="graph-outline" size={13} color="#818CF8" />
+                        <Icon name="graph-outline" size={13} color="#9b8afb" />
                         <Text style={styles.aiGraphText}>
                           Bản sao số đang theo dõi{' '}
-                          <Text style={{ color: '#818CF8', fontWeight: '600' }}>24 cạnh đồ thị (edges)</Text>
+                          <Text style={{ color: '#9b8afb', fontWeight: '600' }}>24 cạnh đồ thị (edges)</Text>
                           {' '}trong vùng ảnh hưởng.
                         </Text>
                       </View>
@@ -1194,7 +1194,7 @@ const MapScreen = () => {
                           navigation.navigate('EmergencyIncidents' as any);
                         }}
                       >
-                        <Icon name="robot-outline" size={17} color="#A78BFA" />
+                        <Icon name="robot-outline" size={17} color="#9b8afb" />
                         <Text style={styles.dtBtnSimulateText}>Chạy Mô phỏng AI</Text>
                       </TouchableOpacity>
                     </View>
@@ -1555,7 +1555,7 @@ const styles = StyleSheet.create({
   dtLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#6366F1',
+    color: '#7a5af8',
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
@@ -1563,7 +1563,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#7a5af8',
   },
   dtInfoRow: {
     flexDirection: 'row',
@@ -1591,7 +1591,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
     borderWidth: 1,
-    borderColor: '#6366F130',
+    borderColor: '#7a5af830',
   },
   aiPanelHeader: {
     flexDirection: 'row',
@@ -1603,7 +1603,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: BORDER_RADIUS.md,
-    backgroundColor: '#6366F115',
+    backgroundColor: '#7a5af815',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1614,7 +1614,7 @@ const styles = StyleSheet.create({
   },
   aiPanelSub: {
     fontSize: FONT_SIZE.xs,
-    color: '#818CF8',
+    color: '#9b8afb',
     marginTop: 1,
   },
   aiBadgeLive: {
@@ -1667,9 +1667,9 @@ const styles = StyleSheet.create({
     gap: 6,
     padding: 8,
     borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: '#818CF808',
+    backgroundColor: '#9b8afb08',
     borderTopWidth: 1,
-    borderTopColor: '#6366F120',
+    borderTopColor: '#7a5af820',
   },
   aiGraphText: {
     flex: 1,
@@ -1702,16 +1702,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING.sm,
-    backgroundColor: '#A78BFA15',
+    backgroundColor: '#9b8afb15',
     paddingVertical: 13,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
-    borderColor: '#A78BFA50',
+    borderColor: '#9b8afb50',
   },
   dtBtnSimulateText: {
     fontSize: FONT_SIZE.md,
     fontWeight: '700',
-    color: '#A78BFA',
+    color: '#9b8afb',
   },
 
   // ─── Status Timeline ────────────────────────────────────

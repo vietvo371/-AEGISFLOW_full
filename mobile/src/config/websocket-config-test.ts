@@ -9,11 +9,11 @@ import env from './env';
 // CẤU HÌNH 1: Production với Nginx Reverse Proxy (KHUYẾN NGHỊ)
 // ============================================================================
 // Web app đang dùng config này thành công!
-// Nginx proxy từ https://api.cityresq360.io.vn/app/ -> localhost:6001
+// Nginx proxy từ https://api.aegisflow.ai/app/ -> localhost:6001
 export const WEBSOCKET_CONFIG_PRODUCTION = {
   key: env.REVERB_APP_KEY,
   cluster: 'mt1',
-  wsHost: env.REVERB_HOST,  // api.cityresq360.io.vn
+  wsHost: env.REVERB_HOST,  // api.aegisflow.ai
   wsPort: 443,  // Port HTTPS (qua Nginx)
   wssPort: 443,
   forceTLS: true,  // Bắt buộc SSL
@@ -29,12 +29,12 @@ export const WEBSOCKET_CONFIG_PRODUCTION = {
 // CẤU HÌNH 1B: Production với Nginx (ĐÚNG - Web dùng config này)
 // ============================================================================
 // ✅ CHÍNH XÁC - Web app dùng config này!
-// WebSocket URL: wss://api.cityresq360.io.vn/app/lwf6joghdvbowg9hb7p4
+// WebSocket URL: wss://api.aegisflow.ai/app/lwf6joghdvbowg9hb7p4
 // Pusher-js BẮT BUỘC phải có cluster field (dù không dùng thực sự)
 export const WEBSOCKET_CONFIG_NO_CLUSTER = {
   key: env.REVERB_APP_KEY,  // lwf6joghdvbowg9hb7p4
   cluster: 'mt1',           // ⚠️ BẮT BUỘC phải có (Pusher requirement)
-  wsHost: env.REVERB_HOST,  // api.cityresq360.io.vn
+  wsHost: env.REVERB_HOST,  // api.aegisflow.ai
   wsPort: 443,              // HTTPS port qua Nginx
   wssPort: 443,
   forceTLS: true,           // wss:// = SSL enabled

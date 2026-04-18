@@ -290,9 +290,9 @@ const EmergencyIncidentsScreen = () => {
                         </Text>
                     </View>
                     {item.source === 'citizen' && (
-                        <View style={[styles.badge, { backgroundColor: '#8B5CF615' }]}>
-                            <Icon name="account" size={14} color="#8B5CF6" />
-                            <Text style={[styles.badgeText, { color: '#8B5CF6' }]}>Công dân</Text>
+                        <View style={[styles.badge, { backgroundColor: '#7a5af815' }]}>
+                            <Icon name="account" size={14} color="#7a5af8" />
+                            <Text style={[styles.badgeText, { color: '#7a5af8' }]}>Công dân</Text>
                         </View>
                     )}
                 </View>

@@ -2,7 +2,7 @@
 
 ## Tổng quan
 
-Dự án CityResQ360 đã được tích hợp Firebase Cloud Messaging để gửi và nhận thông báo push. Tài liệu này hướng dẫn cách cài đặt và sử dụng các tính năng notification.
+Dự án AegisFlow AI đã được tích hợp Firebase Cloud Messaging để gửi và nhận thông báo push. Tài liệu này hướng dẫn cách cài đặt và sử dụng các tính năng notification.
 
 ## Cấu trúc file
 
@@ -46,7 +46,7 @@ cd ..
 #### iOS
 
 1. Tải file `GoogleService-Info.plist` từ Firebase Console
-2. Copy file vào thư mục `ios/CityResQ360App/`
+2. Copy file vào thư mục `ios/AegisFlowAI/`
 3. Mở Xcode và kéo file `GoogleService-Info.plist` vào project (đảm bảo checkbox "Copy items if needed" được chọn)
 
 File `GoogleService-Info.plist` đã được thêm vào git status:
@@ -72,7 +72,7 @@ File `AppDelegate.swift` đã được cập nhật để:
 Mở Xcode project và bật các capabilities sau:
 
 1. **Push Notifications**:
-   - Chọn target CityResQ360App
+   - Chọn target AegisFlowAI
    - Tab "Signing & Capabilities"
    - Click "+ Capability"
    - Thêm "Push Notifications"
@@ -81,7 +81,7 @@ Mở Xcode project và bật các capabilities sau:
    - Thêm "Background Modes" capability
    - Chọn "Remote notifications"
 
-File `CityResQ360App.entitlements` đã được tạo với Push Notifications enabled.
+File `AegisFlowAI.entitlements` đã được tạo với Push Notifications enabled.
 
 ## Sử dụng
 

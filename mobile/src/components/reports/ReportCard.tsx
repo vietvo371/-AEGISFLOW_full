@@ -17,7 +17,7 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, onPress, showActions = 
             1: '#EF4444',   // Giao thông
             2: '#10B981',   // Môi trường
             3: '#F97316',   // Cháy nổ
-            4: '#8B5CF6',   // Rác thải
+            4: '#7a5af8',   // Rác thải
             5: '#3B82F6',   // Ngập lụt
             6: '#6B7280',   // Khác
         };
@@ -38,7 +38,7 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, onPress, showActions = 
         switch (status) {
             case 0: return theme.colors.warning;       // Tiếp nhận
             case 1: return theme.colors.info;          // Đã xác minh
-            case 2: return '#8B5CF6';                  // Đang xử lý - Purple
+            case 2: return '#7a5af8';                  // Đang xử lý - Purple
             case 3: return theme.colors.success;       // Hoàn thành
             case 4: return theme.colors.error;         // Từ chối
             default: return theme.colors.textSecondary;

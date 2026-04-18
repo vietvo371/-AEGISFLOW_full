@@ -1,4 +1,4 @@
-# 🔧 Hướng Dẫn Build APK - CityResQ360
+# 🔧 Hướng Dẫn Build APK - AegisFlow AI
 
 ## ✅ Đã Sửa Các Lỗi
 
@@ -22,7 +22,7 @@
 Mở terminal và chạy:
 
 ```bash
-cd /Volumes/MAC_OPTION/Projects/Code_DZ/CityResQ360App/android
+cd /Volumes/MAC_OPTION/DATN/AEGISFLOWAI/android
 ./gradlew clean
 ./gradlew assembleRelease
 ```
@@ -30,7 +30,7 @@ cd /Volumes/MAC_OPTION/Projects/Code_DZ/CityResQ360App/android
 Hoặc dùng script tự động:
 
 ```bash
-cd /Volumes/MAC_OPTION/Projects/Code_DZ/CityResQ360App
+cd /Volumes/MAC_OPTION/DATN/AEGISFLOWAI
 ./build-apk.sh
 ```
 
@@ -45,7 +45,7 @@ android/app/build/outputs/apk/release/app-release.apk
 
 Hoặc nếu dùng script, sẽ được copy vào:
 ```
-apk-output/CityResQ360_[timestamp].apk
+apk-output/AegisFlowAI_[timestamp].apk
 ```
 
 ---
@@ -75,7 +75,7 @@ firebase deploy --only hosting
 ### Bước 2: Tạo trang download với QR Code
 
 ```bash
-node create-qr-page.js https://your-apk-url.com/CityResQ360.apk
+node create-qr-page.js https://your-apk-url.com/AegisFlowAI.apk
 ```
 
 File HTML sẽ được tạo tại: `apk-output/download-page.html`
@@ -96,7 +96,7 @@ git commit -m "Add APK download page"
 git push origin gh-pages
 ```
 
-Link sẽ là: `https://yourusername.github.io/CityResQ360App/`
+Link sẽ là: `https://yourusername.github.io/AegisFlowAI/`
 
 ---
 

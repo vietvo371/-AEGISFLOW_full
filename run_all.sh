@@ -13,7 +13,7 @@
 # ============================================
 
 export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
-ROOT_DIR="/Volumes/MAC_OPTION/DATN/ AEGISFLOWAI"
+ROOT_DIR="/Volumes/MAC_OPTION/DATN/AEGISFLOWAI"
 PHP_BIN="/opt/homebrew/bin/php"
 
 # Colors
@@ -42,25 +42,25 @@ start_frontend() {
   "
 }
 
-start_reverb() {
-  echo -e "${YELLOW}🔌 Starting Laravel Reverb WebSocket (port 8080)...${NC}"
-  osascript -e "
-    tell application \"Terminal\"
-      do script \"cd '$ROOT_DIR/backend' && $PHP_BIN artisan reverb:start\"
-      set custom title of front window to \"🔌 Reverb :8080\"
-    end tell
-  "
-}
+# start_reverb() {
+#   echo -e "${YELLOW}🔌 Starting Laravel Reverb WebSocket (port 8080)...${NC}"
+#   osascript -e "
+#     tell application \"Terminal\"
+#       do script \"cd '$ROOT_DIR/backend' && $PHP_BIN artisan reverb:start\"
+#       set custom title of front window to \"🔌 Reverb :8080\"
+#     end tell
+#   "
+# }
 
-start_ai() {
-  echo -e "${BLUE}🤖 Starting AI Service (port 5005)...${NC}"
-  osascript -e "
-    tell application \"Terminal\"
-      do script \"cd '$ROOT_DIR/ai-service' && ./venv/bin/python main.py\"
-      set custom title of front window to \"🤖 AI :5005\"
-    end tell
-  "
-}
+# start_ai() {
+#   echo -e "${BLUE}🤖 Starting AI Service (port 5005)...${NC}"
+#   osascript -e "
+#     tell application \"Terminal\"
+#       do script \"cd '$ROOT_DIR/ai-service' && ./venv/bin/python main.py\"
+#       set custom title of front window to \"🤖 AI :5005\"
+#     end tell
+#   "
+# }
 
 # ============================================
 # Main

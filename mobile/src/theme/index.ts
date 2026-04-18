@@ -1,6 +1,6 @@
 /**
- * Theme System - WISE English LMS
- * 
+ * Theme System - AegisFlow AI
+ *
  * Centralized theme exports for cross-platform consistency
  * Usage:
  * import { theme, COLORS, textStyles, cardStyles, wp, hp } from '../../theme';

@@ -52,7 +52,7 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>App uses your location for features that work in the background and when the app is open.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>GreenEduMap cần truy cập vị trí để hiển thị bản đồ môi trường và dữ liệu chất lượng không khí</string>
+	<string>AegisFlowAI cần truy cập vị trí để hiển thị bản đồ môi trường và dữ liệu chất lượng không khí</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>App needs photo library access to save images</string>
 	<key>NSPhotoLibraryUsageDescription</key>

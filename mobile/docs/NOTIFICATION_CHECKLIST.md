@@ -12,7 +12,7 @@ Sử dụng checklist này để đảm bảo bạn đã hoàn thành tất cả
 
 ### iOS
 - [ ] File `GoogleService-Info.plist` đã được tải từ Firebase Console
-- [ ] File đã được copy vào `ios/CityResQ360App/`
+- [ ] File đã được copy vào `ios/AegisFlowAI/`
 - [ ] File đã được thêm vào Xcode project (kéo thả vào Xcode)
 - [ ] Checkbox "Copy items if needed" đã được chọn khi thêm vào Xcode
 
@@ -25,8 +25,8 @@ Sử dụng checklist này để đảm bảo bạn đã hoàn thành tất cả
 ## 📱 iOS Configuration
 
 ### Xcode Settings
-- [ ] Đã mở Xcode project (`open ios/CityResQ360App.xcworkspace`)
-- [ ] Đã chọn target `CityResQ360App`
+- [ ] Đã mở Xcode project (`open ios/AegisFlowAI.xcworkspace`)
+- [ ] Đã chọn target `AegisFlowAI`
 - [ ] Đã vào tab "Signing & Capabilities"
 - [ ] Đã thêm capability "Push Notifications"
 - [ ] Đã thêm capability "Background Modes"

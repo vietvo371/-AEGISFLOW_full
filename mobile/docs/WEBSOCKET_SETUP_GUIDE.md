@@ -69,7 +69,7 @@ apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 ```typescript
 const env = {
   // API URL
-  API_URL: 'https://api.cityresq360.io.vn',
+  API_URL: 'https://api.aegisflow.ai',
 
   // WebSocket Configuration
   // Backend dùng Nginx reverse proxy: /app/ -> localhost:6001
@@ -77,7 +77,7 @@ const env = {
   REVERB_APP_ID: 808212,
   REVERB_APP_KEY: 'lwf6joghdvbowg9hb7p4',
   REVERB_APP_SECRET: 'yh8dts6nhxqzn2i77yim',
-  REVERB_HOST: 'api.cityresq360.io.vn',
+  REVERB_HOST: 'api.aegisflow.ai',
   REVERB_PORT: 443, // Nginx reverse proxy
   REVERB_SCHEME: 'https',
 
@@ -823,7 +823,7 @@ Từ backend admin panel, duyệt một report:
 **Fix:**
 - Kiểm tra port 443 có accessible không
 - Kiểm tra Nginx reverse proxy
-- Thử `curl https://api.cityresq360.io.vn/app/`
+- Thử `curl https://api.aegisflow.ai/app/`
 
 ### 2. Lỗi "cluster required"
 

@@ -285,7 +285,7 @@ const PriorityRouteScreen = () => {
                                 <MapboxGL.LineLayer
                                     id="routeLine"
                                     style={{
-                                        lineColor: '#6366F1',
+                                        lineColor: '#7a5af8',
                                         lineWidth: 6,
                                         lineCap: 'round',
                                         lineJoin: 'round',
@@ -316,7 +316,7 @@ const PriorityRouteScreen = () => {
                                         {selectedIncident.title}
                                     </Text>
                                     {loadingRoute ? (
-                                        <ActivityIndicator size="small" color="#6366F1" />
+                                        <ActivityIndicator size="small" color="#7a5af8" />
                                     ) : routeInfo ? (
                                         <View style={styles.routeInfoRow}>
                                             <View style={styles.routeInfoItem}>
@@ -340,7 +340,7 @@ const PriorityRouteScreen = () => {
                                 disabled={sendingPriority}
                             >
                                 <LinearGradient
-                                    colors={['#6366F1', '#4F46E5']}
+                                    colors={['#7a5af8', '#6938ef']}
                                     start={{ x: 0, y: 0 }}
                                     end={{ x: 1, y: 0 }}
                                     style={styles.dispatchGradient}
@@ -350,7 +350,7 @@ const PriorityRouteScreen = () => {
                                     ) : (
                                         <>
                                             <View style={styles.dispatchIconCircle}>
-                                                <Icon name="bullhorn-variant" size={18} color="#4F46E5" />
+                                                <Icon name="bullhorn-variant" size={18} color="#6938ef" />
                                             </View>
                                             <Text style={styles.dispatchBtnText}>PHÁT LỆNH ƯU TIÊN</Text>
                                         </>
@@ -362,7 +362,7 @@ const PriorityRouteScreen = () => {
 
                     {!selectedIncident && (
                         <View style={styles.countChip}>
-                            <Icon name="alert-circle" size={16} color="#6366F1" />
+                            <Icon name="alert-circle" size={16} color="#7a5af8" />
                             <Text style={styles.countText}>
                                 {loading ? '...' : `${incidents.length} điểm cần theo dõi`}
                             </Text>
@@ -377,7 +377,7 @@ const PriorityRouteScreen = () => {
 
                     {loading ? (
                         <View style={styles.loadingContainer}>
-                            <ActivityIndicator size="large" color="#6366F1" />
+                            <ActivityIndicator size="large" color="#7a5af8" />
                         </View>
                     ) : (
                         <FlatList
@@ -389,8 +389,8 @@ const PriorityRouteScreen = () => {
                                 <RefreshControl
                                     refreshing={false}
                                     onRefresh={fetchActiveIncidents}
-                                    colors={['#6366F1']}
-                                    tintColor={'#6366F1'}
+                                    colors={['#7a5af8']}
+                                    tintColor={'#7a5af8'}
                                 />
                             }
                             ListEmptyComponent={
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     },
     listCardSelected: {
         borderWidth: 2,
-        borderColor: '#6366F1',
+        borderColor: '#7a5af8',
     },
     listIcon: {
         width: 44,

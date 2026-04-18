@@ -28,7 +28,7 @@ const CATEGORIES = [
   { value: 1, label: 'Giao thông', icon: 'car', color: '#EF4444' },
   { value: 2, label: 'Môi trường', icon: 'leaf', color: '#10B981' },
   { value: 3, label: 'Cháy nổ', icon: 'fire', color: '#F97316' },
-  { value: 4, label: 'Rác thải', icon: 'delete', color: '#8B5CF6' },
+  { value: 4, label: 'Rác thải', icon: 'delete', color: '#7a5af8' },
   { value: 5, label: 'Ngập lụt', icon: 'water', color: '#3B82F6' },
   { value: 6, label: 'Khác', icon: 'dots-horizontal', color: '#6B7280' },
 ];
