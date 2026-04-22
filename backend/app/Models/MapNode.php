@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\MapNodeTypeEnum;
+use App\Traits\HasTranslatedEnums;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\DB;
  */
 class MapNode extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasTranslatedEnums;
 
     protected $fillable = [
         'external_id',

@@ -43,7 +43,7 @@ class AlertController extends Controller
         $alerts = $query->paginate($request->get('per_page', 20));
 
         return ApiResponse::paginate($alerts->setCollection(
-            AlertResource::collection($alerts->getCollection())
+            collect(AlertResource::collection($alerts->getCollection())->resolve())
         ));
     }
 

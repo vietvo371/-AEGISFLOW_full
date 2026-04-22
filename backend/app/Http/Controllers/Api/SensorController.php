@@ -41,7 +41,7 @@ class SensorController extends Controller
         $sensors = $query->paginate($request->get('per_page', 50));
 
         return ApiResponse::paginate($sensors->setCollection(
-            SensorResource::collection($sensors->getCollection())
+            collect(SensorResource::collection($sensors->getCollection())->resolve())
         ));
     }
 

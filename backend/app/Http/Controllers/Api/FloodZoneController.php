@@ -39,7 +39,7 @@ class FloodZoneController extends Controller
         $zones = $query->paginate($request->get('per_page', 20));
 
         return ApiResponse::paginate($zones->setCollection(
-            FloodZoneResource::collection($zones->getCollection())
+            collect(FloodZoneResource::collection($zones->getCollection())->resolve())
         ));
     }
 

@@ -153,9 +153,10 @@ class User extends Authenticatable
     /**
      * Kiểm tra user có role cụ thể không
      */
-    public function hasRole(string $role): bool
+    public function hasRole(string|array $role): bool
     {
-        return $this->roles()->where('name', $role)->exists();
+        $roles = is_array($role) ? $role : [$role];
+        return $this->roles()->whereIn('name', $roles)->exists();
     }
 
     /**

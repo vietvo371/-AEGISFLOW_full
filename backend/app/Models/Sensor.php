@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\SensorStatusEnum;
 use App\Enums\SensorTypeEnum;
+use App\Traits\HasTranslatedEnums;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,7 +37,7 @@ use Illuminate\Support\Facades\DB;
  */
 class Sensor extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasTranslatedEnums;
 
     protected $fillable = [
         'external_id',
