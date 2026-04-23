@@ -130,18 +130,200 @@ class MapController extends Controller
     }
 
     /**
+     * Báo cáo ngập thực tế (từ flood_reports) dạng GeoJSON
+     * GET /api/map/flood-reports?event_id=1
+     */
+    public function floodReports(Request $request)
+    {
+        $query = DB::table('flood_reports')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->where('latitude', '!=', 0)
+            ->where('longitude', '!=', 0);
+
+        if ($request->filled('event_id')) {
+            $query->where('flood_event_id', $request->event_id);
+        }
+
+        $reports = $query->select([
+            'id', 'external_id', 'address', 'street_name', 'ward_name', 'district_name',
+            'latitude', 'longitude', 'water_level_cm', 'flood_type',
+            'flood_location_type', 'is_frequent', 'description',
+            'image_urls', 'polyline', 'flood_started_at', 'flood_ended_at', 'reported_at',
+        ])->limit(500)->get();
+
+        $features = $reports->map(function ($r) {
+            $wl = (float)($r->water_level_cm ?? 0);
+            $color = match(true) {
+                $wl >= 75 => '#EF4444',
+                $wl >= 50 => '#F97316',
+                $wl >= 25 => '#3B82F6',
+                default   => '#22C55E',
+            };
+
+            $images = [];
+            if ($r->image_urls) {
+                $decoded = json_decode($r->image_urls, true);
+                $images = is_array($decoded) ? $decoded : [];
+            }
+
+            // Build geometry: LineString for street floods, Point for others
+            $isStreet = $r->flood_type === 'street' && !empty($r->polyline);
+            if ($isStreet) {
+                $coords = self::decodePolyline($r->polyline);
+                $geometry = count($coords) >= 2
+                    ? ['type' => 'LineString', 'coordinates' => $coords]
+                    : ['type' => 'Point', 'coordinates' => [(float)$r->longitude, (float)$r->latitude]];
+            } else {
+                $geometry = ['type' => 'Point', 'coordinates' => [(float)$r->longitude, (float)$r->latitude]];
+            }
+
+            return [
+                'type' => 'Feature',
+                'id'   => $r->id,
+                'properties' => [
+                    'id'                  => $r->id,
+                    'address'             => $r->address,
+                    'street_name'         => $r->street_name,
+                    'ward_name'           => $r->ward_name,
+                    'district_name'       => $r->district_name,
+                    'water_level_cm'      => $r->water_level_cm,
+                    'flood_type'          => $r->flood_type,
+                    'flood_location_type' => $r->flood_location_type,
+                    'is_frequent'         => (bool)$r->is_frequent,
+                    'description'         => $r->description,
+                    'image_urls'          => $images,
+                    'polyline'            => $r->polyline,
+                    'flood_started_at'    => $r->flood_started_at,
+                    'reported_at'         => $r->reported_at,
+                    'color'               => $color,
+                ],
+                'geometry' => $geometry,
+            ];
+        });
+
+        return response()->json([
+            'type'     => 'FeatureCollection',
+            'features' => $features,
+        ]);
+    }
+
+    /**
+     * Decode Google encoded polyline → [[lng, lat], ...]
+     */
+    private static function decodePolyline(string $encoded): array
+    {
+        $coords = [];
+        $index = 0;
+        $len = strlen($encoded);
+        $lat = 0;
+        $lng = 0;
+
+        while ($index < $len) {
+            $shift = 0; $result = 0;
+            do {
+                $b = ord($encoded[$index++]) - 63;
+                $result |= ($b & 0x1f) << $shift;
+                $shift += 5;
+            } while ($b >= 0x20);
+            $dlat = ($result & 1) ? ~($result >> 1) : ($result >> 1);
+            $lat += $dlat;
+
+            $shift = 0; $result = 0;
+            do {
+                $b = ord($encoded[$index++]) - 63;
+                $result |= ($b & 0x1f) << $shift;
+                $shift += 5;
+            } while ($b >= 0x20);
+            $dlng = ($result & 1) ? ~($result >> 1) : ($result >> 1);
+            $lng += $dlng;
+
+            $coords[] = [round($lng / 1e5, 7), round($lat / 1e5, 7)]; // [lng, lat] for GeoJSON
+        }
+
+        return $coords;
+    }
+
+    /**
+     * GET /api/map/sensor-stations?type=flood_1m5
+     */
+    public function sensorStations(Request $request)
+    {
+        $query = DB::table('sensor_stations')
+            ->where('is_active', true)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude');
+
+        if ($request->filled('type')) {
+            $query->where('station_type', $request->type);
+        }
+
+        $stations = $query->select([
+            'id', 'external_id', 'name', 'station_type', 'station_type_label',
+            'area', 'address', 'ward_name', 'district_name',
+            'latitude', 'longitude', 'current_depth_m', 'phone',
+        ])->get();
+
+        $features = $stations->map(function ($s) {
+            return [
+                'type' => 'Feature',
+                'id'   => $s->id,
+                'properties' => [
+                    'id'                 => $s->id,
+                    'name'               => $s->name,
+                    'station_type'       => $s->station_type,
+                    'station_type_label' => $s->station_type_label,
+                    'area'               => $s->area,
+                    'address'            => $s->address,
+                    'ward_name'          => $s->ward_name,
+                    'district_name'      => $s->district_name,
+                    'current_depth_m'    => $s->current_depth_m,
+                    'phone'              => $s->phone,
+                ],
+                'geometry' => [
+                    'type'        => 'Point',
+                    'coordinates' => [(float)$s->longitude, (float)$s->latitude],
+                ],
+            ];
+        });
+
+        return response()->json([
+            'type'     => 'FeatureCollection',
+            'features' => $features,
+        ]);
+    }
+
+    /**
+     * Danh sách đợt lũ lịch sử
+     * GET /api/map/flood-events
+     */
+    public function floodEvents()
+    {
+        $events = DB::table('flood_events')
+            ->orderByDesc('started_at')
+            ->select(['id', 'external_id', 'name', 'started_at', 'ended_at',
+                      'severity', 'status', 'total_reports', 'affected_districts',
+                      'max_water_level_cm', 'avg_water_level_cm'])
+            ->get();
+
+        return ApiResponse::success($events);
+    }
+
+    /**
      * Tất cả dữ liệu map cùng lúc
      * GET /api/map/all
      */
     public function all(Request $request)
     {
         return ApiResponse::success([
-            'incidents' => $this->incidents($request)->getData(),
-            'flood_zones' => $this->floodZones($request)->getData(),
-            'rescue_teams' => $this->rescueTeams()->getData(),
-            'shelters' => $this->shelters()->getData(),
-            'sensors' => $this->sensors()->getData(),
-            'generated_at' => now()->toIso8601String(),
+            'incidents'       => $this->incidents($request)->getData(),
+            'flood_zones'     => $this->floodZones($request)->getData(),
+            'rescue_teams'    => $this->rescueTeams()->getData(),
+            'shelters'        => $this->shelters()->getData(),
+            'sensors'         => $this->sensors()->getData(),
+            'flood_reports'   => $this->floodReports($request)->getData(),
+            'sensor_stations' => $this->sensorStations($request)->getData(),
+            'generated_at'    => now()->toIso8601String(),
         ]);
     }
 

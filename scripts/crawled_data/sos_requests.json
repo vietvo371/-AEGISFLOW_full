@@ -1,0 +1,4504 @@
+{
+  "status": "success",
+  "data": [
+    {
+      "_id": "69b3c3f00f53c2c2737f87f2",
+      "report_name": "test",
+      "report_mobile": "0935333333",
+      "report_for_someone_else": true,
+      "message": "test",
+      "create_time": 1773388784,
+      "status": "PENDING",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1773388784,
+          "update_by": "public_user"
+        }
+      ],
+      "location": {
+        "coordinates": [
+          0,
+          0
+        ],
+        "address": "le loi, phường Hải Châu"
+      }
+    },
+    {
+      "_id": "69b38c370f53c2c2737f87e5",
+      "report_name": "Đơn vị test, vui lòng bỏ qua",
+      "report_mobile": "0868391272",
+      "report_for_someone_else": true,
+      "message": "Đơn vị test, vui lòng bỏ qua",
+      "create_time": 1773374519,
+      "status": "PENDING",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1773374519,
+          "update_by": "public_user"
+        }
+      ],
+      "location": {
+        "coordinates": [
+          0,
+          0
+        ],
+        "address": "Đơn vị test, vui lòng bỏ qua, phường Hải Châu"
+      }
+    },
+    {
+      "_id": "69b38b920f53c2c2737f87e4",
+      "report_name": "Đơn vị test, vui lòng bỏ qua",
+      "report_mobile": "0868391272",
+      "report_for_someone_else": true,
+      "message": "Đơn vị test, vui lòng bỏ qua",
+      "create_time": 1773374354,
+      "status": "PENDING",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1773374354,
+          "update_by": "public_user"
+        }
+      ],
+      "location": {
+        "coordinates": [
+          0,
+          0
+        ],
+        "address": "Đơn vị test, vui lòng bỏ qua, phường Hải Châu"
+      }
+    },
+    {
+      "_id": "695f25f93918611256141d4c",
+      "report_name": "Test",
+      "report_mobile": "0854265325",
+      "report_for_someone_else": true,
+      "message": "Đơn vị phát triển test, xin vui lòng bỏ qua",
+      "create_time": 1767843321,
+      "status": "PENDING",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1767843321,
+          "update_by": "public_user"
+        }
+      ],
+      "location": {
+        "coordinates": [
+          0,
+          0
+        ],
+        "address": "Test, Phường Hòa Cường"
+      }
+    },
+    {
+      "_id": "695f21243918611256141d4b",
+      "report_name": "Test",
+      "report_mobile": "0854365215",
+      "report_for_someone_else": true,
+      "message": "Đơn vị phát triển test, xin vui lòng bỏ qua",
+      "create_time": 1767842084,
+      "status": "PENDING",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1767842084,
+          "update_by": "public_user"
+        }
+      ],
+      "location": {
+        "coordinates": [
+          0,
+          0
+        ],
+        "address": "Test, Phường An Hải"
+      }
+    },
+    {
+      "_id": "695e22c83918611256141d47",
+      "report_name": "Đơn vị test, vui lòng bỏ qua",
+      "report_mobile": "0868391272",
+      "report_for_someone_else": true,
+      "message": "Đơn vị test, vui lòng bỏ qua",
+      "create_time": 1767776968,
+      "status": "PENDING",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1767776968,
+          "update_by": "public_user"
+        }
+      ],
+      "location": {
+        "coordinates": [
+          0,
+          0
+        ],
+        "address": "Đơn vị test, vui lòng bỏ qua, phường Hải Châu"
+      }
+    },
+    {
+      "_id": "69296c9455ca9f9c5b86840d",
+      "report_name": "Test",
+      "report_mobile": "0976929792",
+      "report_for_someone_else": false,
+      "message": "Nước uống, thức ăn, test",
+      "create_time": 1764322452,
+      "status": "REJECTED",
+      "reason": "TEst",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1764322452,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1764744308,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2424051,
+          16.0568326
+        ],
+        "address": "149 Nguyễn Duy Hiệu, 149 Nguyễn Duy Hiệu, An Hải Đông, Sơn Trà, Đà Nẵng 550000",
+        "district_name": "Phường An Hải",
+        "district_id": "753"
+      }
+    },
+    {
+      "_id": "6913305255ca9f9c5b868223",
+      "report_name": "Lê công Tuấn",
+      "report_mobile": "0901336375",
+      "report_for_someone_else": false,
+      "message": "Mỳ tôm đi đâu chưa dc 1 gói",
+      "create_time": 1762865234,
+      "status": "REJECTED",
+      "reason": "Test",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/GPO0DPMC-2025-11-11.jpeg"
+        },
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/VHVUYABH-2025-11-11.jpeg"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1762865234,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1764744318,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.26034,
+          15.8786332
+        ],
+        "address": "Trung Phú 2, điện bàn",
+        "district_name": "Phường Điện Bàn",
+        "district_id": "714"
+      }
+    },
+    {
+      "_id": "690a9d5c889c984b7598f0bc",
+      "report_name": "Test 3",
+      "report_mobile": "0909090909",
+      "report_for_someone_else": false,
+      "message": "Test",
+      "create_time": 1762303324,
+      "status": "REJECTED",
+      "reason": "test",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1762303324,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1762303394,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.20943161222198,
+          16.00443706574778
+        ],
+        "address": "18 ph",
+        "district_name": "Phường Hòa Xuân",
+        "district_id": "740"
+      }
+    },
+    {
+      "_id": "690a9d2d55ca9f9c5b868146",
+      "report_name": "Test 2",
+      "report_mobile": "0909090909",
+      "report_for_someone_else": false,
+      "message": "Test",
+      "create_time": 1762303277,
+      "status": "REJECTED",
+      "reason": "test",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1762303277,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1762303361,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2069799,
+          15.999252299999997
+        ],
+        "address": "180 Phạm Hùng, 180 Phạm Hùng, Hoà Châu, Hòa Vang, Đà Nẵng 550000",
+        "district_name": "Phường Hòa Xuân",
+        "district_id": "740"
+      }
+    },
+    {
+      "_id": "690a9ce955ca9f9c5b868145",
+      "report_name": "Test",
+      "report_mobile": "0909090909",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1762303209,
+      "status": "REJECTED",
+      "reason": "test",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1762303209,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1762303315,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.228792,
+          16.080442
+        ],
+        "address": "23bnct, Phường An Hải, ",
+        "district_name": "Phường Sơn Trà",
+        "district_id": "789"
+      }
+    },
+    {
+      "_id": "69094dc355ca9f9c5b868119",
+      "report_name": "Lộc test 2",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": false,
+      "message": "Test test",
+      "create_time": 1762217411,
+      "status": "REJECTED",
+      "reason": "test",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1762217411,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1762217461,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2196487,
+          16.0761243
+        ],
+        "address": "90 Lê Lợi, 90 Lê Lợi, Thạch Thang, Hải Châu, Đà Nẵng 550000",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "69094cf155ca9f9c5b868117",
+      "report_name": "Lộc Test",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": false,
+      "message": "Test",
+      "create_time": 1762217201,
+      "status": "REJECTED",
+      "reason": "test",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1762217201,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1762217289,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22274510723048,
+          16.05258720622136
+        ],
+        "address": "145 Nguyễn Hữu Dật",
+        "district_name": "Phường Hòa Cường",
+        "district_id": "744"
+      }
+    },
+    {
+      "_id": "69044474daa6c0fd89d2c37d",
+      "report_name": "Test",
+      "report_mobile": "0909090909",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1761887348,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761887348,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1762130329,
+          "update_by": "84905171307"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1762130334,
+          "update_by": "84905171307"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2224915,
+          16.0759936
+        ],
+        "address": "23 tt, Phường Hòa Cường, ",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "690422b2ae1f0c93d3d9015d",
+      "report_name": "Test",
+      "report_mobile": "0935145155",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1761878706,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761878706,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761893605,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761893691,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.07334,
+          16.05897
+        ],
+        "address": "15 Quang Trung, phường Hải Châu",
+        "district_name": "Xã Bà Nà",
+        "district_id": "762"
+      }
+    },
+    {
+      "_id": "69035e55c6837b3e12218750",
+      "report_name": "Test",
+      "report_mobile": "0909090909",
+      "report_for_someone_else": false,
+      "message": "Test",
+      "create_time": 1761828437,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761828437,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761829143,
+          "update_by": "84898234796"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761829679,
+          "update_by": "84898234796"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22307178519299,
+          16.076486970010336
+        ],
+        "address": "78 Phạm Hùng, 78 Phạm Hùng, Hoà Châu, Hòa Vang, Đà Nẵng 550000",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "6902514873ed680b0d1d95c4",
+      "report_name": "Vu Thị Thúy Dung",
+      "report_mobile": "0903583200",
+      "report_for_someone_else": true,
+      "message": "Nước dâng cao mắc kẹt trong nhà",
+      "create_time": 1761759560,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761759560,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761762850,
+          "update_by": "84792486456"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761762855,
+          "update_by": "84792486456"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.226637,
+          15.949282
+        ],
+        "address": "Không có, Xã Hòa Tiến, ",
+        "district_name": "Phường Điện Bàn Đông",
+        "district_id": "734"
+      }
+    },
+    {
+      "_id": "69022132df1d022714e6abe3",
+      "report_name": "Bùi Thơ",
+      "report_mobile": "0342639686",
+      "report_for_someone_else": true,
+      "message": "Cần hỗ trợ di chuyển lên đường quốc lộ 14B. Nước đã ngập quá gác.",
+      "create_time": 1761747250,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/F9SAQ4SG-2025-10-29.jpeg"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761747250,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761760299,
+          "update_by": "84792486456"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761760405,
+          "update_by": "84792486456"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          107.9472579,
+          15.822076899999997
+        ],
+        "address": "Đại Hồng, Đại Hồng, Đại Lộc, Quảng Nam",
+        "district_name": "Xã Hà Nha",
+        "district_id": "711"
+      }
+    },
+    {
+      "_id": "6901edf9df1d022714e6ab64",
+      "report_name": "Trần thọ",
+      "report_mobile": "090 5498033",
+      "report_for_someone_else": false,
+      "message": "Bị ngập gần sông kkhu chợ mới ba xa cũ",
+      "create_time": 1761734137,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761734137,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761735897,
+          "update_by": "84905673198"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761735899,
+          "update_by": "84905673198"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2195263,
+          15.953395599999999
+        ],
+        "address": "Chợ Mới Ba Xã Hoà Phước, X639+9R2, QL1, Hoà Phước, Hòa Vang, Đà Nẵng",
+        "district_name": "Phường Hòa Xuân",
+        "district_id": "740"
+      }
+    },
+    {
+      "_id": "6901ea07df1d022714e6ab5a",
+      "report_name": "Lê thọ đỉnh",
+      "report_mobile": "088 9405414",
+      "report_for_someone_else": false,
+      "message": "Nước uống,mỳ tôm,gạo ạ ",
+      "create_time": 1761733127,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/QQMV07BO-2025-10-29.jpeg"
+        },
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/WTNNM2N0-2025-10-29.jpeg"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761733127,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761733704,
+          "update_by": "84905673198"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761733714,
+          "update_by": "84905673198"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2792729,
+          15.782328399999999
+        ],
+        "address": "Quế Xuân 2, Quế Xuân 2, Quế Sơn, Quảng Nam",
+        "district_name": "Xã Xuân Phú",
+        "district_id": "718"
+      }
+    },
+    {
+      "_id": "6901e32d73ed680b0d1d94bc",
+      "report_name": "Hà Đức Mỷ ",
+      "report_mobile": "0935876067",
+      "report_for_someone_else": true,
+      "message": "Nhà chỉ có ba mẹ già ở nhà, sáng giờ không liên hệ được, không rõ có đảm bảo thức ăn, nước uống gì không. Nhờ hỗ trợ giúp ạ",
+      "create_time": 1761731373,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761731373,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761733717,
+          "update_by": "84905673198"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761733721,
+          "update_by": "84905673198"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2255173,
+          15.921156499999999
+        ],
+        "address": "ĐÌNH LÀNG PHONG NGŨ, W6CG+F66, Điện Thắng Nam, Điện Bàn, Quảng Nam",
+        "district_name": "Phường An Thắng",
+        "district_id": "735"
+      }
+    },
+    {
+      "_id": "6901e06adf1d022714e6ab49",
+      "report_name": "Võ Anh Tấn",
+      "report_mobile": "0777101102",
+      "report_for_someone_else": false,
+      "message": "Không có lương thực, không có ga để nấu ăn. Cần hỗ trợ.",
+      "create_time": 1761730666,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761730666,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761733723,
+          "update_by": "84905673198"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761733726,
+          "update_by": "84905673198"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2255173,
+          15.921156499999999
+        ],
+        "address": "ĐÌNH LÀNG PHONG NGŨ, W6CG+F66, Điện Thắng Nam, Điện Bàn, Quảng Nam",
+        "district_name": "Phường An Thắng",
+        "district_id": "735"
+      }
+    },
+    {
+      "_id": "6901cfa873ed680b0d1d9480",
+      "report_name": "Việt test",
+      "report_mobile": "0905171307",
+      "report_for_someone_else": false,
+      "message": "test SOS",
+      "create_time": 1761726376,
+      "status": "REJECTED",
+      "reason": "test",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/XTWPAODG-2025-10-29.png"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761726376,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761729026,
+          "update_by": "84905171307"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222097,
+          16.0755022
+        ],
+        "address": "Công viên phần mềm 02 Quang Trung, 02 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "6901c5e000168c73d2fde6e4",
+      "report_name": "Lộc Test",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": false,
+      "message": "Test nước cao quá",
+      "create_time": 1761723872,
+      "status": "REJECTED",
+      "reason": "test",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/L48VTHTO-2025-10-29.jpeg"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761723872,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761724895,
+          "update_by": "84905171307"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22187489999999,
+          16.0596873
+        ],
+        "address": "60 Trưng Nữ Vương, 60 Trưng Nữ Vương, Phước Ninh, Hải Châu, Đà Nẵng 550000",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "6901befcd43f4d60b5d77c22",
+      "report_name": "Lộc Test",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": false,
+      "message": "Test nước cao quá",
+      "create_time": 1761722108,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761722108,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761722122,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827478,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2143291,
+          16.0353664
+        ],
+        "address": "Huỳnh Tấn Phát, Huỳnh Tấn Phát, Hải Châu, Đà Nẵng",
+        "district_name": "Phường Hòa Cường",
+        "district_id": "744"
+      }
+    },
+    {
+      "_id": "6901be978f925c941bfdb94d",
+      "report_name": "Lộc Test",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": false,
+      "message": "Test Nước cao quá",
+      "create_time": 1761722007,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/JV0KJPBB-2025-10-29.jpeg"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761722007,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761722115,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827486,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2138311,
+          16.040903999999998
+        ],
+        "address": "145 Nguyễn Hữu Dật, 145 Nguyễn Hữu Dật, Hoà Cường Bắc, Hải Châu, Đà Nẵng 550000",
+        "district_name": "Phường Hòa Cường",
+        "district_id": "744"
+      }
+    },
+    {
+      "_id": "69019c26147d3542f6569adb",
+      "report_name": "Trần Phan Văn Phước",
+      "report_mobile": "0909262068",
+      "report_for_someone_else": true,
+      "message": "Gia đình có 3 người gồm 2 vk ck và 1 em bé 4 5 tuổi. Vì nước lên nhanh và lần đầu dọn đến ở nên không biết chuẩn bị đồ ăn. Thiếu đồ ăn và nước uống, không biết có thể cầm cự đến khi nào. Hiện nay nước lên gần ngập cửa chính, đang ở trên gác còn tầm hơn 1 gang tay nữa đến gác. Nhờ cứu trợ đồ ăn nước uống cầm cự. Địa chỉ để ở gần nhà, từ đường đội 7 đi vào đường trong song song đội 7, nhà ở ngay ngã tư bên cạnh ngã ba đã ghim. \n[Hình 2] có một cửa sổ nhỏ bên trái ngôi nhà để nhận cứu trợ hoặc thoát thân.\n[Hình 3] là lúc nước lụt mới ngập đường, có trụ điện và hàng cau ngay phía đối diện. Nhờ địa bàn có người cứu trợ, đặc biệt em nhỏ rất đói rồi ạ. \nSđt người trong nhà: 0909262068 chị vk tên Thi, anh chồng tên Phước. \nHoặc: 0858638018 ",
+      "create_time": 1761713190,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/ZRFZ5UI3-2025-10-29.jpeg"
+        },
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/T36G6TO1-2025-10-29.png"
+        },
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/U2EEQFUJ-2025-10-29.jpeg"
+        },
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/7H7O62X6-2025-10-29.png"
+        },
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/OJQ6S7Q2-2025-10-29.png"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761713190,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761713923,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827491,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2756685,
+          15.8811144
+        ],
+        "address": "Phước Điện Bàn, V7JG+C7V, Đội 7, Khúc Lũy, Điện Bàn, Quảng Nam",
+        "district_name": "Phường Điện Bàn",
+        "district_id": "714"
+      }
+    },
+    {
+      "_id": "69018da4147d3542f6569aa7",
+      "report_name": "Lê Thành Tư ",
+      "report_mobile": "0971415115",
+      "report_for_someone_else": false,
+      "message": "Nhà máy chúng tôi đang bị cô lập do sạc lở đường dẫn vào nhà máy.",
+      "create_time": 1761709476,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761709476,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761710945,
+          "update_by": "84383256898"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761710947,
+          "update_by": "84383256898"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761711576,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761711578,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.085844,
+          15.056383
+        ],
+        "address": "Nhà máy Thủy điện Trà Linh 3, 334P+H85, ĐT616, Trà Nam, Nam Trà My, Quảng Nam",
+        "district_name": "Xã Trà Linh",
+        "district_id": "764"
+      }
+    },
+    {
+      "_id": "69017d72147d3542f6569a6a",
+      "report_name": "NGUYỄN NGỌC BẢO TRÂN",
+      "report_mobile": "0788583847",
+      "report_for_someone_else": false,
+      "message": "cần tiếp tế nước uống và lương thực cho gia đình gồm 4 người ạ, 3 người lớn 1 trẻ em, nhà em ngập sâu nên cần giúp dỡ vấn đề lương thực ạ huhu",
+      "create_time": 1761705330,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/GYXUMN42-2025-10-29.jpeg"
+        },
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/93JPKVKD-2025-10-29.jpeg"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761705330,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761706413,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761707233,
+          "update_by": "84383256898"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761707238,
+          "update_by": "84383256898"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761708810,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2552036,
+          15.8918407
+        ],
+        "address": "Khu dân cư khối 5 Vĩnh Điện, TT. Vĩnh Điện, Điện Bàn, Quảng Nam",
+        "district_name": "Phường Điện Bàn",
+        "district_id": "714"
+      }
+    },
+    {
+      "_id": "690161e18fec8cc674e4f8da",
+      "report_name": "Nguyễn Phương",
+      "report_mobile": "0905347734",
+      "report_for_someone_else": true,
+      "message": "Chị em có 1 mình ở trên gác nhà. Nước ngập quá cửa không thoát ra được. Cứu chị e với",
+      "create_time": 1761698273,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/UPWVYEJF-2025-10-29.jpeg"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761698273,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761698947,
+          "update_by": "84383256898"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761698955,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2094556,
+          15.9636439
+        ],
+        "address": "Nhà văn hóa thôn Quá Giáng 1, X675+FQ4, Hoà Phước, Hòa Vang, Đà Nẵng",
+        "district_name": "Phường Hòa Xuân",
+        "district_id": "740"
+      }
+    },
+    {
+      "_id": "69011979147d3542f65699da",
+      "report_name": "Lê Thị Tố Nữ",
+      "report_mobile": "0862007409",
+      "report_for_someone_else": true,
+      "message": "Chị mình h đang ở 1 mình, đt hết pin k liên lạc được cả ngày nay. Phòng trọ cấp 4 có gác nhưng k cao. Khu vực hoang vắng nên khó kêu cứu. Tối nay nước dâng cao nữa, k biết còn chống cự được không. Mong mn cứu chị e vơi ạ !!!!😭😭😭",
+      "create_time": 1761679737,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/BXJBV2W8-2025-10-28.jpeg"
+        },
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/5K1AF746-2025-10-28.jpeg"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761679737,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761698548,
+          "update_by": "84905171307"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761703717,
+          "update_by": "84905171307"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2841882,
+          15.843873
+        ],
+        "address": "Lê Lai, Lê Lai, Nam Phước, Duy Xuyên, Quảng Nam",
+        "district_name": "Xã Nam Phước",
+        "district_id": "774"
+      }
+    },
+    {
+      "_id": "690107c7147d3542f65699d6",
+      "report_name": "Nguyễn Xuân Trung",
+      "report_mobile": "0935212499",
+      "report_for_someone_else": true,
+      "message": "Thực phẩm thiết yếu+ thuốc hạ sốt ",
+      "create_time": 1761675207,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761675207,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761698541,
+          "update_by": "84905171307"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761699029,
+          "update_by": "84905171307"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2159798,
+          15.904593499999999
+        ],
+        "address": "Trạm Bơm Đông Hồ, W638+R9Q, Điện An, Điện Bàn, Quảng Nam",
+        "district_name": "Phường Điện Bàn Bắc",
+        "district_id": "748"
+      }
+    },
+    {
+      "_id": "6900a823147d3542f6569917",
+      "report_name": "Đinh Thị Trấn ",
+      "report_mobile": "0905651982",
+      "report_for_someone_else": true,
+      "message": "Cần cức",
+      "create_time": 1761650723,
+      "status": "REJECTED",
+      "reason": "Người dân nói ko có gởi",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761650723,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761663054,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2221387,
+          16.0630827
+        ],
+        "address": "Triệt Lông Đà Nẵng - Ng Home Spa, 15/11 Lê Hồng Phong, Phước Ninh, Hải Châu, Đà Nẵng 550000",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "69009ef28fec8cc674e4f77f",
+      "report_name": "Võ Phi Mạnh Hải",
+      "report_mobile": "0935262931",
+      "report_for_someone_else": true,
+      "message": "Có người còn ở đó mau tối giúp ạ",
+      "create_time": 1761649049,
+      "status": "REJECTED",
+      "reason": "không liên hệ được",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/3I6W23PE-2025-10-28.jpeg"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761648370,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761698576,
+          "update_by": "84905171307"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2227412,
+          15.947565799999998
+        ],
+        "address": "Cầu Tứ Câu, W6XF+23H, cầu Tứ Câu, Điện Ngọc, Điện Bàn, Quảng Nam",
+        "district_name": "Phường Điện Bàn Đông",
+        "district_id": "734"
+      }
+    },
+    {
+      "_id": "6900384a8fec8cc674e4f61a",
+      "report_name": "Trần Công Lợi",
+      "report_mobile": "0347287815",
+      "report_for_someone_else": true,
+      "message": "Nhờ a/c giúp bà con ở  Thôn 6 xã Điện Nam thành phố Đà Nẵng (đoạn Giữa Đường Hồ Nghinh) nước dâng cao vào nhà từ đêm qua. Cứ như tình hình này trong hôm nay chắc ngập đến mái nhà thôi. Mấy hộ dân ở đó bị cô lập rồi ạ.\n SĐT của người dân ở đó:\n0706215922 - Tịnh.\n0347287815 -  Lợi",
+      "create_time": 1761622090,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761622090,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761622158,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761624443,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2585117,
+          15.9280404
+        ],
+        "address": "Điện Nam Bắc, Điện Nam Bắc, Điện Bàn, Quảng Nam",
+        "district_name": "Phường Điện Bàn Đông",
+        "district_id": "734"
+      }
+    },
+    {
+      "_id": "69002f6c147d3542f65697e5",
+      "report_name": "tuan",
+      "report_mobile": "0935814401",
+      "report_for_someone_else": false,
+      "message": "abc",
+      "create_time": 1761619820,
+      "status": "REJECTED",
+      "reason": "SĐT không có thật, liên hệ công dân không được.",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761619820,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761620241,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2447763,
+          16.0653941
+        ],
+        "address": "02 Hà Chương, 2 Hà Chương, Phước Mỹ, Sơn Trà, Đà Nẵng 550000",
+        "district_name": "Phường An Hải",
+        "district_id": "753"
+      }
+    },
+    {
+      "_id": "690028b7147d3542f65697da",
+      "report_name": "Nguyễn Phương Nhi",
+      "report_mobile": "0763559632",
+      "report_for_someone_else": false,
+      "message": "Lương thực thực phẩm ngập nhiều nhà phải lên nóc ",
+      "create_time": 1761618103,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/FTMAG2QK-2025-10-28.jpeg"
+        },
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/9Y3KPCNS-2025-10-28.jpeg"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761618103,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761618263,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761624440,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2667386,
+          15.866361200000002
+        ],
+        "address": "Nhà văn hoá thôn Đông Khương 2, V788+GMX, Đông Khương 2, Điện Phương, Điện Bàn, Quảng Nam",
+        "district_name": "Phường Điện Bàn",
+        "district_id": "714"
+      }
+    },
+    {
+      "_id": "68ff9c568fec8cc674e4f551",
+      "report_name": "Nguyễn Anh Quốc",
+      "report_mobile": "0367130538",
+      "report_for_someone_else": true,
+      "message": "🆘🆘mn ơi! Cứu khẩn!\nHơn 30 người đang bị cô lập, co cụm nhau dưới chân núi, phía trước thì biển nước chảy siết, hai bên đằng sau núi thì sạt lỡ,không di chuyển đi đâu được nữa bà con mất điện mất sóng, liên lạc khó khăn đang cần gấp 1 đội cứu hộ để di dời sớm nếu không tính mạng bà con bị nguy hiểm, mong nhờ mn chia sẻ để giúp ạ!!\nĐ/c: xóm cuối thôn Xuân hoà (sát chân đèo nông sơn), xã Quế phước (phước ninh cũ), tp Đà Nẵng.\nSđt:0367130538🆘🆘",
+      "create_time": 1761582166,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761582166,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761613178,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761624436,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.00652009999999,
+          15.658940799999998
+        ],
+        "address": "Quế Phước, Quế Phước, Nông Sơn, Quảng Nam",
+        "district_name": "Xã Quế Phước",
+        "district_id": "719"
+      }
+    },
+    {
+      "_id": "68f8dfad69b744f130dba18e",
+      "report_name": "TEST",
+      "report_mobile": "0123456789",
+      "report_for_someone_else": false,
+      "message": "test",
+      "create_time": 1761140653,
+      "status": "REJECTED",
+      "reason": "test",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/53IE6AR3-2025-10-22.png"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761140653,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761140956,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22273890000001,
+          16.0771565
+        ],
+        "address": "Phòng Kế Toán - Tài Chính, 24 Trần Phú, Thạch Thang, Hải Châu, Đà Nẵng 550000",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "68f8833f7ca3362f29971812",
+      "report_name": "Viet",
+      "report_mobile": "0905817355",
+      "report_for_someone_else": false,
+      "message": "Công viên phần mềm 02 Quang Trung ,02 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000",
+      "create_time": 1761116991,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/OX87IVC0-2025-10-22.png"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761116991,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761117003,
+          "update_by": "84905171307"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827506,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222097,
+          16.0755022
+        ],
+        "address": "Công viên phần mềm 02 Quang Trung, 02 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "68f84186ad776ce456d2c07a",
+      "report_name": "quang",
+      "report_mobile": "0795549310",
+      "report_for_someone_else": false,
+      "message": "test",
+      "create_time": 1761100166,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761100166,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761100482,
+          "update_by": "84905171307"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827515,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.20164605975151,
+          16.069580744951963
+        ],
+        "address": "45 Lê Độ, 45 Lê Độ, Phường Thanh Khê, Thành phố Đà Nẵng",
+        "district_name": "Phường Thanh Khê",
+        "district_id": "761"
+      }
+    },
+    {
+      "_id": "68f758f9ad776ce456d2bfd1",
+      "report_name": "Test",
+      "report_mobile": "0976929792",
+      "report_for_someone_else": true,
+      "message": "Đndj",
+      "create_time": 1761040633,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761040633,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761712897,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827519,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2223466,
+          16.075291
+        ],
+        "address": "Fkfkff, Phường Tam Kỳ, ",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "68f74d15ad776ce456d2bd37",
+      "report_name": "Test",
+      "report_mobile": "0976929792",
+      "report_for_someone_else": true,
+      "message": "Chfjffk",
+      "create_time": 1761037589,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1761037589,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1761039505,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827567,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.222345,
+          16.075169
+        ],
+        "address": "Dnđj, Phường Mân Thái, Quận Sơn Trà",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "68f60595727a9be0ee2081bf",
+      "report_name": "Việt",
+      "report_mobile": "0651342789",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1760953749,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1760953749,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1760955038,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827571,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.188516,
+          16.053495
+        ],
+        "address": "24 trần phú, Phường Chính Gián, Quận Thanh Khê",
+        "district_name": "Phường An Khê",
+        "district_id": "716"
+      }
+    },
+    {
+      "_id": "68f60586727a9be0ee2081be",
+      "report_name": "Bcbc",
+      "report_mobile": "0909090909",
+      "report_for_someone_else": true,
+      "message": "Alo",
+      "create_time": 1760953734,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1760953734,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827597,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.222677,
+          16.07682
+        ],
+        "address": "123, Phường Hòa Hải, Quận Ngũ Hành Sơn",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "68f604b9727a9be0ee2081bd",
+      "report_name": "Test",
+      "report_mobile": "0905131264",
+      "report_for_someone_else": false,
+      "message": "Test",
+      "create_time": 1760953529,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1760953529,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827611,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22063744068146,
+          16.075394935905933
+        ],
+        "address": "Công viên phần mềm 02 Quang Trung, 02 Quang Trung, Phường Hải Châu, Thành phố Đà Nẵng",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "68f60467838a6a23bc0fa943",
+      "report_name": "Abc",
+      "report_mobile": "0909090909",
+      "report_for_someone_else": false,
+      "message": "Hỗ trợ",
+      "create_time": 1760953447,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1760953447,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827624,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.20779234170914,
+          15.986881032586098
+        ],
+        "address": "Quán Nhậu 24, Phạm Hùng, Phường Hòa Xuân, Thành phố Đà Nẵng",
+        "district_name": "Phường Hòa Xuân",
+        "district_id": "740"
+      }
+    },
+    {
+      "_id": "68f602b3727a9be0ee2081a4",
+      "report_name": "Long",
+      "report_mobile": "0905609927",
+      "report_for_someone_else": true,
+      "message": "Hjjikoj - test",
+      "create_time": 1760953011,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1760953011,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827636,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.222855,
+          16.07655
+        ],
+        "address": "24 trần phú, Phường Chính Gián, Quận Thanh Khê",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "68f5ffc5727a9be0ee2081a3",
+      "report_name": "Test",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": false,
+      "message": "Test cứu tui cứu tui",
+      "create_time": 1760952261,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1760952261,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1760955024,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827643,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22215590626001,
+          16.07528328895569
+        ],
+        "address": "Công viên phần mềm Đà Nẵng, 02 Quang Trung, Phường Hải Châu, Thành phố Đà Nẵng",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "68f0a506838a6a23bc0fa90d",
+      "report_name": "Long",
+      "report_mobile": "0905609927",
+      "report_for_someone_else": false,
+      "message": "mưa ngập - test",
+      "create_time": 1760601350,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1760601350,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1760952437,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1760952439,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.21317486464977,
+          16.0442559979856
+        ],
+        "address": "Quán Cơm Gà Phương, 247 Tiểu La, Phường Hòa Cường, Thành phố Đà Nẵng",
+        "district_name": "Phường Hòa Cường",
+        "district_id": "744"
+      }
+    },
+    {
+      "_id": "68d9de38125627902cc4d660",
+      "report_name": "Test",
+      "report_mobile": "0976929792",
+      "report_for_someone_else": true,
+      "message": "Fgghh",
+      "create_time": 1759108664,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1759108664,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1760952443,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827647,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.221576,
+          16.07508
+        ],
+        "address": "Ghhhh, Phường Nại Hiên Đông, Quận Sơn Trà",
+        "district_name": "Phường Hải Châu",
+        "district_id": "769"
+      }
+    },
+    {
+      "_id": "6748324417f26ac177faed33",
+      "report_name": "âsasasas",
+      "report_mobile": "0125898989",
+      "report_for_someone_else": true,
+      "message": "aaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "create_time": 1732784708,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/05FJR22B-2024-11-28.png"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1732784708,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1735542763,
+          "update_by": "84975828077"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827654,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2178,
+          16.05226
+        ],
+        "address": "Phường Hòa Thuận Đông, 50215 Quận Hải Châu",
+        "ward_name": "Phường Hòa Thuận Đông",
+        "district_name": "Quận Hải Châu",
+        "district_id": "7255"
+      }
+    },
+    {
+      "_id": "672844647c90d774649c7c29",
+      "report_name": "Trà Quang Lộc",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": true,
+      "message": "Test test test test cứu trợ",
+      "create_time": 1730692196,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1730692196,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827661,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.188345,
+          16.054174
+        ],
+        "address": "145 Nguyễn Hữu Dật, Phường Hòa Cường Bắc, Quận Hải Châu",
+        "ward_name": "Phường Hòa Cường Bắc",
+        "district_name": "Quận Hải Châu",
+        "district_id": "7255"
+      }
+    },
+    {
+      "_id": "672583387c90d774649c7c26",
+      "report_name": "Test",
+      "report_mobile": "0905234456",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1730511672,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1730511672,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827668,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22277950792237,
+          16.076690673828125
+        ],
+        "address": "24 Trần Phú, Phường Thạch Thang, Quận Hải Châu",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu",
+        "district_id": "7255"
+      }
+    },
+    {
+      "_id": "670c8253e33fbc16b04d814f",
+      "report_name": "TEST",
+      "report_mobile": "0123456789",
+      "report_for_someone_else": false,
+      "message": "TEST",
+      "create_time": 1728873043,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/HYTAIGI9-2024-10-14.png"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1728873043,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728873070,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827672,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22335,
+          16.0772
+        ],
+        "address": "Phường Thạch Thang, 50207 Quận Hải Châu",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu",
+        "district_id": "7255"
+      }
+    },
+    {
+      "_id": "670c8231d9145c5c91b9b9f0",
+      "report_name": "HaSonTung",
+      "report_mobile": "0911420295",
+      "report_for_someone_else": false,
+      "message": "cứu với",
+      "create_time": 1728873009,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1728873009,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827681,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.21822,
+          16.06038
+        ],
+        "address": "Đường Huỳnh Thúc Kháng 56 Phường Nam Dương, 50212 Quận Hải Châu",
+        "street_name": "Đường Huỳnh Thúc Kháng 56 Phường Nam Dương",
+        "ward_name": "Đường Huỳnh Thúc Kháng 56 Phường Nam Dương",
+        "district_name": "Quận Hải Châu",
+        "district_id": "7255"
+      }
+    },
+    {
+      "_id": "670c81f8d9145c5c91b9b9ef",
+      "report_name": "HaSonTung",
+      "report_mobile": "0911420295",
+      "report_for_someone_else": false,
+      "message": "cứu",
+      "create_time": 1728872952,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/42YVR2LU-2024-10-14.webp"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1728872952,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728872977,
+          "update_by": "84911420295"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1728872981,
+          "update_by": "84911420295"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.20915,
+          16.07071
+        ],
+        "address": "Phường Tân Chính, 50314 Quận Thanh Khê",
+        "ward_name": "Phường Tân Chính",
+        "district_name": "Quận Thanh Khê",
+        "district_id": "7244"
+      }
+    },
+    {
+      "_id": "670c7908d9145c5c91b9b9ed",
+      "report_name": "javascript:prompt('VNCERT')",
+      "report_mobile": "0125878787",
+      "report_for_someone_else": true,
+      "message": "javascript:prompt('VNCERT')",
+      "create_time": 1728870664,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/5KNGH4NC-2024-10-14.png"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1728870664,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827691,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.09068,
+          16.0564
+        ],
+        "address": "VN-DN",
+        "district_name": "Huyện Hòa Vang",
+        "district_id": "7289"
+      }
+    },
+    {
+      "_id": "6708d854d9145c5c91b9b9e9",
+      "report_name": "Trà Quang Lộc",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": false,
+      "message": "cứu tui với aloooo blooo cloooo dlooooo",
+      "create_time": 1728632916,
+      "status": "SUPPORTED",
+      "images": [
+        {
+          "img_url": "https://muangap-images.danang.gov.vn/8A1N6ZB6-2024-10-11.png"
+        }
+      ],
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1728632916,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728632930,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827695,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22335,
+          16.0772
+        ],
+        "address": "Phường Thạch Thang, 50207 Quận Hải Châu",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu",
+        "district_id": "7255"
+      }
+    },
+    {
+      "_id": "66ea2606ca5d2176d6f2cb7c",
+      "report_name": "Luyen test",
+      "report_mobile": "0917246180",
+      "report_for_someone_else": true,
+      "message": "Sos \n",
+      "create_time": 1726621190,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1726621190,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728644374,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827710,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.1960023,
+          16.0711748
+        ],
+        "address": "292/26 Trần Cao Vân, Phường Xuân Hà, Đà Nẵng, Việt Nam",
+        "street_name": "Trần Cao Vân",
+        "ward_name": "Phường Xuân Hà",
+        "district_name": "Quận Thanh Khê"
+      }
+    },
+    {
+      "_id": "66b1df899e4c6de6ec1b7411",
+      "report_name": "viettel test",
+      "report_mobile": "0123456789",
+      "report_for_someone_else": false,
+      "message": "test",
+      "create_time": 1722933129,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1722933129,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827725,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2221366,
+          16.0747807
+        ],
+        "address": "24 Trần Phú, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Trần Phú",
+        "ward_name": "Phường Hải Châu 1",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6659247236c1abb417403d29",
+      "report_name": "Test",
+      "report_mobile": "0976929792",
+      "report_for_someone_else": true,
+      "message": "Test ứng dụng dsc",
+      "create_time": 1717118066,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1717118066,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827731,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2218183,
+          16.0750298
+        ],
+        "address": "2 Quang Trung, Hải Châu 1, Phường Hải Châu I, Quận Hải Châu, Thành phố Đà Nẵng, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Hải Châu I",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6646d3709e4c6de6ec1b740a",
+      "report_name": "Luyen test",
+      "report_mobile": "0917246180",
+      "report_for_someone_else": true,
+      "message": "Luyen test\n",
+      "create_time": 1715917680,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1715917680,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827736,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.1966584,
+          16.0711585
+        ],
+        "address": "159/11 Trần Cao Vân, Thanh Khê, Đà Nẵng, Việt Nam",
+        "street_name": "Trần Cao Vân",
+        "ward_name": "Phường Xuân Hà",
+        "district_name": "Quận Thanh Khê"
+      }
+    },
+    {
+      "_id": "661926c636c1abb417403d26",
+      "report_name": "Trà Quang Lộc (Test)",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": false,
+      "message": "Lộc test mưa ngập",
+      "create_time": 1712924358,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1712924358,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827742,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22221,
+          16.075502
+        ],
+        "address": "Công Viên Phần Mềm 02 Quang Trung, Quang Trung, Hải Châu1, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Viên Phần Mềm 02 Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "65af26793dbe78ab233e2863",
+      "report_name": "Hoàng Hồng Hạ",
+      "report_mobile": "0385669789",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1705977465,
+      "status": "REJECTED",
+      "reason": "Hạ test",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1705977465,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1705977553,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.183956,
+          16.046858
+        ],
+        "address": "Trường Chinh, Thanh Khê, Đà Nẵng, Việt Nam",
+        "street_name": "Chinh",
+        "ward_name": "Phường An Khê",
+        "district_name": "Quận Thanh Khê"
+      }
+    },
+    {
+      "_id": "65a887f770d2837ade656489",
+      "report_name": "Minh trand",
+      "report_mobile": "0355485445",
+      "report_for_someone_else": true,
+      "message": "Cứu",
+      "create_time": 1705543671,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1705543671,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728633419,
+          "update_by": "84975828077"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827747,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2317968,
+          16.095446
+        ],
+        "address": "18 Lê Cảnh Tuân, Nại Hiên Đông, Sơn Trà, Đà Nẵng 550000, Vietnam",
+        "street_name": "Lê Cảnh Tuân",
+        "ward_name": "Phường Nại Hiên Đông",
+        "district_name": "Quận Sơn Trà"
+      }
+    },
+    {
+      "_id": "65a8878b3dbe78ab233e2862",
+      "report_name": "Dũng dnict",
+      "report_mobile": "0981100233",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1705543563,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1705543563,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728633277,
+          "update_by": "84975828077"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827752,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2288552,
+          16.1001118
+        ],
+        "address": "462H+2GX, Nại Hiên Đông, Sơn Trà, Đà Nẵng 550000, Vietnam",
+        "street_name": "Trần Sâm",
+        "ward_name": "Phường Nại Hiên Đông",
+        "district_name": "Quận Sơn Trà"
+      }
+    },
+    {
+      "_id": "65a886d770d2837ade656488",
+      "report_name": "Dũng Dnict",
+      "report_mobile": "0981100233",
+      "report_for_someone_else": true,
+      "message": "Thông tin test",
+      "create_time": 1705543383,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1705543383,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728634015,
+          "update_by": "84975828077"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827757,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.1487964,
+          16.0534112
+        ],
+        "address": "Hoà Khánh Nam, Liên Chiểu, Đà Nẵng, Việt Nam",
+        "street_name": "Khánh Nam",
+        "ward_name": "Phường Hòa Khánh Nam",
+        "district_name": "Quận Liên Chiểu"
+      }
+    },
+    {
+      "_id": "65668ca13dbe78ab233e285c",
+      "report_name": "Luyen",
+      "report_mobile": "0917246180",
+      "report_for_someone_else": true,
+      "message": "Bạn",
+      "create_time": 1701219489,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1701219489,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827768,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2110626,
+          16.0847145
+        ],
+        "address": "Tổ 86, Phường Thanh Bình, Quận Hải Châu, Thành Phố Đà Nẵng, Thanh Bình, Hải Châu, Đà Nẵng 550000, Vietnam",
+        "street_name": "86",
+        "ward_name": "Phường Thanh Bình",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "655c09d770d2837ade656484",
+      "report_name": "Nguyễn Văn A",
+      "report_mobile": "012345678",
+      "report_for_someone_else": true,
+      "message": "Nhà ngập nước",
+      "create_time": 1700530647,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1700530647,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728634030,
+          "update_by": "84975828077"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761828137,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2215764,
+          16.0348087
+        ],
+        "address": "20 Tố Hữu, Hoà Cường Nam, Hải Châu, Đà Nẵng, Vietnam",
+        "street_name": "Tố Hữu",
+        "ward_name": "Phường Hòa Cường Nam",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "654dec6a70d2837ade65646e",
+      "report_name": "awrawr",
+      "report_mobile": "0909090909",
+      "report_for_someone_else": true,
+      "message": "Asdads",
+      "create_time": 1699605610,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1699605610,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728633952,
+          "update_by": "84975828077"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761828141,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.1369375,
+          16.0996754
+        ],
+        "address": "Hòa Hiệp Nam, Liên Chiểu, Đà Nẵng, Việt Nam",
+        "street_name": "Hiệp Nam",
+        "ward_name": "Phường Hòa Hiệp Nam",
+        "district_name": "Quận Liên Chiểu"
+      }
+    },
+    {
+      "_id": "654daf513dbe78ab233e2847",
+      "report_name": "minh tran",
+      "report_mobile": "0355465225",
+      "report_for_someone_else": true,
+      "message": "help",
+      "create_time": 1699589969,
+      "status": "REJECTED",
+      "reason": "test",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1699589969,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1699599228,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2202834,
+          16.0367294
+        ],
+        "address": "18 Tiên Sơn 8, Hoà Cường Bắc, Hải Châu, Đà Nẵng, Vietnam",
+        "street_name": "Tiên Sơn 8",
+        "ward_name": "Phường Hòa Cường Nam",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "654c908f70d2837ade65646d",
+      "report_name": "binh tran",
+      "report_mobile": "0355406412",
+      "report_for_someone_else": true,
+      "message": "hhhhj",
+      "create_time": 1699516559,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1699516559,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728634211,
+          "update_by": "84975828077"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827773,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.219887,
+          16.0365308
+        ],
+        "address": "14 Tiên Sơn 7, Hoà Cường Nam, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Tiên Sơn 7",
+        "ward_name": "Phường Hòa Cường Nam",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "654c8f533dbe78ab233e2846",
+      "report_name": "Mi n",
+      "report_mobile": "0355415225",
+      "report_for_someone_else": true,
+      "message": "Bbbnn",
+      "create_time": 1699516243,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1699516243,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728634145,
+          "update_by": "84975828077"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827777,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.228909,
+          16.0338986
+        ],
+        "address": "8 Tiên Sơn, Hòa Cường, Hòa Cường Nam, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Tiên Sơn",
+        "ward_name": "Phường Hòa Cường Nam",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "654c8d5570d2837ade65646c",
+      "report_name": "Tran a",
+      "report_mobile": "0355214558",
+      "report_for_someone_else": true,
+      "message": "Cuu",
+      "create_time": 1699515733,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1699515733,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728634235,
+          "update_by": "84975828077"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827780,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2211354,
+          16.0367389
+        ],
+        "address": "19 Tiên Sơn 8, Hoà Cường Nam, Hải Châu, Đà Nẵng, Vietnam",
+        "street_name": "Tiên Sơn 8",
+        "ward_name": "Phường Hòa Cường Nam",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "654c8a9f3dbe78ab233e2843",
+      "report_name": "Minh tran",
+      "report_mobile": "0355406445",
+      "report_for_someone_else": true,
+      "message": "Help",
+      "create_time": 1699515039,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1699515039,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1728634276,
+          "update_by": "84975828077"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761827783,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2207581,
+          16.0343389
+        ],
+        "address": "18 Tiên Sơn 9, Hòa Cường, Hòa Cường Nam, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Tiên Sơn 9",
+        "ward_name": "Phường Hòa Cường Nam",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "654c53ca70d2837ade65646a",
+      "report_name": "Minh tran",
+      "report_mobile": "0355406442",
+      "report_for_someone_else": true,
+      "message": "1 help",
+      "create_time": 1699501002,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1699501002,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827792,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2207581,
+          16.0343389
+        ],
+        "address": "18 Tiên Sơn 9, Hòa Cường, Hòa Cường Nam, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Tiên Sơn 9",
+        "ward_name": "Phường Hòa Cường Nam",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "654c4e953dbe78ab233e2840",
+      "report_name": "Tuan tra",
+      "report_mobile": "0355486445",
+      "report_for_someone_else": true,
+      "message": "Hihi",
+      "create_time": 1699499669,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1699499669,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827797,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2207581,
+          16.0343389
+        ],
+        "address": "18 Tiên Sơn 9, Hòa Cường, Hòa Cường Nam, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Tiên Sơn 9",
+        "ward_name": "Phường Hòa Cường Nam",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "652f514170d2837ade656459",
+      "report_name": "Nhât 10h28",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Cứu",
+      "create_time": 1697599809,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697599809,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827803,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2418528,
+          16.0686158
+        ],
+        "address": "75 D. Đình Nghệ, An Hải Bắc, Sơn Trà, Đà Nẵng 550000, Vietnam",
+        "street_name": "D. Đình Nghệ",
+        "ward_name": "Phường An Hải Bắc",
+        "district_name": "Quận Sơn Trà"
+      }
+    },
+    {
+      "_id": "652f50eb3dbe78ab233e2827",
+      "report_name": "Nhật test 10h27",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Cứu hộ ",
+      "create_time": 1697599723,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697599723,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827808,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2230264,
+          16.0375904
+        ],
+        "address": "13 Phan Đăng Lưu, Hoà Cường Bắc, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Phan Đăng Lưu",
+        "ward_name": "Phường Hòa Cường Nam",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "652f4f7e70d2837ade656458",
+      "report_name": "Nhật test 10h22",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Cần cứu hộ gấp",
+      "create_time": 1697599358,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697599358,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827816,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.246515,
+          16.1068563
+        ],
+        "address": "64 Yết Kiêu, Thọ Quang, Sơn Trà, Đà Nẵng, Việt Nam",
+        "street_name": "Yết Kiêu",
+        "ward_name": "Phường Thọ Quang",
+        "district_name": "Quận Sơn Trà"
+      }
+    },
+    {
+      "_id": "652f3f8170d2837ade656457",
+      "report_name": "Nhật test",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Cần thuyền",
+      "create_time": 1697595265,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697595265,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827822,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2242356,
+          16.0331097
+        ],
+        "address": "26MF+6MX, Hoà Cường Nam, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "2 Tháng 9",
+        "ward_name": "Phường Hòa Cường Nam",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6529174a78243b7b06cf7961",
+      "report_name": "dungnh27_viettel_test",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test cảnh báo",
+      "create_time": 1697191754,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697191754,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827826,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "652914225d89fda009e72983",
+      "report_name": "Huỳnh Đình Dũng",
+      "report_mobile": "0903502895",
+      "report_for_someone_else": true,
+      "message": "Xem bản đồ ngập lụt",
+      "create_time": 1697190946,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697190946,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827831,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Vietnam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "65289ef55d89fda009e72974",
+      "report_name": "Tesstttttt",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": true,
+      "message": "Cứu tui",
+      "create_time": 1697160949,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697160949,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827840,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.219852,
+          16.095011
+        ],
+        "address": "Thuan Phuoc Bridge, Cầu Thuận Phước, Nại Hiên Đông, Hải Châu, Đà Nẵng 550000, Vietnam",
+        "street_name": "Phuoc Bridge",
+        "ward_name": "Phường Thuận Phước",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6527cbcd5d89fda009e72973",
+      "report_name": "dungnh27_viettel_test",
+      "report_mobile": "03105658",
+      "report_for_someone_else": true,
+      "message": "dungnh27 test cảnh báo",
+      "create_time": 1697106893,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697106893,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827847,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6527c8655d89fda009e72972",
+      "report_name": "Test",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": true,
+      "message": "Cứu cứu",
+      "create_time": 1697106021,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697106021,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827852,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "65279dfa78243b7b06cf7951",
+      "report_name": "Viettel_test",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test cảnh báo IOC",
+      "create_time": 1697095162,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697095162,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827857,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "652757ad78243b7b06cf7950",
+      "report_name": "Tétttttt",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": true,
+      "message": "Cứu tui ",
+      "create_time": 1697077165,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1697077165,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827867,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Vietnam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6524c84d78243b7b06cf794f",
+      "report_name": "Testtttt",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": true,
+      "message": "Cứu trợ khẩn cấp",
+      "create_time": 1696909389,
+      "status": "REJECTED",
+      "reason": "Dã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1696909389,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827873,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.221045,
+          16.081423
+        ],
+        "address": "16 Trần Quý Cáp, Thạch Thang, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Trần Quý Cáp",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6524c6da78243b7b06cf794e",
+      "report_name": "IOC test",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": false,
+      "message": "Thuyền cứu trợ",
+      "create_time": 1696909018,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1696909018,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827882,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.209372,
+          16.06263
+        ],
+        "address": "62 Văn Cao, Thạc Gián, Thanh Khê, Đà Nẵng, Việt Nam",
+        "street_name": "Văn Cao",
+        "ward_name": "Phường Thạc Gián",
+        "district_name": "Quận Thanh Khê"
+      }
+    },
+    {
+      "_id": "65122f7373ba91f36b2e9714",
+      "report_name": "Trần Văn Anh Nhật",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Thuyền cứu sinh",
+      "create_time": 1695690611,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695690611,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827900,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.220438,
+          16.076297
+        ],
+        "address": "61 Nguyễn Chí Thanh, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Nguyễn Chí Thanh",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650e5634477d6e62377e854b",
+      "report_name": "luyến test ",
+      "report_mobile": "0917246180",
+      "report_for_someone_else": false,
+      "message": "sos",
+      "create_time": 1695438388,
+      "status": "REJECTED",
+      "reason": "đã hết nguy hiểm",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695438388,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1695438429,
+          "update_by": "84917246180"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.210037,
+          16.072851
+        ],
+        "address": "52 Trần Cao Vân, Thanh Khê, Đà Nẵng, Việt Nam",
+        "street_name": "Trần Cao Vân",
+        "ward_name": "Phường Tam Thuận",
+        "district_name": "Quận Thanh Khê"
+      }
+    },
+    {
+      "_id": "650d5cdf73ba91f36b2e970d",
+      "report_name": "Nhaật",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Caấpcuứ",
+      "create_time": 1695374559,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695374559,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1695438653,
+          "update_by": "84917246180"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1695438748,
+          "update_by": "84917246180"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650d549573ba91f36b2e970b",
+      "report_name": "Gold Trần",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1695372437,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695372437,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1695438600,
+          "update_by": "84917246180"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1695438643,
+          "update_by": "84917246180"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.221705,
+          16.077653
+        ],
+        "address": "59 Đường Phan Bội Châu, Phường Thạch Thang, Quận Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Đường Phan Bội Châu",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650d4d4773ba91f36b2e970a",
+      "report_name": "Trần Nhật",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Chở bà đi bơi SOS dì thương",
+      "create_time": 1695370567,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695370567,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1695438464,
+          "update_by": "84917246180"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1695438470,
+          "update_by": "84917246180"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.229264,
+          16.077275
+        ],
+        "address": "475, Đường Trần Hưng Đạo, Phường An Hải Tây, Quận Sơn Trà, An Hải Bắc, Sơn Trà, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Đ. Trần Hưng Đạo",
+        "ward_name": "Phường An Hải Bắc",
+        "district_name": "Quận Sơn Trà"
+      }
+    },
+    {
+      "_id": "650cee4173ba91f36b2e9708",
+      "report_name": "Trần Văn Anh Nhật ",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Cần xe đưa đón SOS",
+      "create_time": 1695346241,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695346241,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827916,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.230928,
+          16.095224
+        ],
+        "address": "40 Nguyễn Thị Ba, Nại Hiên Đông, Sơn Trà, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Nguyễn Thị Ba",
+        "ward_name": "Phường Nại Hiên Đông",
+        "district_name": "Quận Sơn Trà"
+      }
+    },
+    {
+      "_id": "650bfe61477d6e62377e8547",
+      "report_name": "Viettel_test",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test alert",
+      "create_time": 1695284833,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695284833,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827922,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Vietnam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650bfa34477d6e62377e8546",
+      "report_name": "Dungnh27_viettel_test",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test cảnh báo",
+      "create_time": 1695283764,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695283764,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827927,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22219,
+          16.075468
+        ],
+        "address": "Công Viên Phần Mềm 02 Quang Trung, Quang Trung, Hải Châu1, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Viên Phần Mềm 02 Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650be7ef477d6e62377e8545",
+      "report_name": "Vietel_test",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test alert",
+      "create_time": 1695279087,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695279087,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827932,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650bb33173ba91f36b2e9707",
+      "report_name": "Viettel_alert_test",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test alert priority",
+      "create_time": 1695265585,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695265585,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827938,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650a951e73ba91f36b2e9705",
+      "report_name": "Trần Văn Anh Nhật Test ",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Cần cứu hộ \nTest 20/9",
+      "create_time": 1695192350,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695192350,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827945,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.221164,
+          16.071463
+        ],
+        "address": "48 Đ. Lê Duẩn, Hải Châu 1, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Đ. Lê Duẩn",
+        "ward_name": "Phường Hải Châu I",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650a6c03477d6e62377e8542",
+      "report_name": "viettel_test2",
+      "report_mobile": "08123456789",
+      "report_for_someone_else": true,
+      "message": "test alert2 ",
+      "create_time": 1695181827,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695181827,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827951,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.222432,
+          16.0753
+        ],
+        "address": "2 Quang Trung, Quận Hai Chau, Đà Nẵng, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650a68fc477d6e62377e8541",
+      "report_name": "viettel_test",
+      "report_mobile": "08123456789",
+      "report_for_someone_else": true,
+      "message": "test alert ",
+      "create_time": 1695181052,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695181052,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827957,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.222432,
+          16.0753
+        ],
+        "address": "2 Quang Trung, Quận Hai Chau, Đà Nẵng, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650a6338477d6e62377e8540",
+      "report_name": "Viettel_ioc_test",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Ioc test alert",
+      "create_time": 1695179576,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695179576,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827964,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650a474c73ba91f36b2e9703",
+      "report_name": "Viettel_test",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test image",
+      "create_time": 1695172428,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695172428,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827971,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Vietnam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "650959c573ba91f36b2e9701",
+      "report_name": "Nhaậ tees",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Maânthaá",
+      "create_time": 1695111621,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695111621,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827976,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.218819,
+          16.079926
+        ],
+        "address": "55 Lý Thường Kiệt, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Lý Thường Kiệt",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6509589c73ba91f36b2e9700",
+      "report_name": "Trần Văn Anh Nhật Tester",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": false,
+      "message": "Bị ngập sâu ",
+      "create_time": 1695111324,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695111324,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827980,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.215765,
+          16.090789
+        ],
+        "address": "Xuân Diệu, Thuận Phước, Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Diệu",
+        "ward_name": "Phường Thuận Phước",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6509574a477d6e62377e853f",
+      "report_name": "NhaậtGold TEES",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "123456789",
+      "create_time": 1695110986,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695110986,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827988,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.228801,
+          16.076566
+        ],
+        "address": "247 Đ. Trần Hưng Đạo, An Hải Bắc, Sơn Trà, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Đ. Trần Hưng Đạo",
+        "ward_name": "Phường An Hải Bắc",
+        "district_name": "Quận Sơn Trà"
+      }
+    },
+    {
+      "_id": "65095211477d6e62377e853d",
+      "report_name": "Trà Quang Lộc",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1695109649,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695109649,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827994,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.230399,
+          16.078665
+        ],
+        "address": "10 Nguyễn Thế Lộc, An Hải Bắc, Sơn Trà, Đà Nẵng, Việt Nam",
+        "street_name": "Nguyễn Thế Lộc",
+        "ward_name": "Phường An Hải Bắc",
+        "district_name": "Quận Sơn Trà"
+      }
+    },
+    {
+      "_id": "650951b873ba91f36b2e96ff",
+      "report_name": "Traầ văn anh nhaậ",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Cuứ ",
+      "create_time": 1695109560,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695109560,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761827999,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22264,
+          16.076888
+        ],
+        "address": "24 Trần Phú, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Trần Phú",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "65094fd073ba91f36b2e96fd",
+      "report_name": "Trần Văn Anh Nhật Test",
+      "report_mobile": "0905673198",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1695109072,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695109072,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761828005,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.223066,
+          16.074839
+        ],
+        "address": "3 Quang Trung, Hải Châu 1, Hải Châu, Đà Nẵng 550000, Vietnam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Hải Châu I",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "65094f25477d6e62377e853b",
+      "report_name": "Trà Quang Lộc",
+      "report_mobile": "0935567413",
+      "report_for_someone_else": false,
+      "message": "Test",
+      "create_time": 1695108901,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695108901,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761828012,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.222432,
+          16.0753
+        ],
+        "address": "2 Quang Trung, Quận Hai Chau, Đà Nẵng, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6509029f73ba91f36b2e96fc",
+      "report_name": "Viettel_test3",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test cảnh báo IOC",
+      "create_time": 1695089311,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695089311,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761828018,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6508fecb73ba91f36b2e96fb",
+      "report_name": "Viettel_test",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test chức năng",
+      "create_time": 1695088331,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695088331,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1711768669,
+          "update_by": "84935567413"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761828020,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "65081560477d6e62377e853a",
+      "report_name": "Viettel_test 2",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test cảnh báo ",
+      "create_time": 1695028576,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695028576,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761828025,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6507d17a73ba91f36b2e96fa",
+      "report_name": "Viettel_test",
+      "report_mobile": "0369105658",
+      "report_for_someone_else": true,
+      "message": "Test chức năng",
+      "create_time": 1695011194,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1695011194,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761828035,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "6502d364477d6e62377e8539",
+      "report_name": "Dao_test",
+      "report_mobile": "0932424772",
+      "report_for_someone_else": true,
+      "message": "Test chức năng",
+      "create_time": 1694684004,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1694684004,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761828042,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "64ffd94273ba91f36b2e96e8",
+      "report_name": "Lê Văn An",
+      "report_mobile": "0969201456",
+      "report_for_someone_else": true,
+      "message": "Nhà tôi ngập nửa nhà, cần hỗ trợ",
+      "create_time": 1694488898,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1694488898,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761828047,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.161407,
+          16.060927
+        ],
+        "address": "429 Tôn Đức Thắng, Hoà Minh, Liên Chiểu, Đà Nẵng, Việt Nam",
+        "street_name": "Tôn Đức Thắng",
+        "ward_name": "Phường Hòa Khánh Nam",
+        "district_name": "Quận Liên Chiểu"
+      }
+    },
+    {
+      "_id": "64fe92e373ba91f36b2e96e1",
+      "report_name": "luyến web",
+      "report_mobile": "0969201470",
+      "report_for_someone_else": false,
+      "message": "test",
+      "create_time": 1694405347,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1694405347,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761828073,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.168586,
+          16.058726
+        ],
+        "address": "60 Tô Hiệu, Hoà Minh, Liên Chiểu, Đà Nẵng, Việt Nam",
+        "street_name": "Tô Hiệu",
+        "ward_name": "Phường Hòa Minh",
+        "district_name": "Quận Liên Chiểu"
+      }
+    },
+    {
+      "_id": "64fe91fa477d6e62377e852d",
+      "report_name": "Luyến 11.9 sos",
+      "report_mobile": "0969201470",
+      "report_for_someone_else": true,
+      "message": "Cứu tôi \n",
+      "create_time": 1694405114,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1694405114,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761828090,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.22227,
+          16.075338
+        ],
+        "address": "26 Đường Quang Trung, Phường Thạch Thang, Quận Hải Châu, Đà Nẵng, Việt Nam",
+        "street_name": "Đường Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "64fe766e477d6e62377e852b",
+      "report_name": "Luyen 11.9",
+      "report_mobile": "0917246180",
+      "report_for_someone_else": true,
+      "message": "Đó\n\n\n",
+      "create_time": 1694398062,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1694398062,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1695610316,
+          "update_by": "84917246180"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1695610425,
+          "update_by": "84917246180"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "64f843e173ba91f36b2e96dd",
+      "report_name": "luyến text",
+      "report_mobile": "096920147",
+      "report_for_someone_else": false,
+      "message": "sos",
+      "create_time": 1693991905,
+      "status": "REJECTED",
+      "reason": "SOS ảo",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1693991905,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1695372824,
+          "update_by": "84903257085"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.21053,
+          16.058157
+        ],
+        "address": "52 Trần Tống, Thạc Gián, Thanh Khê, Đà Nẵng, Việt Nam",
+        "street_name": "Trần Tống",
+        "ward_name": "Phường Thạc Gián",
+        "district_name": "Quận Thanh Khê"
+      }
+    },
+    {
+      "_id": "64d438f4eaf6c33cbe696eb9",
+      "report_name": "Test",
+      "report_mobile": "0976929792",
+      "report_for_someone_else": true,
+      "message": "Test Ngập",
+      "create_time": 1691629812,
+      "status": "REJECTED",
+      "reason": "Đã xác minh",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1691629812,
+          "update_by": "public_user"
+        },
+        {
+          "status": "REJECTED",
+          "time": 1761828102,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Việt Nam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "64af4bddd7f365256dbfc54b",
+      "report_name": "Test",
+      "report_mobile": "0976999999",
+      "report_for_someone_else": true,
+      "message": "Test",
+      "create_time": 1689209821,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1689209821,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1696308626,
+          "update_by": "84867005321"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1711768461,
+          "update_by": "84935567413"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Vietnam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    },
+    {
+      "_id": "64a21f53a6c2c6805ebb1bd2",
+      "report_name": "Test",
+      "report_mobile": "0236123456",
+      "report_for_someone_else": true,
+      "message": "Test HT",
+      "create_time": 1688346451,
+      "status": "SUPPORTED",
+      "images": null,
+      "update_logs": [
+        {
+          "status": "PENDING",
+          "time": 1688346451,
+          "update_by": "public_user"
+        },
+        {
+          "status": "ISSUED",
+          "time": 1695438273,
+          "update_by": "84917246180"
+        },
+        {
+          "status": "SUPPORTED",
+          "time": 1761828110,
+          "update_by": "84383256898"
+        }
+      ],
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          108.2222,
+          16.0755
+        ],
+        "address": "2 Quang Trung, Thạch Thang, Hải Châu, Đà Nẵng 550000, Vietnam",
+        "street_name": "Quang Trung",
+        "ward_name": "Phường Thạch Thang",
+        "district_name": "Quận Hải Châu"
+      }
+    }
+  ],
+  "total": 126
+}

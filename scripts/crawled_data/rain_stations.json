@@ -1,0 +1,1646 @@
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "afae00e3-2759-11ec-8ef9-06552145a11a",
+      "code": "522912",
+      "name": "Trạm Kiểm lâm Sông Bắc",
+      "number": "84919522912",
+      "area": "Hải Vân",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.983456,
+          16.133334
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb39fbd-2759-11ec-8ef9-06552145a11a",
+      "code": "920004",
+      "name": "Hồ Đông Tiển",
+      "number": "84846355275",
+      "area": "Đồng Dương",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.289722,
+          15.630833
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "fe9d85e0-35b4-4e34-86aa-3add0a02de27",
+      "code": "920025",
+      "name": "Đầu mối hồ Cây Thông",
+      "number": "84339843964",
+      "area": "Quế Sơn Trung",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.258649,
+          15.734521
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb37ef9-2759-11ec-8ef9-06552145a11a",
+      "code": "430019",
+      "name": "Suối Đá",
+      "number": "84396779862",
+      "area": "Sơn Trà",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.261667,
+          16.108611
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb37e06-2759-11ec-8ef9-06552145a11a",
+      "code": "430017",
+      "name": "Hồ Hòa Khê - Hòa Sơn",
+      "number": "84396779208",
+      "area": "Hòa Khánh",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.1175,
+          16.056389
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "ceff606a-3f02-4fea-ba4d-3c0c7400d893",
+      "code": "920033",
+      "name": "A Tiêng",
+      "number": "841699255096",
+      "area": "Hùng Sơn",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.493563,
+          15.903736
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaee564-2759-11ec-8ef9-06552145a11a",
+      "code": "226650",
+      "name": "Văn phòng Thường trực",
+      "number": "84325226650",
+      "area": "Tam Kỳ",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.475278,
+          15.57
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "ef57b4dc-c5ec-46e9-901b-8fdaaedfba71",
+      "code": "920021",
+      "name": "Đầu mối hồ Thạch Bàn",
+      "number": "84339854692",
+      "area": "Thu Bồn",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.088213,
+          15.778625
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "d3356c23-7646-49c2-ab20-060f16b1f54c",
+      "code": "430010",
+      "name": "Lưu vực hồ Đồng Nghệ",
+      "number": "84327572183",
+      "area": "Hòa Tiến",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.063648,
+          15.948983
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "20ab22bf-a524-426a-8f6e-f925fac50448",
+      "code": "920032",
+      "name": "Ch'ơm",
+      "number": "841699261012",
+      "area": "Hùng Sơn",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.261015,
+          15.799878
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaee6d5-2759-11ec-8ef9-06552145a11a",
+      "code": "228929",
+      "name": "Duy Trung",
+      "number": "84325228929",
+      "area": "Duy Xuyên",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.255833,
+          15.803333
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb3a266-2759-11ec-8ef9-06552145a11a",
+      "code": "920005",
+      "name": "Phước Năng",
+      "number": "84396785829",
+      "area": "Phước Năng",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.761958,
+          15.400683
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "7b4721da-d464-4573-90d1-60452c56eed4",
+      "code": "920028",
+      "name": "Tam Lộc",
+      "number": "84325694853",
+      "area": "Tây Hồ",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.367247,
+          15.564842
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa94310-2759-11ec-8ef9-06552145a11a",
+      "code": "354128",
+      "name": "Quế Phước",
+      "number": "84325354128",
+      "area": "Quế Phước",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.016732,
+          15.684025
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "0b749eec-df66-455b-a733-5ec83efb7b5c",
+      "code": "430005",
+      "name": "Hòa Sơn",
+      "number": "84328819084",
+      "area": "Hòa Khánh",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.106667,
+          16.068333
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "1baf1f21-0033-421b-b97a-68e4a6ac6587",
+      "code": "430009",
+      "name": "Lưu vực hồ Hòa Trung",
+      "number": "84327568670",
+      "area": "Bà Nà",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.043056,
+          16.081111
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "18601331-27d9-4c71-8fa8-85cbe47202e9",
+      "code": "921125",
+      "name": "Hồ Thái Xuân",
+      "number": "84328958473",
+      "area": "Tam Mỹ",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.586996,
+          15.440145
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa72789-2759-11ec-8ef9-06552145a11a",
+      "code": "000436",
+      "name": "Bình Lâm",
+      "number": "84325000436",
+      "area": "Việt An",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.216534,
+          15.600715
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaeeebf-2759-11ec-8ef9-06552145a11a",
+      "code": "228925",
+      "name": "Phước Chánh",
+      "number": "84325228925",
+      "area": "Phước Chánh",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.819175,
+          15.367081
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb39f28-2759-11ec-8ef9-06552145a11a",
+      "code": "920003",
+      "name": "Đại Sơn",
+      "number": "84396794534",
+      "area": "Thượng Đức",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.902222,
+          15.818889
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaa5194-2759-11ec-8ef9-06552145a11a",
+      "code": "036623",
+      "name": "Tiên Hà",
+      "number": "84325036623",
+      "area": "Sơn Cẩm Hà",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.246467,
+          15.549425
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaeeb08-2759-11ec-8ef9-06552145a11a",
+      "code": "228926",
+      "name": "Tiên Phong",
+      "number": "84325228926",
+      "area": "Tiên Phước",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.356667,
+          15.521389
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "923c9739-72ec-4798-a8bc-40ee97764761",
+      "code": "430003",
+      "name": "Hòa Quý",
+      "number": "84328719312",
+      "area": "Ngũ Hành Sơn",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.240833,
+          15.985556
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afad18f9-2759-11ec-8ef9-06552145a11a",
+      "code": "074776",
+      "name": "Trạm bơm Túy Loan",
+      "number": "84325074776",
+      "area": "Bà Nà",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.141921,
+          15.999981
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "1808cfac-f05e-43d3-add6-b7fcee583c13",
+      "code": "920023",
+      "name": "Trà Vân",
+      "number": "84339876954",
+      "area": "Trà Vân",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.18005,
+          15.113044
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa93924-2759-11ec-8ef9-06552145a11a",
+      "code": "354578",
+      "name": "Thăng Phước",
+      "number": "84325354578",
+      "area": "Việt An",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.150278,
+          15.568889
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "fbbc8426-b5b7-40e6-a7f0-eea424a983eb",
+      "code": "430004",
+      "name": "Hòa Khương",
+      "number": "84327562937",
+      "area": "Hòa Tiến",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.14,
+          15.960833
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afad187d-2759-11ec-8ef9-06552145a11a",
+      "code": "074778",
+      "name": "Hòa Phú Thành",
+      "number": "841625074778",
+      "area": "Hòa Vang",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.991983,
+          15.9576
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "9530a63e-333e-49de-be68-a7425b351582",
+      "code": "430008",
+      "name": "Chùa Linh Ứng",
+      "number": "84327574377",
+      "area": "Sơn Trà",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.279444,
+          16.1
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "0b951af4-dbe0-4e6a-b3a1-e1ab43a9bc38",
+      "code": "920031",
+      "name": "Hồ chứa nước Hố Do",
+      "number": "841699203162",
+      "area": "Thăng Phú",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.346167,
+          15.619306
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb37a43-2759-11ec-8ef9-06552145a11a",
+      "code": "430016",
+      "name": "Suối Lương",
+      "number": "84396769623",
+      "area": "Hải Vân",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.115833,
+          16.144444
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb3a66e-2759-11ec-8ef9-06552145a11a",
+      "code": "920009",
+      "name": "Tam Lãnh",
+      "number": "84396772420",
+      "area": "Phú Ninh",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.408611,
+          15.430278
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaeea54-2759-11ec-8ef9-06552145a11a",
+      "code": "228927",
+      "name": "Đại Đồng",
+      "number": "84325228927",
+      "area": "Hà Nha",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.010556,
+          15.851667
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb381d6-2759-11ec-8ef9-06552145a11a",
+      "code": "430021",
+      "name": "Hòa Phước",
+      "number": "84396781285",
+      "area": "Hòa Xuân",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.215278,
+          15.958889
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb1af11-2759-11ec-8ef9-06552145a11a",
+      "code": "611821",
+      "name": "Cầu Hương An",
+      "number": "84847076351",
+      "area": "Xuân Phú",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.33126,
+          15.778153
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "4c0a4973-8e2d-4100-b37f-6efcd09bd90b",
+      "code": "430002",
+      "name": "Hòa Xuân",
+      "number": "84328080729",
+      "area": "Hòa Xuân",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.211311,
+          15.995435
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa72711-2759-11ec-8ef9-06552145a11a",
+      "code": "000445",
+      "name": "Đại Hiệp",
+      "number": "841698249030",
+      "area": "Đại Lộc",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.110629,
+          15.92101
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa736c6-2759-11ec-8ef9-06552145a11a",
+      "code": "001204",
+      "name": "Hòa Bắc",
+      "number": "84325001204",
+      "area": "Hải Vân",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.984444,
+          16.12
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa727fb-2759-11ec-8ef9-06552145a11a",
+      "code": "000437",
+      "name": "Quế Lộc",
+      "number": "84325000437",
+      "area": "Nông Sơn",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.103483,
+          15.690723
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaecd4b-2759-11ec-8ef9-06552145a11a",
+      "code": "226653",
+      "name": "Phước Ninh",
+      "number": "84325226653",
+      "area": "Quế Phước",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.000556,
+          15.681111
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb3a2e1-2759-11ec-8ef9-06552145a11a",
+      "code": "920006",
+      "name": "Hồ Nước Rôn",
+      "number": "84399982764",
+      "area": "Trà My",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.277191,
+          15.369552
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb3824b-2759-11ec-8ef9-06552145a11a",
+      "code": "430022",
+      "name": "Hòa Hải",
+      "number": "84396782924",
+      "area": "Ngũ Hành Sơn",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.268056,
+          15.982778
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "b0386441-21c6-45ad-aae9-11ed6ceff471",
+      "code": "920022",
+      "name": "Trà Don",
+      "number": "84339823451",
+      "area": "Nam Trà My",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.121111,
+          15.093611
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb1aa6a-2759-11ec-8ef9-06552145a11a",
+      "code": "909143",
+      "name": "Cầu Hà Tân",
+      "number": "84963809143",
+      "area": "Thượng Đức",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.934573,
+          15.847026
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb382ed-2759-11ec-8ef9-06552145a11a",
+      "code": "920001",
+      "name": "Tiên Lãnh",
+      "number": "84396783361",
+      "area": "Lãnh Ngọc",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.171944,
+          15.458333
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa73471-2759-11ec-8ef9-06552145a11a",
+      "code": "001912",
+      "name": "Hồ Đồng Nghệ",
+      "number": "841625001912",
+      "area": "Hòa Tiến",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.086969,
+          15.950516
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaee625-2759-11ec-8ef9-06552145a11a",
+      "code": "228930",
+      "name": "Quế Lưu",
+      "number": "84325228930",
+      "area": "Hiệp Đức",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.11075,
+          15.558755
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "4a24bc3f-f7ec-4f98-9cdc-e747d635aab0",
+      "code": "430001",
+      "name": "Hòa Phát",
+      "number": "84328189921",
+      "area": "An Khê",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.183313,
+          16.041387
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "98534d9f-78c7-49c2-a874-82cd570410e8",
+      "code": "430006",
+      "name": "Hòa Ninh",
+      "number": "84327503772",
+      "area": "Bà Nà",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.081111,
+          16.053056
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "5c57a308-be13-4115-9fb0-9473ed1b768b",
+      "code": "920024",
+      "name": "Đầu mối hồ Phước Hà",
+      "number": "84339823011",
+      "area": "Thăng Phú",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.320814,
+          15.619857
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afad1979-2759-11ec-8ef9-06552145a11a",
+      "code": "074775",
+      "name": "Trạm bơm An Trạch",
+      "number": "841625074775",
+      "area": "Hòa Tiến",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.154946,
+          15.953628
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afad16ff-2759-11ec-8ef9-06552145a11a",
+      "code": "074782",
+      "name": "Trung tâm GD-DN 05-06",
+      "number": "84325074782",
+      "area": "Hải Vân",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.025415,
+          16.143774
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "b4e71ce4-1964-41a2-8ec3-20a98702f2a4",
+      "code": "920026",
+      "name": "Duy Phú",
+      "number": "84339842431",
+      "area": "Thu Bồn",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.106389,
+          15.789444
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "d1508cd8-ed02-4ecf-a070-ffffd25d810a",
+      "code": "920030",
+      "name": "Điện Ngọc",
+      "number": "84339842891",
+      "area": "Điện Bàn Đông",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.254896,
+          15.948886
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afad17fe-2759-11ec-8ef9-06552145a11a",
+      "code": "074780",
+      "name": "Hồ Hòa Trung",
+      "number": "84325074780",
+      "area": "Liên Chiểu",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.064568,
+          16.079023
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb37d17-2759-11ec-8ef9-06552145a11a",
+      "code": "430015",
+      "name": "Hồ Hóc Khế",
+      "number": "84396778230",
+      "area": "Hòa Vang",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.09908,
+          15.991329
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb6724c-2759-11ec-8ef9-06552145a11a",
+      "code": "920011",
+      "name": "Khu TDC Tắk Pát, xã Trà Leng",
+      "number": "84362144810",
+      "area": "Trà Leng",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.013889,
+          15.271111
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaed2b8-2759-11ec-8ef9-06552145a11a",
+      "code": "577172",
+      "name": "Phước Thành",
+      "number": "84971577172",
+      "area": "Phước Thành",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.891364,
+          15.286044
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "6bdae7b0-50a4-47a1-8755-10b69b3fc099",
+      "code": "920029",
+      "name": "Bình Dương",
+      "number": "84339843753",
+      "area": "Thăng An",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.381044,
+          15.805001
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb37e83-2759-11ec-8ef9-06552145a11a",
+      "code": "430018",
+      "name": "Hồ Thạc Gián",
+      "number": "84396779665",
+      "area": "Thanh Khê",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.209119,
+          16.063836
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaedcb7-2759-11ec-8ef9-06552145a11a",
+      "code": "928953",
+      "name": "Đầu mối hồ Phú Ninh",
+      "number": "84971428953",
+      "area": "Phú Ninh",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.481143,
+          15.506648
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb38162-2759-11ec-8ef9-06552145a11a",
+      "code": "430020",
+      "name": "Đập Hà Thanh",
+      "number": "84396780332",
+      "area": "Điện Bàn Bắc",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.195375,
+          15.953153
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb39de3-2759-11ec-8ef9-06552145a11a",
+      "code": "920002",
+      "name": "Phước Công",
+      "number": "84396784231",
+      "area": "Phước Chánh",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.812222,
+          15.318056
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaee022-2759-11ec-8ef9-06552145a11a",
+      "code": "921782",
+      "name": "Đầu mối hồ Việt An",
+      "number": "84325131782",
+      "area": "Việt An",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.223056,
+          15.592222
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa9496f-2759-11ec-8ef9-06552145a11a",
+      "code": "355827",
+      "name": "Điện Hồng",
+      "number": "84325355827",
+      "area": "Điện Bàn Tây",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.149722,
+          15.888333
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaed098-2759-11ec-8ef9-06552145a11a",
+      "code": "306474",
+      "name": "Kênh Nguyễn Đình Tựu",
+      "number": "84971306474",
+      "area": "Thanh Khê",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.188345,
+          16.054174
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "0a4fc010-cbd3-4282-acc7-8ed6ffe47ece",
+      "code": "920027",
+      "name": "Đầu mối hồ Vĩnh Trinh",
+      "number": "84339843592",
+      "area": "Duy Xuyên",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.164361,
+          15.805365
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaed767-2759-11ec-8ef9-06552145a11a",
+      "code": "924774",
+      "name": "Trà Giáp",
+      "number": "84325074774",
+      "area": "Trà Giáp",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.254167,
+          15.222222
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaee0eb-2759-11ec-8ef9-06552145a11a",
+      "code": "974046",
+      "name": "Sông Trà",
+      "number": "84865974046",
+      "area": "Phước Trà",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.042222,
+          15.540833
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afaed209-2759-11ec-8ef9-06552145a11a",
+      "code": "906221",
+      "name": "Đầu mối hồ Trung Lộc",
+      "number": "84865906221",
+      "area": "Nông Sơn",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.081572,
+          15.712101
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "00dc3451-a966-492b-91a1-1fd4bbbcbf06",
+      "code": "921124",
+      "name": "Hồ Hương Mao",
+      "number": "84329048911",
+      "area": "Quế Sơn Trung",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.289167,
+          15.756667
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb37abc-2759-11ec-8ef9-06552145a11a",
+      "code": "430013",
+      "name": "Phường Hòa Cường Nam",
+      "number": "84396769543",
+      "area": "Hòa Cường",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.22,
+          16.027778
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb3a5f8-2759-11ec-8ef9-06552145a11a",
+      "code": "920008",
+      "name": "Hồ An Long",
+      "number": "84396789564",
+      "area": "Quế Sơn",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.155278,
+          15.633333
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa7fc18-2759-11ec-8ef9-06552145a11a",
+      "code": "009064",
+      "name": "Bà Nà",
+      "number": "84325009064",
+      "area": "Bà Nà",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.06118,
+          16.024705
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa7286f-2759-11ec-8ef9-06552145a11a",
+      "code": "000442",
+      "name": "Tam Trà",
+      "number": "84325000442",
+      "area": "Tam Mỹ",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.49981,
+          15.38522
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afad167a-2759-11ec-8ef9-06552145a11a",
+      "code": "095184",
+      "name": "Hồ Trước Đông",
+      "number": "84325095184",
+      "area": "Bà Nà",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.098357,
+          16.012146
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afa728e7-2759-11ec-8ef9-06552145a11a",
+      "code": "014693",
+      "name": "Bình Phú",
+      "number": "84325014693",
+      "area": "Thăng Phú",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.326,
+          15.6432
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb37d90-2759-11ec-8ef9-06552145a11a",
+      "code": "430014",
+      "name": "Hồ Hố Cau",
+      "number": "84396779153",
+      "area": "Hòa Vang",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.054444,
+          15.996389
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "18c2cbe5-5971-46d8-bf3e-042ee9f2b5e6",
+      "code": "430007",
+      "name": "Khe Cạn",
+      "number": "84327505395",
+      "area": "Thanh Khê",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.177778,
+          16.066667
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb3a90b-2759-11ec-8ef9-06552145a11a",
+      "code": "920010",
+      "name": "Phước Hiệp",
+      "number": "84396793127",
+      "area": "Phước Hiệp",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          107.937778,
+          15.4625
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb3a35e-2759-11ec-8ef9-06552145a11a",
+      "code": "920007",
+      "name": "Hồ Phú Lộc",
+      "number": "84847718155",
+      "area": "Duy Xuyên",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.174444,
+          15.7875
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    },
+    {
+      "id": "afb1b744-2759-11ec-8ef9-06552145a11a",
+      "code": "618900",
+      "name": "Cầu Vĩnh Điện",
+      "number": "84843586985",
+      "area": "Điện Bàn",
+      "district": "",
+      "city": "Đà Nẵng",
+      "location": {
+        "coordinates": [
+          108.247891,
+          15.901677
+        ],
+        "type": "Point"
+      },
+      "depth": 0,
+      "total_depth_24_hours": 0,
+      "depth_intensity": 0,
+      "deletedAt": null
+    }
+  ],
+  "total": 82
+}

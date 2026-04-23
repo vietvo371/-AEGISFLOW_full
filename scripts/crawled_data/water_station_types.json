@@ -1,0 +1,22 @@
+[
+  {
+    "_id": "6699df2e5e72d8de60f4a15b",
+    "title": "Tháp báo ngập",
+    "code": "flood_1m5"
+  },
+  {
+    "_id": "6699df2e5e72d8de60f4a15e",
+    "title": "Trạm đo mực nước",
+    "code": "water_level"
+  },
+  {
+    "_id": "6699df2e5e72d8de60f4a160",
+    "title": "Tháp báo lũ",
+    "code": "flood_3m"
+  },
+  {
+    "_id": "676e251a3c3cce8b40faf69e",
+    "title": "Trạm đo mực nước hồ",
+    "code": "reservoir_waterlevel"
+  }
+]

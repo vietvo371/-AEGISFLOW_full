@@ -110,6 +110,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('flood-zones', [App\Http\Controllers\Api\MapController::class, 'floodZones']);
         Route::get('rescue-teams', [App\Http\Controllers\Api\MapController::class, 'rescueTeams']);
         Route::get('shelters', [App\Http\Controllers\Api\MapController::class, 'shelters']);
+        Route::get('flood-reports', [App\Http\Controllers\Api\MapController::class, 'floodReports']);
+        Route::get('sensor-stations', [App\Http\Controllers\Api\MapController::class, 'sensorStations']);
+        Route::get('flood-events', [App\Http\Controllers\Api\MapController::class, 'floodEvents']);
     });
 
     // ── Analytics ──────────────────────────────────────────
