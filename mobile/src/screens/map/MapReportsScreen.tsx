@@ -1,15 +1,18 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import PageHeader from '../../component/PageHeader';
 import { theme, SPACING, FONT_SIZE } from '../../theme';
 
 const MapReportsScreen = () => {
+  const { t } = useTranslation();
+  
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <PageHeader title="Bản đồ phản ánh" variant="default" />
+      <PageHeader title={t('reports.title')} variant="default" />
       <View style={styles.content}>
-        <Text style={styles.placeholderText}>Bản đồ phản ánh đang được phát triển</Text>
+        <Text style={styles.placeholderText}>{t('common.loading')}</Text>
       </View>
     </SafeAreaView>
   );
@@ -33,5 +36,3 @@ const styles = StyleSheet.create({
 });
 
 export default MapReportsScreen;
-
-

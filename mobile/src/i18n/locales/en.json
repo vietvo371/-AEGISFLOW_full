@@ -284,5 +284,130 @@
     "socketConnected": "Realtime connected",
     "socketDisconnected": "Realtime disconnected",
     "socketError": "Realtime connection error"
+  },
+  "mapLayers": {
+    "title": "Map Layers",
+    "traffic": "Traffic",
+    "floodZones": "Flood Zones",
+    "sensors": "Sensors",
+    "shelters": "Shelters",
+    "incidents": "Incidents",
+    "patrols": "Patrol Units",
+    "cameras": "Surveillance Cameras",
+    "toggleLayer": "Toggle layer"
+  },
+  "flood": {
+    "title": "Flood",
+    "risk": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "status": {
+      "monitoring": "Monitoring",
+      "alert": "Alert",
+      "danger": "Danger",
+      "flooded": "Flooded",
+      "recovering": "Recovering"
+    },
+    "waterLevel": "Water Level",
+    "forecast": "Forecast",
+    "riskZone": "Risk Zone",
+    "evacuationRoute": "Evacuation Route",
+    "safeZone": "Safe Zone",
+    "floodWarning": "Flood Warning",
+    "floodAlert": "Flood warning is about to occur in your area.",
+    "expectedFloodIn": "Expected flooding in {{minutes}} minutes",
+    "depth": "Depth",
+    "rising": "Rising",
+    "falling": "Falling",
+    "stable": "Stable"
+  },
+  "sensor": {
+    "title": "Sensor",
+    "waterLevel": "Water Level",
+    "rainfall": "Rainfall",
+    "camera": "AI Camera",
+    "wind": "Wind",
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "status": {
+      "online": "Online",
+      "offline": "Offline",
+      "maintenance": "Maintenance",
+      "error": "Error"
+    }
+  },
+  "digitalTwin": {
+    "live": "LIVE",
+    "analysis": "Situation Analysis",
+    "modelDescription": "Real-time traffic prediction model",
+    "prediction": "Prediction",
+    "recommendation": "Recommendation",
+    "graphEdges": "graph edges",
+    "monitoringEdges": "Monitoring {{count}} graph edges in the affected area",
+    "congestionRiskIncrease": "Risk of spreading congestion increases by {{percent}} in {{minutes}} minutes at nearby intersections.",
+    "trafficLightRecommendation": "Adjust traffic light cycles in the area. Redirect vehicles to parallel secondary routes.",
+    "accidentRecommendation": "Coordinate police and medical response. Implement temporary traffic diversion at 2 nearest intersections.",
+    "defaultRecommendation": "Verify the scene and activate appropriate response teams."
+  },
+  "home": {
+    "title": "Home",
+    "greeting": "Hello, {{name}}! 👋",
+    "city": "Da Nang, VN",
+    "stats": {
+      "totalReports": "Total Reports",
+      "completed": "Completed",
+      "pending": "Pending"
+    },
+    "sections": {
+      "nearbyIncidents": "Nearby Incidents",
+      "viewMap": "View Map →",
+      "mainFunctions": "Main Functions",
+      "popularCategories": "Popular Categories",
+      "latestIncidents": "Latest Incidents",
+      "viewAll": "View All →"
+    },
+    "quickActions": {
+      "rescue": "Rescue",
+      "rescueSubtitle": "Send emergency request",
+      "report": "Report",
+      "reportSubtitle": "Flood incidents",
+      "myReports": "My Reports",
+      "myReportsSubtitle": "Report history",
+      "map": "Map",
+      "mapSubtitle": "View on map"
+    },
+    "incident": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Med"
+    },
+    "time": {
+      "minutesAgo": "{{count}} minutes ago",
+      "hoursAgo": "{{count}} hours ago",
+      "yesterday": "Yesterday",
+      "daysAgo": "{{count}} days ago",
+      "unknown": "Unknown"
+    },
+    "empty": {
+      "noReports": "No reports yet",
+      "noReportsSubtitle": "Be the first to report an incident in your area",
+      "createNew": "Create New Report"
+    },
+    "systemStatus": "AegisFlowAI system is operating normally",
+    "error": {
+      "loading": "Unable to load data. Please try again.",
+      "retry": "Retry"
+    },
+    "category": {
+      "traffic": "Traffic",
+      "environment": "Environment",
+      "fire": "Fire",
+      "waste": "Waste",
+      "flood": "Flood",
+      "other": "Other"
+    }
   }
 }

@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             FloodZoneSeeder::class,
             DataSeeder::class,
             RealDataSeeder::class,  // Data thực tế từ muangap.danang.gov.vn
+            // DemoDataSeeder::class,  // Uncomment để seed dữ liệu demo cho video pitch
         ]);
     }
 }

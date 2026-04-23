@@ -1,0 +1,176 @@
+station_type,name,latitude,longitude,district,city
+water,Phường An Khê,16.060552,108.178533,An Khê,Đà Nẵng
+water,Chợ Phú Xuân - Hòa Sơn,16.041551,108.105209,Hòa Khánh,Đà Nẵng
+water,"Tổ 15, Đường Đà Sơn 2",16.058889,108.153333,Hòa Khánh,Đà Nẵng
+water,"Tổ 26, phường Hòa Khánh Bắc",16.084999,108.148384,Liên Chiểu,Đà Nẵng
+water,An Ngãi Tây 2 - Hòa Sơn,16.068439,108.101975,Hòa Khánh,Đà Nẵng
+water,Cầu thôn 1 - Hòa Ninh,16.058407,108.047224,Bà Nà,Đà Nẵng
+water,Ngã ba Thái Lai - Hòa Nhơn,16.006292,108.125481,Bà Nà,Đà Nẵng
+water,Cầu Trường Định,16.107222,108.086944,Liên Chiểu,Đà Nẵng
+water,Tháp báo lũ thôn Lệ Sơn 2(Hòa Tiến),15.959333,108.166194,Hòa Tiến,Đà Nẵng
+water,"Chợ Thanh Vinh, phường Hòa Khánh Bắc",16.076149,108.132293,Liên Chiểu,Đà Nẵng
+water,Thôn Lai Châu 1 - Hòa Khương,15.962341,108.159329,Hòa Tiến,Đà Nẵng
+water,Thôn Lộc Mỹ - Hòa Bắc,16.138339,108.026312,Hải Vân,Đà Nẵng
+water,Thôn Thái Lai - Hòa Nhơn,16.005453,108.125655,Bà Nà,Đà Nẵng
+water,Cầu Tà Lang - Giàn Bí,16.119722,107.984444,Hải Vân,Đà Nẵng
+water,"Tổ 113, phường Hòa Minh",16.049194,108.167152,Hòa Khánh,Đà Nẵng
+water,Đình Làng Túy Loan - Hòa Phong,15.997928,108.136103,Hòa Vang,Đà Nẵng
+water,Đập Bara An Trạch,15.955499,108.154243,Hòa Tiến,Đà Nẵng
+water,Thôn Tây An - Hòa Châu,15.99433,108.18722,Hòa Xuân,Đà Nẵng
+water,Thôn Bồ Bản - Hòa Phong,15.992652,108.142314,Hòa Vang,Đà Nẵng
+water,Đường Trần Phú - Hoàng Văn Thụ,16.062681,108.22324,Hải Châu,Đà Nẵng
+water,"Tổ 26, phường Thanh Khê Tây",16.068106,108.175386,Thanh Khê,Đà Nẵng
+water,Gầm cầu Đỏ - Đường Thăng Long,16.000278,108.190556,Cẩm Lệ,Đà Nẵng
+water,Đường Chu Văn An - Phan Châu Trinh,16.057077,108.218789,Hòa Cường,Đà Nẵng
+water,Đường Nguyễn Đôn Tiết - Hải Hồ,16.080332,108.215559,Hải Châu,Đà Nẵng
+water,K1120/65 Trường Chinh - Phường An Khê,16.021667,108.189444,An Khê,Đà Nẵng
+water,Đường Trần Quý Cáp - Đống Đa,16.081111,108.219167,Hải Châu,Đà Nẵng
+water,Ngã ba thôn Nam Yên - Hòa Bắc,16.1339,108.049127,Hải Vân,Đà Nẵng
+water,Nhà văn hóa phường Hòa Thuận Tây,16.044715,108.20699,Hòa Cường,Đà Nẵng
+water,Phường Hòa Khánh Nam,16.056239,108.159156,Hòa Khánh,Đà Nẵng
+water,Đường Quang Trung - Đống Đa,16.073889,108.214167,Hải Châu,Đà Nẵng
+water,"Tổ 13, phường Tam Thuận",16.074101,108.204488,Thanh Khê,Đà Nẵng
+water,UBND phường Hòa Thọ Đông (cũ),16.010556,108.194444,Cẩm Lệ,Đà Nẵng
+water,"Tổ 33, phường Hòa Hiệp Bắc",16.122708,108.121261,Hải Vân,Đà Nẵng
+water,"Tổ 8, phường Thanh Khê Tây",16.064337,108.180974,Thanh Khê,Đà Nẵng
+water,"Tổ 38, phường Hòa Hiệp Nam",16.114097,108.127591,Hải Vân,Đà Nẵng
+water,UBND phường Hòa Thọ Tây (cũ),16.000278,108.184167,Cẩm Lệ,Đà Nẵng
+water,"Tổ 61, phường Chính Gián",16.067716,108.193793,Thanh Khê,Đà Nẵng
+water,Thôn Nam Yên - Hòa Bắc,16.132376,108.051554,Hải Vân,Đà Nẵng
+water,Thôn Đông Hòa - Hòa Châu,15.996579,108.193677,Hòa Xuân,Đà Nẵng
+water,"Tổ 53, phường Hòa Khê",16.061209,108.185972,Thanh Khê,Đà Nẵng
+water,Cầu Lâm Viên,15.984444,108.073333,Hòa Vang,Đà Nẵng
+water,Đường Nguyễn Phước Tần,16.015,108.2,Cẩm Lệ,Đà Nẵng
+water,Thôn Cẩm Toại Trung - Hòa Phong,15.980599,108.140094,Hòa Vang,Đà Nẵng
+water,27 Lương Ngọc Quyến - Hải Hồ,16.081673,108.21645,Hải Châu,Đà Nẵng
+water,Tháp báo lũ thôn Cẩm Nê(Hòa Tiến),15.985833,108.167222,Hòa Tiến,Đà Nẵng
+water,144 Nguyễn Xuân Hữu - Hòa Thọ Đông,16.009668,108.199659,Cẩm Lệ,Đà Nẵng
+water,Tháp báo lũ thôn An Trạch(Hòa Tiến),15.955833,108.162222,Hòa Tiến,Đà Nẵng
+water,Đường Tôn Đản - Phường An Khê,16.028056,108.186389,An Khê,Đà Nẵng
+water,"Tổ 70, phường Hòa Khánh Nam",16.047809,108.147527,Hòa Khánh,Đà Nẵng
+water,Thôn La Bông - Hòa Tiến,15.970405,108.172493,Hòa Tiến,Đà Nẵng
+water,"Tràn, hồ Đồng Nghệ",15.949677,108.085328,Hòa Tiến,Đà Nẵng
+water,Chùa Phước Thiện - Hòa Tiến,15.959674,108.172382,Hòa Tiến,Đà Nẵng
+water,Ngã ba Lai Châu - Hòa Khương,15.973284,108.14778,Hòa Tiến,Đà Nẵng
+water,"Tổ 24, phường Xuân Hà",16.068595,108.193295,Thanh Khê,Đà Nẵng
+water,Đường Phan Đăng Lưu - Lê Thanh Nghị,16.036667,108.218611,Hòa Cường,Đà Nẵng
+water,Cầu Túy Loan,15.993266,108.14215,Hòa Vang,Đà Nẵng
+water,Đường Đinh Liệt - Tú Mỡ,16.052778,108.173611,An Khê,Đà Nẵng
+water,"Tổ 4, phường Hòa Khê",16.063152,108.192169,Thanh Khê,Đà Nẵng
+water,"Tổ 32, phường Hòa Khánh Nam",16.059076,108.157314,Hòa Khánh,Đà Nẵng
+water,Thôn Thạch Nham Tây - Hòa Nhơn,16.003087,108.138567,Bà Nà,Đà Nẵng
+water,"Tổ 73, phường An Khê",16.062891,108.181284,An Khê,Đà Nẵng
+water,"Tổ 25, phường Hòa Hiệp Nam",16.103096,108.130041,Hải Vân,Đà Nẵng
+water,"Tổ 42, phường Hòa Khánh Nam",16.05844,108.154615,Hòa Khánh,Đà Nẵng
+water,Đường Lê Anh Xuân - Nguyễn Hanh,16.031117,108.225568,Hòa Cường,Đà Nẵng
+water,"Tổ 13, phường Thanh Khê Tây",16.066995,108.182402,Thanh Khê,Đà Nẵng
+water,"Tổ 98, phường Hòa Minh",16.060241,108.16293,Hòa Khánh,Đà Nẵng
+water,Thôn Thạch Bồ - Hòa Phong,15.983067,108.155657,Hòa Vang,Đà Nẵng
+water,"Tổ 37, phường Hòa Hiệp Bắc",16.117579,108.115398,Hải Vân,Đà Nẵng
+water,K904/35 Trường Chinh - Hòa Phát,16.032327,108.187112,An Khê,Đà Nẵng
+water,Đập Bara An Trạch - Hòa Khương,15.961568,108.152326,Hòa Tiến,Đà Nẵng
+water,Thôn Trường Định - Hòa Liên,16.109998,108.087732,Hải Vân,Đà Nẵng
+water,Thôn Quan Nam 1 - Hòa Liên,16.0957,108.092326,Liên Chiểu,Đà Nẵng
+water,Hồ Thạc Gián (Thanh Khê),16.0637,108.209231,Thanh Khê,Đà Nẵng
+water,Đường Yên Thế - Phường An Khê,16.058889,108.175556,An Khê,Đà Nẵng
+water,Thôn Đông Lâm - Hòa Phú,15.983073,108.073111,Hòa Vang,Đà Nẵng
+water,Thôn Hòa Phước - Hòa Phú,15.997475,108.102499,Hòa Vang,Đà Nẵng
+water,Đường Núi Thành - Tiểu La,16.046389,108.221111,Hòa Cường,Đà Nẵng
+water,Tổ 2 thôn Đông Sơn - Hòa Ninh,16.047558,108.069099,Bà Nà,Đà Nẵng
+water,Đường Hải Hồ - Ngô Chi Lan,16.083187,108.217021,Hòa Cường,Đà Nẵng
+water,Tháp báo lũ xã Đại Nghĩa,15.895472,108.080861,Đại Lộc,Đà Nẵng
+water,Tháp báo lũ thôn Kiệu Châu (Duy Sơn),15.825583,108.22375,Duy Xuyên,Đà Nẵng
+water,Cầu Hương An,15.778409,108.331055,Xuân Phú,Đà Nẵng
+water,Tháp báo lũ thôn Đông Bình (Duy Vinh),15.846389,108.337778,Nam Phước,Đà Nẵng
+water,Cầu Hà Tân,15.847026,107.934573,Thượng Đức,Đà Nẵng
+water,Cầu Vĩnh Điện,15.901811,108.247585,Điện Bàn,Đà Nẵng
+water,Tháp báo lũ xã Cẩm Kim,15.864056,108.322861,Hội An,Đà Nẵng
+water,"Tháp báo lũ Cẩm Châu, Hội An",15.876222,108.333167,Hội An Đông,Đà Nẵng
+water,Hồ chứa nước Thái Xuân,15.439806,108.586222,Tam Mỹ,Đà Nẵng
+water,Thượng lưu HCN Hố Do,15.616389,108.348028,Thăng Phú,Đà Nẵng
+water,Hạ lưu HCN Hố Do,15.618972,108.349444,Thăng Phú,Đà Nẵng
+water,"Triêm Đông 2, Điện Bàn",15.882778,108.283611,Điện Bàn,Đà Nẵng
+water,"Mỹ Cang, Bàn Thạch",15.603056,108.464722,Bàn Thạch,Đà Nẵng
+water,Hồ Suối Thỏ,15.538056,108.339722,Tiên Phước,Đà Nẵng
+rain,Trạm Kiểm lâm Sông Bắc,16.133334,107.983456,Hải Vân,Đà Nẵng
+rain,Hồ Đông Tiển,15.630833,108.289722,Đồng Dương,Đà Nẵng
+rain,Đầu mối hồ Cây Thông,15.734521,108.258649,Quế Sơn Trung,Đà Nẵng
+rain,Suối Đá,16.108611,108.261667,Sơn Trà,Đà Nẵng
+rain,Hồ Hòa Khê - Hòa Sơn,16.056389,108.1175,Hòa Khánh,Đà Nẵng
+rain,A Tiêng,15.903736,107.493563,Hùng Sơn,Đà Nẵng
+rain,Văn phòng Thường trực,15.57,108.475278,Tam Kỳ,Đà Nẵng
+rain,Đầu mối hồ Thạch Bàn,15.778625,108.088213,Thu Bồn,Đà Nẵng
+rain,Lưu vực hồ Đồng Nghệ,15.948983,108.063648,Hòa Tiến,Đà Nẵng
+rain,Ch'ơm,15.799878,107.261015,Hùng Sơn,Đà Nẵng
+rain,Duy Trung,15.803333,108.255833,Duy Xuyên,Đà Nẵng
+rain,Phước Năng,15.400683,107.761958,Phước Năng,Đà Nẵng
+rain,Tam Lộc,15.564842,108.367247,Tây Hồ,Đà Nẵng
+rain,Quế Phước,15.684025,108.016732,Quế Phước,Đà Nẵng
+rain,Hòa Sơn,16.068333,108.106667,Hòa Khánh,Đà Nẵng
+rain,Lưu vực hồ Hòa Trung,16.081111,108.043056,Bà Nà,Đà Nẵng
+rain,Hồ Thái Xuân,15.440145,108.586996,Tam Mỹ,Đà Nẵng
+rain,Bình Lâm,15.600715,108.216534,Việt An,Đà Nẵng
+rain,Phước Chánh,15.367081,107.819175,Phước Chánh,Đà Nẵng
+rain,Đại Sơn,15.818889,107.902222,Thượng Đức,Đà Nẵng
+rain,Tiên Hà,15.549425,108.246467,Sơn Cẩm Hà,Đà Nẵng
+rain,Tiên Phong,15.521389,108.356667,Tiên Phước,Đà Nẵng
+rain,Hòa Quý,15.985556,108.240833,Ngũ Hành Sơn,Đà Nẵng
+rain,Trạm bơm Túy Loan,15.999981,108.141921,Bà Nà,Đà Nẵng
+rain,Trà Vân,15.113044,108.18005,Trà Vân,Đà Nẵng
+rain,Thăng Phước,15.568889,108.150278,Việt An,Đà Nẵng
+rain,Hòa Khương,15.960833,108.14,Hòa Tiến,Đà Nẵng
+rain,Hòa Phú Thành,15.9576,107.991983,Hòa Vang,Đà Nẵng
+rain,Chùa Linh Ứng,16.1,108.279444,Sơn Trà,Đà Nẵng
+rain,Hồ chứa nước Hố Do,15.619306,108.346167,Thăng Phú,Đà Nẵng
+rain,Suối Lương,16.144444,108.115833,Hải Vân,Đà Nẵng
+rain,Tam Lãnh,15.430278,108.408611,Phú Ninh,Đà Nẵng
+rain,Đại Đồng,15.851667,108.010556,Hà Nha,Đà Nẵng
+rain,Hòa Phước,15.958889,108.215278,Hòa Xuân,Đà Nẵng
+rain,Cầu Hương An,15.778153,108.33126,Xuân Phú,Đà Nẵng
+rain,Hòa Xuân,15.995435,108.211311,Hòa Xuân,Đà Nẵng
+rain,Đại Hiệp,15.92101,108.110629,Đại Lộc,Đà Nẵng
+rain,Hòa Bắc,16.12,107.984444,Hải Vân,Đà Nẵng
+rain,Quế Lộc,15.690723,108.103483,Nông Sơn,Đà Nẵng
+rain,Phước Ninh,15.681111,108.000556,Quế Phước,Đà Nẵng
+rain,Hồ Nước Rôn,15.369552,108.277191,Trà My,Đà Nẵng
+rain,Hòa Hải,15.982778,108.268056,Ngũ Hành Sơn,Đà Nẵng
+rain,Trà Don,15.093611,108.121111,Nam Trà My,Đà Nẵng
+rain,Cầu Hà Tân,15.847026,107.934573,Thượng Đức,Đà Nẵng
+rain,Tiên Lãnh,15.458333,108.171944,Lãnh Ngọc,Đà Nẵng
+rain,Hồ Đồng Nghệ,15.950516,108.086969,Hòa Tiến,Đà Nẵng
+rain,Quế Lưu,15.558755,108.11075,Hiệp Đức,Đà Nẵng
+rain,Hòa Phát,16.041387,108.183313,An Khê,Đà Nẵng
+rain,Hòa Ninh,16.053056,108.081111,Bà Nà,Đà Nẵng
+rain,Đầu mối hồ Phước Hà,15.619857,108.320814,Thăng Phú,Đà Nẵng
+rain,Trạm bơm An Trạch,15.953628,108.154946,Hòa Tiến,Đà Nẵng
+rain,Trung tâm GD-DN 05-06,16.143774,108.025415,Hải Vân,Đà Nẵng
+rain,Duy Phú,15.789444,108.106389,Thu Bồn,Đà Nẵng
+rain,Điện Ngọc,15.948886,108.254896,Điện Bàn Đông,Đà Nẵng
+rain,Hồ Hòa Trung,16.079023,108.064568,Liên Chiểu,Đà Nẵng
+rain,Hồ Hóc Khế,15.991329,108.09908,Hòa Vang,Đà Nẵng
+rain,"Khu TDC Tắk Pát, xã Trà Leng",15.271111,108.013889,Trà Leng,Đà Nẵng
+rain,Phước Thành,15.286044,107.891364,Phước Thành,Đà Nẵng
+rain,Bình Dương,15.805001,108.381044,Thăng An,Đà Nẵng
+rain,Hồ Thạc Gián,16.063836,108.209119,Thanh Khê,Đà Nẵng
+rain,Đầu mối hồ Phú Ninh,15.506648,108.481143,Phú Ninh,Đà Nẵng
+rain,Đập Hà Thanh,15.953153,108.195375,Điện Bàn Bắc,Đà Nẵng
+rain,Phước Công,15.318056,107.812222,Phước Chánh,Đà Nẵng
+rain,Đầu mối hồ Việt An,15.592222,108.223056,Việt An,Đà Nẵng
+rain,Điện Hồng,15.888333,108.149722,Điện Bàn Tây,Đà Nẵng
+rain,Kênh Nguyễn Đình Tựu,16.054174,108.188345,Thanh Khê,Đà Nẵng
+rain,Đầu mối hồ Vĩnh Trinh,15.805365,108.164361,Duy Xuyên,Đà Nẵng
+rain,Trà Giáp,15.222222,108.254167,Trà Giáp,Đà Nẵng
+rain,Sông Trà,15.540833,108.042222,Phước Trà,Đà Nẵng
+rain,Đầu mối hồ Trung Lộc,15.712101,108.081572,Nông Sơn,Đà Nẵng
+rain,Hồ Hương Mao,15.756667,108.289167,Quế Sơn Trung,Đà Nẵng
+rain,Phường Hòa Cường Nam,16.027778,108.22,Hòa Cường,Đà Nẵng
+rain,Hồ An Long,15.633333,108.155278,Quế Sơn,Đà Nẵng
+rain,Bà Nà,16.024705,108.06118,Bà Nà,Đà Nẵng
+rain,Tam Trà,15.38522,108.49981,Tam Mỹ,Đà Nẵng
+rain,Hồ Trước Đông,16.012146,108.098357,Bà Nà,Đà Nẵng
+rain,Bình Phú,15.6432,108.326,Thăng Phú,Đà Nẵng
+rain,Hồ Hố Cau,15.996389,108.054444,Hòa Vang,Đà Nẵng
+rain,Khe Cạn,16.066667,108.177778,Thanh Khê,Đà Nẵng
+rain,Phước Hiệp,15.4625,107.937778,Phước Hiệp,Đà Nẵng
+rain,Hồ Phú Lộc,15.7875,108.174444,Duy Xuyên,Đà Nẵng
+rain,Cầu Vĩnh Điện,15.901677,108.247891,Điện Bàn,Đà Nẵng

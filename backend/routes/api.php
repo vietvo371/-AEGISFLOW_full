@@ -122,6 +122,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('evacuation-routes', [App\Http\Controllers\Api\EvacuationRouteController::class, 'index']);
     Route::get('evacuation-routes/{id}', [App\Http\Controllers\Api\EvacuationRouteController::class, 'show']);
 
+    // ── AI Chat (Groq) ──────────────────────────────────────
+    Route::post('ai/chat', [App\Http\Controllers\Api\AIChatController::class, 'chat']);
+    Route::get('ai/status', [App\Http\Controllers\Api\AIChatController::class, 'status']);
+
     // ============================================================
     // OPERATOR ROUTES (role: city_admin, rescue_operator)
     // ============================================================

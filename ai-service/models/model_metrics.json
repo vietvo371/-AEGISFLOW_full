@@ -1,0 +1,42 @@
+{
+  "model_name": "AegisFlow Flood Risk RandomForest Classifier",
+  "version": "1.0.0",
+  "trained_at": "2026-04-23T13:54:34",
+  "algorithm": "RandomForestClassifier",
+  "framework": "scikit-learn",
+  "dataset": "flood_danang_2019_2024.csv",
+  "dataset_samples": 3000,
+  "dataset_features": ["water_level_m", "rainfall_mm", "hours_rain", "tide_level", "historical_score"],
+  "dataset_classes": ["critical", "high", "low", "medium"],
+  "train_test_split": 0.8,
+  "accuracy": 0.9883,
+  "f1_weighted": 0.9886,
+  "f1_macro": 0.9750,
+  "precision_weighted": 0.9897,
+  "recall_weighted": 0.9883,
+  "auc_roc": 0.9996,
+  "cv_f1_mean": 0.9886,
+  "cv_f1_std": 0.0038,
+  "cv_folds": 5,
+  "feature_importance": {
+    "water_level_m": 0.3634,
+    "rainfall_mm": 0.3202,
+    "historical_score": 0.1555,
+    "tide_level": 0.0809,
+    "hours_rain": 0.0800
+  },
+  "model_params": {
+    "n_estimators": 200,
+    "max_depth": 15,
+    "min_samples_split": 5,
+    "min_samples_leaf": 2,
+    "class_weight": "balanced"
+  },
+  "per_class_metrics": {
+    "critical": {"precision": 1.0, "recall": 1.0, "f1-score": 1.0},
+    "high": {"precision": 1.0, "recall": 0.94, "f1-score": 0.97},
+    "low": {"precision": 1.0, "recall": 0.99, "f1-score": 0.99},
+    "medium": {"precision": 0.88, "recall": 1.0, "f1-score": 0.94}
+  },
+  "notes": "Model trained on synthetic data based on VNMHA physics-based thresholds. Falls back to rule-based scoring if model unavailable (fail-safe design)."
+}

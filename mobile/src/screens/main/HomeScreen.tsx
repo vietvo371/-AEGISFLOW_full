@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { useTranslation } from 'react-i18next';
 import { RootStackParamList, CitizenTabParamList } from '../../navigation/types';
 import {
   theme,
@@ -63,6 +64,7 @@ interface StatsData {
 }
 
 const HomeScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuth();
   const { unreadCount, registerRefreshCallback } = useNotifications();
@@ -122,7 +124,7 @@ const HomeScreen = () => {
       }
     } catch (error) {
       console.error('Error fetching home data:', error);
-      setError('Không thể tải dữ liệu. Vui lòng thử lại.');
+      setError(t('home.error.loading'));
     } finally {
       setLoading(false);
     }
@@ -184,32 +186,32 @@ const HomeScreen = () => {
   const quickActions = [
     {
       id: 'rescue',
-      title: 'Cứu hộ',
-      subtitle: 'Gửi yêu cầu khẩn cấp',
+      title: t('home.quickActions.rescue'),
+      subtitle: t('home.quickActions.rescueSubtitle'),
       icon: 'lifebuoy',
       color: theme.colors.error,
       onPress: () => navigation.navigate('CreateReport', { isRescue: true }),
     },
     {
       id: 'create-report',
-      title: 'Báo cáo',
-      subtitle: 'Sự cố ngập lụt',
+      title: t('home.quickActions.report'),
+      subtitle: t('home.quickActions.reportSubtitle'),
       icon: 'bullhorn-outline',
       color: theme.colors.primary,
       onPress: () => navigation.navigate('Alerts'),
     },
     {
       id: 'my-reports',
-      title: 'Của tôi',
-      subtitle: 'Lịch sử phản ánh',
+      title: t('home.quickActions.myReports'),
+      subtitle: t('home.quickActions.myReportsSubtitle'),
       icon: 'account-clock-outline',
       color: theme.colors.info,
       onPress: () => navigation.navigate('Profile'),
     },
     {
       id: 'map',
-      title: 'Bản đồ',
-      subtitle: 'Xem trên bản đồ',
+      title: t('home.quickActions.map'),
+      subtitle: t('home.quickActions.mapSubtitle'),
       icon: 'map-outline',
       color: theme.colors.warning,
       onPress: () => navigation.navigate('Map'),
@@ -222,7 +224,7 @@ const HomeScreen = () => {
       return [
         {
           id: 'total',
-          title: 'Tổng phản ánh',
+          title: t('home.stats.totalReports'),
           value: '---',
           change: '--',
           trend: 'up' as const,
@@ -231,7 +233,7 @@ const HomeScreen = () => {
         },
       {
         id: 'resolved',
-        title: 'Hoàn thành',
+        title: t('home.stats.completed'),
         value: '---',
         change: '--',
         trend: 'up' as const,
@@ -240,7 +242,7 @@ const HomeScreen = () => {
       },
         {
           id: 'pending',
-          title: 'Đang xử lý',
+          title: t('home.stats.pending'),
           value: '---',
           change: '--',
           trend: 'down' as const,
@@ -257,7 +259,7 @@ const HomeScreen = () => {
     return [
       {
         id: 'total',
-        title: 'Tổng phản ánh',
+        title: t('home.stats.totalReports'),
         value: formatNumber(statsData.tong_phan_anh),
         change: resolvedPercentage,
         trend: 'up' as const,
@@ -266,7 +268,7 @@ const HomeScreen = () => {
       },
       {
         id: 'resolved',
-        title: 'Hoàn thành',
+        title: t('home.stats.completed'),
         value: formatNumber(statsData.da_giai_quyet),
         change: resolvedPercentage,
         trend: 'up' as const,
@@ -275,7 +277,7 @@ const HomeScreen = () => {
       },
       {
         id: 'pending',
-        title: 'Đang xử lý',
+        title: t('home.stats.pending'),
         value: formatNumber(statsData.dang_xu_ly),
         change: statsData.thoi_gian_xu_ly_trung_binh
           ? `${Math.round(statsData.thoi_gian_xu_ly_trung_binh)} h`
@@ -318,14 +320,13 @@ const HomeScreen = () => {
   };
 
   const formatDate = (dateString: string): string => {
-    if (!dateString) return 'Không rõ';
+    if (!dateString) return t('home.time.unknown');
 
     try {
       const date = new Date(dateString);
 
-      // Check if date is valid
       if (isNaN(date.getTime())) {
-        return 'Không rõ';
+        return t('home.time.unknown');
       }
 
       const now = new Date();
@@ -335,32 +336,32 @@ const HomeScreen = () => {
 
       if (diffHours < 1) {
         const diffMins = Math.floor(diffMs / (1000 * 60));
-        return `${diffMins} phút trước`;
+        return t('home.time.minutesAgo', { count: diffMins });
       } else if (diffHours < 24) {
-        return `${diffHours} giờ trước`;
+        return t('home.time.hoursAgo', { count: diffHours });
       } else if (diffDays === 1) {
-        return 'Hôm qua';
+        return t('home.time.yesterday');
       } else if (diffDays < 7) {
-        return `${diffDays} ngày trước`;
+        return t('home.time.daysAgo', { count: diffDays });
       } else {
         return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
       }
     } catch (error) {
       console.error('Error formatting date:', dateString, error);
-      return 'Không rõ';
+      return t('home.time.unknown');
     }
   };
 
   const getCategoryName = (categoryId: number): string => {
     const categories: { [key: number]: string } = {
-      1: 'Giao thông',
-      2: 'Môi trường',
-      3: 'Cháy nổ',
-      4: 'Rác thải',
-      5: 'Ngập lụt',
-      6: 'Khác',
+      1: t('home.category.traffic'),
+      2: t('home.category.environment'),
+      3: t('home.category.fire'),
+      4: t('home.category.waste'),
+      5: t('home.category.flood'),
+      6: t('home.category.other'),
     };
-    return categories[categoryId] || 'Khác';
+    return categories[categoryId] || t('home.category.other');
   };
 
   const renderHeader = () => (
@@ -379,7 +380,7 @@ const HomeScreen = () => {
               {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' })}
             </Text>
             <Text style={styles.headerGreeting}>
-              Xin chào, {user?.name?.split(' ').pop() || 'Cư dân'}! 👋
+              {t('home.greeting', { name: user?.name?.split(' ').pop() || 'Cư dân' })}
             </Text>
           </View>
         </View>
@@ -401,7 +402,7 @@ const HomeScreen = () => {
       <View style={styles.locationBar}>
         <View style={styles.locationBadge}>
           <Icon name="map-marker" size={ICON_SIZE.xs} color={theme.colors.white} />
-          <Text style={styles.locationText}>Đà Nẵng, VN</Text>
+          <Text style={styles.locationText}>{t('home.city')}</Text>
         </View>
         {weatherSummary && (
           <View style={styles.weatherBadge}>
@@ -429,7 +430,7 @@ const HomeScreen = () => {
           <Icon name="alert-circle-outline" size={ICON_SIZE.md} color={theme.colors.error} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity onPress={fetchData} style={styles.retryButton}>
-            <Text style={styles.retryButtonText}>Thử lại</Text>
+            <Text style={styles.retryButtonText}>{t('home.error.retry')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -480,10 +481,10 @@ const HomeScreen = () => {
             <View style={styles.sectionHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
                 <Icon name="map-marker-radius" size={18} color={theme.colors.error} />
-                <Text style={styles.sectionTitle}>Sự cố gần tôi</Text>
+                <Text style={styles.sectionTitle}>{t('home.sections.nearbyIncidents')}</Text>
               </View>
               <TouchableOpacity onPress={() => (navigation as any).navigate('Map')}>
-                <Text style={styles.seeAllLink}>Xem bản đồ →</Text>
+                <Text style={styles.seeAllLink}>{t('home.sections.viewMap')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -516,7 +517,7 @@ const HomeScreen = () => {
                     </View>
                     <View style={[styles.nearbySeverityBadge, { backgroundColor: color + '15' }]}>
                       <Text style={[styles.nearbySeverityText, { color }]}>
-                        {inc.severity === 'critical' ? 'Nguy hiểm' : inc.severity === 'high' ? 'Cao' : 'TB'}
+                        {inc.severity === 'critical' ? t('home.incident.critical') : inc.severity === 'high' ? t('home.incident.high') : t('home.incident.medium')}
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -529,7 +530,7 @@ const HomeScreen = () => {
         {/* Quick Actions Grid */}
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Chức năng chính</Text>
+            <Text style={styles.sectionTitle}>{t('home.sections.mainFunctions')}</Text>
             <View style={styles.sectionDivider} />
           </View>
           <View style={styles.actionGrid}>
@@ -561,7 +562,7 @@ const HomeScreen = () => {
         {statsData?.top_danh_muc && statsData.top_danh_muc.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>Danh mục phổ biến</Text>
+              <Text style={styles.sectionTitle}>{t('home.sections.popularCategories')}</Text>
               <View style={styles.sectionDivider} />
             </View>
             <View style={styles.categoryCard}>
@@ -608,11 +609,11 @@ const HomeScreen = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: SPACING.md }}>
-              <Text style={styles.sectionTitle}>Sự cố mới nhất</Text>
+              <Text style={styles.sectionTitle}>{t('home.sections.latestIncidents')}</Text>
               <View style={[styles.sectionDivider, { flex: 1, maxWidth: 100 }]} />
             </View>
             <TouchableOpacity onPress={() => (navigation as any).navigate('Alerts')}>
-              <Text style={styles.seeAllLink}>Xem tất cả →</Text>
+              <Text style={styles.seeAllLink}>{t('home.sections.viewAll')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -622,19 +623,19 @@ const HomeScreen = () => {
 
           {loading ? (
             <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>Đang tải...</Text>
+              <Text style={styles.loadingText}>{t('common.loading')}</Text>
             </View>
           ) : recentReports.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Icon name="inbox-outline" size={ICON_SIZE['2xl']} color={theme.colors.textSecondary} />
-              <Text style={styles.emptyText}>Chưa có phản ánh nào</Text>
-              <Text style={styles.emptySubtext}>Hãy là người đầu tiên báo cáo sự cố trong khu vực</Text>
+              <Text style={styles.emptyText}>{t('home.empty.noReports')}</Text>
+              <Text style={styles.emptySubtext}>{t('home.empty.noReportsSubtitle')}</Text>
               <TouchableOpacity
                 style={styles.emptyButton}
                 onPress={() => navigation.navigate('CreateReport')}
               >
                 <Icon name="plus-circle-outline" size={ICON_SIZE.md} color={theme.colors.white} />
-                <Text style={styles.emptyButtonText}>Tạo phản ánh mới</Text>
+                <Text style={styles.emptyButtonText}>{t('home.empty.createNew')}</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -687,7 +688,7 @@ const HomeScreen = () => {
         {/* System Status Footer */}
         <View style={styles.systemStatus}>
           <Icon name="server-network" size={ICON_SIZE.xs} color={theme.colors.success} />
-          <Text style={styles.systemStatusText}>Hệ thống AegisFlowAI hoạt động bình thường</Text>
+          <Text style={styles.systemStatusText}>{t('home.systemStatus')}</Text>
         </View>
 
       </ScrollView>

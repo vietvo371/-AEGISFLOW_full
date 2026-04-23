@@ -284,5 +284,130 @@
     "socketConnected": "Đã kết nối realtime",
     "socketDisconnected": "Mất kết nối realtime",
     "socketError": "Lỗi kết nối realtime"
+  },
+  "mapLayers": {
+    "title": "Lớp bản đồ",
+    "traffic": "Giao thông",
+    "floodZones": "Vùng ngập",
+    "sensors": "Trạm cảm biến",
+    "shelters": "Điểm sơ tán",
+    "incidents": "Sự cố",
+    "patrols": "Lực lượng cơ động",
+    "cameras": "Camera giám sát",
+    "toggleLayer": "Bật/tắt lớp"
+  },
+  "flood": {
+    "title": "Ngập lụt",
+    "risk": {
+      "low": "Thấp",
+      "medium": "Trung bình",
+      "high": "Cao",
+      "critical": "Nguy cấp"
+    },
+    "status": {
+      "monitoring": "Theo dõi",
+      "alert": "Cảnh báo",
+      "danger": "Nguy hiểm",
+      "flooded": "Đang ngập",
+      "recovering": "Phục hồi"
+    },
+    "waterLevel": "Mực nước",
+    "forecast": "Dự báo",
+    "riskZone": "Vùng nguy hiểm",
+    "evacuationRoute": "Tuyến sơ tán",
+    "safeZone": "Vùng an toàn",
+    "floodWarning": "Cảnh báo ngập",
+    "floodAlert": "Cảnh báo ngập lụt sắp xảy ra tại khu vực của bạn.",
+    "expectedFloodIn": "Dự kiến ngập trong {{minutes}} phút",
+    "depth": "Độ sâu",
+    "rising": "Đang dâng",
+    "falling": "Đang rút",
+    "stable": "Ổn định"
+  },
+  "sensor": {
+    "title": "Cảm biến",
+    "waterLevel": "Mực nước",
+    "rainfall": "Lượng mưa",
+    "camera": "Camera AI",
+    "wind": "Gió",
+    "temperature": "Nhiệt độ",
+    "humidity": "Độ ẩm",
+    "status": {
+      "online": "Trực tuyến",
+      "offline": "Mất kết nối",
+      "maintenance": "Bảo trì",
+      "error": "Lỗi"
+    }
+  },
+  "digitalTwin": {
+    "live": "THỜI GIAN THỰC",
+    "analysis": "Phân tích Tình huống",
+    "modelDescription": "Mô hình dự báo giao thông thời gian thực",
+    "prediction": "Dự báo",
+    "recommendation": "Đề xuất",
+    "graphEdges": "cạnh đồ thị",
+    "monitoringEdges": "đang theo dõi {{count}} cạnh đồ thị trong vùng ảnh hưởng",
+    "congestionRiskIncrease": "Nguy cơ ùn tắc lan rộng tăng {{percent}} trong {{minutes}} phút tới tại các nút giao lân cận.",
+    "trafficLightRecommendation": "Điều chỉnh chu kỳ đèn giao thông khu vực. Chuyển hướng phương tiện sang trục phụ song song.",
+    "accidentRecommendation": "Phối hợp cảnh sát + y tế. Phân luồng tạm thời tại 2 nút giao gần nhất.",
+    "defaultRecommendation": "Xác minh hiện trường và kích hoạt đội ứng cứu phù hợp."
+  },
+  "home": {
+    "title": "Trang chủ",
+    "greeting": "Xin chào, {{name}}! 👋",
+    "city": "Đà Nẵng, VN",
+    "stats": {
+      "totalReports": "Tổng phản ánh",
+      "completed": "Hoàn thành",
+      "pending": "Đang xử lý"
+    },
+    "sections": {
+      "nearbyIncidents": "Sự cố gần tôi",
+      "viewMap": "Xem bản đồ →",
+      "mainFunctions": "Chức năng chính",
+      "popularCategories": "Danh mục phổ biến",
+      "latestIncidents": "Sự cố mới nhất",
+      "viewAll": "Xem tất cả →"
+    },
+    "quickActions": {
+      "rescue": "Cứu hộ",
+      "rescueSubtitle": "Gửi yêu cầu khẩn cấp",
+      "report": "Báo cáo",
+      "reportSubtitle": "Sự cố ngập lụt",
+      "myReports": "Của tôi",
+      "myReportsSubtitle": "Lịch sử phản ánh",
+      "map": "Bản đồ",
+      "mapSubtitle": "Xem trên bản đồ"
+    },
+    "incident": {
+      "critical": "Nguy hiểm",
+      "high": "Cao",
+      "medium": "TB"
+    },
+    "time": {
+      "minutesAgo": "{{count}} phút trước",
+      "hoursAgo": "{{count}} giờ trước",
+      "yesterday": "Hôm qua",
+      "daysAgo": "{{count}} ngày trước",
+      "unknown": "Không rõ"
+    },
+    "empty": {
+      "noReports": "Chưa có phản ánh nào",
+      "noReportsSubtitle": "Hãy là người đầu tiên báo cáo sự cố trong khu vực",
+      "createNew": "Tạo phản ánh mới"
+    },
+    "systemStatus": "Hệ thống AegisFlowAI hoạt động bình thường",
+    "error": {
+      "loading": "Không thể tải dữ liệu. Vui lòng thử lại.",
+      "retry": "Thử lại"
+    },
+    "category": {
+      "traffic": "Giao thông",
+      "environment": "Môi trường",
+      "fire": "Cháy nổ",
+      "waste": "Rác thải",
+      "flood": "Ngập lụt",
+      "other": "Khác"
+    }
   }
 }
