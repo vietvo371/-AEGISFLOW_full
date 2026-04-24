@@ -23,7 +23,7 @@ class PredictionReceived implements ShouldBroadcast
 
     public function broadcastAs(): string
     {
-        return 'prediction.received';
+        return 'PredictionReceived';
     }
 
     public function broadcastWith(): array

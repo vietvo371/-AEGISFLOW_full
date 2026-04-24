@@ -29,6 +29,42 @@ return [
             'driver' => 'sanctum',
             'provider' => 'users',
         ],
+
+        // Role-specific guards for Spatie middleware
+        'api' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
+
+        'city_admin' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
+
+        'rescue_operator' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
+
+        'ai_operator' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
+
+        'rescue_team' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
+
+        'citizen' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
+
+        'urban_planner' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
     ],
 
     /*

@@ -26,7 +26,7 @@ class RescueRequestCreated implements ShouldBroadcast
 
     public function broadcastAs(): string
     {
-        return 'rescue_request.created';
+        return 'RescueRequestCreated';
     }
 
     public function broadcastWith(): array

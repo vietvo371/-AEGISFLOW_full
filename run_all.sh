@@ -42,25 +42,35 @@ start_frontend() {
   "
 }
 
-# start_reverb() {
-#   echo -e "${YELLOW}🔌 Starting Laravel Reverb WebSocket (port 8080)...${NC}"
-#   osascript -e "
-#     tell application \"Terminal\"
-#       do script \"cd '$ROOT_DIR/backend' && $PHP_BIN artisan reverb:start\"
-#       set custom title of front window to \"🔌 Reverb :8080\"
-#     end tell
-#   "
-# }
+start_reverb() {
+  echo -e "${YELLOW}🔌 Starting Laravel Reverb WebSocket (port 8080)...${NC}"
+  osascript -e "
+    tell application \"Terminal\"
+      do script \"cd '$ROOT_DIR/backend' && $PHP_BIN artisan reverb:start --port=8080\"
+      set custom title of front window to \"🔌 Reverb :8080\"
+    end tell
+  "
+}
 
-# start_ai() {
-#   echo -e "${BLUE}🤖 Starting AI Service (port 5005)...${NC}"
-#   osascript -e "
-#     tell application \"Terminal\"
-#       do script \"cd '$ROOT_DIR/ai-service' && ./venv/bin/python main.py\"
-#       set custom title of front window to \"🤖 AI :5005\"
-#     end tell
-#   "
-# }
+start_queue() {
+  echo -e "${YELLOW}⚙️  Starting Laravel Queue Worker...${NC}"
+  osascript -e "
+    tell application \"Terminal\"
+      do script \"cd '$ROOT_DIR/backend' && $PHP_BIN artisan queue:work --tries=3 --sleep=1\"
+      set custom title of front window to \"⚙️ Queue Worker\"
+    end tell
+  "
+}
+
+start_ai() {
+  echo -e "${BLUE}🤖 Starting AI Service (port 5005)...${NC}"
+  osascript -e "
+    tell application \"Terminal\"
+      do script \"cd '$ROOT_DIR/ai-service' && ./venv/bin/python main.py\"
+      set custom title of front window to \"🤖 AI :5005\"
+    end tell
+  "
+}
 
 # ============================================
 # Main
@@ -78,6 +88,8 @@ if [ -z "$1" ]; then
   start_frontend
   sleep 1
   start_reverb
+  sleep 1
+  start_queue
   sleep 1
   start_ai
 

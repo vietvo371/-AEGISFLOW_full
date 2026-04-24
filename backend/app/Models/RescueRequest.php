@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * RescueRequest — Yêu cầu cứu hộ
@@ -64,6 +65,23 @@ class RescueRequest extends Model
         'category' => 'enums.rescue_category',
         'status' => 'enums.rescue_request_status',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (RescueRequest $req) {
+            if (empty($req->request_number)) {
+                $req->request_number = static::generateRequestNumber();
+            }
+        });
+    }
+
+    public static function generateRequestNumber(): string
+    {
+        $prefix = 'RRQ';
+        $date = now()->format('Ymd');
+        $random = strtoupper(Str::random(4));
+        return "{$prefix}-{$date}-{$random}";
+    }
 
     // ============================================================
     // Relationships

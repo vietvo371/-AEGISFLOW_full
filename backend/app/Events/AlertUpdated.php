@@ -9,7 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AlertCreated implements ShouldBroadcast
+class AlertUpdated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -32,7 +32,7 @@ class AlertCreated implements ShouldBroadcast
      */
     public function broadcastAs(): string
     {
-        return 'AlertCreated';
+        return 'AlertUpdated';
     }
 
     /**
@@ -51,7 +51,7 @@ class AlertCreated implements ShouldBroadcast
             'source' => $this->alert->source,
             'effective_from' => $this->alert->effective_from?->toIso8601String(),
             'effective_until' => $this->alert->effective_until?->toIso8601String(),
-            'created_at' => $this->alert->created_at?->toIso8601String(),
+            'updated_at' => $this->alert->updated_at?->toIso8601String(),
         ];
     }
 }

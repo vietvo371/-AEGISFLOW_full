@@ -26,7 +26,7 @@ class RescueRequestUpdated implements ShouldBroadcast
 
     public function broadcastAs(): string
     {
-        return 'rescue_request.updated';
+        return 'RescueRequestUpdated';
     }
 
     public function broadcastWith(): array
@@ -35,7 +35,10 @@ class RescueRequestUpdated implements ShouldBroadcast
             'id' => $this->rescueRequest->id,
             'urgency' => $this->rescueRequest->urgency,
             'status' => $this->rescueRequest->status,
+            'people_count' => $this->rescueRequest->people_count,
+            'address' => $this->rescueRequest->address,
             'assigned_team_id' => $this->rescueRequest->assigned_team_id,
+            'updated_at' => $this->rescueRequest->updated_at?->toIso8601String(),
         ];
     }
 }

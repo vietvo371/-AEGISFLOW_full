@@ -6,6 +6,7 @@ use App\Traits\HasTranslatedEnums;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 /**
  * Alert — Cảnh báo
@@ -51,6 +52,23 @@ class Alert extends Model
         'severity' => 'enums.severity',
         'status' => 'enums.alert_status',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Alert $alert) {
+            if (empty($alert->alert_number)) {
+                $alert->alert_number = static::generateAlertNumber();
+            }
+        });
+    }
+
+    public static function generateAlertNumber(): string
+    {
+        $prefix = 'ALT';
+        $date = now()->format('Ymd');
+        $random = strtoupper(Str::random(4));
+        return "{$prefix}-{$date}-{$random}";
+    }
 
     // ============================================================
     // Relationships
