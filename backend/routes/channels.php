@@ -27,6 +27,13 @@ Broadcast::channel('team.{teamId}.dispatch', function ($user, $teamId) {
         ->exists();
 });
 
+// ── Kênh công khai: Cảnh báo lũ lụt ──
+Broadcast::channel('flood', function ($user) {
+    // Tất cả users (kể cả unauthenticated) có thể lắng nghe alerts
+    // Vì alerts là thông tin công cộng cho công dân
+    return true;
+});
+
 // ── Kênh presence: Operators online ──
 Broadcast::channel('operators.online', function ($user) {
     if ($user->hasAnyRole(['city_admin', 'rescue_operator'])) {

@@ -1,0 +1,121 @@
+feat: implement real-time alert system with Reverb WebSocket
+
+## Summary
+Complete implementation of real-time alert broadcast system using Laravel Reverb.
+Enables instant updates for alert creation, status changes, and resolution across all users.
+
+## Changes Made
+
+### Backend (Laravel)
+- Added AlertUpdated event to broadcast when alert status changes
+- Added AlertResolved event to broadcast when alert is resolved
+- Enhanced AlertCreated event to include geometry (PostGIS) and affected areas
+- Updated AlertController:
+  * store(): broadcasts AlertCreated event
+  * updateStatus(): broadcasts AlertUpdated or AlertResolved based on status
+  * index() & geojson(): added location-based filtering for citizen users
+- Defined 'flood' public channel in routes/channels.php
+- Added migration: add district_id to users table (for location filtering)
+
+### Frontend (Next.js)
+- Enhanced RealtimeContext:
+  * Now listens to .alert.updated and .alert.resolved events
+  * Added connectionError state and auto-reconnect logic (5s retry)
+  * Proper cleanup of event listeners
+- Created useAlertEvents hook for easy component integration
+  * Dispatches custom events: aegis:alert:created/updated/resolved
+  * Provides onAlertCreated, onAlertUpdated, onAlertResolved callbacks
+- Created AlertListener example component showing usage patterns
+
+## How It Works
+
+### Event Flow
+1. Admin/Operator creates/updates/resolves alert via API
+2. Backend broadcasts event to 'flood' WebSocket channel
+3. Frontend RealtimeContext listens and updates state
+4. Components subscribe via useAlertEvents hook
+5. UI updates instantly without page reload
+
+### Location Filtering
+- Citizen users only receive alerts for their assigned district
+- Filtering happens at API level (backend)
+- Admin/operator users see all alerts
+
+## Testing
+
+### Test Alert Creation
+```bash
+POST /api/alerts
+{
+  "title": "Mưa lớn",
+  "alert_type": "flood_warning",
+  "severity": "high",
+  "affected_districts": ["1", "2"]
+}
+# Frontend should show alert instantly via WebSocket
+```
+
+### Test Alert Update
+```bash
+PUT /api/alerts/1/status
+{ "status": "active" }
+# Frontend should update alert status without refresh
+```
+
+### Test Alert Resolution
+```bash
+PUT /api/alerts/1/status
+{ "status": "resolved" }
+# Frontend should remove alert and show notification
+```
+
+## Files Changed
+- app/Events/AlertUpdated.php (NEW)
+- app/Events/AlertResolved.php (NEW)
+- app/Events/AlertCreated.php (MODIFIED)
+- app/Http/Controllers/Api/AlertController.php (MODIFIED)
+- routes/channels.php (MODIFIED)
+- database/migrations/2026_04_24_000000_add_district_id_to_users_table.php (NEW)
+- src/lib/realtime-context.tsx (MODIFIED)
+- src/lib/useAlertEvents.ts (NEW)
+- src/components/realtime/AlertListener.tsx (NEW)
+
+## Documentation
+- .claude/alert-realtime-analysis.md - Problem analysis
+- .claude/alert-realtime-implementation.md - Implementation guide
+- .claude/ALERT_REALTIME_CHECKLIST.md - Integration checklist
+- .claude/ALERT_REALTIME_SETUP.md - Quick start guide
+- .claude/ALERT_REALTIME_SUMMARY.md - Overview & reference
+
+## Breaking Changes
+None. This is a backward-compatible enhancement.
+
+## Requirements
+- PHP 8.3+, Laravel 13
+- Node.js 18+, Next.js 16
+- PostgreSQL 16 + PostGIS (for geometry support, optional)
+- Reverb WebSocket running on port 8080 (configurable)
+
+## Performance Impact
+- Minimal: WebSocket connection per user
+- Reduced polling: No need for constant API refresh
+- Geometry only sent to connected clients (not all APIs)
+
+## Security
+- Channel authentication defined in routes/channels.php
+- Location filtering prevents unauthorized data access
+- Data validation on alert creation/update
+
+## Deployment Steps
+1. Run migration: `php artisan migrate`
+2. Start Reverb: `php artisan reverb:start --port=8080`
+3. Frontend will auto-connect via RealtimeContext
+4. Test via AlertListener component or custom hooks
+
+## Documentation Links
+- See .claude/ALERT_REALTIME_SETUP.md for quick start
+- See .claude/ALERT_REALTIME_IMPLEMENTATION.md for detailed guide
+- See .claude/alert-realtime-analysis.md for problem analysis
+
+---
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class NotificationController extends Controller
 {
@@ -15,8 +15,11 @@ class NotificationController extends Controller
      */
     public function index(Request $request)
     {
-        $notifications = $request->user()
-            ->notifications()
+        $userId = $request->user()->id;
+
+        $notifications = DB::table('notifications')
+            ->where('target_type', 'user')
+            ->where('target_id', $userId)
             ->orderBy('created_at', 'desc')
             ->paginate($request->get('per_page', 20));
 
@@ -31,8 +34,11 @@ class NotificationController extends Controller
      */
     public function unreadCount(Request $request)
     {
-        $count = $request->user()
-            ->notifications()
+        $userId = $request->user()->id;
+
+        $count = DB::table('notifications')
+            ->where('target_type', 'user')
+            ->where('target_id', $userId)
             ->whereNull('read_at')
             ->count();
 
@@ -45,8 +51,11 @@ class NotificationController extends Controller
      */
     public function unread(Request $request)
     {
-        $notifications = $request->user()
-            ->notifications()
+        $userId = $request->user()->id;
+
+        $notifications = DB::table('notifications')
+            ->where('target_type', 'user')
+            ->where('target_id', $userId)
             ->whereNull('read_at')
             ->orderBy('created_at', 'desc')
             ->limit(20)
@@ -63,15 +72,15 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, string $id)
     {
-        $notification = $request->user()
-            ->notifications()
-            ->find($id);
+        $notification = DB::table('notifications')->find($id);
 
-        if (! $notification) {
+        if (!$notification) {
             return ApiResponse::notFound('Không tìm thấy thông báo');
         }
 
-        $notification->markAsRead();
+        DB::table('notifications')
+            ->where('id', $id)
+            ->update(['read_at' => now()]);
 
         return ApiResponse::success(null, 'Đã đánh dấu đã đọc');
     }
@@ -82,8 +91,11 @@ class NotificationController extends Controller
      */
     public function markAllRead(Request $request)
     {
-        $request->user()
-            ->notifications()
+        $userId = $request->user()->id;
+
+        DB::table('notifications')
+            ->where('target_type', 'user')
+            ->where('target_id', $userId)
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
@@ -95,16 +107,16 @@ class NotificationController extends Controller
      */
     protected function formatNotification($n): array
     {
-        $data = $n->data;
+        $data = is_string($n->data) ? json_decode($n->data, true) : $n->data;
 
         return [
             'id' => $n->id,
-            'type' => class_basename($n->type),
-            'title' => $data['title'] ?? 'Thông báo',
-            'body' => $data['body'] ?? '',
+            'type' => $n->notification_type ?? 'system',
+            'title' => $data['title'] ?? $n->title ?? 'Thông báo',
+            'body' => $data['body'] ?? $n->body ?? '',
             'data' => $data,
-            'read_at' => $n->read_at?->toIso8601String(),
-            'created_at' => $n->created_at?->toIso8601String(),
+            'read_at' => $n->read_at,
+            'created_at' => $n->created_at,
         ];
     }
 }

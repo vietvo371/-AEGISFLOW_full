@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Enums\AlertTypeEnum;
 use App\Enums\AlertStatusEnum;
 use App\Events\AlertCreated;
+use App\Events\AlertUpdated;
+use App\Events\AlertResolved;
 use App\Helpers\ApiResponse;
 use App\Http\Resources\AlertResource;
 use App\Models\Alert;
@@ -38,6 +40,19 @@ class AlertController extends Controller
 
         if ($request->filled('district_id')) {
             $query->whereJsonContains('affected_districts', (string) $request->district_id);
+        }
+
+        // Scope alerts by citizen's location if user has role 'citizen'
+        $user = $request->user();
+        if ($user && $user->hasRole('citizen')) {
+            $districts = $user->district_id ? [(string) $user->district_id] : [];
+            if ($districts) {
+                $query->where(function ($q) use ($districts) {
+                    foreach ($districts as $district) {
+                        $q->orWhereJsonContains('affected_districts', $district);
+                    }
+                });
+            }
         }
 
         $alerts = $query->paginate($request->get('per_page', 20));
@@ -141,8 +156,10 @@ class AlertController extends Controller
 
         if ($data['status'] === AlertStatusEnum::RESOLVED->value) {
             $alert->resolve($user->id);
+            broadcast(new AlertResolved($alert->fresh()))->toOthers();
         } else {
             $alert->update(['status' => $data['status']]);
+            broadcast(new AlertUpdated($alert->fresh()))->toOthers();
         }
 
         return ApiResponse::success(new AlertResource($alert->fresh()), 'Cập nhật trạng thái thành công');
@@ -150,11 +167,21 @@ class AlertController extends Controller
 
     /**
      * GeoJSON cảnh báo đang hoạt động
-     * GET /api/alerts/geojson
+     * GET /api/public/alerts/geojson
      */
-    public function geojson()
+    public function geojson(Request $request)
     {
-        $alerts = Alert::active()->get();
+        $query = Alert::active();
+
+        // Scope alerts by user's district if citizen
+        $user = $request->user();
+        if ($user && $user->hasRole('citizen')) {
+            if ($user->district_id) {
+                $query->whereJsonContains('affected_districts', (string) $user->district_id);
+            }
+        }
+
+        $alerts = $query->get();
 
         $features = $alerts->map(function ($alert) {
             $geometry = null;

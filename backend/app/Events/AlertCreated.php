@@ -5,11 +5,11 @@ namespace App\Events;
 use App\Models\Alert;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AlertCreated implements ShouldBroadcast
+class AlertCreated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -40,6 +40,17 @@ class AlertCreated implements ShouldBroadcast
      */
     public function broadcastWith(): array
     {
+        $geometry = null;
+        if (! empty($this->alert->geometry)) {
+            if (\Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql') {
+                $result = \Illuminate\Support\Facades\DB::selectOne(
+                    "SELECT ST_AsGeoJSON(geometry) as geojson FROM alerts WHERE id = ?",
+                    [$this->alert->id]
+                );
+                $geometry = $result?->geojson ? json_decode($result->geojson) : null;
+            }
+        }
+
         return [
             'id' => $this->alert->id,
             'alert_number' => $this->alert->alert_number,
@@ -49,6 +60,11 @@ class AlertCreated implements ShouldBroadcast
             'severity' => $this->alert->severity,
             'status' => $this->alert->status,
             'source' => $this->alert->source,
+            'geometry' => $geometry,
+            'affected_districts' => $this->alert->affected_districts,
+            'affected_wards' => $this->alert->affected_wards,
+            'affected_flood_zones' => $this->alert->affected_flood_zones,
+            'radius_km' => $this->alert->radius_km,
             'effective_from' => $this->alert->effective_from?->toIso8601String(),
             'effective_until' => $this->alert->effective_until?->toIso8601String(),
             'created_at' => $this->alert->created_at?->toIso8601String(),

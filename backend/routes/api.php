@@ -97,11 +97,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('alerts/{id}/status', [App\Http\Controllers\Api\AlertController::class, 'updateStatus']);
 
     // ── Notifications ──────────────────────────────────────
-    Route::get('notifications', [App\Http\Controllers\Api\NotificationController::class, 'index']);
     Route::get('notifications/unread', [App\Http\Controllers\Api\NotificationController::class, 'unread']);
     Route::get('notifications/unread-count', [App\Http\Controllers\Api\NotificationController::class, 'unreadCount']);
-    Route::put('notifications/{id}/read', [App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
     Route::put('notifications/read-all', [App\Http\Controllers\Api\NotificationController::class, 'markAllRead']);
+    Route::get('notifications', [App\Http\Controllers\Api\NotificationController::class, 'index']);
+    Route::put('notifications/{id}/read', [App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
 
     // ── Map ────────────────────────────────────────────────
     Route::prefix('map')->group(function () {

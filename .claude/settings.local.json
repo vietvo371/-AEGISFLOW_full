@@ -2,7 +2,31 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:github.com)",
-      "Bash(xargs ls *)"
+      "Bash(xargs ls *)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(chmod +x *)",
+      "Bash(php artisan *)",
+      "Bash(yarn build *)",
+      "Bash(./run_all.sh frontend *)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s http://localhost:8000/api/health)",
+      "Bash(./run_all.sh backend *)",
+      "Bash(curl -s http://localhost:8000/api/alerts)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(/Volumes/MAC_OPTION/DATN/AEGISFLOWAI/test-simple.sh)",
+      "Bash(git status *)",
+      "Bash(curl -s http://localhost:8080)",
+      "Bash(./run_all.sh reverb *)",
+      "Bash(git checkout *)",
+      "Bash(/Volumes/MAC_OPTION/DATN/AEGISFLOWAI/test_realtime_flow.sh *)",
+      "Bash(git commit -m 'refactor: simplify realtime notifications - single toast per high/critical alert *)",
+      "Bash(psql aegisflow_db *)",
+      "Bash(pkill -f \"artisan serve\")",
+      "Bash(curl -s -X POST http://localhost:8000/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@aegisflow.ai\",\"password\":\"password\"}')",
+      "Bash(curl -s -H 'Authorization: Bearer 79|40UM9bIFd6vngnNuzmBxGI3eHT2NqbtnMEcRU2myaa60e825' http://localhost:8000/api/notifications)",
+      "Bash(curl -s -H 'Authorization: Bearer 79|40UM9bIFd6vngnNuzmBxGI3eHT2NqbtnMEcRU2myaa60e825' http://localhost:8000/api/user)",
+      "Bash(curl -s -H 'Authorization: Bearer 80|yeb7fQqPVhB4z9MlGnpW3iNo78Rc8elkZx6bQy0R18e54abb' http://localhost:8000/api/notifications)"
     ]
   }
 }

@@ -60,6 +60,10 @@ class Alert extends Model
                 $alert->alert_number = static::generateAlertNumber();
             }
         });
+
+        static::created(function (Alert $alert) {
+            event(new \App\Events\AlertCreated($alert));
+        });
     }
 
     public static function generateAlertNumber(): string
