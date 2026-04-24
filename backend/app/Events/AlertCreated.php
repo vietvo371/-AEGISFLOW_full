@@ -9,7 +9,6 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class AlertCreated implements ShouldBroadcastNow
 {
@@ -24,7 +23,6 @@ class AlertCreated implements ShouldBroadcastNow
     protected function saveNotification(): void
     {
         DB::table('notifications')->insert([
-            'id' => Str::uuid(),
             'alert_id' => $this->alert->id,
             'title' => "Cảnh báo: {$this->alert->title}",
             'body' => $this->alert->description ?? '',

@@ -8,7 +8,6 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class IncidentCreated implements ShouldBroadcast
 {
@@ -23,7 +22,6 @@ class IncidentCreated implements ShouldBroadcast
     protected function saveNotification(): void
     {
         DB::table('notifications')->insert([
-            'id' => Str::uuid(),
             'title' => "Sự cố: {$this->incident->title}",
             'body' => $this->incident->address ?? 'Không xác định',
             'data' => json_encode([
