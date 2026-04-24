@@ -7,6 +7,8 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class IncidentCreated implements ShouldBroadcast
 {
@@ -14,7 +16,32 @@ class IncidentCreated implements ShouldBroadcast
 
     public function __construct(
         public Incident $incident
-    ) {}
+    ) {
+        $this->saveNotification();
+    }
+
+    protected function saveNotification(): void
+    {
+        DB::table('notifications')->insert([
+            'id' => Str::uuid(),
+            'title' => "Sự cố: {$this->incident->title}",
+            'body' => $this->incident->address ?? 'Không xác định',
+            'data' => json_encode([
+                'id' => $this->incident->id,
+                'title' => $this->incident->title,
+                'address' => $this->incident->address,
+                'severity' => $this->incident->severity,
+            ]),
+            'notification_type' => 'IncidentCreated',
+            'target_type' => 'user',
+            'target_id' => $this->incident->created_by ?? 1,
+            'channel' => 'web',
+            'status' => 'sent',
+            'sent_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
 
     public function broadcastOn(): array
     {

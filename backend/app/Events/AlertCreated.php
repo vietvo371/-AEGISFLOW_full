@@ -8,6 +8,8 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AlertCreated implements ShouldBroadcastNow
 {
@@ -15,7 +17,33 @@ class AlertCreated implements ShouldBroadcastNow
 
     public function __construct(
         public Alert $alert
-    ) {}
+    ) {
+        $this->saveNotification();
+    }
+
+    protected function saveNotification(): void
+    {
+        DB::table('notifications')->insert([
+            'id' => Str::uuid(),
+            'alert_id' => $this->alert->id,
+            'title' => "Cảnh báo: {$this->alert->title}",
+            'body' => $this->alert->description ?? '',
+            'data' => json_encode([
+                'id' => $this->alert->id,
+                'title' => $this->alert->title,
+                'description' => $this->alert->description,
+                'severity' => $this->alert->severity,
+            ]),
+            'notification_type' => 'AlertCreated',
+            'target_type' => 'user',
+            'target_id' => $this->alert->issued_by,
+            'channel' => 'web',
+            'status' => 'sent',
+            'sent_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
 
     /**
      * Get the channels the event should broadcast on.
