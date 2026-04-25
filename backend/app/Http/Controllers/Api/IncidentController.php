@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 
 use App\Enums\IncidentSourceEnum;
 use App\Enums\IncidentStatusEnum;
+use App\Enums\AlertTypeEnum;
+use App\Enums\AlertStatusEnum;
 use App\Events\IncidentCreated;
 use App\Helpers\ApiResponse;
+use App\Models\Alert;
 use App\Models\Incident;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -130,6 +133,32 @@ class IncidentController extends Controller
                 "UPDATE incidents SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?",
                 [$data['longitude'], $data['latitude'], $incident->id]
             );
+        }
+
+        // Map incident type to alert type
+        $alertTypeMap = [
+            'flood' => AlertTypeEnum::FLOOD_WARNING,
+            'heavy_rain' => AlertTypeEnum::HEAVY_RAIN,
+            'dam_failure' => AlertTypeEnum::DAM_WARNING,
+            'landslide' => AlertTypeEnum::WEATHER,
+            'other' => AlertTypeEnum::WEATHER,
+        ];
+        $alertType = $alertTypeMap[$data['type']] ?? AlertTypeEnum::WARNING;
+
+        // Auto-create alert for citizen-reported incidents with high/critical severity
+        if ($source === IncidentSourceEnum::CITIZEN->value && in_array($data['severity'], ['high', 'critical'])) {
+            Alert::create([
+                'title' => '[Từ báo cáo] ' . $data['title'],
+                'description' => $data['description'] ?? null,
+                'alert_type' => $alertType->value,
+                'severity' => $data['severity'],
+                'status' => AlertStatusEnum::ACTIVE->value,
+                'effective_from' => now(),
+                'effective_until' => now()->addHours(6),
+                'related_incident_id' => $incident->id,
+                'source' => 'citizen_report',
+                'issued_by' => $user->id,
+            ]);
         }
 
         $incident->logEvent('created', 'Sự cố được tạo bởi '.$user->name, $user->id);

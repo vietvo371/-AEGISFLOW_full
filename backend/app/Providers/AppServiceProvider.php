@@ -33,23 +33,24 @@ class AppServiceProvider extends ServiceProvider
     {
         // ── Rate Limiting ──────────────────────────────────────
 
-        // API chung: 60 requests/phút cho mỗi user (hoặc IP nếu chưa login)
+        // API chung: tăng lên 300 req/phút cho authenticated users, 60 cho guest
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by(
+            $limit = $request->user() ? 300 : 60;
+            return Limit::perMinute($limit)->by(
                 $request->user()?->id ?: $request->ip()
             );
         });
 
-        // Auth endpoints: 5 requests/phút để chống brute-force
+        // Auth endpoints: 10 requests/phút để chống brute-force
         RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinute(5)->by(
+            return Limit::perMinute(10)->by(
                 $request->ip()
             );
         });
 
-        // Sensor data ingestion: 120 requests/phút (throughput cao hơn)
+        // Sensor data ingestion: 300 requests/phút (throughput cao hơn)
         RateLimiter::for('sensor-data', function (Request $request) {
-            return Limit::perMinute(120)->by(
+            return Limit::perMinute(300)->by(
                 $request->user()?->id ?: $request->ip()
             );
         });

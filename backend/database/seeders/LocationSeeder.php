@@ -77,5 +77,36 @@ class LocationSeeder extends Seeder
                 ]);
         }
         $this->command->info('✅ Rescue teams locations updated');
+
+        // ── Alerts ─────────────────────────────────────────────────────────
+        // Gán tọa độ phân tán quanh Đà Nẵng cho tất cả alerts chưa có geometry
+        $alertCoords = [
+            [16.0678, 108.2208], // Hải Châu
+            [16.0748, 108.1521], // Liên Chiểu
+            [16.0102, 108.1893], // Cẩm Lệ
+            [16.0039, 108.2062], // Ngũ Hành Sơn
+            [16.0589, 108.1934], // Thanh Khê
+            [15.9756, 108.1234], // Hòa Vang
+            [16.0544, 108.2022], // Trung tâm
+            [16.0412, 108.1756], // Cẩm Lệ Nam
+        ];
+
+        $alerts = DB::table('alerts')
+            ->whereRaw("geometry IS NULL OR ST_IsEmpty(geometry)")
+            ->orderBy('id')
+            ->pluck('id');
+
+        foreach ($alerts as $index => $alertId) {
+            $coord = $alertCoords[$index % count($alertCoords)];
+            // Thêm jitter nhỏ để không chồng lên nhau
+            $lat = $coord[0] + (($index * 0.0031) % 0.02) - 0.01;
+            $lng = $coord[1] + (($index * 0.0047) % 0.02) - 0.01;
+            DB::table('alerts')
+                ->where('id', $alertId)
+                ->update([
+                    'geometry' => DB::raw("ST_SetSRID(ST_MakePoint({$lng}, {$lat}), 4326)"),
+                ]);
+        }
+        $this->command->info('✅ Alerts locations updated (' . count($alerts) . ' alerts)');
     }
 }

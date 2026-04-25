@@ -57,9 +57,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('rescue-requests/{id}/rate', [App\Http\Controllers\Api\RescueRequestController::class, 'rate']);
 
     // ── Flood Zones ─────────────────────────────────────────
+    Route::get('flood-zones/geojson', [App\Http\Controllers\Api\FloodZoneController::class, 'geojson']);
     Route::apiResource('flood-zones', App\Http\Controllers\Api\FloodZoneController::class)
         ->only('index', 'show', 'store', 'update', 'destroy');
-    Route::get('flood-zones/geojson', [App\Http\Controllers\Api\FloodZoneController::class, 'geojson']);
 
     // ── Sensors ─────────────────────────────────────────────
     Route::get('sensors', [App\Http\Controllers\Api\SensorController::class, 'index']);
