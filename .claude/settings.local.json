@@ -26,7 +26,21 @@
       "Bash(curl -s -X POST http://localhost:8000/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@aegisflow.ai\",\"password\":\"password\"}')",
       "Bash(curl -s -H 'Authorization: Bearer 79|40UM9bIFd6vngnNuzmBxGI3eHT2NqbtnMEcRU2myaa60e825' http://localhost:8000/api/notifications)",
       "Bash(curl -s -H 'Authorization: Bearer 79|40UM9bIFd6vngnNuzmBxGI3eHT2NqbtnMEcRU2myaa60e825' http://localhost:8000/api/user)",
-      "Bash(curl -s -H 'Authorization: Bearer 80|yeb7fQqPVhB4z9MlGnpW3iNo78Rc8elkZx6bQy0R18e54abb' http://localhost:8000/api/notifications)"
+      "Bash(curl -s -H 'Authorization: Bearer 80|yeb7fQqPVhB4z9MlGnpW3iNo78Rc8elkZx6bQy0R18e54abb' http://localhost:8000/api/notifications)",
+      "Bash(git commit -m 'fix: remove UUID generation for notifications table \\(use auto-increment bigint\\) *)",
+      "Bash(curl -s http://localhost:3000/api/health)",
+      "Bash(curl -s -H 'Authorization: Bearer 106|c8hxfINyMuOrALJwWWFz8mkjytZlW7eyw7ofXfqK55e8bb2b' 'http://localhost:8000/api/notifications?per_page=20')",
+      "Bash(killall node *)",
+      "Bash(kill 18729)",
+      "Bash(curl -s 'http://localhost:8000/api/notifications?per_page=5' -H 'Authorization: Bearer 106|c8hxfINyMuOrALJwWWFz8mkjytZlW7eyw7ofXfqK55e8bb2b')",
+      "Bash(cat)",
+      "Bash(/tmp/test-notif.sh)",
+      "Bash(awk '{print $2}')",
+      "Bash(xargs kill *)",
+      "Bash(yarn dev *)",
+      "Bash(awk '{print $9, \"\\(\" $5 \"\\)\"}')",
+      "Bash(awk '{print \"  \"$9\" \\(\"$5\"\\)\"}')",
+      "Bash(npm list *)"
     ]
   }
 }

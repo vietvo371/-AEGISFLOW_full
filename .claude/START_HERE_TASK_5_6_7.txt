@@ -1,0 +1,185 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                 🎯 START HERE - Task #5, #6, #7 Plan                    ║
+║              Focus on Form Validation, Team Map, Citizen Route           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+You've chosen to focus on Tasks #5, #6, #7 (11-14 hours total)
+These are the most visible features in the demo. Smart choice! ✨
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION (Read in this order)
+
+1️⃣  TASKS_5_6_7_README.md (This one)
+    ├─ Quick overview
+    ├─ Timeline breakdown
+    └─ Common issues & solutions
+
+2️⃣  TASKS_5_6_7_DETAILED_PLAN.md (30 min read)
+    ├─ Current state analysis
+    ├─ What's working vs missing
+    ├─ Phase-by-phase implementation
+    └─ Quality checklist
+
+3️⃣  TASK5_FORM_VALIDATION_STEP_BY_STEP.md (Keep open while coding)
+    ├─ Step 1: Install Zod (5 min)
+    ├─ Step 2: Create schemas (45 min)
+    ├─ Step 3: Update signup (1h)
+    ├─ Step 4: Update signin (45 min)
+    ├─ Step 5: Update citizen request (1h)
+    └─ Step 6: Test everything (30 min)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏱️ TIMELINE
+
+┌─ TODAY (Apr 24) - Task #5: Form Validation ──────────────────┐
+│                                                               │
+│  [5 min]   Install Zod package                              │
+│  [45 min]  Create validation schemas                        │
+│  [1h]      Update signup form with validation               │
+│  [45 min]  Update signin form                               │
+│  [1h]      Update citizen request form                      │
+│  [30 min]  Test all forms                                   │
+│                                                               │
+│  ⏰ Total: 4-5 hours | Finish by: 6-8 PM                    │
+│  ✅ Result: All forms validate with error messages          │
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+
+┌─ TOMORROW (Apr 25) - Task #6: Team Map ──────────────────────┐
+│                                                               │
+│  [1h]      Understand MapComponent                          │
+│  [2-3h]    Add rescue request pins to map                   │
+│  [1h]      Add accept/reject actions                        │
+│  [30 min]  Test team map interactivity                      │
+│                                                               │
+│  ⏰ Total: 3-4 hours                                         │
+│  ✅ Result: Team sees rescue requests on map                │
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+
+┌─ DAY 3 (Apr 26) - Task #7: Citizen Route ────────────────────┐
+│                                                               │
+│  [1h]      Verify current citizen map state                 │
+│  [2h]      Add flooding zone display                        │
+│  [1-2h]    Enhance route visualization                      │
+│  [1h]      Test citizen evacuation experience               │
+│                                                               │
+│  ⏰ Total: 4-5 hours                                         │
+│  ✅ Result: Citizen sees safe evacuation route              │
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+
+┌─ DAY 4 (Apr 27) - Polish & Testing ──────────────────────────┐
+│                                                               │
+│  [2-3h]    Bug fixes, responsive design                     │
+│  [1h]      Final testing                                    │
+│                                                               │
+│  ⏰ Total: 2-3 hours                                         │
+│  ✅ Result: All 3 tasks working perfectly                   │
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 QUICK START (Next 5 minutes)
+
+Step 1: Read overview
+  cat .claude/TASKS_5_6_7_README.md
+
+Step 2: Understand current state
+  cat .claude/TASKS_5_6_7_DETAILED_PLAN.md
+
+Step 3: Follow step-by-step guide
+  cat .claude/TASK5_FORM_VALIDATION_STEP_BY_STEP.md
+
+Step 4: Start Task #5
+  cd frontend
+  npm install zod                    # Install validation library
+
+Step 5: Test as you go
+  yarn dev                           # Keep running in another terminal
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 WHAT EACH TASK DOES
+
+Task #5: Form Validation ✏️
+├─ Before: Forms exist but don't validate or show errors
+├─ After:  All forms validate with error messages + loading states
+└─ Impact: Demo won't break on bad input, shows professional UX
+
+Task #6: Team Map 🗺️
+├─ Before: Map exists but unclear what data shows
+├─ After:  Rescue requests display as interactive pins
+└─ Impact: Core dispatch feature works smoothly
+
+Task #7: Citizen Route 🚦
+├─ Before: Shelter list exists, evacuation route unclear
+├─ After:  Flooding zones + evacuation route + ETA displayed
+└─ Impact: Citizens see safe evacuation paths clearly
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SUCCESS CRITERIA
+
+Task #5 Complete When:
+  □ npm install zod works
+  □ Validation schemas created
+  □ Signup form shows validation errors
+  □ Signin form works with validation
+  □ Citizen request form validates
+  □ All forms work on mobile
+
+Task #6 Complete When:
+  □ Map loads without errors
+  □ Rescue requests display as pins
+  □ Pin colors vary by urgency level
+  □ Can click pin to see details
+  □ Accept/reject buttons work
+  □ Real-time updates work
+
+Task #7 Complete When:
+  □ Map shows shelters
+  □ Flooding zones display as colored areas
+  □ GPS location works
+  □ Route calculates to shelter
+  □ Distance & ETA display
+  □ Works on mobile
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🆘 HELP
+
+If Zod doesn't install:
+  npm install zod@latest
+  npm list zod
+
+If forms don't validate:
+  Check TASK5_FORM_VALIDATION_STEP_BY_STEP.md "Troubleshooting"
+
+If map doesn't show:
+  Check MapComponent location: ls frontend/src/components/map/
+  Watch console: yarn dev
+
+Need more help? See TASKS_5_6_7_DETAILED_PLAN.md "If You Get Stuck"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 NEXT STEP RIGHT NOW
+
+Read: .claude/TASKS_5_6_7_README.md (2 min)
+
+Then: Read .claude/TASKS_5_6_7_DETAILED_PLAN.md (30 min)
+
+Then: Follow .claude/TASK5_FORM_VALIDATION_STEP_BY_STEP.md (4 hours)
+
+Target: Complete Task #5 by tonight! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generated: 2026-04-24
+Tasks: #5, #6, #7 (In Progress)
+Total Time: 11-14 hours
+Let's build something great! 🚀
