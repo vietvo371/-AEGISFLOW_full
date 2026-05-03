@@ -60,6 +60,11 @@ import MissionListScreen from '../screens/emergency/MissionListScreen';
 import PriorityRouteScreen from '../screens/emergency/PriorityRouteScreen';
 import EmergencyProfileScreen from '../screens/emergency/EmergencyProfileScreen';
 
+// New screens (v2)
+import WeatherDetailScreen from '../screens/weather/WeatherDetailScreen';
+import ShelterListScreen from '../screens/shelter/ShelterListScreen';
+import SensorDetailScreen from '../screens/sensor/SensorDetailScreen';
+
 // Placeholder for screens being developed
 const PlaceholderScreen = ({ route }: any) => (
   <View style={styles.placeholder}>
@@ -244,6 +249,11 @@ const MainNavigator = () => {
         <Stack.Screen name="LanguageSettings" component={LanguageSettingsScreen} />
         <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
         <Stack.Screen name="About" component={AboutScreen} />
+
+        {/* New v2 Screens */}
+        <Stack.Screen name="WeatherDetail" component={WeatherDetailScreen} />
+        <Stack.Screen name="ShelterList" component={ShelterListScreen} />
+        <Stack.Screen name="SensorDetail" component={SensorDetailScreen} />
       </Stack.Group>
     </Stack.Navigator>
   );

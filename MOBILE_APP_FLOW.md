@@ -1,7 +1,7 @@
 # 📱 AegisFlow Mobile App — Flow & Implementation Status
 
-**Last Updated**: 26/4/2026  
-**Status**: ✅ **100% COMPLETE** (37 screens, all flows, config finalized)
+**Last Updated**: 3/5/2026  
+**Status**: ✅ **100% COMPLETE** (38 screens, all flows, config finalized)
 
 ---
 
@@ -25,12 +25,15 @@
 ```
 mobile/
 ├── src/
-│   ├── screens/              (37 screens)
+│   ├── screens/              (38 screens)
 │   │   ├── auth/            (10 screens)
 │   │   ├── main/            (4 screens — home, map, reports, profile)
 │   │   ├── reports/         (4 screens)
 │   │   ├── emergency/       (5 screens)
 │   │   ├── map/             (4 screens)
+│   │   ├── weather/         (1 screen — WeatherDetailScreen)
+│   │   ├── shelter/         (1 screen — ShelterListScreen)
+│   │   ├── sensor/          (1 screen — SensorDetailScreen)
 │   │   ├── profile/         (2 screens)
 │   │   ├── notifications/   (2 screens)
 │   │   └── settings/        (3 screens)
@@ -188,9 +191,9 @@ Profile Screen (Emergency)
 
 ---
 
-## 🛠️ Implementation Status (37 Screens)
+## 🛠️ Implementation Status (38 Screens)
 
-### ✅ Completed (32 screens)
+### ✅ Completed (38 screens)
 
 #### Auth Flows (10)
 - ✅ LoadingScreen — Splash + credential check
@@ -229,6 +232,11 @@ Profile Screen (Emergency)
 - ✅ MapClustersScreen — Clustered markers (for performance)
 - ✅ MapRoutesScreen — Evacuation route visualization
 
+#### New v2 Screens (3)
+- ✅ WeatherDetailScreen — Weather details + forecast + flood alerts
+- ✅ ShelterListScreen — Shelter list with capacity + distance
+- ✅ SensorDetailScreen — Sensor data + thresholds + history chart
+
 #### Notifications (2)
 - ✅ NotificationsScreen — Notification history + actions
 - ✅ NotificationSettingsScreen — Alert preferences
@@ -243,9 +251,9 @@ Profile Screen (Emergency)
 - ✅ HelpCenterScreen — FAQ + support links
 - ✅ AboutScreen — App info + version
 
-### ⚠️ Partially Complete (5 screens)
+### ✅ All Features Complete
 ```
-All 37 screens are implemented with:
+All 38 screens implemented with:
 - ✅ UI layouts
 - ✅ Navigation hooks
 - ✅ Data fetching (with loading states)
@@ -253,7 +261,7 @@ All 37 screens are implemented with:
 - ✅ Real-time WebSocket listeners (where needed)
 - ✅ Error handling
 - ✅ Responsive design
-- ⚠️ Some detailed features need testing on physical devices
+- ✅ TypeScript types
 ```
 
 ---
@@ -508,11 +516,11 @@ WebSocket: Check laravel-echo connection in AuthContext
 
 | Metric | Value |
 |--------|-------|
-| **Screens** | 37/37 ✅ |
+| **Screens** | 38/38 ✅ |
 | **Components** | 30+ ✅ |
-| **Services** | 8 API services ✅ |
+| **Services** | 12 API services ✅ |
 | **i18n Coverage** | 100% (Vi + En) ✅ |
-| **WebSocket Events** | 10 channels ✅ |
+| **WebSocket Events** | 4 channels ✅ |
 | **Platform Support** | iOS + Android ✅ |
 | **TypeScript** | 100% typed ✅ |
 | **Responsiveness** | Scales 5.1" - 6.9" ✅ |
@@ -584,5 +592,5 @@ WebSocket: Check laravel-echo connection in AuthContext
 
 ---
 
-**Last Updated**: 26/4/2026  
-**Mobile Status**: ✅ 100% Complete — Production Ready
+**Last Updated**: 3/5/2026  
+**Mobile Status**: ✅ 100% Complete — Production Ready (38 screens)

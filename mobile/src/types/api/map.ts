@@ -42,3 +42,48 @@ export interface MapBounds {
     max_lat: number;
     max_lon: number;
 }
+
+export interface Shelter {
+    id: number;
+    ten_diem: string;
+    dia_chi: string;
+    latitude: number;
+    longitude: number;
+    suc_chua: number;
+    hien_tai: number;
+    loai: 'school' | 'community' | 'government' | 'religious';
+    tinh_trang: 'available' | 'limited' | 'full';
+    thoi_gian_mo?: string;
+    thoi_gian_dong?: string;
+    so_dt?: string;
+    anh?: string;
+    mo_ta?: string;
+}
+
+export interface Sensor {
+    id: number;
+    ten_tram: string;
+    dia_chi: string;
+    latitude: number;
+    longitude: number;
+    loai: 'water_level' | 'rainfall' | 'camera' | 'combined';
+    trang_thai: 'online' | 'offline' | 'maintenance';
+    gia_tri_hien_tai?: number;
+    don_vi?: string;
+    nguong_binh_thuong?: number;
+    nguong_canh_bao?: number;
+    nguong_nguy_hiem?: number;
+    thoi_gian_doc_cuoi?: string;
+}
+
+export interface WeatherForecast {
+    ngay: string;
+    ngay_trong_tuan: string;
+    nhiet_do_min: number;
+    nhiet_do_max: number;
+    tinh_trang: string;
+    icon: string;
+    xac_suat_mua: number;
+    toc_do_gio: number;
+    do_am: number;
+}

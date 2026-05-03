@@ -64,6 +64,11 @@ export type RootStackParamList = {
   LanguageSettings: undefined;
   HelpCenter: undefined;
   About: undefined;
+
+  // New screens (v2)
+  WeatherDetail: undefined;
+  ShelterList: undefined;
+  SensorDetail: { sensorId?: number };
 };
 
 export type StackScreen<T extends keyof RootStackParamList> = React.FC<NativeStackScreenProps<RootStackParamList, T>>;
