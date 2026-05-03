@@ -7,11 +7,14 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    // Không wrap trong transaction để PostGIS errors không rollback DDL
+    public $withinTransaction = false;
+
     public function up(): void
     {
         // Drop existing tables if they exist (resilience)
-        Schema::dropIfExists('wards');
-        Schema::dropIfExists('districts');
+        DB::statement('DROP TABLE IF EXISTS wards CASCADE');
+        DB::statement('DROP TABLE IF EXISTS districts CASCADE');
 
         // Districts
         Schema::create('districts', function (Blueprint $table) {
@@ -34,16 +37,21 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Thêm PostGIS boundary (chạy riêng sau migrate)
+        // Thêm PostGIS boundary (chỉ khi PostGIS đã được cài)
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE districts ADD COLUMN IF NOT EXISTS boundary geometry(POLYGON, 4326)');
-            DB::statement('ALTER TABLE wards ADD COLUMN IF NOT EXISTS boundary geometry(POLYGON, 4326)');
+            try {
+                DB::statement('CREATE EXTENSION IF NOT EXISTS postgis');
+                DB::statement('ALTER TABLE districts ADD COLUMN IF NOT EXISTS boundary geometry(POLYGON, 4326)');
+                DB::statement('ALTER TABLE wards ADD COLUMN IF NOT EXISTS boundary geometry(POLYGON, 4326)');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS not available, skipping geometry columns: ' . $e->getMessage());
+            }
         }
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('wards');
-        Schema::dropIfExists('districts');
+        DB::statement('DROP TABLE IF EXISTS wards CASCADE');
+        DB::statement('DROP TABLE IF EXISTS districts CASCADE');
     }
 };

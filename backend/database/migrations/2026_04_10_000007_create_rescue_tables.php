@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     public function up(): void
     {
         // Rescue teams
@@ -33,7 +35,11 @@ return new class extends Migration
         });
 
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE rescue_teams ADD COLUMN IF NOT EXISTS current_location geometry(POINT, 4326)');
+            try {
+                DB::statement('ALTER TABLE rescue_teams ADD COLUMN IF NOT EXISTS current_location geometry(POINT, 4326)');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for rescue_teams: ' . $e->getMessage());
+            }
         }
 
         // Rescue members (pivot)
@@ -78,7 +84,11 @@ return new class extends Migration
         });
 
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE shelters ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+            try {
+                DB::statement('ALTER TABLE shelters ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for shelters: ' . $e->getMessage());
+            }
         }
 
         // Rescue requests
@@ -119,7 +129,11 @@ return new class extends Migration
         });
 
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE rescue_requests ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+            try {
+                DB::statement('ALTER TABLE rescue_requests ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for rescue_requests: ' . $e->getMessage());
+            }
         }
 
         // Rescue request events

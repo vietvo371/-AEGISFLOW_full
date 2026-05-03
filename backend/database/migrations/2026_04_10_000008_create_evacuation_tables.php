@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     public function up(): void
     {
         // Evacuation routes
@@ -36,8 +38,12 @@ return new class extends Migration
         });
 
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE evacuation_routes ADD COLUMN IF NOT EXISTS geometry geometry(LINESTRING, 4326)');
-            DB::statement('ALTER TABLE evacuation_routes ADD COLUMN IF NOT EXISTS polyline TEXT');
+            try {
+                DB::statement('ALTER TABLE evacuation_routes ADD COLUMN IF NOT EXISTS geometry geometry(LINESTRING, 4326)');
+                DB::statement('ALTER TABLE evacuation_routes ADD COLUMN IF NOT EXISTS polyline TEXT');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for evacuation_routes: ' . $e->getMessage());
+            }
         }
 
         // Evacuation route segments

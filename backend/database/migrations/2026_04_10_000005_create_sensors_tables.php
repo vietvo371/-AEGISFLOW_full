@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     public function up(): void
     {
         // Sensors
@@ -40,7 +42,11 @@ return new class extends Migration
 
         // Thêm PostGIS point
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE sensors ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+            try {
+                DB::statement('ALTER TABLE sensors ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for sensors: ' . $e->getMessage());
+            }
         }
 
         // Sensor readings (partitioned by month for PostgreSQL)

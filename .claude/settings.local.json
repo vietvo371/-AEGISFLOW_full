@@ -40,7 +40,12 @@
       "Bash(yarn dev *)",
       "Bash(awk '{print $9, \"\\(\" $5 \"\\)\"}')",
       "Bash(awk '{print \"  \"$9\" \\(\"$5\"\\)\"}')",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "Bash(grep -E \"\\\\.php$\")",
+      "WebSearch",
+      "Bash(grep -r \"export default\" /Volumes/MAC_OPTION/DATN/AEGISFLOWAI/frontend/src/app -name \"page.tsx\")",
+      "Read(//tmp/**)",
+      "Bash(git commit *)"
     ]
   }
 }

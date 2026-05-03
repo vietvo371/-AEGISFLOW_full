@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     public function up(): void
     {
         // Incidents
@@ -43,8 +45,12 @@ return new class extends Migration
 
         // Thêm PostGIS point
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE incidents ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
-            DB::statement('ALTER TABLE incidents ADD COLUMN IF NOT EXISTS affected_edge_ids bigint[]');
+            try {
+                DB::statement('ALTER TABLE incidents ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+                DB::statement('ALTER TABLE incidents ADD COLUMN IF NOT EXISTS affected_edge_ids bigint[]');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for incidents: ' . $e->getMessage());
+            }
         }
 
         // Incident events

@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     public function up(): void
     {
         // Báo cáo ngập từ người dân (crowdsourced từ muangap)
@@ -55,8 +57,12 @@ return new class extends Migration
 
         // Thêm PostGIS geometry
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE flood_reports ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
-            DB::statement('CREATE INDEX idx_flood_reports_geometry ON flood_reports USING GIST (geometry)');
+            try {
+                DB::statement('ALTER TABLE flood_reports ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+                DB::statement('CREATE INDEX idx_flood_reports_geometry ON flood_reports USING GIST (geometry)');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for flood_reports: ' . $e->getMessage());
+            }
         }
     }
 

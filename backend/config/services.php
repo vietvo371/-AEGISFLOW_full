@@ -37,6 +37,11 @@ return [
         'project_id' => env('FCM_PROJECT_ID'),
     ],
 
+    'openweather' => [
+        'key' => env('OPENWEATHER_API_KEY', ''),
+        'base_url' => 'https://api.openweathermap.org/data/2.5',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Flood Thresholds — Ngưỡng cảnh báo

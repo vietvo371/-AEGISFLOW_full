@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     public function up(): void
     {
         // Trạm đo thực tế từ hệ thống muangap Đà Nẵng
@@ -38,8 +40,12 @@ return new class extends Migration
         });
 
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE sensor_stations ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
-            DB::statement('CREATE INDEX idx_sensor_stations_geometry ON sensor_stations USING GIST (geometry)');
+            try {
+                DB::statement('ALTER TABLE sensor_stations ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+                DB::statement('CREATE INDEX idx_sensor_stations_geometry ON sensor_stations USING GIST (geometry)');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for sensor_stations: ' . $e->getMessage());
+            }
         }
     }
 

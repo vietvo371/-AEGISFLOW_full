@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     public function up(): void
     {
         // Map nodes (trước edges vì edges FK tới nodes)
@@ -31,7 +33,11 @@ return new class extends Migration
 
         // Thêm PostGIS point
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE map_nodes ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+            try {
+                DB::statement('ALTER TABLE map_nodes ADD COLUMN IF NOT EXISTS geometry geometry(POINT, 4326)');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for map_nodes: ' . $e->getMessage());
+            }
         }
 
         // Map edges
@@ -69,7 +75,11 @@ return new class extends Migration
 
         // Thêm PostGIS linestring
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE map_edges ADD COLUMN IF NOT EXISTS geometry geometry(LINESTRING, 4326)');
+            try {
+                DB::statement('ALTER TABLE map_edges ADD COLUMN IF NOT EXISTS geometry geometry(LINESTRING, 4326)');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for map_edges: ' . $e->getMessage());
+            }
         }
     }
 

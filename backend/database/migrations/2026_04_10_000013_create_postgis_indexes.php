@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     /**
      * Tạo PostGIS spatial indexes và trigger functions
      */
@@ -14,8 +16,13 @@ return new class extends Migration
             return;
         }
 
-        // Enable PostGIS extension
-        DB::statement('CREATE EXTENSION IF NOT EXISTS postgis');
+        try {
+            // Enable PostGIS extension
+            DB::statement('CREATE EXTENSION IF NOT EXISTS postgis');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS extension not available, skipping spatial indexes: ' . $e->getMessage());
+            return;
+        }
 
         // Spatial indexes cho PostGIS columns
         DB::statement('CREATE INDEX IF NOT EXISTS idx_flood_zones_geom ON flood_zones USING GIST(geometry)');

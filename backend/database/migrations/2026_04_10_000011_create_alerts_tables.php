@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    public $withinTransaction = false;
+
     public function up(): void
     {
         // Alerts
@@ -37,7 +39,11 @@ return new class extends Migration
         });
 
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('ALTER TABLE alerts ADD COLUMN IF NOT EXISTS geometry geometry(GEOMETRY, 4326)');
+            try {
+                DB::statement('ALTER TABLE alerts ADD COLUMN IF NOT EXISTS geometry geometry(GEOMETRY, 4326)');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('[Migration] PostGIS unavailable for alerts: ' . $e->getMessage());
+            }
         }
 
         // Thêm FK sau khi bảng incidents tồn tại

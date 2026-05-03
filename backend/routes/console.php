@@ -20,6 +20,12 @@ Schedule::job(new \App\Jobs\CallAIPrediction)
     ->withoutOverlapping()
     ->name('ai-prediction');
 
+// Fetch dữ liệu thời tiết từ OpenWeatherMap mỗi 30 phút
+Schedule::job(new \App\Jobs\FetchWeatherDataJob)
+    ->everyThirtyMinutes()
+    ->withoutOverlapping()
+    ->name('fetch-weather-data');
+
 // Kiểm tra sức khỏe cảm biến mỗi 10 phút
 Schedule::call(function () {
     \App\Models\Sensor::where('is_active', true)
