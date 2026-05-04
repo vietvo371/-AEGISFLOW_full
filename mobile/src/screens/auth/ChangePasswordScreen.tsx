@@ -81,8 +81,8 @@ const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ navigation,
       const response = await api.post('/auth/reset-password', {
         email: identifier,
         token: token,
-        mat_khau: newPassword,
-        mat_khau_confirmation: confirmPassword,
+        password: newPassword,
+        password_confirmation: confirmPassword,
       });
 
       console.log('Reset password response:', response.data);
@@ -95,7 +95,10 @@ const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ navigation,
           [
             {
               text: 'Xác nhận',
-              onPress: () => navigation.navigate('Login'),
+              onPress: () => navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              }),
             },
           ]
         );

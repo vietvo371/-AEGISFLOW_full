@@ -1,21 +1,21 @@
 /**
- * Mapbox Configuration
- * Initialize Mapbox GL for React Native
+ * Map Configuration - OpenMapVN (MapLibre-based)
+ * Sử dụng @rnmapbox/maps với custom style từ OpenMapVN
  */
 
 import Mapbox from '@rnmapbox/maps';
 import env from './env';
 
-// Set Mapbox access token
-Mapbox.setAccessToken(env.MAPBOX_ACCESS_TOKEN);
+// Không cần Mapbox token khi dùng OpenMapVN style
+Mapbox.setAccessToken('');
 
-// Disable telemetry (optional - để tránh gửi analytics)
+// Disable telemetry
 Mapbox.setTelemetryEnabled(false);
 
-// Set WellKnownTileServer (optional - để sử dụng Mapbox tiles)
-Mapbox.setWellKnownTileServer('Mapbox');
+// OpenMapVN Style URL
+export const OPENMAP_STYLE_URL = env.OPENMAP_STYLE_URL;
 
-// Configure camera settings (optional)
+// Configure camera settings
 export const DEFAULT_CAMERA_CONFIG = {
   zoomLevel: 12,
   pitch: 0,

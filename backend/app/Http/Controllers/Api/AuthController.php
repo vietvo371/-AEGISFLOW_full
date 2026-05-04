@@ -9,7 +9,9 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
@@ -157,5 +159,184 @@ class AuthController extends Controller
         return ApiResponse::success([
             'token' => $token,
         ]);
+    }
+
+    /**
+     * Gửi OTP quên mật khẩu
+     * POST /api/auth/forgot-password
+     */
+    public function forgotPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $data['email'])->first();
+        if (!$user) {
+            return ApiResponse::error('Email không tồn tại trong hệ thống', 404);
+        }
+
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $data['email']],
+            ['token' => Hash::make($otp), 'created_at' => now()]
+        );
+
+        // Gửi email OTP
+        try {
+            Mail::raw("Mã OTP đặt lại mật khẩu AegisFlow: {$otp}\nMã có hiệu lực trong 10 phút.", function ($message) use ($data) {
+                $message->to($data['email'])->subject('AegisFlow - Mã xác thực OTP');
+            });
+        } catch (\Exception $e) {
+            // Log nhưng vẫn trả success (dev mode có thể chưa config mail)
+            \Log::warning('Mail send failed: ' . $e->getMessage());
+        }
+
+        return ApiResponse::success(null, 'Mã OTP đã được gửi đến email của bạn');
+    }
+
+    /**
+     * Xác thực OTP quên mật khẩu
+     * POST /api/auth/accept-otp-password
+     */
+    public function verifyOtp(Request $request)
+    {
+        $data = $request->validate([
+            'username' => 'required|email',
+            'otp' => 'required|string|size:6',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $data['username'])
+            ->first();
+
+        if (!$record) {
+            return response()->json(['status' => false, 'message' => 'Không tìm thấy yêu cầu đặt lại mật khẩu'], 400);
+        }
+
+        // Kiểm tra hết hạn (10 phút)
+        if (now()->diffInMinutes($record->created_at) > 10) {
+            DB::table('password_reset_tokens')->where('email', $data['username'])->delete();
+            return response()->json(['status' => false, 'message' => 'Mã OTP đã hết hạn'], 400);
+        }
+
+        if (!Hash::check($data['otp'], $record->token)) {
+            return response()->json(['status' => false, 'message' => 'Mã OTP không chính xác'], 400);
+        }
+
+        // Tạo reset token
+        $resetToken = bin2hex(random_bytes(32));
+        DB::table('password_reset_tokens')->where('email', $data['username'])->update([
+            'token' => Hash::make($resetToken),
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Xác thực OTP thành công',
+            'data' => ['token' => $resetToken],
+        ]);
+    }
+
+    /**
+     * Đặt lại mật khẩu sau OTP
+     * POST /api/auth/reset-password
+     */
+    public function resetPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'token' => 'required|string',
+            'password' => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $data['email'])
+            ->first();
+
+        if (!$record || !Hash::check($data['token'], $record->token)) {
+            return ApiResponse::error('Token không hợp lệ hoặc đã hết hạn', 400);
+        }
+
+        $user = User::where('email', $data['email'])->first();
+        $user->password = Hash::make($data['password']);
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $data['email'])->delete();
+
+        return ApiResponse::success(null, 'Đặt lại mật khẩu thành công');
+    }
+
+    /**
+     * Xác thực email sau đăng ký
+     * POST /api/auth/verify-email
+     */
+    public function verifyEmail(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string|size:6',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $data['email'])
+            ->first();
+
+        if (!$record) {
+            return response()->json(['status' => false, 'message' => 'Không tìm thấy mã xác thực'], 400);
+        }
+
+        if (now()->diffInMinutes($record->created_at) > 10) {
+            DB::table('password_reset_tokens')->where('email', $data['email'])->delete();
+            return response()->json(['status' => false, 'message' => 'Mã OTP đã hết hạn'], 400);
+        }
+
+        if (!Hash::check($data['otp'], $record->token)) {
+            return response()->json(['status' => false, 'message' => 'Mã OTP không chính xác'], 400);
+        }
+
+        $user = User::where('email', $data['email'])->first();
+        if ($user) {
+            $user->email_verified_at = now();
+            $user->save();
+        }
+
+        DB::table('password_reset_tokens')->where('email', $data['email'])->delete();
+
+        return response()->json(['status' => true, 'message' => 'Xác thực email thành công']);
+    }
+
+    /**
+     * Gửi lại OTP
+     * POST /api/auth/resend-otp
+     */
+    public function resendOtp(Request $request)
+    {
+        $data = $request->validate([
+            'username' => 'required|email',
+            'type' => 'sometimes|string',
+        ]);
+
+        $user = User::where('email', $data['username'])->first();
+        if (!$user) {
+            return ApiResponse::error('Email không tồn tại', 404);
+        }
+
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $data['username']],
+            ['token' => Hash::make($otp), 'created_at' => now()]
+        );
+
+        try {
+            Mail::raw("Mã OTP xác thực AegisFlow: {$otp}\nMã có hiệu lực trong 10 phút.", function ($message) use ($data) {
+                $message->to($data['username'])->subject('AegisFlow - Mã xác thực OTP');
+            });
+        } catch (\Exception $e) {
+            \Log::warning('Mail send failed: ' . $e->getMessage());
+        }
+
+        return ApiResponse::success(null, 'Mã OTP đã được gửi lại');
     }
 }

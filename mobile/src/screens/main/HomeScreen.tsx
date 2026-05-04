@@ -404,12 +404,12 @@ const HomeScreen = () => {
           <Icon name="map-marker" size={ICON_SIZE.xs} color={theme.colors.white} />
           <Text style={styles.locationText}>{t('home.city')}</Text>
         </View>
-        {weatherSummary && (
+        {weatherSummary?.current && (
           <View style={styles.weatherBadge}>
-            <Icon 
-              name={weatherSummary.current.condition === 'Rain' ? 'weather-rainy' : 'weather-partly-cloudy'} 
-              size={ICON_SIZE.xs} 
-              color={theme.colors.white} 
+            <Icon
+              name={weatherSummary.current.condition === 'Rain' ? 'weather-rainy' : 'weather-partly-cloudy'}
+              size={ICON_SIZE.xs}
+              color={theme.colors.white}
             />
             <Text style={styles.weatherText}>{weatherSummary.current.temperature}°C</Text>
           </View>

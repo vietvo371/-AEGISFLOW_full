@@ -133,11 +133,11 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
     try {
       // Use signUp from AuthContext
       await signUp({
-        ho_ten: formData.name,
+        name: formData.name,
         email: formData.email,
-        mat_khau: formData.password,
-        mat_khau_confirmation: formData.re_password,
-        so_dien_thoai: formData.phone,
+        password: formData.password,
+        password_confirmation: formData.re_password,
+        phone: formData.phone,
       });
 
       // Reset form before navigating
@@ -148,8 +148,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
           {
             text: 'Xác nhận',
             onPress: () => {
-              // Navigate to login sau khi đăng ký thành công
-              navigation.navigate('Login');
+              navigation.navigate('Login', { email: formData.email });
             }
           }
         ]

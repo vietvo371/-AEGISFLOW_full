@@ -27,11 +27,12 @@ import {
     hp,
 } from '../../theme';
 import env from '../../config/env';
+import { OPENMAP_STYLE_URL } from '../../config/mapbox';
 import PageHeader from '../../component/PageHeader';
 import NotificationBellButton from '../../component/NotificationBellButton';
 import { incidentService, Incident } from '../../services/incidentService';
 
-MapboxGL.setAccessToken(env.MAPBOX_ACCESS_TOKEN);
+MapboxGL.setAccessToken('');
 
 const SEVERITY_COLORS: Record<string, string> = {
     low: '#10B981',
@@ -241,7 +242,7 @@ const PriorityRouteScreen = () => {
                     <MapboxGL.MapView
                         ref={mapRef}
                         style={styles.map}
-                        styleURL={MapboxGL.StyleURL.Street}
+                        styleURL={OPENMAP_STYLE_URL}
                         logoEnabled={false}
                         attributionEnabled={false}
                     >

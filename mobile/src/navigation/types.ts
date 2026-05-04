@@ -20,8 +20,7 @@ export type EmergencyTabParamList = {
 
 export type RootStackParamList = {
   Loading: undefined;
-  Onboarding: undefined;
-  Login: undefined;
+  Login: { email?: string } | undefined;
   Register: undefined;
   ForgotPassword: undefined;
   OTPVerification: {

@@ -21,9 +21,10 @@ import env from '../../config/env';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 
-// Initialize Mapbox
-MapboxGL.setAccessToken(env.MAPBOX_ACCESS_TOKEN);
+// Initialize MapGL (OpenMapVN - không cần Mapbox token)
+MapboxGL.setAccessToken('');
 
+import { OPENMAP_STYLE_URL } from '../../config/mapbox';
 import { mapService } from '../../services/mapService';
 import { reportService } from '../../services/reportService';
 import { MapReport, MapBounds } from '../../types/api/map';
@@ -513,7 +514,7 @@ const MapScreen = () => {
       <MapboxGL.MapView
         ref={mapRef}
         style={styles.map}
-        styleURL={MapboxGL.StyleURL.Street}
+        styleURL={OPENMAP_STYLE_URL}
         logoEnabled={false}
         attributionEnabled={false}
         onDidFinishLoadingMap={() => {

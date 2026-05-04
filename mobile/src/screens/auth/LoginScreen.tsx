@@ -34,12 +34,13 @@ import DeepLinkHandler from '../../utils/DeepLinkHandler';
 
 interface LoginScreenProps {
   navigation: any;
+  route?: any;
 }
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
   const { validateLogin, signIn, isEmergency } = useAuth();
   const { t, getCurrentLanguage } = useTranslation();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(route?.params?.email || '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string, password?: string }>({});
@@ -79,18 +80,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         email: email,
         password: password,
       });
-
+      console.log('result login', result);
       if (result.success) {
         // Xử lý pending deep link sau khi login thành công
         DeepLinkHandler.handlePendingDeepLinkAfterLogin();
 
         // Role-based navigation sync with LoadingScreen.tsx
         const roles = result.user?.roles || [];
-        if (roles.includes('emergency')) {
-          navigation.navigate('EmergencyTabs');
-        } else {
-          navigation.navigate('CitizenTabs');
-        }
+        const targetScreen = roles.includes('emergency') ? 'EmergencyTabs' : 'CitizenTabs';
+        navigation.reset({
+          index: 0,
+          routes: [{ name: targetScreen }],
+        });
       } else {
         if (result.errors) {
           setErrors(result.errors);
@@ -99,6 +100,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         }
       }
     } catch (error: any) {
+      console.log('error login', error);
       AlertService.error('Đăng nhập thất bại', error.message || 'Đã có lỗi xảy ra.');
     } finally {
       setLoading(false);

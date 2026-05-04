@@ -14,7 +14,6 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import OTPVerificationScreen from '../screens/auth/OTPVerificationScreen';
-import OnboardingScreen from '../screens/auth/OnboardingScreen';
 import ChangePasswordScreen from '../screens/auth/ChangePasswordScreen';
 import UpdatePasswordScreen from '../screens/auth/UpdatePasswordScreen';
 import EmailVerificationScreen from '../screens/auth/EmailVerificationScreen';
@@ -206,7 +205,6 @@ const MainNavigator = () => {
 
       {/* Auth Group */}
       <Stack.Group>
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />

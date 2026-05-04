@@ -11,6 +11,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
+import { OPENMAP_STYLE_URL } from '../config/mapbox';
 import Geolocation from 'react-native-geolocation-service';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
@@ -216,7 +217,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             <View style={styles.mapContainer}>
               <MapboxGL.MapView
                 style={styles.map}
-                styleURL={MapboxGL.StyleURL.Street}
+                styleURL={OPENMAP_STYLE_URL}
                 onPress={handleMapPress}>
                 <MapboxGL.Camera
                   ref={cameraRef}

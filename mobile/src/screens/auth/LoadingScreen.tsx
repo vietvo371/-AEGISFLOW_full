@@ -13,26 +13,23 @@ interface LoadingScreenProps {
 }
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation }) => {
-  const { user, isEmergency } = useAuth();
+  const { user, isEmergency, loading } = useAuth();
 
   useEffect(() => {
-    // Chờ AuthContext init xong rồi navigate dựa trên user đã có
-    // KHÔNG gọi API ở đây — tránh double call + timeout
-    const timer = setTimeout(() => {
-      if (user) {
-        // Có user từ AsyncStorage → verify bằng cách check roles
-        if (isEmergency) {
-          navigation.replace('EmergencyTabs');
-        } else {
-          navigation.replace('CitizenTabs');
-        }
-      } else {
-        navigation.replace('Login');
-      }
-    }, 300); // Chờ AuthContext init xong
+    if (loading) return;
 
-    return () => clearTimeout(timer);
-  }, [user, isEmergency, navigation]);
+    if (user) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: isEmergency ? 'EmergencyTabs' : 'CitizenTabs' }],
+      });
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    }
+  }, [loading, user, isEmergency, navigation]);
 
   return (
     <View style={styles.container}>

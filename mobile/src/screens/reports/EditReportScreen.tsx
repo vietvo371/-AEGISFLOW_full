@@ -17,9 +17,9 @@ import { mediaService } from '../../services/mediaService';
 import { CreateReportRequest, Media, ReportDetail } from '../../types/api/report';
 import { RootStackParamList } from '../../navigation/types';
 import env from '../../config/env';
-
+import { OPENMAP_STYLE_URL } from '../../config/mapbox';
 // Initialize Mapbox
-MapboxGL.setAccessToken(env.MAPBOX_ACCESS_TOKEN);
+MapboxGL.setAccessToken('');
 
 type EditReportRouteProp = RouteProp<RootStackParamList, 'EditReport'>;
 
@@ -674,7 +674,7 @@ const EditReportScreen = () => {
               <MapboxGL.MapView
                 ref={mapRef}
                 style={styles.map}
-                styleURL={MapboxGL.StyleURL.Street}
+                styleURL={OPENMAP_STYLE_URL}
                 logoEnabled={false}
                 attributionEnabled={false}
                 onPress={handleMapPress}

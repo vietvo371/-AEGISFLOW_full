@@ -19,12 +19,13 @@ import { CreateReportRequest, Media } from '../../types/api/report';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/types';
 import env from '../../config/env';
+import { OPENMAP_STYLE_URL } from '../../config/mapbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DRAFT_KEY = '@aegisflowai_report_draft';
 
 // Initialize Mapbox
-MapboxGL.setAccessToken(env.MAPBOX_ACCESS_TOKEN);
+MapboxGL.setAccessToken('');
 
 // Category options matching API
 const CATEGORIES = [
@@ -1055,7 +1056,7 @@ const CreateReportScreen = () => {
               <MapboxGL.MapView
                 ref={mapRef}
                 style={styles.map}
-                styleURL={MapboxGL.StyleURL.Street}
+                styleURL={OPENMAP_STYLE_URL}
                 logoEnabled={false}
                 attributionEnabled={false}
                 onPress={handleMapPress}

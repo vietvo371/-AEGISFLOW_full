@@ -27,6 +27,11 @@ Route::prefix('auth')->group(function () {
     Route::middleware('throttle:auth')->group(function () {
         Route::post('login', [App\Http\Controllers\Api\AuthController::class, 'login']);
         Route::post('register', [App\Http\Controllers\Api\AuthController::class, 'register']);
+        Route::post('forgot-password', [App\Http\Controllers\Api\AuthController::class, 'forgotPassword']);
+        Route::post('accept-otp-password', [App\Http\Controllers\Api\AuthController::class, 'verifyOtp']);
+        Route::post('reset-password', [App\Http\Controllers\Api\AuthController::class, 'resetPassword']);
+        Route::post('verify-email', [App\Http\Controllers\Api\AuthController::class, 'verifyEmail']);
+        Route::post('resend-otp', [App\Http\Controllers\Api\AuthController::class, 'resendOtp']);
     });
 
     Route::middleware('auth:sanctum')->group(function () {
