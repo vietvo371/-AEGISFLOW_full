@@ -279,7 +279,7 @@ const IncidentDetailScreen = () => {
               <Text style={styles.metaText}>{incident.location_name}</Text>
             </View>
           )}
-          {incident.location && (
+          {incident.location?.lat != null && incident.location?.lng != null && (
             <View style={[styles.metaItem, { marginTop: 2 }]}>
               <Icon name="crosshairs-gps" size={13} color={theme.colors.textSecondary} />
               <Text style={styles.metaText}>

@@ -94,19 +94,19 @@ export const reportService = {
     },
 
     deleteReport: async (id: number): Promise<ApiResponse<void>> => {
-        throw new Error('Xóa sự cố không được hỗ trợ bởi backend');
+        return { success: false, message: 'Xóa sự cố không được hỗ trợ', data: null };
     },
 
     getMyReports: async (params?: IncidentFilterParams): Promise<ApiResponse<any>> => {
-        // Backend incidents không có filter "my" - dùng incidents thường
-        const response = await api.get<ApiResponse<any>>('/incidents', { params });
+        const response = await api.get<ApiResponse<any>>('/incidents', {
+            params: { ...params, my: true }
+        });
         return response.data;
     },
 
-    getNearbyReports: async (lat: number, long: number, radius: number = 5000): Promise<ApiResponse<any>> => {
-        // Backend dùng district_id hoặc flood_zone_id, không có lat/long filter
+    getNearbyReports: async (lat: number, long: number, radius: number = 5): Promise<ApiResponse<any>> => {
         const response = await api.get<ApiResponse<any>>('/incidents', {
-            params: { per_page: 50 }
+            params: { lat, lng: long, radius, per_page: 50 }
         });
         return response.data;
     },
@@ -119,7 +119,7 @@ export const reportService = {
     },
 
     voteReport: async (id: number, type: 'upvote' | 'downvote'): Promise<ApiResponse<any>> => {
-        throw new Error('Bình chọn sự cố không được hỗ trợ bởi backend');
+        return { success: false, message: 'Tính năng bình chọn chưa được hỗ trợ', data: null };
     },
 
     incrementView: async (id: number): Promise<ApiResponse<void>> => {
@@ -127,7 +127,7 @@ export const reportService = {
     },
 
     rateReport: async (id: number, rating: number): Promise<ApiResponse<void>> => {
-        throw new Error('Đánh giá sự cố không được hỗ trợ bởi backend');
+        return { success: false, message: 'Tính năng đánh giá chưa được hỗ trợ', data: null };
     },
 
     getStats: async (): Promise<ApiResponse<any>> => {
@@ -136,6 +136,6 @@ export const reportService = {
     },
 
     addComment: async (reportId: number, content: string): Promise<ApiResponse<any>> => {
-        throw new Error('Bình luận sự cố không được hỗ trợ bởi backend');
+        return { success: false, message: 'Tính năng bình luận chưa được hỗ trợ', data: null };
     },
 };

@@ -23,6 +23,7 @@ import PhoneVerificationScreen from '../screens/auth/PhoneVerificationScreen';
 import HomeScreen from '../screens/main/HomeScreen';
 import MapScreen from '../screens/main/MapScreen';
 import ReportsScreen from '../screens/main/ReportsScreen';
+import AlertsScreen from '../screens/main/AlertsScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 
 // Reports Module
@@ -58,6 +59,11 @@ import EmergencyIncidentsScreen from '../screens/emergency/EmergencyIncidentsScr
 import MissionListScreen from '../screens/emergency/MissionListScreen';
 import PriorityRouteScreen from '../screens/emergency/PriorityRouteScreen';
 import EmergencyProfileScreen from '../screens/emergency/EmergencyProfileScreen';
+
+// Alerts & Rescue
+import AlertDetailScreen from '../screens/alerts/AlertDetailScreen';
+import RescueRequestScreen from '../screens/rescue/RescueRequestScreen';
+import MyRescueRequestsScreen from '../screens/rescue/MyRescueRequestsScreen';
 
 // New screens (v2)
 import WeatherDetailScreen from '../screens/weather/WeatherDetailScreen';
@@ -118,7 +124,7 @@ const CitizenTabs = () => {
       />
       <CitizenTab.Screen
         name="Alerts"
-        component={ReportsScreen}
+        component={AlertsScreen}
         options={{
           title: 'Cảnh báo',
           tabBarIcon: ({ color }) => <Icon name="bell-outline" size={TAB_BAR.iconSize} color={color} />,
@@ -252,6 +258,11 @@ const MainNavigator = () => {
         <Stack.Screen name="WeatherDetail" component={WeatherDetailScreen} />
         <Stack.Screen name="ShelterList" component={ShelterListScreen} />
         <Stack.Screen name="SensorDetail" component={SensorDetailScreen} />
+
+        {/* Alerts & Rescue */}
+        <Stack.Screen name="AlertDetail" component={AlertDetailScreen} />
+        <Stack.Screen name="RescueRequest" component={RescueRequestScreen} />
+        <Stack.Screen name="MyRescueRequests" component={MyRescueRequestsScreen} />
       </Stack.Group>
     </Stack.Navigator>
   );

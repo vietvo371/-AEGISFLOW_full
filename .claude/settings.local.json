@@ -46,7 +46,8 @@
       "Bash(grep -r \"export default\" /Volumes/MAC_OPTION/DATN/AEGISFLOWAI/frontend/src/app -name \"page.tsx\")",
       "Read(//tmp/**)",
       "Bash(git commit *)",
-      "WebFetch(domain:docs.openmap.vn)"
+      "WebFetch(domain:docs.openmap.vn)",
+      "Bash(npx tsc *)"
     ]
   }
 }

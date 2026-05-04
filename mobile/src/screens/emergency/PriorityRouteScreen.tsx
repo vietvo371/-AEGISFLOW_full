@@ -106,7 +106,7 @@ const PriorityRouteScreen = () => {
         try {
             const origin = `${userLocation[0]},${userLocation[1]}`;
             const dest = `${incident.location.lng},${incident.location.lat}`;
-            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${origin};${dest}?geometries=geojson&overview=full&access_token=${env.MAPBOX_ACCESS_TOKEN}`;
+            const url = `https://router.project-osrm.org/route/v1/driving/${origin};${dest}?geometries=geojson&overview=full`;
 
             const response = await fetch(url);
             const data = await response.json();

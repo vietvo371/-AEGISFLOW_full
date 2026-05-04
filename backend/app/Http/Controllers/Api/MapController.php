@@ -27,6 +27,16 @@ class MapController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('danh_muc')) {
+            $query->where('type', $request->danh_muc);
+        }
+
+        // Bounds filter for map viewport
+        if ($request->filled(['min_lon', 'min_lat', 'max_lon', 'max_lat'])) {
+            $query->whereBetween('longitude', [$request->min_lon, $request->max_lon])
+                  ->whereBetween('latitude', [$request->min_lat, $request->max_lat]);
+        }
+
         $incidents = $query->limit(200)->get();
 
         $features = $incidents->map(fn ($i) => $i->toGeoJson());

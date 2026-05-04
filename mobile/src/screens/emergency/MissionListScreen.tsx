@@ -87,11 +87,11 @@ const MissionListScreen = () => {
                     <View style={styles.locationContainer}>
                         <Icon name="map-marker" size={14} color={theme.colors.textSecondary} />
                         <Text style={styles.locationText} numberOfLines={1}>
-                            {item.latitude.toFixed(4)}, {item.longitude.toFixed(4)}
+                            {item.latitude?.toFixed(4)}, {item.longitude?.toFixed(4)}
                         </Text>
                     </View>
                     <View style={[styles.priorityBadge, { backgroundColor: item.priority === 'critical' ? '#EF4444' : '#F59E0B' }]}>
-                        <Text style={styles.priorityText}>{item.priority.toUpperCase()}</Text>
+                        <Text style={styles.priorityText}>{(item.priority || item.urgency || '').toUpperCase()}</Text>
                     </View>
                 </View>
             </TouchableOpacity>

@@ -45,6 +45,11 @@ class IncidentController extends Controller
         $query = Incident::with(['district', 'assignee', 'floodZone'])
             ->orderBy('created_at', 'desc');
 
+        // Filter by current user's reports
+        if ($request->boolean('my')) {
+            $query->where('reported_by', $request->user()->id);
+        }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -59,6 +64,16 @@ class IncidentController extends Controller
 
         if ($request->filled('district_id')) {
             $query->where('district_id', $request->district_id);
+        }
+
+        // Nearby filter by lat/lng
+        if ($request->filled('lat') && $request->filled('lng')) {
+            $lat = $request->lat;
+            $lng = $request->lng;
+            $radius = $request->get('radius', 5); // km
+            $query->selectRaw("*, (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance", [$lat, $lng, $lat])
+                ->having('distance', '<=', $radius)
+                ->orderBy('distance');
         }
 
         $incidents = $query->paginate($request->get('per_page', 20));

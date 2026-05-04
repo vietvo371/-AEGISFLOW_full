@@ -64,6 +64,14 @@ export type RootStackParamList = {
   HelpCenter: undefined;
   About: undefined;
 
+  // Alerts
+  AlertDetail: { id: number };
+
+  // Rescue
+  RescueRequest: undefined;
+  MyRescueRequests: undefined;
+  RescueRequestDetail: { id: number };
+
   // New screens (v2)
   WeatherDetail: undefined;
   ShelterList: undefined;

@@ -4,8 +4,15 @@ import { MapReport, HeatmapPoint, Route, MapBounds } from '../types/api/map';
 import env from '../config/env';
 
 export const mapService = {
-    getMapReports: async (): Promise<ApiResponse<MapReport[]>> => {
-        const response = await api.get<ApiResponse<MapReport[]>>('/map/incidents');
+    getMapReports: async (bounds?: MapBounds, filters?: any): Promise<ApiResponse<any>> => {
+        const params: any = { ...filters };
+        if (bounds) {
+            params.min_lon = bounds.min_lon;
+            params.min_lat = bounds.min_lat;
+            params.max_lon = bounds.max_lon;
+            params.max_lat = bounds.max_lat;
+        }
+        const response = await api.get<ApiResponse<any>>('/map/incidents', { params });
         return response.data;
     },
 
