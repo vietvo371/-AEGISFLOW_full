@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\FcmPushService;
 use App\Services\FloodAutoDetector;
 use App\Services\RecommendationGenerator;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -23,6 +24,18 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(RecommendationGenerator::class, function () {
             return new RecommendationGenerator();
+        });
+
+        // FCM Push Service
+        $this->app->singleton(FcmPushService::class, function () {
+            return new FcmPushService();
+        });
+
+        // Notification Broadcast Service
+        $this->app->singleton(NotificationBroadcastService::class, function ($app) {
+            return new NotificationBroadcastService(
+                $app->make(FcmPushService::class)
+            );
         });
     }
 

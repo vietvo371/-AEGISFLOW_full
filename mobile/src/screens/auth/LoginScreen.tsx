@@ -30,6 +30,7 @@ import ButtonCustom from '../../component/ButtonCustom';
 import LoadingOverlay from '../../component/LoadingOverlay';
 import LanguageSelector from '../../component/LanguageSelector';
 import { useTranslation } from '../../hooks/useTranslation';
+import DeepLinkHandler from '../../utils/DeepLinkHandler';
 
 interface LoginScreenProps {
   navigation: any;
@@ -80,6 +81,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       });
 
       if (result.success) {
+        // Xử lý pending deep link sau khi login thành công
+        DeepLinkHandler.handlePendingDeepLinkAfterLogin();
+
         // Role-based navigation sync with LoadingScreen.tsx
         const roles = result.user?.roles || [];
         if (roles.includes('emergency')) {

@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Alert;
+use App\Jobs\SendPushNotificationJob;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -18,6 +19,7 @@ class AlertCreated implements ShouldBroadcastNow
         public Alert $alert
     ) {
         $this->saveNotification();
+        $this->dispatchPushNotification();
     }
 
     protected function saveNotification(): void
@@ -41,6 +43,21 @@ class AlertCreated implements ShouldBroadcastNow
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * Dispatch FCM push notification job
+     */
+    protected function dispatchPushNotification(): void
+    {
+        // Chỉ gửi notification nếu là alert có severity cao
+        $highSeverity = ['high', 'critical'];
+        
+        if (in_array($this->alert->severity, $highSeverity)) {
+            SendPushNotificationJob::dispatch('alert', [
+                'alert_id' => $this->alert->id,
+            ]);
+        }
     }
 
     /**

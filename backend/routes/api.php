@@ -33,7 +33,6 @@ Route::prefix('auth')->group(function () {
         Route::get('me', [App\Http\Controllers\Api\AuthController::class, 'me']);
         Route::put('profile', [App\Http\Controllers\Api\AuthController::class, 'updateProfile']);
         Route::post('change-password', [App\Http\Controllers\Api\AuthController::class, 'changePassword']);
-        Route::post('fcm-token', [App\Http\Controllers\Api\AuthController::class, 'updateFcmToken']);
         Route::post('logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
         Route::post('refresh', [App\Http\Controllers\Api\AuthController::class, 'refresh']);
     });
@@ -102,6 +101,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('notifications/read-all', [App\Http\Controllers\Api\NotificationController::class, 'markAllRead']);
     Route::get('notifications', [App\Http\Controllers\Api\NotificationController::class, 'index']);
     Route::put('notifications/{id}/read', [App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
+
+    // ── FCM Device Management ──────────────────────────────
+    Route::prefix('fcm')->group(function () {
+        Route::post('register', [App\Http\Controllers\Api\FcmTokenController::class, 'register']);
+        Route::get('devices', [App\Http\Controllers\Api\FcmTokenController::class, 'listDevices']);
+        Route::put('devices/{id}', [App\Http\Controllers\Api\FcmTokenController::class, 'updateDevice']);
+        Route::delete('devices/{id}', [App\Http\Controllers\Api\FcmTokenController::class, 'deleteDevice']);
+        Route::delete('token/{token}', [App\Http\Controllers\Api\FcmTokenController::class, 'deleteByToken']);
+        Route::post('refresh', [App\Http\Controllers\Api\FcmTokenController::class, 'refreshToken']);
+        Route::post('subscribe', [App\Http\Controllers\Api\FcmTokenController::class, 'subscribeTopic']);
+        Route::post('unsubscribe', [App\Http\Controllers\Api\FcmTokenController::class, 'unsubscribeTopic']);
+    });
 
     // ── Map ────────────────────────────────────────────────
     Route::prefix('map')->group(function () {

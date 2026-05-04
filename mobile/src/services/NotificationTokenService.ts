@@ -1,17 +1,49 @@
-import PushNotificationHelper from '../utils/PushNotificationHelper';
+/**
+ * NotificationTokenService - Quản lý FCM token
+ * Tích hợp với FcmTokenController backend
+ */
+
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api, { API_BASE_URL } from '../utils/Api';
 import { authService } from './authService';
+import PushNotificationHelper from '../utils/PushNotificationHelper';
 
 const FCM_TOKEN_KEY = '@fcm_token';
+const DEVICE_ID_KEY = '@device_id';
+
+interface DeviceInfo {
+  deviceId: string;
+  deviceType: 'ios' | 'android' | 'web';
+  deviceName: string;
+  deviceModel?: string;
+  osVersion?: string;
+}
 
 class NotificationTokenService {
   /**
+   * Lấy hoặc tạo device ID
+   */
+  static async getOrCreateDeviceId(): Promise<string> {
+    try {
+      let deviceId = await AsyncStorage.getItem(DEVICE_ID_KEY);
+      if (!deviceId) {
+        deviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        await AsyncStorage.setItem(DEVICE_ID_KEY, deviceId);
+      }
+      return deviceId;
+    } catch (error) {
+      console.error('Error getting device ID:', error);
+      return `device_${Date.now()}`;
+    }
+  }
+
+  /**
    * Lưu FCM token vào AsyncStorage
    */
-  static async saveFCMToken(token: string) {
+  static async saveFCMToken(token: string): Promise<void> {
     try {
       await AsyncStorage.setItem(FCM_TOKEN_KEY, token);
-      console.log('FCM token đã được lưu vào AsyncStorage');
     } catch (error) {
       console.error('Lỗi khi lưu FCM token:', error);
     }
@@ -22,10 +54,9 @@ class NotificationTokenService {
    */
   static async getSavedFCMToken(): Promise<string | null> {
     try {
-      const token = await AsyncStorage.getItem(FCM_TOKEN_KEY);
-      return token;
+      return await AsyncStorage.getItem(FCM_TOKEN_KEY);
     } catch (error) {
-      console.error('Lỗi khi lấy FCM token từ AsyncStorage:', error);
+      console.error('Lỗi khi lấy FCM token:', error);
       return null;
     }
   }
@@ -33,91 +64,195 @@ class NotificationTokenService {
   /**
    * Xóa FCM token khỏi AsyncStorage
    */
-  static async clearFCMToken() {
+  static async clearFCMToken(): Promise<void> {
     try {
       await AsyncStorage.removeItem(FCM_TOKEN_KEY);
-      console.log('FCM token đã được xóa khỏi AsyncStorage');
     } catch (error) {
       console.error('Lỗi khi xóa FCM token:', error);
     }
   }
 
   /**
-   * Đăng ký FCM token với server khi user đăng nhập
-   * Sử dụng authService.updateFcmToken có sẵn
+   * Lấy thông tin thiết bị
    */
-  static async registerTokenAfterLogin() {
+  static async getDeviceInfo(): Promise<DeviceInfo> {
+    const deviceId = await this.getOrCreateDeviceId();
+    
+    return {
+      deviceId,
+      deviceType: Platform.OS as 'ios' | 'android' | 'web',
+      deviceName: Platform.select({
+        ios: 'iPhone',
+        android: 'Android Device',
+        default: 'Unknown Device',
+      }) || 'Unknown Device',
+      osVersion: Platform.Version?.toString(),
+    };
+  }
+
+  /**
+   * Đăng ký FCM token với server khi user đăng nhập
+   */
+  static async registerTokenAfterLogin(): Promise<{ success: boolean; deviceId?: number }> {
     try {
       // Kiểm tra quyền thông báo
       const hasPermission = await PushNotificationHelper.checkPermission();
       
       if (!hasPermission) {
-        console.log('Chưa có quyền thông báo, yêu cầu quyền...');
         const granted = await PushNotificationHelper.requestPermission();
-        
         if (!granted) {
           console.log('Người dùng từ chối quyền thông báo');
-          return false;
+          return { success: false };
         }
       }
 
       // Lấy FCM token
       const fcmToken = await PushNotificationHelper.getToken();
-      
       if (!fcmToken) {
         console.error('Không thể lấy FCM token');
-        return false;
+        return { success: false };
       }
 
-      // Lưu token vào AsyncStorage
+      // Lưu token local
       await this.saveFCMToken(fcmToken);
- 
-       // Gửi token lên server nếu đã đăng nhập
-       await this.syncTokenWithServer(fcmToken);
-       
-       return true;
-     } catch (error) {
-       console.error('❌ Lỗi nghiêm trọng trong quá trình đăng ký FCM token:', error);
-       return false;
-     }
-   }
- 
-   /**
-    * Đồng bộ FCM token với server chỉ khi người dùng đã đăng nhập
-    */
-   static async syncTokenWithServer(fcmToken: string) {
-     try {
-       // Kiểm tra xem đã có login token chưa
-       const loginToken = await authService.getToken();
-       if (!loginToken) {
-         console.log('ℹ️ Người dùng chưa đăng nhập, bỏ qua đồng bộ FCM token với server');
-         return false;
-       }
- 
-       // Gửi token lên server bằng authService - wrap trong try-catch để tránh chặn luồng login
-       try {
-         await authService.updateFcmToken(fcmToken);
-         console.log('✅ Đã đăng ký FCM token thành công với server');
-         return true;
-       } catch (serverError) {
-         console.warn('⚠️ Server updateFcmToken error (API may not be ready):', serverError);
-         return false;
-       }
-     } catch (error) {
-       console.error('❌ Lỗi khi đồng bộ FCM token với server:', error);
-       return false;
-     }
-   }
+
+      // Lấy thông tin thiết bị
+      const deviceInfo = await this.getDeviceInfo();
+
+      // Đăng ký với server
+      const result = await this.registerDeviceWithServer(fcmToken, deviceInfo);
+      
+      return result;
+    } catch (error) {
+      console.error('Lỗi nghiêm trọng trong quá trình đăng ký FCM token:', error);
+      return { success: false };
+    }
+  }
+
+  /**
+   * Đăng ký device với server
+   */
+  static async registerDeviceWithServer(
+    fcmToken: string,
+    deviceInfo: DeviceInfo
+  ): Promise<{ success: boolean; deviceId?: number }> {
+    try {
+      const response = await api.post('/fcm/register', {
+        fcm_token: fcmToken,
+        device_type: deviceInfo.deviceType,
+        device_name: deviceInfo.deviceName,
+        device_model: deviceInfo.deviceModel,
+        os_version: deviceInfo.osVersion,
+      });
+
+      console.log('Đã đăng ký FCM token thành công:', response.data);
+      return { success: true, deviceId: response.data.data?.device_id };
+    } catch (error: any) {
+      console.warn('Lỗi khi đăng ký FCM token:', error?.response?.data || error);
+      return { success: false };
+    }
+  }
+
+  /**
+   * Cập nhật FCM token khi token bị refresh
+   */
+  static async updateTokenOnRefresh(newToken: string): Promise<boolean> {
+    try {
+      await this.saveFCMToken(newToken);
+
+      const deviceInfo = await this.getDeviceInfo();
+      const result = await this.registerDeviceWithServer(newToken, deviceInfo);
+      
+      return result.success;
+    } catch (error) {
+      console.error('Lỗi khi cập nhật FCM token:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Refresh token - thay thế token cũ bằng token mới
+   */
+  static async refreshToken(oldToken: string, newToken: string): Promise<boolean> {
+    try {
+      const response = await api.post('/fcm/refresh', {
+        old_token: oldToken,
+        new_token: newToken,
+      });
+
+      if (response.data.success) {
+        await this.saveFCMToken(newToken);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Lỗi khi refresh token:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Lấy danh sách devices của user
+   */
+  static async getDevices(): Promise<any[]> {
+    try {
+      const response = await api.get('/fcm/devices');
+      return response.data.data?.devices || [];
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách devices:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Xóa device
+   */
+  static async deleteDevice(deviceId: number): Promise<boolean> {
+    try {
+      const response = await api.delete(`/fcm/devices/${deviceId}`);
+      return response.data.success;
+    } catch (error) {
+      console.error('Lỗi khi xóa device:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Cập nhật notification settings cho device
+   */
+  static async updateDeviceSettings(
+    deviceId: number,
+    settings: {
+      notification_enabled?: boolean;
+      notification_settings?: Record<string, boolean>;
+    }
+  ): Promise<boolean> {
+    try {
+      const response = await api.put(`/fcm/devices/${deviceId}`, settings);
+      return response.data.success;
+    } catch (error) {
+      console.error('Lỗi khi cập nhật device settings:', error);
+      return false;
+    }
+  }
 
   /**
    * Hủy đăng ký FCM token khi user đăng xuất
    */
-  static async unregisterTokenAfterLogout() {
+  static async unregisterTokenAfterLogout(): Promise<boolean> {
     try {
-      // Gửi empty token hoặc xóa token trên server
-      // Note: Backend requires fcm_token (422 error if empty), so skip this if it fails validation
-      // await authService.updateFcmToken('');
-      console.log('Bỏ qua đồng bộ token rỗng để tránh lỗi 422 (Server yêu cầu bắt buộc)');
+      // Lấy current token để xóa trên server
+      const currentToken = await this.getSavedFCMToken();
+
+      if (currentToken) {
+        try {
+          // Xóa device bằng token
+          const encodedToken = encodeURIComponent(currentToken);
+          await api.delete(`/fcm/token/${encodedToken}`);
+        } catch (e) {
+          console.warn('Không xóa được FCM token trên server:', e);
+        }
+      }
 
       // Xóa token khỏi Firebase
       await PushNotificationHelper.deleteToken();
@@ -133,22 +268,31 @@ class NotificationTokenService {
   }
 
   /**
-   * Cập nhật FCM token khi token bị refresh
+   * Subscribe topic FCM
    */
-  static async updateTokenOnRefresh(newToken: string) {
+  static async subscribeTopic(topic: string): Promise<boolean> {
     try {
-      // Lưu token mới vào AsyncStorage
-      await this.saveFCMToken(newToken);
-
-      // Gửi token mới lên server bằng authService
-      await this.syncTokenWithServer(newToken);
-      
-      return true;
+      const response = await api.post('/fcm/subscribe', { topic });
+      return response.data.success;
     } catch (error) {
-      console.error('❌ Lỗi khi cập nhật FCM token:', error);
+      console.error('Lỗi khi subscribe topic:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Unsubscribe topic FCM
+   */
+  static async unsubscribeTopic(topic: string): Promise<boolean> {
+    try {
+      const response = await api.post('/fcm/unsubscribe', { topic });
+      return response.data.success;
+    } catch (error) {
+      console.error('Lỗi khi unsubscribe topic:', error);
       return false;
     }
   }
 }
 
 export default NotificationTokenService;
+export { DeviceInfo };

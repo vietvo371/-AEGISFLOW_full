@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Incident;
+use App\Jobs\SendPushNotificationJob;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -17,6 +18,7 @@ class IncidentCreated implements ShouldBroadcast
         public Incident $incident
     ) {
         $this->saveNotification();
+        $this->dispatchPushNotification();
     }
 
     protected function saveNotification(): void
@@ -39,6 +41,21 @@ class IncidentCreated implements ShouldBroadcast
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * Dispatch FCM push notification job
+     */
+    protected function dispatchPushNotification(): void
+    {
+        // Gửi notification cho high/critical incidents
+        $highSeverity = ['high', 'critical'];
+        
+        if (in_array($this->incident->severity, $highSeverity)) {
+            SendPushNotificationJob::dispatch('incident', [
+                'incident_id' => $this->incident->id,
+            ]);
+        }
     }
 
     public function broadcastOn(): array

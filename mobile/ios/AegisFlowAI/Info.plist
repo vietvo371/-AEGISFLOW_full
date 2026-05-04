@@ -103,5 +103,22 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.aegisflow.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>aegisflow</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>aegisflow</string>
+	</array>
 </dict>
 </plist>

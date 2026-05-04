@@ -133,32 +133,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Cập nhật FCM token
-     * POST /api/auth/fcm-token
-     */
-    public function updateFcmToken(Request $request)
-    {
-        $data = $request->validate([
-            'device_token' => 'required|string',
-            'device_type' => 'required|in:ios,android,web',
-            'device_name' => 'nullable|string|max:100',
-        ]);
-
-        $user = $request->user();
-
-        $user->devices()->updateOrCreate(
-            ['device_token' => $data['device_token']],
-            [
-                'device_type' => $data['device_type'],
-                'device_name' => $data['device_name'] ?? null,
-                'is_active' => true,
-            ]
-        );
-
-        return ApiResponse::success(null, 'FCM token đã cập nhật');
-    }
-
-    /**
      * Đăng xuất
      * POST /api/auth/logout
      */

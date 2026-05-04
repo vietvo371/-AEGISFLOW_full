@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\RescueRequest;
+use App\Jobs\SendPushNotificationJob;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -15,7 +16,19 @@ class RescueRequestCreated implements ShouldBroadcast
 
     public function __construct(
         public RescueRequest $rescueRequest
-    ) {}
+    ) {
+        $this->dispatchPushNotification();
+    }
+
+    /**
+     * Dispatch FCM push notification job
+     */
+    protected function dispatchPushNotification(): void
+    {
+        SendPushNotificationJob::dispatch('rescue', [
+            'rescue_id' => $this->rescueRequest->id,
+        ]);
+    }
 
     public function broadcastOn(): array
     {
