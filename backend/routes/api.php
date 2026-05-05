@@ -80,6 +80,9 @@ Route::middleware('auth:sanctum')->group(function () {
         ->only('index', 'show');
     Route::put('rescue-teams/{id}/location', [App\Http\Controllers\Api\RescueTeamController::class, 'updateLocation']);
 
+    // ── Upload ────────────────────────────────────────────
+    Route::post('upload', [App\Http\Controllers\Api\UploadController::class, 'store']);
+
     // ── Shelters ───────────────────────────────────────────
     Route::apiResource('shelters', App\Http\Controllers\Api\ShelterController::class)
         ->only('index', 'show');

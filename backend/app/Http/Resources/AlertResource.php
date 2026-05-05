@@ -40,6 +40,8 @@ class AlertResource extends JsonResource
             'effective_from' => $this->effective_from?->toIso8601String(),
             'effective_until' => $this->effective_until?->toIso8601String(),
             'geometry' => $geometry,
+            'photo_urls' => $this->relatedIncident?->photo_urls ?? [],
+            'address' => $this->relatedIncident?->address,
             'issuer' => $this->issuer ? [
                 'id' => $this->issuer->id,
                 'name' => $this->issuer->name

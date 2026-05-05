@@ -23,7 +23,7 @@ class AlertController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Alert::with('issuer')
+        $query = Alert::with('issuer', 'relatedIncident')
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {

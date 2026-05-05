@@ -14,6 +14,8 @@ class IncidentEvent extends Model
 {
     use HasFactory;
 
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'incident_id',
         'event_type',

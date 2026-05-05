@@ -36,6 +36,7 @@ class ShelterResource extends JsonResource
                 'id' => $this->ward->id,
                 'name' => $this->ward->name,
             ]),
+            'location' => $this->location,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

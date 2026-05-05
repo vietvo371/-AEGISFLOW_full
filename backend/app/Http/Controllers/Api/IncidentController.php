@@ -162,7 +162,7 @@ class IncidentController extends Controller
 
         // Auto-create alert for citizen-reported incidents with high/critical severity
         if ($source === IncidentSourceEnum::CITIZEN->value && in_array($data['severity'], ['high', 'critical'])) {
-            Alert::create([
+            $alert = Alert::create([
                 'title' => '[Từ báo cáo] ' . $data['title'],
                 'description' => $data['description'] ?? null,
                 'alert_type' => $alertType->value,
@@ -174,6 +174,13 @@ class IncidentController extends Controller
                 'source' => 'citizen_report',
                 'issued_by' => $user->id,
             ]);
+
+            if (isset($data['latitude']) && isset($data['longitude'])) {
+                DB::statement(
+                    "UPDATE alerts SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?",
+                    [$data['longitude'], $data['latitude'], $alert->id]
+                );
+            }
         }
 
         $incident->logEvent('created', 'Sự cố được tạo bởi '.$user->name, $user->id);
