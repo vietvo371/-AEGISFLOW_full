@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   RefreshControl, StatusBar, ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,12 +11,11 @@ import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { RootStackParamList, CitizenTabParamList } from '../../navigation/types';
-import { theme, SPACING, ICON_SIZE, wp } from '../../theme';
+import { theme, FONT_SIZE, SPACING, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import { alertService, AlertItem } from '../../services/alertService';
 import { weatherService, WeatherSummary } from '../../services/weatherService';
-import { reportService } from '../../services/reportService';
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<CitizenTabParamList, 'Home'>,
@@ -24,11 +23,18 @@ type NavigationProp = CompositeNavigationProp<
 >;
 
 const QUICK_ACTIONS = [
-  { id: 'report', label: 'Báo cáo ngập', icon: 'file-document-edit-outline', color: '#3B82F6', screen: 'CreateReport' },
-  { id: 'rescue', label: 'Yêu cầu cứu hộ', icon: 'lifebuoy', color: '#EF4444', screen: 'RescueRequest' },
-  { id: 'shelter', label: 'Nơi trú ẩn', icon: 'home-roof', color: '#22C55E', screen: 'ShelterList' },
-  { id: 'map', label: 'Bản đồ ngập', icon: 'map-marker-radius', color: '#8B5CF6', tab: 'Map' },
+  { id: 'report', label: 'Báo cáo\nngập', icon: 'file-document-edit-outline', color: '#3B82F6', bg: '#EFF6FF', screen: 'CreateReport' },
+  { id: 'rescue', label: 'Cứu hộ', icon: 'lifebuoy', color: '#EF4444', bg: '#FEF2F2', screen: 'RescueRequest' },
+  { id: 'shelter', label: 'Trú ẩn', icon: 'home-roof', color: '#22C55E', bg: '#F0FDF4', screen: 'ShelterList' },
+  { id: 'map', label: 'Bản đồ', icon: 'map-marker-radius', color: '#7a5af8', bg: '#F5F3FF', tab: 'Map' },
 ] as const;
+
+const SEVERITY_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  critical: { label: 'NGHIÊM TRỌNG', color: '#EF4444', bg: '#FEF2F2' },
+  high: { label: 'CAO', color: '#F97316', bg: '#FFF7ED' },
+  medium: { label: 'TRUNG BÌNH', color: '#EAB308', bg: '#FEFCE8' },
+  low: { label: 'THẤP', color: '#3B82F6', bg: '#EFF6FF' },
+};
 
 const HomeScreen = () => {
   const { t } = useTranslation();
@@ -40,24 +46,16 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [activeAlerts, setActiveAlerts] = useState<AlertItem[]>([]);
   const [weather, setWeather] = useState<WeatherSummary | null>(null);
-  const [recentIncidents, setRecentIncidents] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
     try {
-      const [alertRes, incidentRes] = await Promise.allSettled([
+      const [alertRes] = await Promise.allSettled([
         alertService.getActiveAlerts(),
-        reportService.getReports({ per_page: 5 } as any),
       ]);
-
       if (alertRes.status === 'fulfilled') {
         const items = alertRes.value.data?.data || alertRes.value.data || [];
         setActiveAlerts(Array.isArray(items) ? items : []);
       }
-      if (incidentRes.status === 'fulfilled') {
-        const items = incidentRes.value.data?.data || incidentRes.value.data || [];
-        setRecentIncidents(Array.isArray(items) ? items.slice(0, 5) : []);
-      }
-
       try {
         const w = await weatherService.getSummary();
         setWeather(w);
@@ -69,62 +67,54 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
   const onRefresh = () => { setRefreshing(true); fetchData(); };
 
-  const criticalAlerts = activeAlerts.filter(a => a.severity === 'critical' || a.severity === 'high');
+  const criticalAlert = activeAlerts.find(a => a.severity === 'critical' || a.severity === 'high');
 
   const handleQuickAction = (action: typeof QUICK_ACTIONS[number]) => {
-    if ('tab' in action) {
-      navigation.navigate(action.tab as any);
-    } else if ('screen' in action) {
-      navigation.navigate(action.screen as any);
-    }
+    if ('tab' in action) navigation.navigate(action.tab as any);
+    else if ('screen' in action) navigation.navigate(action.screen as any);
   };
 
+  const firstName = user?.name?.split(' ').pop() || 'Cư dân';
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  const temp = weather?.current?.temperature || 28;
+  const humidity = weather?.current?.humidity || 82;
+  const rainfall = weather?.current?.rainfall || 15;
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="light-content" backgroundColor={theme.colors.primary} />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Header */}
+      {/* Violet Header */}
       <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerDate}>
-              {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </Text>
-            <Text style={styles.headerGreeting}>
-              Xin chào, {user?.name?.split(' ').pop() || 'Cư dân'}
-            </Text>
+        <SafeAreaView edges={['top']}>
+          <View style={styles.headerTop}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.headerDate}>{dateStr}</Text>
+              <Text style={styles.headerGreeting}>Xin chào, {firstName} 👋</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.notifBtn}
+              onPress={() => navigation.navigate('Notifications')}
+            >
+              <Icon name="bell-outline" size={22} color="#fff" />
+              {unreadCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.notifBtn}
-            onPress={() => navigation.navigate('Notifications')}
-          >
-            <Icon name="bell-outline" size={22} color="#fff" />
-            {unreadCount > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
 
-        {weather?.current && (
-          <View style={styles.weatherRow}>
-            <Icon
-              name={weather.current.condition === 'Rain' ? 'weather-pouring' : 'weather-partly-cloudy'}
-              size={18} color="rgba(255,255,255,0.9)"
-            />
-            <Text style={styles.weatherText}>{weather.current.temperature}°C</Text>
-            {weather.current.humidity > 0 && (
-              <Text style={styles.weatherText}>  {weather.current.humidity}% ẩm</Text>
-            )}
-            {weather.current.rainfall > 0 && (
-              <Text style={styles.weatherTextRain}>  {weather.current.rainfall}mm mưa</Text>
-            )}
+          {/* AI Status Chip */}
+          <View style={styles.aiChip}>
+            <View style={styles.aiDot} />
+            <Text style={styles.aiChipText}>{t('home.aiMonitoring', 'AI đang theo dõi khu vực của bạn')}</Text>
           </View>
-        )}
+        </SafeAreaView>
       </View>
 
       <ScrollView
@@ -132,245 +122,376 @@ const HomeScreen = () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         showsVerticalScrollIndicator={false}
       >
-        {/* Critical Alert Banner */}
-        {criticalAlerts.length > 0 && (
-          <TouchableOpacity
-            style={styles.alertBanner}
-            onPress={() => navigation.navigate('AlertDetail' as any, { id: criticalAlerts[0].id })}
-            activeOpacity={0.8}
-          >
-            <View style={styles.alertBannerIcon}>
-              <Icon name="alert-octagon" size={28} color="#fff" />
+        {/* Weather Card */}
+        <View style={styles.weatherCard}>
+          <View style={styles.weatherMain}>
+            <Icon name="weather-partly-cloudy" size={48} color="#F59E0B" />
+            <View style={{ marginLeft: 12 }}>
+              <Text style={styles.weatherTemp}>{temp}°</Text>
+              <Text style={styles.weatherDesc}>{t('home.weatherDesc', 'Mưa rào, độ ẩm cao')}</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.alertBannerTitle}>
-                {criticalAlerts.length > 1
-                  ? `${criticalAlerts.length} cảnh báo khẩn cấp`
-                  : criticalAlerts[0].title}
-              </Text>
-              {criticalAlerts[0].description && (
-                <Text style={styles.alertBannerDesc} numberOfLines={2}>
-                  {criticalAlerts[0].description}
-                </Text>
-              )}
+          </View>
+          <View style={styles.weatherMeta}>
+            <View style={styles.weatherMetaItem}>
+              <Icon name="water-percent" size={14} color="#3B82F6" />
+              <Text style={styles.weatherMetaText}>{humidity}%</Text>
             </View>
-            <Icon name="chevron-right" size={22} color="rgba(255,255,255,0.7)" />
-          </TouchableOpacity>
-        )}
+            <View style={styles.weatherMetaItem}>
+              <Icon name="weather-pouring" size={14} color="#3B82F6" />
+              <Text style={styles.weatherMetaText}>{rainfall}mm/h</Text>
+            </View>
+            <View style={styles.weatherMetaItem}>
+              <Icon name="weather-windy" size={14} color="#3B82F6" />
+              <Text style={styles.weatherMetaText}>12km/h</Text>
+            </View>
+          </View>
+        </View>
 
-        {/* Quick Actions */}
-        <Text style={styles.sectionTitle}>Hành động nhanh</Text>
-        <View style={styles.quickGrid}>
+        {/* AI Prediction Card (dark) */}
+        <View style={styles.predictionCard}>
+          <View style={styles.predictionHeader}>
+            <Icon name="brain" size={18} color="#fff" />
+            <Text style={styles.predictionTitle}>{t('home.aiPrediction', 'Dự báo AI thông minh')}</Text>
+          </View>
+          <Text style={styles.predictionSub}>{t('home.predictionUpdate', 'Cập nhật 5 phút trước')}</Text>
+
+          <View style={styles.predictionBody}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.predictionRisk}>{t('home.floodRisk', 'Nguy cơ ngập trong 2 giờ tới')}</Text>
+              <Text style={styles.predictionDetail}>{t('home.floodArea', 'Khu vực Quận 7 — Mực nước dự kiến 0.5m')}</Text>
+            </View>
+            <View style={styles.predictionPercent}>
+              <Text style={styles.percentValue}>78%</Text>
+              <Text style={styles.percentLabel}>{t('home.confidence', 'ĐỘ TIN CẬY')}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* 3 Metrics Row */}
+        <View style={styles.metricsRow}>
+          <View style={styles.metricItem}>
+            <Text style={styles.metricValue}>{rainfall}mm</Text>
+            <Text style={styles.metricLabel}>{t('home.rainfall', 'LƯỢNG MƯA')}</Text>
+          </View>
+          <View style={styles.metricItem}>
+            <Text style={styles.metricValue}>1.2m</Text>
+            <Text style={styles.metricLabel}>{t('home.tideLevel', 'TRIỀU CƯỜNG')}</Text>
+          </View>
+          <View style={styles.metricItem}>
+            <Text style={styles.metricValue}>85%</Text>
+            <Text style={styles.metricLabel}>{t('home.saturation', 'ĐỘ BÃO HÒA')}</Text>
+          </View>
+        </View>
+
+        {/* Risk Assessment Card */}
+        <View style={styles.riskCard}>
+          <View style={styles.riskHeader}>
+            <View style={styles.riskHeaderLeft}>
+              <Icon name="shield-alert-outline" size={20} color="#F59E0B" />
+              <Text style={styles.riskTitle}>{t('home.riskAssessment', 'Đánh giá rủi ro khu vực')}</Text>
+            </View>
+            <View style={styles.riskBadge}>
+              <Text style={styles.riskBadgeText}>{t('home.medium', 'Trung bình')}</Text>
+            </View>
+          </View>
+
+          {/* Progress bar */}
+          <View style={styles.riskBar}>
+            <View style={styles.riskBarGreen} />
+            <View style={styles.riskBarYellow} />
+            <View style={styles.riskBarEmpty} />
+          </View>
+
+          {/* 2x2 risk metrics */}
+          <View style={styles.riskGrid}>
+            <View style={styles.riskGridItem}>
+              <Icon name="weather-pouring" size={20} color="#3B82F6" />
+              <View>
+                <Text style={styles.riskGridLabel}>{t('home.rainMetric', 'Lượng mưa')}</Text>
+                <Text style={styles.riskGridValue}>{rainfall}mm/h</Text>
+              </View>
+            </View>
+            <View style={styles.riskGridItem}>
+              <Icon name="waves" size={20} color="#F97316" />
+              <View>
+                <Text style={styles.riskGridLabel}>{t('home.waterLevel', 'Mực nước')}</Text>
+                <Text style={styles.riskGridValue}>0.3m</Text>
+              </View>
+            </View>
+            <View style={styles.riskGridItem}>
+              <Icon name="chart-line" size={20} color="#EF4444" />
+              <View>
+                <Text style={styles.riskGridLabel}>{t('home.tide', 'Triều cường')}</Text>
+                <Text style={styles.riskGridValue}>{t('home.peak', 'Cao điểm')}</Text>
+              </View>
+            </View>
+            <View style={styles.riskGridItem}>
+              <Icon name="pipe-leak" size={20} color="#22C55E" />
+              <View>
+                <Text style={styles.riskGridLabel}>{t('home.drainage', 'Thoát nước')}</Text>
+                <Text style={styles.riskGridValue}>{t('home.normal', 'Bình thường')}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Quick Actions - colorful */}
+        <View style={styles.quickRow}>
           {QUICK_ACTIONS.map(action => (
             <TouchableOpacity
               key={action.id}
-              style={styles.quickCard}
+              style={styles.quickItem}
               onPress={() => handleQuickAction(action)}
               activeOpacity={0.7}
             >
-              <View style={[styles.quickIcon, { backgroundColor: action.color + '15' }]}>
-                <Icon name={action.icon} size={26} color={action.color} />
+              <View style={[styles.quickIcon, { backgroundColor: action.bg }]}>
+                <Icon name={action.icon} size={22} color={action.color} />
               </View>
               <Text style={styles.quickLabel}>{action.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Active Alerts Summary */}
-        {activeAlerts.length > 0 && (
-          <>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Cảnh báo đang hoạt động</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Alerts' as any)}>
-                <Text style={styles.seeAll}>Xem tất cả</Text>
-              </TouchableOpacity>
+        {/* Critical Alert Banner */}
+        {criticalAlert && (
+          <TouchableOpacity
+            style={styles.alertBanner}
+            onPress={() => navigation.navigate('AlertDetail' as any, { id: criticalAlert.id })}
+            activeOpacity={0.85}
+          >
+            <View style={styles.alertBannerIcon}>
+              <Icon name="alert" size={24} color="#fff" />
             </View>
-            {activeAlerts.slice(0, 3).map(alert => {
-              const severityColor =
-                alert.severity === 'critical' ? '#EF4444'
-                : alert.severity === 'high' ? '#F97316'
-                : alert.severity === 'medium' ? '#EAB308'
-                : '#3B82F6';
-              return (
-                <TouchableOpacity
-                  key={alert.id}
-                  style={[styles.alertCard, { borderLeftColor: severityColor }]}
-                  onPress={() => navigation.navigate('AlertDetail' as any, { id: alert.id })}
-                >
-                  <Icon name="alert-circle" size={20} color={severityColor} />
-                  <View style={{ flex: 1, marginLeft: 10 }}>
-                    <Text style={styles.alertCardTitle} numberOfLines={1}>{alert.title}</Text>
-                    <Text style={styles.alertCardTime}>
-                      {alert.created_at ? new Date(alert.created_at).toLocaleDateString('vi-VN') : ''}
-                    </Text>
-                  </View>
-                  <View style={[styles.severityChip, { backgroundColor: severityColor + '15' }]}>
-                    <Text style={[styles.severityChipText, { color: severityColor }]}>
-                      {alert.severity_label || alert.severity}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.alertBannerTitle} numberOfLines={2}>
+                {criticalAlert.title || t('home.criticalAlert', 'Cảnh báo ngập nghiêm trọng')}
+              </Text>
+              <Text style={styles.alertBannerDesc} numberOfLines={1}>
+                {criticalAlert.description || 'Đường Nguyễn Văn Linh, Q7 — 0.8m'}
+              </Text>
+            </View>
+            <Icon name="chevron-right" size={22} color="rgba(255,255,255,0.7)" />
+          </TouchableOpacity>
         )}
 
-        {/* Recent Incidents */}
+        {/* Active Alerts Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Sự cố gần đây</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Alerts' as any)}>
-            <Text style={styles.seeAll}>Xem tất cả</Text>
+          <Text style={styles.sectionTitle}>{t('home.activeAlerts', 'Cảnh báo đang hoạt động')}</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Alerts' as any)} style={styles.seeAllBtn}>
+            <Text style={styles.seeAll}>{t('common.seeAll', 'Xem tất cả')}</Text>
+            <Icon name="arrow-right" size={14} color="#7a5af8" />
           </TouchableOpacity>
         </View>
 
-        {loading && recentIncidents.length === 0 ? (
+        {loading && activeAlerts.length === 0 ? (
           <ActivityIndicator style={{ marginTop: 20 }} color={theme.colors.primary} />
-        ) : recentIncidents.length === 0 ? (
+        ) : activeAlerts.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Icon name="check-circle-outline" size={40} color="#22C55E" />
-            <Text style={styles.emptyText}>Không có sự cố nào gần đây</Text>
+            <Icon name="shield-check-outline" size={40} color="#22C55E" />
+            <Text style={styles.emptyText}>{t('home.safe', 'Khu vực của bạn hiện tại an toàn')}</Text>
           </View>
         ) : (
-          recentIncidents.map(incident => (
-            <TouchableOpacity
-              key={incident.id}
-              style={styles.incidentCard}
-              onPress={() => navigation.navigate('IncidentDetail', { id: incident.id })}
-            >
-              <View style={styles.incidentHeader}>
-                <Text style={styles.incidentTitle} numberOfLines={1}>{incident.title}</Text>
-                <View style={[
-                  styles.incidentSeverity,
-                  { backgroundColor: incident.severity === 'critical' ? '#FEF2F2' : '#F3F4F6' },
-                ]}>
-                  <Text style={[
-                    styles.incidentSeverityText,
-                    { color: incident.severity === 'critical' ? '#EF4444' : theme.colors.textSecondary },
-                  ]}>
-                    {incident.severity_label || incident.severity}
-                  </Text>
+          activeAlerts.slice(0, 4).map(alert => {
+            const sev = SEVERITY_CONFIG[alert.severity] || SEVERITY_CONFIG.medium;
+            return (
+              <TouchableOpacity
+                key={alert.id}
+                style={styles.alertCard}
+                onPress={() => navigation.navigate('AlertDetail' as any, { id: alert.id })}
+                activeOpacity={0.7}
+              >
+                <View style={styles.alertCardLeft}>
+                  <View style={[styles.alertIconCircle, { backgroundColor: sev.color + '15' }]}>
+                    <Icon name="waves" size={18} color={sev.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.alertCardTitle} numberOfLines={1}>{alert.title}</Text>
+                    <View style={styles.alertCardMeta}>
+                      <Icon name="clock-outline" size={12} color={theme.colors.textTertiary} />
+                      <Text style={styles.alertCardTime}>
+                        {alert.created_at ? getTimeAgo(alert.created_at) : ''}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
-              </View>
-              {incident.address && (
-                <View style={styles.incidentRow}>
-                  <Icon name="map-marker-outline" size={14} color={theme.colors.textSecondary} />
-                  <Text style={styles.incidentMeta} numberOfLines={1}>{incident.address}</Text>
+                <View style={[styles.severityBadge, { backgroundColor: sev.bg }]}>
+                  <Text style={[styles.severityBadgeText, { color: sev.color }]}>{sev.label}</Text>
                 </View>
-              )}
-              <View style={styles.incidentRow}>
-                <Icon name="clock-outline" size={14} color={theme.colors.textSecondary} />
-                <Text style={styles.incidentMeta}>
-                  {incident.created_at ? new Date(incident.created_at).toLocaleDateString('vi-VN') : ''}
-                </Text>
-                <View style={[
-                  styles.statusDot,
-                  {
-                    backgroundColor:
-                      incident.status === 'resolved' ? '#22C55E'
-                      : incident.status === 'responding' ? '#F97316'
-                      : '#3B82F6',
-                  },
-                ]} />
-                <Text style={styles.incidentMeta}>{incident.status_label || incident.status}</Text>
-              </View>
-            </TouchableOpacity>
-          ))
+              </TouchableOpacity>
+            );
+          })
         )}
 
-        {/* My Reports shortcut */}
-        <TouchableOpacity
-          style={styles.myReportsBtn}
-          onPress={() => navigation.navigate('MyReports')}
-        >
-          <Icon name="file-document-multiple-outline" size={20} color={theme.colors.primary} />
-          <Text style={styles.myReportsBtnText}>Xem báo cáo của tôi</Text>
-          <Icon name="chevron-right" size={20} color={theme.colors.primary} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.myReportsBtn}
-          onPress={() => navigation.navigate('MyRescueRequests' as any)}
-        >
-          <Icon name="lifebuoy" size={20} color='#EF4444' />
-          <Text style={[styles.myReportsBtnText, { color: '#EF4444' }]}>Yêu cầu cứu hộ của tôi</Text>
-          <Icon name="chevron-right" size={20} color='#EF4444' />
-        </TouchableOpacity>
-
-        <View style={{ height: 30 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
+function getTimeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 60) return `${minutes} phút trước`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} giờ trước`;
+  return `${Math.floor(hours / 24)} ngày trước`;
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
+  container: { flex: 1, backgroundColor: theme.colors.backgroundSecondary },
+
+  // Header
   header: {
-    backgroundColor: theme.colors.primary, paddingHorizontal: 20,
-    paddingTop: 8, paddingBottom: 16,
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: SCREEN_PADDING.horizontal,
+    paddingBottom: SPACING.lg,
+    borderBottomLeftRadius: BORDER_RADIUS['2xl'],
+    borderBottomRightRadius: BORDER_RADIUS['2xl'],
   },
-  headerContent: { flexDirection: 'row', alignItems: 'center' },
-  headerDate: { fontSize: 12, color: 'rgba(255,255,255,0.7)' },
-  headerGreeting: { fontSize: 20, fontWeight: '700', color: '#fff', marginTop: 2 },
-  notifBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
-  badge: { position: 'absolute', top: -2, right: -2, backgroundColor: '#EF4444', borderRadius: 10, minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4 },
-  badgeText: { fontSize: 10, fontWeight: '700', color: '#fff' },
-  weatherRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 6 },
-  weatherText: { fontSize: 13, color: 'rgba(255,255,255,0.85)' },
-  weatherTextRain: { fontSize: 13, color: '#FCA5A5', fontWeight: '500' },
+  headerTop: {
+    flexDirection: 'row', alignItems: 'center', marginTop: SPACING.sm,
+  },
+  headerDate: { fontSize: FONT_SIZE.xs, color: 'rgba(255,255,255,0.7)', marginBottom: 2 },
+  headerGreeting: { fontSize: FONT_SIZE['2xl'], fontWeight: '800', color: theme.colors.textWhite },
+  notifBtn: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  badge: {
+    position: 'absolute', top: -2, right: -2,
+    backgroundColor: theme.colors.error, borderRadius: 10, minWidth: 18, height: 18,
+    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4,
+    borderWidth: 2, borderColor: theme.colors.white,
+  },
+  badgeText: { fontSize: FONT_SIZE['2xs'], fontWeight: '700', color: theme.colors.textWhite },
 
-  scroll: { padding: 16 },
+  // AI Chip
+  aiChip: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(34,197,94,0.2)', alignSelf: 'flex-start',
+    paddingHorizontal: SPACING.md, paddingVertical: SPACING.xs, borderRadius: BORDER_RADIUS.xl, marginTop: SPACING.md,
+    gap: SPACING.xs,
+  },
+  aiDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.colors.success },
+  aiChipText: { fontSize: FONT_SIZE.xs, color: theme.colors.textWhite, fontWeight: '500' },
 
+  // Scroll
+  scroll: { padding: SPACING.lg, paddingTop: SPACING.lg },
+
+  // Weather Card
+  weatherCard: {
+    backgroundColor: theme.colors.white, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, marginBottom: SPACING.md,
+    ...theme.shadows.sm,
+  },
+  weatherMain: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md },
+  weatherTemp: { fontSize: FONT_SIZE['4xl'], fontWeight: '800', color: theme.colors.text },
+  weatherDesc: { fontSize: FONT_SIZE.xs, color: theme.colors.textSecondary, marginTop: 2 },
+  weatherMeta: { flexDirection: 'row', gap: SPACING.lg },
+  weatherMetaItem: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
+  weatherMetaText: { fontSize: FONT_SIZE.xs, color: theme.colors.textSecondary },
+
+  // AI Prediction Card
+  predictionCard: {
+    backgroundColor: theme.colors.primary, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, marginBottom: SPACING.md,
+  },
+  predictionHeader: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  predictionTitle: { fontSize: FONT_SIZE.sm, fontWeight: '700', color: theme.colors.textWhite },
+  predictionSub: { fontSize: FONT_SIZE['2xs'], color: 'rgba(255,255,255,0.5)', marginTop: 2, marginBottom: SPACING.md },
+  predictionBody: { flexDirection: 'row', alignItems: 'center' },
+  predictionRisk: { fontSize: FONT_SIZE.md, fontWeight: '700', color: theme.colors.textWhite, marginBottom: SPACING.xs },
+  predictionDetail: { fontSize: FONT_SIZE.xs, color: 'rgba(255,255,255,0.6)', lineHeight: 18 },
+  predictionPercent: { alignItems: 'center', marginLeft: SPACING.md },
+  percentValue: { fontSize: FONT_SIZE['3xl'], fontWeight: '800', color: theme.colors.secondary },
+  percentLabel: { fontSize: 9, color: 'rgba(255,255,255,0.5)', fontWeight: '600', marginTop: 2 },
+
+  // Metrics Row
+  metricsRow: {
+    flexDirection: 'row', backgroundColor: theme.colors.white, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg,
+    marginBottom: SPACING.md, justifyContent: 'space-around',
+    ...theme.shadows.sm,
+  },
+  metricItem: { alignItems: 'center' },
+  metricValue: { fontSize: FONT_SIZE.md, fontWeight: '700', color: theme.colors.text },
+  metricLabel: { fontSize: 9, color: theme.colors.textTertiary, fontWeight: '600', marginTop: 2 },
+
+  // Risk Assessment
+  riskCard: {
+    backgroundColor: theme.colors.white, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, marginBottom: SPACING.md,
+    ...theme.shadows.sm,
+  },
+  riskHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.md },
+  riskHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  riskTitle: { fontSize: FONT_SIZE.sm, fontWeight: '700', color: theme.colors.text },
+  riskBadge: { backgroundColor: '#FEF3C7', paddingHorizontal: SPACING.md, paddingVertical: SPACING.xs, borderRadius: BORDER_RADIUS.md },
+  riskBadgeText: { fontSize: FONT_SIZE['2xs'], fontWeight: '600', color: '#D97706' },
+  riskBar: { flexDirection: 'row', height: 6, borderRadius: 3, overflow: 'hidden', marginBottom: SPACING.lg },
+  riskBarGreen: { flex: 2, backgroundColor: theme.colors.success },
+  riskBarYellow: { flex: 1, backgroundColor: theme.colors.warning },
+  riskBarEmpty: { flex: 2, backgroundColor: theme.colors.border },
+  riskGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md },
+  riskGridItem: {
+    width: '47%', flexDirection: 'row', alignItems: 'center', gap: SPACING.md,
+    backgroundColor: theme.colors.backgroundSecondary, borderRadius: BORDER_RADIUS.md, padding: SPACING.md,
+  },
+  riskGridLabel: { fontSize: FONT_SIZE['2xs'], color: theme.colors.textSecondary },
+  riskGridValue: { fontSize: FONT_SIZE.sm, fontWeight: '700', color: theme.colors.text, marginTop: 1 },
+
+  // Quick Actions
+  quickRow: {
+    flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.lg,
+  },
+  quickItem: { alignItems: 'center', width: '23%' },
+  quickIcon: {
+    width: 52, height: 52, borderRadius: 26,
+    justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.xs,
+  },
+  quickLabel: { fontSize: FONT_SIZE['2xs'], color: theme.colors.text, textAlign: 'center', fontWeight: '500' },
+
+  // Alert Banner
   alertBanner: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#EF4444',
-    borderRadius: 14, padding: 14, marginBottom: 16, gap: 12,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: theme.colors.error, borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg, marginBottom: SPACING.xl, gap: SPACING.md,
+    ...theme.shadows.md,
   },
-  alertBannerIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.15)', justifyContent: 'center', alignItems: 'center' },
-  alertBannerTitle: { fontSize: 15, fontWeight: '700', color: '#fff' },
-  alertBannerDesc: { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
-
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: theme.colors.text, marginBottom: 12 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 12 },
-  seeAll: { fontSize: 13, fontWeight: '600', color: theme.colors.primary },
-
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  quickCard: {
-    width: (wp(100) - 44) / 2, alignItems: 'center', backgroundColor: '#fff',
-    borderRadius: 14, paddingVertical: 18, elevation: 2,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4,
+  alertBannerIcon: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center', alignItems: 'center',
   },
-  quickIcon: { width: 52, height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-  quickLabel: { fontSize: 13, fontWeight: '600', color: theme.colors.text },
+  alertBannerTitle: { fontSize: FONT_SIZE.md, fontWeight: '700', color: theme.colors.textWhite },
+  alertBannerDesc: { fontSize: FONT_SIZE.xs, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
 
+  // Section
+  sectionHeader: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: SPACING.md,
+  },
+  sectionTitle: { fontSize: FONT_SIZE.md, fontWeight: '700', color: theme.colors.text },
+  seeAllBtn: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
+  seeAll: { fontSize: FONT_SIZE.xs, fontWeight: '600', color: theme.colors.primary },
+
+  // Alert cards
   alertCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
-    borderRadius: 10, padding: 12, marginBottom: 8, borderLeftWidth: 3,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: theme.colors.white, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, marginBottom: SPACING.md,
+    ...theme.shadows.sm,
   },
-  alertCardTitle: { fontSize: 14, fontWeight: '500', color: theme.colors.text },
-  alertCardTime: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 },
-  severityChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
-  severityChipText: { fontSize: 11, fontWeight: '600' },
+  alertCardLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: SPACING.md },
+  alertIconCircle: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  alertCardTitle: { fontSize: FONT_SIZE.sm, fontWeight: '600', color: theme.colors.text, marginBottom: 3 },
+  alertCardMeta: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
+  alertCardTime: { fontSize: FONT_SIZE.xs, color: theme.colors.textTertiary },
+  severityBadge: { paddingHorizontal: SPACING.sm, paddingVertical: 3, borderRadius: BORDER_RADIUS.xs },
+  severityBadgeText: { fontSize: FONT_SIZE['2xs'], fontWeight: '700' },
 
-  incidentCard: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 8,
-    elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 2,
+  // Empty
+  emptyCard: {
+    alignItems: 'center', padding: SPACING['3xl'],
+    backgroundColor: theme.colors.white, borderRadius: BORDER_RADIUS.lg,
   },
-  incidentHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  incidentTitle: { fontSize: 14, fontWeight: '600', color: theme.colors.text, flex: 1, marginRight: 8 },
-  incidentSeverity: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
-  incidentSeverityText: { fontSize: 11, fontWeight: '500' },
-  incidentRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
-  incidentMeta: { fontSize: 12, color: theme.colors.textSecondary },
-  statusDot: { width: 6, height: 6, borderRadius: 3, marginLeft: 8 },
-
-  emptyCard: { alignItems: 'center', padding: 30, backgroundColor: '#fff', borderRadius: 12 },
-  emptyText: { fontSize: 14, color: theme.colors.textSecondary, marginTop: 8 },
-
-  myReportsBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#fff', borderRadius: 12, padding: 14, marginTop: 12,
-    borderWidth: 1, borderColor: '#E5E7EB',
-  },
-  myReportsBtnText: { flex: 1, fontSize: 14, fontWeight: '500', color: theme.colors.primary },
+  emptyText: { fontSize: FONT_SIZE.sm, color: theme.colors.textSecondary, marginTop: SPACING.sm },
 });
 
 export default HomeScreen;

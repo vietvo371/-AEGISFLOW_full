@@ -1,91 +1,114 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, ScrollView, TextInput, Animated, Image } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform,
+  ScrollView, TextInput, Animated, Image,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapboxGL from '@rnmapbox/maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useTranslation } from 'react-i18next';
-import {
-  theme,
-  SPACING,
-  FONT_SIZE,
-  BORDER_RADIUS,
-  ICON_SIZE,
-  SCREEN_PADDING,
-  wp,
-  hp,
-  cardStyles,
-  textStyles
-} from '../../theme';
-import NotificationBellButton from '../../component/NotificationBellButton';
-import env from '../../config/env';
-import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { theme } from '../../theme';
 import { useWebSocket } from '../../contexts/WebSocketContext';
-
-// Initialize MapGL (OpenMapVN - không cần Mapbox token)
-MapboxGL.setAccessToken('');
-
 import { OPENMAP_STYLE_URL } from '../../config/mapbox';
 import { mapService } from '../../services/mapService';
 import { reportService } from '../../services/reportService';
 import { MapReport, MapBounds } from '../../types/api/map';
-import { ReportDetail } from '../../types/api/report';
+// ReportDetail used as 'any' in sheet due to mixed API field names
 import { incidentService, Incident } from '../../services/incidentService';
 
-// ...
+MapboxGL.setAccessToken('');
 
+// ─── Constants ─────────────────────────────────────────────
+const DA_NANG_CENTER: [number, number] = [108.2122, 16.0680];
+
+const CITIZEN_CATEGORIES = [
+  { id: -1, label: 'Tất cả', icon: 'view-grid-outline' },
+  { id: 1, label: 'Giao thông', icon: 'road-variant', color: '#FF9500' },
+  { id: 2, label: 'Môi trường', icon: 'tree-outline', color: '#34C759' },
+  { id: 3, label: 'Hỏa hoạn', icon: 'fire', color: '#FF3B30' },
+  { id: 4, label: 'Rác thải', icon: 'trash-can-outline', color: '#8E6F3E' },
+  { id: 5, label: 'Ngập lụt', icon: 'weather-pouring', color: '#007AFF' },
+  { id: 6, label: 'Khác', icon: 'alert-circle-outline', color: '#8E8E93' },
+];
+
+const EMERGENCY_CATEGORIES = [
+  { id: -1, label: 'Tất cả', icon: 'view-grid-outline', color: '#7a5af8' },
+  { id: 1, label: 'Ùn tắc', icon: 'car-brake-alert', color: '#F97316' },
+  { id: 2, label: 'Tai nạn', icon: 'alert-octagon', color: '#EF4444' },
+  { id: 3, label: 'Camera', icon: 'cctv', color: '#06B6D4' },
+  { id: 4, label: 'Tuần tra', icon: 'police-badge-outline', color: '#10B981' },
+];
+
+const MOCK_CAMERAS = [
+  { id: 9001, type: 'camera', title: 'Camera Đầu Cầu Rồng', location: { lat: 16.0610, lng: 108.2272 }, status: 'online', severity: 'low', description: 'Hệ thống phân tích lưu lượng thông minh.' },
+  { id: 9002, type: 'camera', title: 'Camera Ngã Tư Hùng Vương', location: { lat: 16.0718, lng: 108.2198 }, status: 'online', severity: 'low', description: 'Góc quét rộng bao quát toàn bộ ngã tư.' },
+];
+
+const MOCK_PATROLS = [
+  { id: 8001, type: 'patrol', title: 'Tổ Tuần tra CSGT 01', location: { lat: 16.0650, lng: 108.2200 }, status: 'patrolling', severity: 'medium', description: 'Đang di chuyển khu vực Hải Châu.' },
+  { id: 8002, type: 'patrol', title: 'Xe Cứu Y tế 115 ĐN', location: { lat: 16.0595, lng: 108.2150 }, status: 'standby', severity: 'low', description: 'Đang túc trực tại cơ sở y tế.' },
+];
+
+const SEVERITY_COLORS: Record<string, string> = {
+  critical: '#EF4444', high: '#F97316', medium: '#F59E0B', low: '#10B981',
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  open: '#EF4444', investigating: '#F59E0B', resolved: '#10B981', closed: '#6B7280',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  open: 'Mở', investigating: 'Đang điều tra', resolved: 'Đã giải quyết', closed: 'Đã đóng',
+};
+
+const getCategoryColor = (id: number) => CITIZEN_CATEGORIES.find(c => c.id === id)?.color || '#8E8E93';
+
+// ─── Component ─────────────────────────────────────────────
 const MapScreen = () => {
-  const { t } = useTranslation();
-  const [userLocation, setUserLocation] = useState<number[] | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<number>(-1);
-  const [mapReports, setMapReports] = useState<MapReport[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<MapReport | null>(null);
-  const [reportDetail, setReportDetail] = useState<ReportDetail | null>(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
-  const [trafficGeoJSON, setTrafficGeoJSON] = useState<any>(null);
-  const [floodZonesGeoJSON, setFloodZonesGeoJSON] = useState<any>(null);
-  const [shelters, setShelters] = useState<any[]>([]);
-
-  // Emergency specific states
-  const [mapIncidents, setMapIncidents] = useState<Incident[]>([]);
-  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
-
-  // Map icon images generated from MaterialCommunityIcons
-  const [mapIcons, setMapIcons] = useState<Record<string, any>>({});
-
-  const cameraRef = useRef<MapboxGL.Camera>(null);
-  const mapRef = useRef<MapboxGL.MapView>(null);
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute();
   const isEmergency = route.name === 'SituationMap';
   const { isConnected, listen, subscribe, unsubscribe } = useWebSocket();
 
-  // Generate icon images from MaterialCommunityIcons for MapboxGL
-  useEffect(() => {
-    const size = 32;
-    const iconDefs: Array<{ key: string; name: string; color: string }> = [
-      // Emergency icons
-      { key: 'icon_accident',     name: 'alert-octagon',              color: '#EF4444' },
-      { key: 'icon_congestion',   name: 'car-brake-alert',            color: '#F97316' },
-      { key: 'icon_construction', name: 'hard-hat',                   color: '#EAB308' },
-      { key: 'icon_weather',      name: 'weather-lightning-rainy',    color: '#3B82F6' },
-      { key: 'icon_camera',       name: 'cctv',                       color: '#06B6D4' },
-      { key: 'icon_patrol',       name: 'police-badge-outline',       color: '#10B981' },
-      // Public report icons
-      { key: 'icon_traffic',      name: 'road-variant',               color: '#F97316' },
-      { key: 'icon_environment',  name: 'tree-outline',               color: '#10B981' },
-      { key: 'icon_fire',         name: 'fire',                       color: '#EF4444' },
-      { key: 'icon_trash',        name: 'trash-can-outline',          color: '#8B6F4E' },
-      { key: 'icon_flood',        name: 'weather-pouring',            color: '#3B82F6' },
-      { key: 'icon_shelter',      name: 'home-heart',                 color: '#10B981' },
-      { key: 'icon_default',      name: 'alert-circle-outline',       color: '#7a5af8' },
-    ];
+  const [userLocation, setUserLocation] = useState<number[] | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState(-1);
+  const [mapReports, setMapReports] = useState<MapReport[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<MapReport | null>(null);
+  const [reportDetail, setReportDetail] = useState<any>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [trafficGeoJSON, setTrafficGeoJSON] = useState<any>(null);
+  const [floodZonesGeoJSON, setFloodZonesGeoJSON] = useState<any>(null);
+  const [shelters, setShelters] = useState<any[]>([]);
+  const [mapIncidents, setMapIncidents] = useState<Incident[]>([]);
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const [mapIcons, setMapIcons] = useState<Record<string, any>>({});
 
+  const cameraRef = useRef<MapboxGL.Camera>(null);
+  const mapRef = useRef<MapboxGL.MapView>(null);
+  const slideAnim = useRef(new Animated.Value(500)).current;
+  const backdropAnim = useRef(new Animated.Value(0)).current;
+
+  // ─── Icon Generation ─────────────────────────────────────
+  useEffect(() => {
+    const iconDefs = [
+      { key: 'icon_accident', name: 'alert-octagon', color: '#EF4444' },
+      { key: 'icon_congestion', name: 'car-brake-alert', color: '#F97316' },
+      { key: 'icon_construction', name: 'hard-hat', color: '#EAB308' },
+      { key: 'icon_weather', name: 'weather-lightning-rainy', color: '#3B82F6' },
+      { key: 'icon_camera', name: 'cctv', color: '#06B6D4' },
+      { key: 'icon_patrol', name: 'police-badge-outline', color: '#10B981' },
+      { key: 'icon_traffic', name: 'road-variant', color: '#F97316' },
+      { key: 'icon_environment', name: 'tree-outline', color: '#10B981' },
+      { key: 'icon_fire', name: 'fire', color: '#EF4444' },
+      { key: 'icon_trash', name: 'trash-can-outline', color: '#8B6F4E' },
+      { key: 'icon_flood', name: 'weather-pouring', color: '#3B82F6' },
+      { key: 'icon_shelter', name: 'home-heart', color: '#10B981' },
+      { key: 'icon_default', name: 'alert-circle-outline', color: '#7a5af8' },
+    ];
     Promise.all(
-      iconDefs.map(def =>
-        Icon.getImageSource(def.name, size, def.color).then(src => ({ key: def.key, src }))
-      )
+      iconDefs.map(d => Icon.getImageSource(d.name, 32, d.color).then(src => ({ key: d.key, src })))
     ).then(results => {
       const icons: Record<string, any> = {};
       results.forEach(({ key, src }) => { icons[key] = src; });
@@ -93,156 +116,16 @@ const MapScreen = () => {
     });
   }, []);
 
-  // Animation values
-  const slideAnim = useRef(new Animated.Value(500)).current; // Start off-screen
-  const backdropAnim = useRef(new Animated.Value(0)).current; // Start transparent
-
-  const categories = [
-    { id: -1, label: t('common.all'), icon: 'view-grid-outline' },
-    { id: 1, label: t('reports.categories.traffic'), icon: 'road-variant' },
-    { id: 2, label: t('reports.categories.environment'), icon: 'tree-outline' },
-    { id: 3, label: t('reports.categories.fire'), icon: 'fire' },
-    { id: 4, label: t('reports.categories.waste'), icon: 'trash-can-outline' },
-    { id: 5, label: t('flood.title'), icon: 'weather-pouring' },
-    { id: 6, label: t('reports.categories.other'), icon: 'alert-circle-outline' },
-  ];
-
-  const emergencyCategories = [
-    { id: 1, label: t('incidents.type.congestion'), icon: 'car-brake-alert' },
-    { id: 2, label: t('incidents.type.accident'), icon: 'alert-octagon' },
-    { id: 3, label: t('mapLayers.cameras'), icon: 'cctv' },
-    { id: 4, label: t('mapLayers.patrols'), icon: 'police-badge-outline' },
-  ];
-
-  const MOCK_CAMERAS: any[] = [
-    { id: 9001, type: 'camera', title: 'Camera Đầu Cầu Rồng', location: { lat: 16.0610, lng: 108.2272 }, status: 'online', severity: 'low', description: 'Trực thuộc hệ thống phân tích lưu lượng thông minh.' },
-    { id: 9002, type: 'camera', title: 'Camera Ngã Tư Hùng Vương', location: { lat: 16.0718, lng: 108.2198 }, status: 'online', severity: 'low', description: 'Góc quét rộng bao quát toàn bộ ngã tư.' }
-  ];
-
-  const MOCK_PATROLS: any[] = [
-    { id: 8001, type: 'patrol', title: 'Tổ Tuần tra CSGT 01', location: { lat: 16.0650, lng: 108.2200 }, status: 'patrolling', severity: 'medium', description: 'Đang di chuyển khu vực Hải Châu.' },
-    { id: 8002, type: 'patrol', title: 'Xe Cứu Y tế 115 ĐN', location: { lat: 16.0595, lng: 108.2150 }, status: 'standby', severity: 'low', description: 'Đang túc trực tại cơ sở y tế gần nhất.' }
-  ];
-
-  const onUserLocationUpdate = (location: MapboxGL.Location) => {
-    if (location?.coords) {
-      setUserLocation([location.coords.longitude, location.coords.latitude]);
-    }
-  };
-
-  const centerUserLocation = () => {
-    if (userLocation && cameraRef.current) {
-      cameraRef.current.setCamera({
-        centerCoordinate: userLocation,
-        zoomLevel: 15,
-        animationDuration: 1000,
-      });
-    }
-  };
-
-  const getCategoryName = (category: number): string => {
-    const categories: { [key: number]: string } = {
-      1: t('reports.categories.traffic'),
-      2: t('reports.categories.environment'),
-      3: t('reports.categories.fire'),
-      4: t('reports.categories.waste'),
-      5: t('flood.title'),
-      6: t('reports.categories.other'),
-    };
-    return categories[category] || t('reports.categories.other');
-  };
-
-  const getStatusColor = (status: number): string => {
-    switch (status) {
-      case 0: return theme.colors.warning;     // Tiếp nhận
-      case 1: return theme.colors.info;        // Đã xác minh
-      case 2: return '#7a5af8';                // Đang xử lý - Purple
-      case 3: return theme.colors.success;     // Hoàn thành
-      case 4: return theme.colors.error;       // Từ chối
-      default: return theme.colors.textSecondary;
-    }
-  };
-
-  const getStatusLabel = (status: number): string => {
-    switch (status) {
-      case 0: return t('reports.status.received');
-      case 1: return t('reports.status.verified');
-      case 2: return t('reports.status.processing');
-      case 3: return t('reports.status.completed');
-      case 4: return t('reports.status.rejected');
-      default: return t('reports.categories.other');
-    }
-  };
-
-  const getCategoryIcon = (category: number): string => {
-    const iconMap: { [key: number]: string } = {
-      1: 'road-variant',        // Giao thông
-      2: 'tree-outline',        // Môi trường
-      3: 'fire',                // Hỏa hoạn
-      4: 'trash-can-outline',   // Rác thải
-      5: 'weather-pouring',     // Ngập lụt
-      6: 'alert-circle',        // Khác
-    };
-    return iconMap[category] || 'alert-circle';
-  };
-
-  const getCategoryColor = (category: number): string => {
-    const colorMap: { [key: number]: string } = {
-      1: '#FF9500',  // Giao thông - Orange
-      2: '#34C759',  // Môi trường - Green
-      3: '#FF3B30',  // Hỏa hoạn - Red
-      4: '#8E6F3E',  // Rác thải - Brown
-      5: '#007AFF',  // Ngập lụt - Blue
-      6: '#8E8E93',  // Khác - Gray
-    };
-    return colorMap[category] || '#8E8E93';
-  };
-
-  const fitMapToReports = (reports: MapReport[]) => {
-    if (!cameraRef.current || !reports || reports.length === 0) return;
-
-    // Calculate bounds from all reports
-    let minLon = reports[0].kinh_do;
-    let maxLon = reports[0].kinh_do;
-    let minLat = reports[0].vi_do;
-    let maxLat = reports[0].vi_do;
-
-    reports.forEach(report => {
-      if (report.kinh_do < minLon) minLon = report.kinh_do;
-      if (report.kinh_do > maxLon) maxLon = report.kinh_do;
-      if (report.vi_do < minLat) minLat = report.vi_do;
-      if (report.vi_do > maxLat) maxLat = report.vi_do;
-    });
-
-    // Add padding to bounds (20% for better view)
-    const lonPadding = Math.max((maxLon - minLon) * 0.2, 0.01); // Minimum padding
-    const latPadding = Math.max((maxLat - minLat) * 0.2, 0.01);
-
-    cameraRef.current.fitBounds(
-      [minLon - lonPadding, minLat - latPadding], // southwest
-      [maxLon + lonPadding, maxLat + latPadding], // northeast
-      [80, 80, 80, 80], // padding: top, right, bottom, left (increased)
-      1000 // animation duration
-    );
-  };
-
-  const fetchMapReports = async () => {
+  // ─── Data Fetching ───────────────────────────────────────
+  const fetchMapReports = useCallback(async () => {
     if (!mapRef.current) return;
-
     try {
       setLoading(true);
       const bounds = await mapRef.current.getVisibleBounds();
       if (!bounds || bounds.length < 2) return;
 
       if (isEmergency) {
-        // Fetch incidents for Command Center
-        const params: any = { per_page: 50 };
-        if (selectedCategory !== -1) {
-          // Map category IDs from emergencyCategories to status/severity if needed
-          // For now, let's just fetch all or filter basic types
-          // (Assuming category maps are set up differently for emergency)
-        }
-        const response = await incidentService.getIncidents(params);
+        const response = await incidentService.getIncidents({ per_page: 50 });
         if (response.success && response.data) {
           const data = (response.data as any).data || response.data;
           setMapIncidents(Array.isArray(data) ? data : []);
@@ -252,183 +135,97 @@ const MapScreen = () => {
         return;
       }
 
-      // Fetch citizen reports for public MAP
       const ne = bounds[0];
       const sw = bounds[1];
-
-      const mapBounds: MapBounds = {
-        min_lon: sw[0],
-        min_lat: sw[1],
-        max_lon: ne[0],
-        max_lat: ne[1],
-      };
-
+      const mapBounds: MapBounds = { min_lon: sw[0], min_lat: sw[1], max_lon: ne[0], max_lat: ne[1] };
       const filters: any = {};
-      if (selectedCategory !== -1) {
-        filters.danh_muc = selectedCategory;
-      }
+      if (selectedCategory !== -1) filters.danh_muc = selectedCategory;
 
       const response = await mapService.getMapReports(mapBounds, filters);
-
       if (response.success && response.data) {
         const geojson = response.data as any;
         if (geojson.type === 'FeatureCollection' && geojson.features) {
-          const reports: MapReport[] = geojson.features.map((feature: any) => {
-            const props = feature.properties;
-            const coords = feature.geometry.coordinates;
-            return {
-              id: props.id,
-              tieu_de: props.tieu_de,
-              danh_muc: props.danh_muc,
-              danh_muc_text: props.danh_muc_text,
-              trang_thai: props.trang_thai,
-              uu_tien: props.uu_tien,
-              marker_color: props.marker_color,
-              kinh_do: coords[0],
-              vi_do: coords[1],
-              nguoi_dung: props.nguoi_dung,
-            } as MapReport;
-          });
-          setMapReports(reports);
+          setMapReports(geojson.features.map((f: any) => ({
+            id: f.properties.id,
+            tieu_de: f.properties.tieu_de,
+            danh_muc: f.properties.danh_muc,
+            danh_muc_text: f.properties.danh_muc_text,
+            trang_thai: f.properties.trang_thai,
+            uu_tien: f.properties.uu_tien,
+            marker_color: f.properties.marker_color,
+            kinh_do: f.geometry.coordinates[0],
+            vi_do: f.geometry.coordinates[1],
+            nguoi_dung: f.properties.nguoi_dung,
+          } as MapReport)));
         } else {
           setMapReports([]);
         }
-      } else {
-        setMapReports([]);
       }
-    } catch (error) {
-      console.error('Error fetching map reports:', error);
+    } catch (e) {
+      console.error('Error fetching map data:', e);
     } finally {
       setLoading(false);
     }
-  };
+  }, [isEmergency, selectedCategory]);
 
-  const fetchTrafficEdges = async () => {
+  const fetchLayers = useCallback(async () => {
     try {
-      const geojson = await mapService.getTrafficEdges();
-      if (geojson && geojson.type === 'FeatureCollection') {
-        setTrafficGeoJSON(geojson);
-      }
-    } catch (error) {
-      console.error('Error fetching traffic edges:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchTrafficEdges();
-    fetchFloodZones();
-    fetchShelters();
+      const [traffic, flood, shelterRes] = await Promise.allSettled([
+        mapService.getTrafficEdges(),
+        mapService.getFloodZones(),
+        mapService.getShelters(),
+      ]);
+      if (traffic.status === 'fulfilled' && traffic.value?.type === 'FeatureCollection') setTrafficGeoJSON(traffic.value);
+      if (flood.status === 'fulfilled' && flood.value) setFloodZonesGeoJSON(flood.value);
+      if (shelterRes.status === 'fulfilled' && (shelterRes.value as any)?.success) setShelters((shelterRes.value as any).data);
+    } catch { /* */ }
   }, []);
 
-  const fetchFloodZones = async () => {
-    try {
-      const geojson = await mapService.getFloodZones();
-      if (geojson) setFloodZonesGeoJSON(geojson);
-    } catch (e) { console.error('Error flood zones:', e); }
-  };
-
-  const fetchShelters = async () => {
-    try {
-      const res = await mapService.getShelters();
-      if (res.success && res.data) setShelters(res.data);
-    } catch (e) { console.error('Error shelters:', e); }
-  };
+  useEffect(() => { fetchLayers(); }, []);
 
   useEffect(() => {
-    // Only fetch after map has loaded
     if (mapLoaded) {
-      const timer = setTimeout(() => {
-        fetchMapReports();
-      }, 500);
+      const timer = setTimeout(fetchMapReports, 500);
       return () => clearTimeout(timer);
     }
   }, [mapLoaded]);
 
-  // Re-fetch when category changes
   useEffect(() => {
-    if (mapRef.current && mapLoaded) {
-      fetchMapReports();
-    }
+    if (mapLoaded) fetchMapReports();
   }, [selectedCategory]);
 
-  // Realtime updates via WebSocket
+  // ─── WebSocket ───────────────────────────────────────────
   useEffect(() => {
     let unmounted = false;
-
     if (isConnected) {
       try {
-        // Subscribe to the channel first!
         subscribe('public-incidents');
-
-        // Then listen to events
-        listen('public-incidents', '.incident.created', (data) => {
-          if (unmounted) return;
-          console.log('WS: New incident, refreshing map...', data);
-          if (mapLoaded) fetchMapReports();
-        });
-
-        listen('public-incidents', '.incident.updated', (data) => {
-          if (unmounted) return;
-          console.log('WS: Incident updated, refreshing map...', data);
-          if (mapLoaded) fetchMapReports();
-        });
-      } catch (error) {
-        console.error('Error setting up websocket listeners:', error);
-      }
+        listen('public-incidents', '.incident.created', () => { if (!unmounted && mapLoaded) fetchMapReports(); });
+        listen('public-incidents', '.incident.updated', () => { if (!unmounted && mapLoaded) fetchMapReports(); });
+      } catch { /* */ }
     }
-
     return () => {
       unmounted = true;
-      if (isConnected) {
-        try {
-          unsubscribe('public-incidents');
-        } catch (e) { }
-      }
+      if (isConnected) try { unsubscribe('public-incidents'); } catch { /* */ }
     };
   }, [isConnected, mapLoaded]);
 
-  // Fit map to reports when they change and a category is selected
+  // ─── Bottom Sheet Animation ──────────────────────────────
+  const showSheet = selectedReport || selectedIncident;
+
   useEffect(() => {
-    if (mapReports && mapReports.length > 0 && selectedCategory !== -1) {
-      // Only auto-fit when a specific category is selected (not "All")
-      fitMapToReports(mapReports);
+    if (showSheet) {
+      Animated.parallel([
+        Animated.spring(slideAnim, { toValue: 0, tension: 65, friction: 11, useNativeDriver: true }),
+        Animated.timing(backdropAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
+      ]).start();
     }
-  }, [mapReports, selectedCategory]);
-
-  // Fetch report detail when a marker is selected
-  const fetchReportDetail = async (reportId: number) => {
-    try {
-      setLoadingDetail(true);
-      const response = await reportService.getReportDetail(reportId);
-      if (response.success) {
-        setReportDetail(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching report detail:', error);
-    } finally {
-      setLoadingDetail(false);
-    }
-  };
-
-  const handleMarkerSelect = (report: MapReport) => {
-    setSelectedReport(report);
-    setReportDetail(null); // Reset detail
-    fetchReportDetail(report.id);
-  };
+  }, [showSheet]);
 
   const handleCloseSheet = () => {
-    // Animate out
     Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: 500,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(backdropAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
+      Animated.timing(slideAnim, { toValue: 500, duration: 300, useNativeDriver: true }),
+      Animated.timing(backdropAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start(() => {
       setSelectedReport(null);
       setSelectedIncident(null);
@@ -436,80 +233,72 @@ const MapScreen = () => {
     });
   };
 
-  // Animate in when bottom sheet appears
-  useEffect(() => {
-    if (selectedReport || selectedIncident) {
-      Animated.parallel([
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          tension: 65,
-          friction: 11,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+  // ─── Handlers ────────────────────────────────────────────
+  const centerUserLocation = () => {
+    if (userLocation && cameraRef.current) {
+      cameraRef.current.setCamera({ centerCoordinate: userLocation, zoomLevel: 15, animationDuration: 1000 });
     }
-  }, [selectedReport, selectedIncident]);
-
-  const mapEmergencyTypeToIcon = (type: string) => {
-    const map: any = {
-      accident: 'alert-octagon',
-      congestion: 'car-brake-alert',
-      construction: 'hard-hat',
-      weather: 'weather-lightning-rainy',
-      other: 'alert-circle-outline'
-    };
-    return map[type] || 'alert-circle-outline';
   };
 
-  const mapEmergencySeverityColor = (severity: string) => {
-    const map: any = {
-      low: '#10B981',
-      medium: '#3B82F6',
-      high: '#F59E0B',
-      critical: '#EF4444'
-    };
-    return map[severity] || '#3B82F6';
+  const handleMarkerSelect = (report: MapReport) => {
+    setSelectedReport(report);
+    setSelectedIncident(null);
+    setReportDetail(null);
+    setLoadingDetail(true);
+    reportService.getReportDetail(report.id)
+      .then(res => { if (res.success) setReportDetail(res.data); })
+      .catch(() => {})
+      .finally(() => setLoadingDetail(false));
   };
 
-  const mapEmergencyStatusColor = (status: string) => {
-    const map: any = {
-      open: '#EF4444',
-      investigating: '#F59E0B',
-      resolved: '#10B981',
-      closed: '#6B7280'
-    };
-    return map[status] || '#6B7280';
+  // ─── GeoJSON Features ───────────────────────────────────
+  const getFeatures = () => {
+    if (!isEmergency) {
+      return mapReports.map(r => ({
+        type: 'Feature' as const,
+        id: r.id.toString(),
+        geometry: { type: 'Point' as const, coordinates: [r.kinh_do, r.vi_do] },
+        properties: { ...r, _isIncident: false },
+      }));
+    }
+
+    let features: any[] = [];
+    let incidents = mapIncidents;
+    if (selectedCategory === 1) incidents = mapIncidents.filter(i => i.type === 'congestion');
+    else if (selectedCategory === 2) incidents = mapIncidents.filter(i => i.type !== 'congestion');
+
+    if (selectedCategory === -1 || selectedCategory <= 2) {
+      features.push(...incidents.map(inc => ({
+        type: 'Feature', id: inc.id.toString(),
+        geometry: { type: 'Point', coordinates: [inc.location?.lng || 108.2122, inc.location?.lat || 16.0680] },
+        properties: {
+          ...inc, _isIncident: true,
+          _severityColor: SEVERITY_COLORS[inc.severity] || '#10B981',
+          _isCritical: inc.severity === 'critical' ? 1 : 0,
+        },
+      })));
+    }
+    if (selectedCategory === -1 || selectedCategory === 3) {
+      features.push(...MOCK_CAMERAS.map(c => ({
+        type: 'Feature', id: c.id.toString(),
+        geometry: { type: 'Point', coordinates: [c.location.lng, c.location.lat] },
+        properties: { ...c, _isIncident: true, _severityColor: '#06B6D4', _isCritical: 0 },
+      })));
+    }
+    if (selectedCategory === -1 || selectedCategory === 4) {
+      features.push(...MOCK_PATROLS.map(p => ({
+        type: 'Feature', id: p.id.toString(),
+        geometry: { type: 'Point', coordinates: [p.location.lng, p.location.lat] },
+        properties: { ...p, _isIncident: true, _severityColor: '#10B981', _isCritical: 0 },
+      })));
+    }
+    return features;
   };
 
-  const mapEmergencyStatusLabel = (status: string) => {
-    const map: any = {
-      open: t('incidents.open'),
-      investigating: t('incidents.investigating'),
-      resolved: t('incidents.resolved'),
-      closed: t('incidents.closed')
-    };
-    return map[status] || t('common.noData');
-  };
-
-  const mapEmergencyTypeLabel = (type: string) => {
-    const map: any = {
-      accident: t('incidents.type.accident'),
-      congestion: t('incidents.type.congestion'),
-      construction: t('incidents.type.construction'),
-      weather: t('incidents.type.weather'),
-      other: t('incidents.type.other')
-    };
-    return map[type] || t('incidents.type.other');
-  };
-
+  // ─── Render ──────────────────────────────────────────────
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
 
       <MapboxGL.MapView
         ref={mapRef}
@@ -517,32 +306,25 @@ const MapScreen = () => {
         styleURL={OPENMAP_STYLE_URL}
         logoEnabled={false}
         attributionEnabled={false}
-        onDidFinishLoadingMap={() => {
-          console.log('Map finished loading');
-          setMapLoaded(true);
-        }}
+        onDidFinishLoadingMap={() => setMapLoaded(true)}
       >
         <MapboxGL.Camera
           ref={cameraRef}
           zoomLevel={13}
-          centerCoordinate={[108.2122, 16.0680]} // Da Nang
+          centerCoordinate={DA_NANG_CENTER}
           animationMode="flyTo"
           animationDuration={1000}
         />
-
         <MapboxGL.UserLocation
-          visible={true}
-          onUpdate={onUserLocationUpdate}
+          visible
+          onUpdate={(loc) => { if (loc?.coords) setUserLocation([loc.coords.longitude, loc.coords.latitude]); }}
           showsUserHeadingIndicator
           minDisplacement={10}
         />
 
-        {/* Register vector icons into MapboxGL image registry */}
-        {Object.keys(mapIcons).length > 0 && (
-          <MapboxGL.Images images={mapIcons} />
-        )}
+        {Object.keys(mapIcons).length > 0 && <MapboxGL.Images images={mapIcons} />}
 
-        {/* Traffic Lines Layer */}
+        {/* Traffic Lines */}
         {trafficGeoJSON && (
           <MapboxGL.ShapeSource id="trafficEdgesSource" shape={trafficGeoJSON}>
             <MapboxGL.LineLayer
@@ -552,34 +334,21 @@ const MapScreen = () => {
                 lineCap: 'round',
                 lineWidth: ['interpolate', ['linear'], ['zoom'], 10, 2, 15, 6],
                 lineColor: [
-                  'interpolate',
-                  ['linear'],
-                  ['get', 'current_density'],
-                  0.0, '#10b981', // green
-                  0.4, '#eab308', // yellow
-                  0.6, '#f97316', // orange
-                  0.8, '#ef4444', // red
-                  1.0, '#881337', // dark red
-                ] as any, // Bypass strict RNMapbox types for expression array
+                  'interpolate', ['linear'], ['get', 'current_density'],
+                  0.0, '#10b981', 0.4, '#eab308', 0.6, '#f97316', 0.8, '#ef4444', 1.0, '#881337',
+                ] as any,
               }}
             />
           </MapboxGL.ShapeSource>
         )}
 
-        {/* Flood Zones Layer */}
+        {/* Flood Zones */}
         {floodZonesGeoJSON && (
           <MapboxGL.ShapeSource id="floodZonesSource" shape={floodZonesGeoJSON}>
             <MapboxGL.FillLayer
               id="floodZonesFill"
               style={{
-                fillColor: [
-                  'match',
-                  ['get', 'risk_level'],
-                  'High', '#EF4444',
-                  'Medium', '#F59E0B',
-                  'Low', '#3B82F6',
-                  '#3B82F6'
-                ] as any,
+                fillColor: ['match', ['get', 'risk_level'], 'High', '#EF4444', 'Medium', '#F59E0B', 'Low', '#3B82F6', '#3B82F6'] as any,
                 fillOpacity: 0.4,
                 fillOutlineColor: '#ffffff',
               }}
@@ -587,139 +356,51 @@ const MapScreen = () => {
           </MapboxGL.ShapeSource>
         )}
 
+        {/* Markers */}
         <MapboxGL.ShapeSource
           id="reportsSource"
           cluster={false}
-          shape={{
-            type: 'FeatureCollection',
-            features: (() => {
-              if (!isEmergency) {
-                return mapReports.map(report => ({
-                  type: 'Feature',
-                  id: report.id.toString(),
-                  geometry: { type: 'Point', coordinates: [report.kinh_do, report.vi_do] },
-                  properties: { ...report, _isIncident: false },
-                }));
-              }
-
-              let features: any[] = [];
-
-              if (selectedCategory === -1 || selectedCategory === 1 || selectedCategory === 2) {
-                let incToDisplay = mapIncidents;
-                if (selectedCategory === 1) incToDisplay = mapIncidents.filter(i => i.type === 'congestion');
-                if (selectedCategory === 2) incToDisplay = mapIncidents.filter(i => i.type !== 'congestion');
-                features.push(...incToDisplay.map(incident => ({
-                  type: 'Feature',
-                  id: incident.id.toString(),
-                  geometry: {
-                    type: 'Point',
-                    coordinates: [incident.location?.lng || 108.2122, incident.location?.lat || 16.0680],
-                  },
-                  properties: {
-                    ...incident, _isIncident: true,
-                    _severityColor:
-                      incident.severity === 'critical' ? '#EF4444'
-                      : incident.severity === 'high'   ? '#F97316'
-                      : incident.severity === 'medium' ? '#F59E0B'
-                      : '#10B981',
-                    _isCritical: incident.severity === 'critical' ? 1 : 0,
-                  },
-                })));
-              }
-              if (selectedCategory === -1 || selectedCategory === 3) {
-                features.push(...MOCK_CAMERAS.map(cam => ({
-                  type: 'Feature', id: cam.id.toString(),
-                  geometry: { type: 'Point', coordinates: [cam.location.lng, cam.location.lat] },
-                  properties: { ...cam, _isIncident: true, _severityColor: '#06B6D4', _isCritical: 0 },
-                })));
-              }
-              if (selectedCategory === -1 || selectedCategory === 4) {
-                features.push(...MOCK_PATROLS.map(patrol => ({
-                  type: 'Feature', id: patrol.id.toString(),
-                  geometry: { type: 'Point', coordinates: [patrol.location.lng, patrol.location.lat] },
-                  properties: { ...patrol, _isIncident: true, _severityColor: '#10B981', _isCritical: 0 },
-                })));
-              }
-              if (selectedCategory === -1 || selectedCategory === 5) {
-                // Category 5 is Ngập lụt, show shelters when active or in all
-                features.push(...shelters.map(shelter => ({
-                  type: 'Feature',
-                  id: `shelter-${shelter.id}`,
-                  geometry: { type: 'Point', coordinates: [shelter.longitude, shelter.latitude] },
-                  properties: { ...shelter, danh_muc: 7, _isIncident: false },
-                })));
-              }
-              return features;
-            })(),
-          }}
-          onPress={(event) => {
-            const feature = event.features[0];
-            if (feature?.properties) {
-              if (feature.properties._isIncident) {
-                setSelectedIncident(feature.properties as any);
+          shape={{ type: 'FeatureCollection', features: getFeatures() }}
+          onPress={(e) => {
+            const f = e.features[0];
+            if (f?.properties) {
+              if (f.properties._isIncident) {
+                setSelectedIncident(f.properties as any);
                 setSelectedReport(null);
               } else {
-                handleMarkerSelect(feature.properties as MapReport);
-                setSelectedIncident(null);
+                handleMarkerSelect(f.properties as MapReport);
               }
             }
           }}
         >
-          {/* Outer pulse ring for critical incidents */}
-          {(isEmergency ? (
+          {isEmergency ? (
             <MapboxGL.CircleLayer
               id="criticalRing"
               filter={['==', ['get', '_isCritical'], 1]}
-              belowLayerID="incidentCircles"
-              style={{
-                circleRadius: 22,
-                circleColor: 'transparent',
-                circleStrokeWidth: 3,
-                circleStrokeColor: '#EF444480',
-                circlePitchAlignment: 'map',
-              }}
+              belowLayerID="markerCircles"
+              style={{ circleRadius: 22, circleColor: 'transparent', circleStrokeWidth: 3, circleStrokeColor: '#EF444480' }}
             />
-          ) : <MapboxGL.CircleLayer id="criticalRingPlaceholder" style={{ circleRadius: 0, circleOpacity: 0 }} />) as any}
-
-          {/* Main severity-colored circles */}
+          ) : (
+            <MapboxGL.CircleLayer id="criticalRingPlaceholder" style={{ circleRadius: 0, circleOpacity: 0 }} />
+          )}
           <MapboxGL.CircleLayer
-            id="incidentCircles"
+            id="markerCircles"
             style={{
-              circleRadius: isEmergency ? (
-                ['interpolate', ['linear'], ['zoom'], 10, 8, 14, 14] as any
-              ) : (
-                ['interpolate', ['linear'], ['zoom'], 10, 6, 14, 11] as any
-              ),
+              circleRadius: ['interpolate', ['linear'], ['zoom'], 10, isEmergency ? 8 : 6, 14, isEmergency ? 14 : 11] as any,
               circleColor: isEmergency
                 ? (['get', '_severityColor'] as any)
-                : (['match', ['get', 'danh_muc'],
-                    1, '#FF9500', 2, '#34C759', 3, '#FF3B30',
-                    4, '#8E6F3E', 5, '#007AFF', '#8E8E93'] as any),
+                : (['match', ['get', 'danh_muc'], 1, '#FF9500', 2, '#34C759', 3, '#FF3B30', 4, '#8E6F3E', 5, '#007AFF', '#8E8E93'] as any),
               circleStrokeWidth: 2.5,
               circleStrokeColor: '#ffffff',
-              circlePitchAlignment: 'map',
               circleOpacity: 0.95,
             }}
           />
-
-          {/* Icon on top of circles */}
           <MapboxGL.SymbolLayer
             id="reportsLayer"
             style={{
-              iconImage: isEmergency ? (['match', ['get', 'type'],
-                'accident',    'icon_accident',
-                'congestion',  'icon_congestion',
-                'construction','icon_construction',
-                'weather',     'icon_weather',
-                'camera',      'icon_camera',
-                'patrol',      'icon_patrol',
-                'icon_default'
-              ] as any) : (['match', ['get', 'danh_muc'],
-                1, 'icon_traffic',  2, 'icon_environment',
-                3, 'icon_fire',     4, 'icon_trash',
-                5, 'icon_flood',    7, 'icon_shelter',
-                'icon_default'
-              ] as any),
+              iconImage: isEmergency
+                ? (['match', ['get', 'type'], 'accident', 'icon_accident', 'congestion', 'icon_congestion', 'construction', 'icon_construction', 'weather', 'icon_weather', 'camera', 'icon_camera', 'patrol', 'icon_patrol', 'icon_default'] as any)
+                : (['match', ['get', 'danh_muc'], 1, 'icon_traffic', 2, 'icon_environment', 3, 'icon_fire', 4, 'icon_trash', 5, 'icon_flood', 7, 'icon_shelter', 'icon_default'] as any),
               iconSize: isEmergency ? 0.45 : 0.5,
               iconAllowOverlap: true,
               iconAnchor: 'center',
@@ -728,1030 +409,303 @@ const MapScreen = () => {
         </MapboxGL.ShapeSource>
       </MapboxGL.MapView>
 
-      {/* Loading Indicator */}
-      {
-        loading && (
-          <View style={styles.loadingOverlay}>
-            <View style={styles.loadingBox}>
-              <Text style={styles.loadingText}>{t('common.loading')}</Text>
-            </View>
+      {/* Loading */}
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingBox}>
+            <Text style={styles.loadingText}>Đang tải...</Text>
           </View>
-        )
-      }
+        </View>
+      )}
 
-
-      {/* Header Search Bar */}
+      {/* Header overlay */}
       <SafeAreaView style={styles.headerOverlay} edges={['top']}>
-      <View style={styles.searchContainer}>
-          <View style={styles.searchBarRow}>
-            <View style={styles.searchBar}>
-              <Icon name="magnify" size={ICON_SIZE.md} color={theme.colors.textSecondary} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder={isEmergency ? t('map.searchLocation') : t('map.searchLocation')}
-                placeholderTextColor={theme.colors.textSecondary}
-              />
-              <TouchableOpacity onPress={fetchMapReports} style={styles.iconButton}>
-                <Icon name="refresh" size={ICON_SIZE.md} color={isEmergency ? theme.colors.error : theme.colors.primary} />
-              </TouchableOpacity>
-              {!isEmergency && (
-                <TouchableOpacity style={styles.iconButton}>
-                  <Icon name="tune-variant" size={ICON_SIZE.md} color={theme.colors.primary} />
-                </TouchableOpacity>
-              )}
-            </View>
-            <NotificationBellButton
-              style={styles.searchBellButton}
-              color={isEmergency ? theme.colors.error : theme.colors.primary}
+        <View style={styles.searchRow}>
+          <View style={styles.searchBar}>
+            <Icon name="magnify" size={20} color={theme.colors.textSecondary} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Tìm kiếm địa điểm..."
+              placeholderTextColor={theme.colors.textTertiary}
             />
+            <TouchableOpacity onPress={fetchMapReports} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Icon name="refresh" size={20} color={isEmergency ? '#EF4444' : theme.colors.primary} />
+            </TouchableOpacity>
           </View>
-      </View>
+        </View>
 
-        {/* Filter Pills with count badges */}
-        <View style={styles.filterContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterContent}
-          >
-            {!isEmergency ? categories.map((cat) => (
+        {/* Filter chips */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+          {(isEmergency ? EMERGENCY_CATEGORIES : CITIZEN_CATEGORIES).map(cat => {
+            const isActive = selectedCategory === cat.id;
+            const color = cat.color || theme.colors.primary;
+            const count = isEmergency
+              ? (cat.id === -1 ? mapIncidents.length + MOCK_CAMERAS.length + MOCK_PATROLS.length
+                : cat.id === 1 ? mapIncidents.filter(i => i.type === 'congestion').length
+                : cat.id === 2 ? mapIncidents.filter(i => i.type !== 'congestion').length
+                : cat.id === 3 ? MOCK_CAMERAS.length : MOCK_PATROLS.length)
+              : (cat.id === -1 ? mapReports.length : mapReports.filter(r => r.danh_muc === cat.id).length);
+
+            return (
               <TouchableOpacity
                 key={cat.id}
-                style={[
-                  styles.filterChip,
-                  selectedCategory === cat.id && {
-                    backgroundColor: cat.id === -1 ? theme.colors.primary : getCategoryColor(cat.id)
-                  }
-                ]}
+                style={[styles.chip, isActive && { backgroundColor: color, borderColor: color }]}
                 onPress={() => setSelectedCategory(cat.id)}
               >
-                <Icon
-                  name={cat.icon}
-                  size={14}
-                  color={selectedCategory === cat.id ? '#fff' : (cat.id === -1 ? theme.colors.textSecondary : getCategoryColor(cat.id))}
-                />
-                <Text style={[
-                  styles.filterText,
-                  selectedCategory === cat.id && styles.filterTextActive,
-                  cat.id !== -1 && selectedCategory !== cat.id && { color: getCategoryColor(cat.id) }
-                ]}>
-                  {cat.label}
-                </Text>
-                {/* Count badge */}
-                {cat.id !== -1 && mapReports.filter(r => r.danh_muc === cat.id).length > 0 && (
-                  <View style={[styles.filterBadge, { backgroundColor: selectedCategory === cat.id ? 'rgba(255,255,255,0.3)' : getCategoryColor(cat.id) + '25' }]}>
-                    <Text style={[styles.filterBadgeText, { color: selectedCategory === cat.id ? '#fff' : getCategoryColor(cat.id) }]}>
-                      {mapReports.filter(r => r.danh_muc === cat.id).length}
-                    </Text>
+                <Icon name={cat.icon} size={14} color={isActive ? '#fff' : color} />
+                <Text style={[styles.chipText, { color: isActive ? '#fff' : color }]}>{cat.label}</Text>
+                {count > 0 && cat.id !== -1 && (
+                  <View style={[styles.chipBadge, { backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : color + '20' }]}>
+                    <Text style={[styles.chipBadgeText, { color: isActive ? '#fff' : color }]}>{count}</Text>
                   </View>
                 )}
               </TouchableOpacity>
-            )) : (
-              // Emergency mode — type filter with counts
-              [{ id: -1, label: t('common.all'), icon: 'view-grid-outline', type: null, color: '#7a5af8' },
-               { id: 1, label: t('incidents.type.congestion'), icon: 'car-brake-alert', type: 'congestion', color: '#F97316' },
-               { id: 2, label: t('incidents.type.accident'), icon: 'alert-octagon', type: 'accident', color: '#EF4444' },
-               { id: 3, label: t('mapLayers.cameras'), icon: 'cctv', type: 'camera', color: '#06B6D4' },
-               { id: 4, label: t('mapLayers.patrols'), icon: 'police-badge-outline', type: 'patrol', color: '#10B981' },
-              ].map((cat) => {
-                const count = cat.type === 'congestion' ? mapIncidents.filter(i => i.type === 'congestion').length
-                  : cat.type === 'accident' ? mapIncidents.filter(i => !['congestion'].includes(i.type)).length
-                  : cat.type === 'camera' ? MOCK_CAMERAS.length
-                  : cat.type === 'patrol' ? MOCK_PATROLS.length
-                  : mapIncidents.length + MOCK_CAMERAS.length + MOCK_PATROLS.length;
-                const isActive = selectedCategory === cat.id;
-                return (
-                  <TouchableOpacity
-                    key={cat.id}
-                    onPress={() => setSelectedCategory(isActive && cat.id !== -1 ? -1 : cat.id)}
-                    style={[
-                      styles.filterChip,
-                      isActive
-                        ? { backgroundColor: cat.color, borderColor: cat.color, borderWidth: 1 }
-                        : { backgroundColor: 'rgba(255,255,255,0.92)', borderColor: cat.color + '40', borderWidth: 1 }
-                    ]}
-                  >
-                    <Icon name={cat.icon} size={14} color={isActive ? '#fff' : cat.color} />
-                    <Text style={[styles.filterText, { color: isActive ? '#fff' : cat.color, fontWeight: '700' }]}>
-                      {cat.label}
-                    </Text>
-                    {count > 0 && (
-                      <View style={[styles.filterBadge, { backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : cat.color + '20' }]}>
-                        <Text style={[styles.filterBadgeText, { color: isActive ? '#fff' : cat.color }]}>{count}</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              })
-            )}
-          </ScrollView>
-        </View>
+            );
+          })}
+        </ScrollView>
       </SafeAreaView>
 
-      {/* Floating Action Buttons */}
+      {/* GPS FAB */}
       <View style={styles.fabContainer}>
-        <TouchableOpacity
-          style={styles.fabButton}
-          onPress={centerUserLocation}
-        >
-          <Icon name="crosshairs-gps" size={ICON_SIZE.lg} color={theme.colors.text} />
+        <TouchableOpacity style={styles.fab} onPress={centerUserLocation}>
+          <Icon name="crosshairs-gps" size={22} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
 
-      {/* Report Detail Bottom Sheet */}
-      {
-        (selectedReport || selectedIncident) && (
-          <>
-            {/* Backdrop */}
-            <Animated.View
-              style={[
-                styles.backdrop,
-                {
-                  opacity: backdropAnim,
-                }
-              ]}
-            >
-              <TouchableOpacity
-                style={StyleSheet.absoluteFill}
-                activeOpacity={1}
-                onPress={handleCloseSheet}
+      {/* Bottom Sheet */}
+      {showSheet && (
+        <>
+          <Animated.View style={[styles.backdrop, { opacity: backdropAnim }]}>
+            <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleCloseSheet} />
+          </Animated.View>
+
+          <Animated.View style={[styles.bottomSheet, { transform: [{ translateY: slideAnim }] }]}>
+            <View style={styles.handle} />
+
+            {selectedReport ? (
+              <ReportSheet
+                report={selectedReport}
+                detail={reportDetail}
+                loading={loadingDetail}
+                onClose={handleCloseSheet}
+                onNavigate={(id) => { handleCloseSheet(); navigation.navigate('ReportDetail', { id }); }}
               />
-            </Animated.View>
-
-            <Animated.View
-              style={[
-                styles.bottomSheet,
-                {
-                  transform: [{ translateY: slideAnim }],
-                }
-              ]}
-            >
-              <View style={styles.sheetHandle} />
-
-              {selectedReport ? (
-                <>
-                  <View style={styles.sheetHeader}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.sheetTitle} numberOfLines={2}>
-                        {selectedReport.tieu_de}
-                      </Text>
-                      <Text style={styles.sheetId}>#{selectedReport.id}</Text>
-                    </View>
-                    <TouchableOpacity onPress={handleCloseSheet}>
-                      <Icon name="close" size={ICON_SIZE.md} color={theme.colors.text} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <ScrollView
-                    style={styles.sheetScroll}
-                    contentContainerStyle={styles.sheetScrollContent}
-                    showsVerticalScrollIndicator={false}
-                  >
-                    {/* Badges */}
-                    <View style={styles.sheetRow}>
-                      <View style={[
-                        styles.sheetBadge,
-                        { backgroundColor: getCategoryColor(selectedReport.danh_muc) + '15' }
-                      ]}>
-                        <Icon
-                          name={getCategoryIcon(selectedReport.danh_muc)}
-                          size={16}
-                          color={getCategoryColor(selectedReport.danh_muc)}
-                        />
-                        <Text style={[
-                          styles.sheetBadgeText,
-                          { color: getCategoryColor(selectedReport.danh_muc) }
-                        ]}>
-                          {selectedReport.danh_muc_text || getCategoryName(selectedReport.danh_muc)}
-                        </Text>
-                      </View>
-
-                      <View style={[styles.sheetBadge, {
-                        backgroundColor: getStatusColor(selectedReport.trang_thai) + '15'
-                      }]}>
-                        <Text style={[styles.sheetBadgeText, {
-                          color: getStatusColor(selectedReport.trang_thai)
-                        }]}>
-                          {getStatusLabel(selectedReport.trang_thai)}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {loadingDetail ? (
-                      <View style={styles.detailLoading}>
-                        <Text style={styles.detailLoadingText}>{t('common.loading')}</Text>
-                      </View>
-                    ) : reportDetail ? (
-                      <>
-                        {/* Description */}
-                        {reportDetail.mo_ta && (
-                          <View style={styles.detailSection}>
-                            <Text style={styles.detailLabel}>{t('reports.description')}</Text>
-                            <Text style={styles.detailText} numberOfLines={3}>
-                              {reportDetail.mo_ta}
-                            </Text>
-                          </View>
-                        )}
-
-                        {/* Media Gallery */}
-                        {reportDetail.hinh_anhs && reportDetail.hinh_anhs.length > 0 && (
-                          <View style={styles.detailSection}>
-                            <Text style={styles.detailLabel}>{t('reports.images')}</Text>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.mediaScroll}>
-                              {reportDetail.hinh_anhs.map((item) => (
-                                <TouchableOpacity key={item.id} activeOpacity={0.9}>
-                                  <Image
-                                    source={{ uri: item.duong_dan_hinh_anh }}
-                                    style={styles.mediaImage}
-                                    resizeMode="cover"
-                                  />
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-
-                        {/* Address & Time */}
-                        <View style={styles.detailSection}>
-                          <View style={styles.detailRow}>
-                            <Icon name="map-marker" size={16} color={theme.colors.textSecondary} />
-                            <Text style={styles.detailTextSmall} numberOfLines={1}>
-                              {reportDetail.dia_chi}
-                            </Text>
-                          </View>
-                          <View style={styles.detailRow}>
-                            <Icon name="clock-outline" size={16} color={theme.colors.textSecondary} />
-                            <Text style={styles.detailTextSmall}>
-                              {new Date(reportDetail.created_at).toLocaleDateString('vi-VN', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </Text>
-                          </View>
-                        </View>
-
-                        {/* Action Buttons */}
-                        <View style={styles.sheetActions}>
-                          <TouchableOpacity
-                            style={styles.sheetButton}
-                            onPress={() => {
-                              handleCloseSheet();
-                              navigation.navigate('IncidentDetail' as any, { id: selectedReport.id });
-                            }}
-                          >
-                            <Icon name="information-outline" size={ICON_SIZE.md} color={theme.colors.primary} />
-                            <Text style={styles.sheetButtonText}>{t('incidents.updateStatus')}</Text>
-                          </TouchableOpacity>
-
-                          <TouchableOpacity style={styles.sheetButton}>
-                            <Icon name="share-variant-outline" size={ICON_SIZE.md} color={theme.colors.primary} />
-                            <Text style={styles.sheetButtonText}>{t('common.confirm')}</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </>
-                    ) : null}
-                  </ScrollView>
-                </>
-              ) : selectedIncident && (
-                <>
-                  {/* ── Digital Twin Header ── */}
-                  <View style={styles.sheetHeader}>
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-                        <Icon name="access-point" size={12} color="#7a5af8" />
-                        <View style={styles.dtLabel}>DIGITAL TWIN · {t('digitalTwin.live')}</View>
-                      </View>
-                      <Text style={styles.sheetTitle} numberOfLines={2}>
-                        {selectedIncident.title || 'Sự cố chưa đặt tên'}
-                      </Text>
-                      <Text style={styles.sheetId}>NODE #{selectedIncident.id} · {mapEmergencyTypeLabel(selectedIncident.type)}</Text>
-                    </View>
-                    <TouchableOpacity onPress={handleCloseSheet} style={styles.closeBtn}>
-                      <Icon name="close" size={18} color={theme.colors.textSecondary} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <ScrollView
-                    style={styles.sheetScroll}
-                    contentContainerStyle={styles.sheetScrollContent}
-                    showsVerticalScrollIndicator={false}
-                  >
-                    {/* ── Status Badges ── */}
-                    <View style={styles.sheetRow}>
-                      <View style={[
-                        styles.sheetBadge,
-                        { backgroundColor: mapEmergencySeverityColor(selectedIncident.severity) + '20' }
-                      ]}>
-                        <Icon
-                          name={mapEmergencyTypeToIcon(selectedIncident.type)}
-                          size={13}
-                          color={mapEmergencySeverityColor(selectedIncident.severity)}
-                        />
-                        <Text style={[styles.sheetBadgeText, { color: mapEmergencySeverityColor(selectedIncident.severity) }]}>
-                          {selectedIncident.severity?.toUpperCase() || 'N/A'}
-                        </Text>
-                      </View>
-
-                      <View style={[styles.sheetBadge, { backgroundColor: mapEmergencyStatusColor(selectedIncident.status) + '20' }]}>
-                        <View style={[styles.statusDot, { backgroundColor: mapEmergencyStatusColor(selectedIncident.status) }]} />
-                        <Text style={[styles.sheetBadgeText, { color: mapEmergencyStatusColor(selectedIncident.status) }]}>
-                          {mapEmergencyStatusLabel(selectedIncident.status)}
-                        </Text>
-                      </View>
-
-                      <View style={[styles.sheetBadge, { backgroundColor: '#7a5af815' }]}>
-                        <Icon name="clock-fast" size={13} color="#7a5af8" />
-                        <Text style={[styles.sheetBadgeText, { color: '#7a5af8' }]}>
-                          {new Date(selectedIncident.created_at || new Date()).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* ── Location Info ── */}
-                    {(selectedIncident.location_name || selectedIncident.location) && (
-                      <View style={styles.dtInfoRow}>
-                        <Icon name="map-marker-outline" size={14} color={theme.colors.textSecondary} />
-                        <Text style={styles.dtInfoText} numberOfLines={1}>
-                          {selectedIncident.location_name || `${selectedIncident.location?.lat?.toFixed(4)}, ${selectedIncident.location?.lng?.toFixed(4)}`}
-                        </Text>
-                      </View>
-                    )}
-
-                    {/* ── Mini Status Timeline ── */}
-                    <View style={styles.timeline}>
-                      {[
-                        { key: 'open',          label: t('incidents.open'),      icon: 'alert-circle' },
-                        { key: 'investigating', label: t('incidents.investigating'), icon: 'magnify' },
-                        { key: 'resolved',      label: t('incidents.resolved'),  icon: 'check-circle' },
-                      ].map((step, idx, arr) => {
-                        const statusOrder = ['open', 'investigating', 'resolved', 'closed'];
-                        const currentIdx = statusOrder.indexOf(selectedIncident?.status || 'open');
-                        const stepIdx   = statusOrder.indexOf(step.key);
-                        const isDone    = stepIdx < currentIdx;
-                        const isActive  = stepIdx === currentIdx;
-                        const color     = isActive ? '#7a5af8' : isDone ? '#10B981' : theme.colors.textSecondary;
-                        return (
-                          <React.Fragment key={step.key}>
-                            <View style={styles.timelineStep}>
-                              <Icon
-                                name={isDone ? 'check-circle' : step.icon}
-                                size={16}
-                                color={color}
-                              />
-                              <Text style={[styles.timelineLabel, { color }]}>
-                                {step.label}
-                              </Text>
-                            </View>
-                            {idx < arr.length - 1 && (
-                              <View style={[styles.timelineLine, { backgroundColor: isDone ? '#10B981' : theme.colors.border }]} />
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
-                    </View>
-
-                    {/* ── Description ── */}
-                    {selectedIncident.description && (
-                      <Text style={styles.dtDescription} numberOfLines={2}>
-                        {selectedIncident.description}
-                      </Text>
-                    )}
-
-                    {/* ──────────────────────────────────────────── */}
-                    {/*  AI ENGINE PANEL  */}
-                    {/* ──────────────────────────────────────────── */}
-                    <View style={styles.aiPanel}>
-                      <View style={styles.aiPanelHeader}>
-                        <View style={styles.aiIconWrap}>
-                          <Icon name="brain" size={16} color="#9b8afb" />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.aiPanelTitle}>{t('digitalTwin.analysis')}</Text>
-                          <Text style={styles.aiPanelSub}>{t('digitalTwin.modelDescription')}</Text>
-                        </View>
-                        <View style={styles.aiBadgeLive}>
-                          <Text style={styles.aiBadgeLiveText}>{t('digitalTwin.live')}</Text>
-                        </View>
-                      </View>
-
-                      {/* AI Prediction Row */}
-                      <View style={styles.aiPredRow}>
-                        <Icon name="trending-up" size={14} color="#F59E0B" />
-                        <Text style={styles.aiPredText}>
-                          <Text style={{ color: '#F59E0B', fontWeight: '700' }}>{t('digitalTwin.prediction')}: </Text>
-                          {t('digitalTwin.congestionRiskIncrease', {
-                            percent: selectedIncident.severity === 'critical' ? '80%' : selectedIncident.severity === 'high' ? '55%' : '30%',
-                            minutes: '15'
-                          })}
-                        </Text>
-                      </View>
-
-                      {/* AI Recommendation */}
-                      <View style={styles.aiRecRow}>
-                        <Icon name="lightbulb-outline" size={14} color="#34D399" />
-                        <Text style={styles.aiRecText}>
-                          <Text style={{ color: '#34D399', fontWeight: '700' }}>{t('digitalTwin.recommendation')}: </Text>
-                          {selectedIncident.type === 'congestion'
-                            ? t('digitalTwin.trafficLightRecommendation')
-                            : selectedIncident.type === 'accident'
-                            ? t('digitalTwin.accidentRecommendation')
-                            : t('digitalTwin.defaultRecommendation')}
-                        </Text>
-                      </View>
-
-                      {/* Graph Simulation Preview */}
-                      <View style={styles.aiGraphRow}>
-                        <Icon name="graph-outline" size={13} color="#9b8afb" />
-                        <Text style={styles.aiGraphText}>
-                          {t('digitalTwin.monitoringEdges', { count: '24' })}
-                        </Text>
-                      </View>
-                    </View>
-                    {/* ──────────────────────────────────────────── */}
-
-                    {/* ── Action Buttons ── */}
-                    <View style={styles.dtActions}>
-                      <TouchableOpacity
-                        style={styles.dtBtnDispatch}
-                        onPress={() => {
-                          if (!selectedIncident?.id) return;
-                          handleCloseSheet();
-                          navigation.navigate('IncidentDetail' as any, { id: selectedIncident.id });
-                        }}
-                      >
-                        <Icon name="shield-alert-outline" size={17} color="#fff" />
-                        <Text style={styles.dtBtnDispatchText}>{t('incidents.updateStatus')}</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={styles.dtBtnSimulate}
-                        onPress={() => {
-                          handleCloseSheet();
-                          navigation.navigate('EmergencyIncidents' as any);
-                        }}
-                      >
-                        <Icon name="robot-outline" size={17} color="#9b8afb" />
-                        <Text style={styles.dtBtnSimulateText}>{t('digitalTwin.analysis')}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </ScrollView>
-                </>
-              )}
-            </Animated.View>
-          </>
-        )
-      }
+            ) : selectedIncident ? (
+              <IncidentSheet
+                incident={selectedIncident}
+                onClose={handleCloseSheet}
+                onNavigate={(id) => { handleCloseSheet(); navigation.navigate('IncidentDetail', { id }); }}
+              />
+            ) : null}
+          </Animated.View>
+        </>
+      )}
     </View>
   );
 };
 
+// ─── Report Bottom Sheet ───────────────────────────────────
+const ReportSheet = ({ report, detail, loading, onClose, onNavigate }: {
+  report: MapReport; detail: any; loading: boolean;
+  onClose: () => void; onNavigate: (id: number) => void;
+}) => {
+  const catColor = getCategoryColor(report.danh_muc);
+  return (
+    <>
+      <View style={styles.sheetHeader}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.sheetTitle} numberOfLines={2}>{report.tieu_de}</Text>
+          <Text style={styles.sheetSub}>#{report.id}</Text>
+        </View>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <Icon name="close" size={18} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.badgeRow}>
+        <View style={[styles.badge, { backgroundColor: catColor + '15' }]}>
+          <Text style={[styles.badgeText, { color: catColor }]}>{report.danh_muc_text || 'Báo cáo'}</Text>
+        </View>
+      </View>
+
+      {loading ? (
+        <Text style={styles.loadingText}>Đang tải chi tiết...</Text>
+      ) : detail ? (
+        <ScrollView style={{ maxHeight: 280 }} showsVerticalScrollIndicator={false}>
+          {detail.mo_ta && <Text style={styles.descText} numberOfLines={3}>{detail.mo_ta}</Text>}
+
+          {detail.hinh_anhs && detail.hinh_anhs.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }}>
+              {detail.hinh_anhs.map((img: any) => (
+                <Image key={img.id} source={{ uri: img.duong_dan_hinh_anh }} style={styles.thumb} />
+              ))}
+            </ScrollView>
+          )}
+
+          {detail.dia_chi && (
+            <View style={styles.infoRow}>
+              <Icon name="map-marker" size={16} color={theme.colors.textSecondary} />
+              <Text style={styles.infoText} numberOfLines={1}>{detail.dia_chi}</Text>
+            </View>
+          )}
+
+          <TouchableOpacity style={styles.actionBtn} onPress={() => onNavigate(report.id)}>
+            <Icon name="information-outline" size={18} color={theme.colors.primary} />
+            <Text style={styles.actionBtnText}>Xem chi tiết</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      ) : null}
+    </>
+  );
+};
+
+// ─── Incident Bottom Sheet ─────────────────────────────────
+const IncidentSheet = ({ incident, onClose, onNavigate }: {
+  incident: Incident; onClose: () => void; onNavigate: (id: number) => void;
+}) => {
+  const sevColor = SEVERITY_COLORS[incident.severity] || '#10B981';
+  const statColor = STATUS_COLORS[incident.status] || '#6B7280';
+
+  return (
+    <>
+      <View style={styles.sheetHeader}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.sheetTitle} numberOfLines={2}>{incident.title || 'Sự cố'}</Text>
+          <Text style={styles.sheetSub}>#{incident.id}</Text>
+        </View>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <Icon name="close" size={18} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.badgeRow}>
+        <View style={[styles.badge, { backgroundColor: sevColor + '15' }]}>
+          <Text style={[styles.badgeText, { color: sevColor }]}>{incident.severity?.toUpperCase()}</Text>
+        </View>
+        <View style={[styles.badge, { backgroundColor: statColor + '15' }]}>
+          <View style={[styles.dot, { backgroundColor: statColor }]} />
+          <Text style={[styles.badgeText, { color: statColor }]}>{STATUS_LABELS[incident.status] || incident.status}</Text>
+        </View>
+      </View>
+
+      {incident.description && (
+        <Text style={styles.descText} numberOfLines={3}>{incident.description}</Text>
+      )}
+
+      {/* AI Panel */}
+      <View style={styles.aiPanel}>
+        <View style={styles.aiHeader}>
+          <Icon name="brain" size={16} color="#9b8afb" />
+          <Text style={styles.aiTitle}>AI Analysis</Text>
+          <View style={styles.liveBadge}>
+            <Text style={styles.liveText}>LIVE</Text>
+          </View>
+        </View>
+        <View style={styles.aiRow}>
+          <Icon name="trending-up" size={14} color="#F59E0B" />
+          <Text style={styles.aiText}>
+            Dự đoán: Nguy cơ gia tăng {incident.severity === 'critical' ? '80%' : '30%'} trong 15 phút tới
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.sheetActions}>
+        <TouchableOpacity style={styles.primaryBtn} onPress={() => onNavigate(incident.id)}>
+          <Icon name="shield-alert-outline" size={18} color="#fff" />
+          <Text style={styles.primaryBtnText}>Chi tiết sự cố</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+};
+
+// ─── Styles ────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  map: {
-    flex: 1,
-  },
+  container: { flex: 1 },
+  map: { flex: 1 },
+
   headerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: SCREEN_PADDING.horizontal,
+    position: 'absolute', top: 0, left: 0, right: 0, paddingHorizontal: 16,
   },
-  searchContainer: {
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.sm,
-  },
-  searchBarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
+  searchRow: { marginTop: 8 },
   searchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.white,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingHorizontal: SPACING.md,
-    height: hp('6%'),
-    ...theme.shadows.md,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 14, height: 48,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4,
   },
-  searchBellButton: {
-    width: 46,
-    height: 46,
-    backgroundColor: theme.colors.white,
-    borderRadius: BORDER_RADIUS.full,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...theme.shadows.md,
+  searchInput: { flex: 1, marginLeft: 8, fontSize: 14, color: theme.colors.text },
+
+  filterRow: { paddingTop: 10, paddingBottom: 4, gap: 8, paddingRight: 16 },
+  chip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 7,
+    borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3, elevation: 2,
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: SPACING.sm,
-    fontSize: FONT_SIZE.md,
-    color: theme.colors.text,
-    height: '100%',
-  },
-  iconButton: {
-    padding: SPACING.xs,
-    marginLeft: SPACING.xs,
-  },
-  filterContainer: {
-    height: 40,
-  },
-  filterContent: {
-    paddingRight: SPACING.lg,
-    gap: SPACING.sm,
-  },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.white,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 6,
-    borderRadius: BORDER_RADIUS.full,
-    gap: 6,
-    ...theme.shadows.sm,
-  },
-  filterChipActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  filterText: {
-    fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
-    fontWeight: '500',
-  },
-  filterTextActive: {
-    color: theme.colors.white,
-  },
+  chipText: { fontSize: 12, fontWeight: '600' },
+  chipBadge: { minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, justifyContent: 'center', alignItems: 'center' },
+  chipBadgeText: { fontSize: 10, fontWeight: '800' },
 
   fabContainer: {
-    position: 'absolute',
-    bottom: Platform.select({ ios: hp('12%'), android: hp('10%') }), // Adjust for tab bar
-    right: SCREEN_PADDING.horizontal,
-    gap: SPACING.md,
-    alignItems: 'flex-end',
+    position: 'absolute', bottom: Platform.select({ ios: 100, android: 80 }), right: 16,
   },
-  fabButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...theme.shadows.md,
+  fab: {
+    width: 48, height: 48, borderRadius: 24, backgroundColor: '#fff',
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 6, elevation: 4,
   },
-  loadingOverlay: {
-    position: 'absolute',
-    top: Platform.select({ ios: hp('15%'), android: hp('13%') }),
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  loadingBox: {
-    backgroundColor: theme.colors.white,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
-    ...theme.shadows.md,
-  },
-  loadingText: {
-    fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
-  },
-  reportButton: {
-    width: 'auto',
-    paddingHorizontal: SPACING.lg,
-    backgroundColor: theme.colors.error,
-    flexDirection: 'row',
-    gap: SPACING.xs,
-  },
-  reportButtonText: {
-    color: theme.colors.white,
-    fontSize: FONT_SIZE.md,
-    fontWeight: '600',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 100,
-  },
+
+  loadingOverlay: { position: 'absolute', top: 140, left: 0, right: 0, alignItems: 'center', zIndex: 10 },
+  loadingBox: { backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, elevation: 3 },
+  loadingText: { fontSize: 13, color: theme.colors.textSecondary, textAlign: 'center', paddingVertical: 12 },
+
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 100 },
   bottomSheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: theme.colors.white,
-    borderTopLeftRadius: BORDER_RADIUS.xl,
-    borderTopRightRadius: BORDER_RADIUS.xl,
-    paddingTop: SPACING.sm,
-    paddingHorizontal: SCREEN_PADDING.horizontal,
-    paddingBottom: Platform.select({ ios: SPACING['2xl'], android: SPACING.xl }),
-    ...theme.shadows.xl,
-    zIndex: 101, // Above backdrop
+    position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 101,
+    backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    paddingHorizontal: 20, paddingBottom: Platform.select({ ios: 34, android: 20 }),
+    shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 10,
   },
-  sheetHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: theme.colors.borderLight,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: SPACING.md,
-  },
-  sheetHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.md,
-  },
-  sheetTitle: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: 4,
-  },
-  sheetId: {
-    fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
-  },
-  sheetContent: {
-    gap: SPACING.md,
-  },
-  sheetRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-  },
-  sheetBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primaryLight,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: BORDER_RADIUS.md,
-    gap: 4,
-  },
-  sheetBadgeText: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  sheetActions: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-  },
-  sheetButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
-    backgroundColor: theme.colors.backgroundSecondary,
-    borderRadius: BORDER_RADIUS.md,
-    gap: 4,
-  },
-  sheetButtonText: {
-    fontSize: FONT_SIZE.xs,
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  sheetScroll: {
-    maxHeight: hp('50%'),
-  },
-  sheetScrollContent: {
-    paddingBottom: SPACING.md,
-    gap: SPACING.md,
-  },
-  detailLoading: {
-    paddingVertical: SPACING.xl,
-    alignItems: 'center',
-  },
-  detailLoadingText: {
-    fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
-  },
-  detailSection: {
-    gap: SPACING.xs,
-  },
-  detailLabel: {
-    fontSize: FONT_SIZE.xs,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    textTransform: 'uppercase',
-  },
-  detailText: {
-    fontSize: FONT_SIZE.md,
-    color: theme.colors.text,
-    lineHeight: 22,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  detailTextSmall: {
-    fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
-    flex: 1,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: theme.colors.backgroundSecondary,
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.md,
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  statText: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
-    color: theme.colors.text,
-  },
-  commentsSection: {
-    gap: SPACING.sm,
-  },
-  commentsTitle: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: '700',
-    color: theme.colors.text,
-  },
-  commentItem: {
-    backgroundColor: theme.colors.backgroundSecondary,
-    padding: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
-    gap: SPACING.xs,
-  },
-  commentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  commentAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary + '20',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  commentAvatarText: {
-    fontSize: FONT_SIZE.xs,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  commentUser: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
-    color: theme.colors.text,
-  },
-  commentTime: {
-    fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
-  },
-  commentText: {
-    fontSize: FONT_SIZE.sm,
-    color: theme.colors.text,
-    lineHeight: 20,
-  },
-  moreComments: {
-    fontSize: FONT_SIZE.sm,
-    color: theme.colors.primary,
-    fontWeight: '600',
-    textAlign: 'center',
-    paddingVertical: SPACING.xs,
-  },
-  mediaScroll: {
-    marginTop: SPACING.sm,
-  },
-  mediaImage: {
-    width: wp('60%'),
-    height: wp('40%'),
-    borderRadius: BORDER_RADIUS.lg,
-    marginRight: SPACING.md,
-    backgroundColor: theme.colors.backgroundSecondary,
-  },
+  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: '#E5E7EB', alignSelf: 'center', marginVertical: 12 },
 
-  // ─── Digital Twin Styles ────────────────────────────────
-  closeBtn: {
-    padding: 6,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: theme.colors.backgroundSecondary,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 4,
-  },
-  dtLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#7a5af8',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  dtPulse: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#7a5af8',
-  },
-  dtInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 6,
-    marginBottom: 2,
-  },
-  dtInfoText: {
-    flex: 1,
-    fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
-  },
-  dtDescription: {
-    fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-    marginVertical: SPACING.sm,
-  },
+  sheetHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
+  sheetTitle: { fontSize: 17, fontWeight: '700', color: theme.colors.text, marginBottom: 2 },
+  sheetSub: { fontSize: 12, color: theme.colors.textSecondary },
+  closeBtn: { padding: 6, borderRadius: 20, backgroundColor: '#F3F4F6' },
 
-  // AI Engine Panel
+  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  badgeText: { fontSize: 12, fontWeight: '600' },
+  dot: { width: 6, height: 6, borderRadius: 3 },
+
+  descText: { fontSize: 14, color: theme.colors.textSecondary, lineHeight: 20, marginBottom: 12 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  infoText: { flex: 1, fontSize: 13, color: theme.colors.textSecondary },
+  thumb: { width: 160, height: 100, borderRadius: 10, marginRight: 10, backgroundColor: '#F3F4F6' },
+
+  actionBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    marginTop: 16, paddingVertical: 12, backgroundColor: theme.colors.primary + '10', borderRadius: 12,
+  },
+  actionBtnText: { fontSize: 14, fontWeight: '600', color: theme.colors.primary },
+
   aiPanel: {
-    marginTop: SPACING.md,
-    backgroundColor: '#0F0F1A',
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: '#7a5af830',
+    backgroundColor: '#0F0F1A', borderRadius: 12, padding: 14, marginBottom: 12,
+    borderWidth: 1, borderColor: '#7a5af830',
   },
-  aiPanelHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    marginBottom: SPACING.sm,
-  },
-  aiIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: BORDER_RADIUS.md,
-    backgroundColor: '#7a5af815',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  aiPanelTitle: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '700',
-    color: '#E0E7FF',
-  },
-  aiPanelSub: {
-    fontSize: FONT_SIZE.xs,
-    color: '#9b8afb',
-    marginTop: 1,
-  },
-  aiBadgeLive: {
-    backgroundColor: '#EF444420',
-    borderRadius: BORDER_RADIUS.full,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderWidth: 1,
-    borderColor: '#EF4444',
-  },
-  aiBadgeLiveText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#EF4444',
-    letterSpacing: 1,
-  },
-  aiPredRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 6,
-    marginBottom: 8,
-    padding: 8,
-    borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: '#F59E0B08',
-  },
-  aiPredText: {
-    flex: 1,
-    fontSize: FONT_SIZE.xs,
-    color: '#D1D5DB',
-    lineHeight: 16,
-  },
-  aiRecRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 6,
-    marginBottom: 8,
-    padding: 8,
-    borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: '#34D39908',
-  },
-  aiRecText: {
-    flex: 1,
-    fontSize: FONT_SIZE.xs,
-    color: '#D1D5DB',
-    lineHeight: 16,
-  },
-  aiGraphRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 6,
-    padding: 8,
-    borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: '#9b8afb08',
-    borderTopWidth: 1,
-    borderTopColor: '#7a5af820',
-  },
-  aiGraphText: {
-    flex: 1,
-    fontSize: FONT_SIZE.xs,
-    color: '#9CA3AF',
-    lineHeight: 16,
-  },
+  aiHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  aiTitle: { flex: 1, fontSize: 13, fontWeight: '700', color: '#E0E7FF' },
+  liveBadge: { backgroundColor: '#EF444420', borderRadius: 10, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: '#EF4444' },
+  liveText: { fontSize: 9, fontWeight: '800', color: '#EF4444', letterSpacing: 1 },
+  aiRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, padding: 8, borderRadius: 6, backgroundColor: '#F59E0B08' },
+  aiText: { flex: 1, fontSize: 12, color: '#D1D5DB', lineHeight: 16 },
 
-  // Action Buttons
-  dtActions: {
-    marginTop: SPACING.md,
-    gap: SPACING.sm,
+  sheetActions: { marginTop: 4 },
+  primaryBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#EF4444', paddingVertical: 14, borderRadius: 12,
   },
-  dtBtnDispatch: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.sm,
-    backgroundColor: '#EF4444',
-    paddingVertical: 13,
-    borderRadius: BORDER_RADIUS.lg,
-  },
-  dtBtnDispatchText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  dtBtnSimulate: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.sm,
-    backgroundColor: '#9b8afb15',
-    paddingVertical: 13,
-    borderRadius: BORDER_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: '#9b8afb50',
-  },
-  dtBtnSimulateText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: '700',
-    color: '#9b8afb',
-  },
-
-  // ─── Status Timeline ────────────────────────────────────
-  timeline: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: SPACING.md,
-    marginBottom: SPACING.sm,
-    paddingHorizontal: SPACING.xs,
-  },
-  timelineStep: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  timelineLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  timelineLine: {
-    flex: 1,
-    height: 2,
-    borderRadius: 1,
-    marginHorizontal: SPACING.xs,
-    marginBottom: 12,
-  },
-
-  // ─── Filter Badge ────────────────────────────────────────
-  filterBadge: {
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    paddingHorizontal: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  filterBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    lineHeight: 12,
-  },
+  primaryBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
 });
 
 export default MapScreen;

@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../contexts/AuthContext';
 import { FONT_SIZE, SPACING, wp, BORDER_RADIUS, SCREEN_PADDING, theme } from '../../theme';
-import { AlertService } from '../../services/AlertService';
 import { useNavigation } from '@react-navigation/native';
 
 const EmergencyProfileScreen = () => {
@@ -24,11 +23,13 @@ const EmergencyProfileScreen = () => {
     ];
 
     const handleLogout = () => {
-        AlertService.confirm(
+        Alert.alert(
             'Xác nhận đăng xuất',
             'Bạn có chắc chắn muốn đăng xuất khỏi hệ thống làm việc không? Mọi ca trực chưa đóng sẽ bị tạm dừng.',
-            () => signOut(),
-            () => console.log('Hủy đăng xuất')
+            [
+                { text: 'Hủy', style: 'cancel' },
+                { text: 'Đăng xuất', style: 'destructive', onPress: () => signOut() },
+            ]
         );
     };
 

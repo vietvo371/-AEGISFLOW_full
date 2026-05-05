@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import PageHeader from '../../component/PageHeader';
 import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING } from '../../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 const LANGUAGE_KEY = '@app_language';
 
@@ -26,6 +27,7 @@ const LANGUAGES: Language[] = [
 
 const LanguageSettingsScreen = () => {
     const navigation = useNavigation();
+    const { i18n } = useTranslation();
     const [selectedLanguage, setSelectedLanguage] = useState('vi');
 
     React.useEffect(() => {
@@ -47,8 +49,7 @@ const LanguageSettingsScreen = () => {
         try {
             await AsyncStorage.setItem(LANGUAGE_KEY, code);
             setSelectedLanguage(code);
-            // TODO: Implement i18n language switching
-            // i18n.changeLanguage(code);
+            i18n.changeLanguage(code);
         } catch (error) {
             console.error('Error saving language:', error);
         }

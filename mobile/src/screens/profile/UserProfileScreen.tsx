@@ -1,435 +1,220 @@
 import React, { useState, useEffect } from 'react';
+import {
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  Image, ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { RootStackParamList } from '../../navigation/types';
-import PageHeader from '../../component/PageHeader';
-import InputCustom from '../../component/InputCustom';
-import ButtonCustom from '../../component/ButtonCustom';
-import ModalCustom from '../../component/ModalCustom';
-import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING, wp } from '../../theme';
+import { useNavigation } from '@react-navigation/native';
+import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { mediaService } from '../../services/mediaService';
 
-type UserProfileRouteProp = RouteProp<RootStackParamList, 'UserProfile'>;
-
 const UserProfileScreen = () => {
-  const route = useRoute<UserProfileRouteProp>();
   const navigation = useNavigation();
   const { user } = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [formData, setFormData] = useState({
-    ho_ten: user?.ho_ten || '',
-    so_dien_thoai: user?.so_dien_thoai || '',
-    anh_dai_dien: user?.anh_dai_dien || '',
+    name: (user as any)?.name || '',
+    phone: (user as any)?.phone || '',
+    avatar: (user as any)?.avatar || '',
   });
-  const [errors, setErrors] = useState<{
-    ho_ten?: string;
-    so_dien_thoai?: string;
-  }>({});
 
   useEffect(() => {
     if (user) {
       setFormData({
-        ho_ten: user.ho_ten || '',
-        so_dien_thoai: user.so_dien_thoai || '',
-        anh_dai_dien: user.anh_dai_dien || '',
+        name: (user as any)?.name || '',
+        phone: (user as any)?.phone || '',
+        avatar: (user as any)?.avatar || '',
       });
     }
   }, [user]);
 
-  const validateForm = () => {
-    const newErrors: { ho_ten?: string; so_dien_thoai?: string } = {};
-
-    if (!formData.ho_ten.trim()) {
-      newErrors.ho_ten = 'Họ tên không được để trống';
-    }
-
-    // Clean phone number: remove spaces, dashes, and other non-digit characters
-    const cleanedPhone = formData.so_dien_thoai.replace(/\D/g, '');
-
-    if (formData.so_dien_thoai && cleanedPhone.length > 0 && !/^\d{9,11}$/.test(cleanedPhone)) {
-      newErrors.so_dien_thoai = 'Số điện thoại phải có 9-11 chữ số';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handlePickImage = async () => {
     try {
-      const result = await launchImageLibrary({
-        mediaType: 'photo',
-        quality: 0.7,
-        maxWidth: 512,
-        maxHeight: 512,
-      });
-
+      const result = await launchImageLibrary({ mediaType: 'photo', quality: 0.7, maxWidth: 512, maxHeight: 512 });
       if (result.assets && result.assets.length > 0) {
-        const asset = result.assets[0];
         setUploadingAvatar(true);
-
         try {
-          const response = await mediaService.uploadMedia(
-            asset,
-            'image',
-            'phan_anh',
-            'Avatar'
-          );
-
+          const response = await mediaService.uploadMedia(result.assets[0], 'image', 'phan_anh', 'Avatar');
           if (response.success && response.data) {
-            // Update formData with new avatar URL
-            setFormData({ ...formData, anh_dai_dien: response.data.url });
+            setFormData(prev => ({ ...prev, avatar: response.data.url }));
           }
-        } catch (error) {
-          console.error('Upload avatar error:', error);
-          setErrorMessage('Không thể tải ảnh lên. Vui lòng thử lại.');
-          setShowErrorModal(true);
-        } finally {
-          setUploadingAvatar(false);
-        }
+        } catch { /* */ } finally { setUploadingAvatar(false); }
       }
-    } catch (error) {
-      console.error('Image picker error:', error);
-    }
+    } catch { /* */ }
   };
 
   const handleSave = async () => {
-    if (!validateForm()) {
-      return;
-    }
-
+    if (!formData.name.trim()) return;
     setLoading(true);
     try {
-      const updateData: any = {};
-
-      if (formData.ho_ten !== user?.ho_ten) {
-        updateData.ho_ten = formData.ho_ten;
-      }
-      if (formData.so_dien_thoai !== user?.so_dien_thoai) {
-        updateData.so_dien_thoai = formData.so_dien_thoai;
-      }
-      if (formData.anh_dai_dien !== user?.anh_dai_dien) {
-        updateData.anh_dai_dien = formData.anh_dai_dien;
-      }
-
-      if (Object.keys(updateData).length === 0) {
-        setIsEditing(false);
-        return;
-      }
-
-      await authService.updateProfile(updateData);
-      setShowSuccessModal(true);
-    } catch (error: any) {
-      console.error('Update profile error:', error);
-      let message = 'Không thể cập nhật thông tin. Vui lòng thử lại.';
-
-      if (error.response?.data?.message) {
-        message = error.response.data.message;
-      } else if (error.message) {
-        message = error.message;
-      }
-
-      setErrorMessage(message);
-      setShowErrorModal(true);
-    } finally {
-      setLoading(false);
-    }
+      await authService.updateProfile({
+        name: formData.name,
+        phone: formData.phone,
+        avatar: formData.avatar,
+      } as any);
+      setIsEditing(false);
+    } catch { /* */ } finally { setLoading(false); }
   };
 
-  const handleCancel = () => {
-    setFormData({
-      ho_ten: user?.ho_ten || '',
-      so_dien_thoai: user?.so_dien_thoai || '',
-      anh_dai_dien: user?.anh_dai_dien || '',
-    });
-    setErrors({});
-    setIsEditing(false);
-  };
+  const initials = formData.name
+    ? formData.name.split(' ').map((w: string) => w[0]).slice(-2).join('').toUpperCase()
+    : '?';
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <PageHeader
-        title="Thông tin cá nhân"
-        variant="default"
-        rightComponent={
-          !isEditing ? (
-            <TouchableOpacity onPress={() => setIsEditing(true)}>
-              <Icon name="pencil" size={ICON_SIZE.md} color={theme.colors.primary} />
-            </TouchableOpacity>
-          ) : null
-        }
-      />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Icon name="arrow-left" size={22} color={theme.colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Thông tin cá nhân</Text>
+        {!isEditing ? (
+          <TouchableOpacity onPress={() => setIsEditing(true)}>
+            <Icon name="pencil" size={20} color={theme.colors.primary} />
+          </TouchableOpacity>
+        ) : <View style={{ width: 20 }} />}
+      </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Avatar Section */}
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {/* Avatar */}
         <View style={styles.avatarSection}>
-          <View style={styles.avatarContainer}>
-            {formData.anh_dai_dien ? (
-              <Image source={{ uri: formData.anh_dai_dien }} style={styles.avatar} />
+          <View style={styles.avatarWrap}>
+            {formData.avatar ? (
+              <Image source={{ uri: formData.avatar }} style={styles.avatar} />
             ) : (
               <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarText}>
-                  {formData.ho_ten?.charAt(0) || 'U'}
-                </Text>
+                <Text style={styles.avatarText}>{initials}</Text>
               </View>
             )}
             {isEditing && (
-              <TouchableOpacity
-                style={styles.editAvatarButton}
-                onPress={handlePickImage}
-                disabled={uploadingAvatar}
-              >
-                {uploadingAvatar ? (
-                  <ActivityIndicator size="small" color={theme.colors.white} />
-                ) : (
-                  <Icon name="camera" size={20} color={theme.colors.white} />
-                )}
+              <TouchableOpacity style={styles.cameraBtn} onPress={handlePickImage} disabled={uploadingAvatar}>
+                {uploadingAvatar
+                  ? <ActivityIndicator size="small" color="#fff" />
+                  : <Icon name="camera" size={18} color="#fff" />}
               </TouchableOpacity>
             )}
           </View>
+          {!isEditing && <Text style={styles.nameDisplay}>{formData.name}</Text>}
+          {!isEditing && <Text style={styles.emailDisplay}>{(user as any)?.email}</Text>}
         </View>
 
-        {/* Form Section */}
-        <View style={styles.formSection}>
-          <InputCustom
+        {/* Form */}
+        <View style={styles.card}>
+          <FieldRow
+            icon="account-outline"
             label="Họ và tên"
-            placeholder="Nhập họ và tên"
-            value={formData.ho_ten}
-            onChangeText={(text) => setFormData({ ...formData, ho_ten: text })}
-            error={errors.ho_ten}
+            value={formData.name}
             editable={isEditing}
-            leftIcon="account-outline"
-            containerStyle={styles.input}
+            onChangeText={t => setFormData(p => ({ ...p, name: t }))}
           />
-
-          <InputCustom
+          <FieldRow
+            icon="email-outline"
             label="Email"
-            placeholder="Email"
-            value={user?.email || ''}
-            onChangeText={() => { }} // Read-only field
+            value={(user as any)?.email || ''}
             editable={false}
-            leftIcon="email-outline"
-            containerStyle={styles.input}
           />
-
-          <InputCustom
+          <FieldRow
+            icon="phone-outline"
             label="Số điện thoại"
-            placeholder="Nhập số điện thoại"
-            value={formData.so_dien_thoai}
-            onChangeText={(text) => setFormData({ ...formData, so_dien_thoai: text })}
-            error={errors.so_dien_thoai}
+            value={formData.phone}
             editable={isEditing}
-            leftIcon="phone-outline"
-            keyboardType="phone-pad"
-            containerStyle={styles.input}
+            onChangeText={t => setFormData(p => ({ ...p, phone: t }))}
+            last
           />
-
-          {/* User Stats */}
-          <View style={styles.statsSection}>
-            <Text style={styles.sectionTitle}>Thống kê</Text>
-            <View style={styles.statsGrid}>
-              <View style={styles.statCard}>
-                <Icon name="file-document-outline" size={24} color={theme.colors.primary} />
-                <Text style={styles.statValue}>{user?.tong_so_phan_anh || 0}</Text>
-                <Text style={styles.statLabel}>Báo cáo</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Icon name="star-outline" size={24} color={theme.colors.warning} />
-                <Text style={styles.statValue}>{user?.diem_thanh_pho || 0}</Text>
-                <Text style={styles.statLabel}>Điểm thưởng</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Icon name="shield-check-outline" size={24} color={theme.colors.success} />
-                <Text style={styles.statValue}>{user?.diem_uy_tin || 0}</Text>
-                <Text style={styles.statLabel}>Uy tín</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Icon name="percent-outline" size={24} color={theme.colors.info} />
-                <Text style={styles.statValue}>{user?.ty_le_chinh_xac || 0}%</Text>
-                <Text style={styles.statLabel}>Chính xác</Text>
-              </View>
-            </View>
-          </View>
         </View>
 
-        {/* Action Buttons */}
+        {/* Actions */}
         {isEditing && (
-          <View style={styles.actionButtons}>
-            <ButtonCustom
-              title="Hủy"
-              onPress={handleCancel}
-              variant="outline"
-              style={styles.cancelButton}
-            />
-            <ButtonCustom
-              title={loading ? 'Đang lưu...' : 'Lưu'}
-              onPress={handleSave}
-              disabled={loading}
-              style={styles.saveButton}
-              icon={loading ? undefined : 'content-save'}
-            />
+          <View style={styles.actions}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={() => { setIsEditing(false); }}>
+              <Text style={styles.cancelText}>Hủy</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={loading}>
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Lưu thay đổi</Text>}
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
-
-      {loading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
-      )}
-
-      {/* Success Modal */}
-      <ModalCustom
-        isModalVisible={showSuccessModal}
-        setIsModalVisible={setShowSuccessModal}
-        title="Thành công"
-        type="success"
-        isClose={false}
-        actionText="OK"
-        onPressAction={() => {
-          setIsEditing(false);
-          navigation.goBack();
-        }}
-      >
-        <Text style={{ textAlign: 'center', color: theme.colors.text }}>
-          Cập nhật thông tin thành công
-        </Text>
-      </ModalCustom>
-
-      {/* Error Modal */}
-      <ModalCustom
-        isModalVisible={showErrorModal}
-        setIsModalVisible={setShowErrorModal}
-        title="Lỗi"
-        type="error"
-        isClose={false}
-        actionText="OK"
-      >
-        <Text style={{ textAlign: 'center', color: theme.colors.text }}>
-          {errorMessage}
-        </Text>
-      </ModalCustom>
     </SafeAreaView>
   );
 };
 
+// Simple field row component
+import { TextInput } from 'react-native';
+
+const FieldRow = ({ icon, label, value, editable = false, onChangeText, last }: {
+  icon: string; label: string; value: string; editable?: boolean;
+  onChangeText?: (t: string) => void; last?: boolean;
+}) => (
+  <View style={[fieldStyles.row, !last && fieldStyles.border]}>
+    <Icon name={icon} size={18} color={theme.colors.textSecondary} />
+    <View style={{ flex: 1 }}>
+      <Text style={fieldStyles.label}>{label}</Text>
+      {editable ? (
+        <TextInput
+          style={fieldStyles.input}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={label}
+          placeholderTextColor={theme.colors.textTertiary}
+        />
+      ) : (
+        <Text style={fieldStyles.value}>{value || '—'}</Text>
+      )}
+    </View>
+  </View>
+);
+
+const fieldStyles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14 },
+  border: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  label: { fontSize: 11, color: theme.colors.textSecondary, marginBottom: 2 },
+  value: { fontSize: 15, color: theme.colors.text },
+  input: { fontSize: 15, color: theme.colors.text, padding: 0, borderBottomWidth: 1, borderBottomColor: theme.colors.primary + '40' },
+});
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  header: {
+    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16,
+    paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
   },
-  content: {
-    flex: 1,
-  },
-  avatarSection: {
-    alignItems: 'center',
-    paddingVertical: SPACING.xl,
-    backgroundColor: theme.colors.white,
-    marginBottom: SPACING.md,
-  },
-  avatarContainer: {
-    position: 'relative',
-  },
-  avatar: {
-    width: wp('30%'),
-    height: wp('30%'),
-    borderRadius: wp('15%'),
-  },
+  backBtn: { width: 40, height: 40, justifyContent: 'center' },
+  headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: theme.colors.text },
+
+  scroll: { padding: 20 },
+
+  avatarSection: { alignItems: 'center', marginBottom: 24 },
+  avatarWrap: { position: 'relative' },
+  avatar: { width: 88, height: 88, borderRadius: 44 },
   avatarPlaceholder: {
-    width: wp('30%'),
-    height: wp('30%'),
-    borderRadius: wp('15%'),
-    backgroundColor: theme.colors.primary + '20',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 88, height: 88, borderRadius: 44,
+    backgroundColor: theme.colors.primary + '15',
+    justifyContent: 'center', alignItems: 'center',
   },
-  avatarText: {
-    fontSize: FONT_SIZE['3xl'],
-    fontWeight: '700',
-    color: theme.colors.primary,
+  avatarText: { fontSize: 28, fontWeight: '700', color: theme.colors.primary },
+  cameraBtn: {
+    position: 'absolute', bottom: 0, right: 0,
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center',
+    borderWidth: 2, borderColor: '#fff',
   },
-  editAvatarButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: theme.colors.white,
-  },
-  formSection: {
-    backgroundColor: theme.colors.white,
-    padding: SCREEN_PADDING.horizontal,
-    marginBottom: SPACING.md,
-  },
-  input: {
-    marginBottom: SPACING.md,
-  },
-  statsSection: {
-    marginTop: SPACING.lg,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: '600',
-    color: theme.colors.text,
-    marginBottom: SPACING.md,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: theme.colors.backgroundSecondary,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginTop: SPACING.xs,
-  },
-  statLabel: {
-    fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-    padding: SCREEN_PADDING.horizontal,
-    marginBottom: SPACING['xl'],
-  },
-  cancelButton: {
-    flex: 1,
-  },
-  saveButton: {
-    flex: 1,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  nameDisplay: { fontSize: 20, fontWeight: '700', color: theme.colors.text, marginTop: 12 },
+  emailDisplay: { fontSize: 14, color: theme.colors.textSecondary, marginTop: 2 },
+
+  card: { backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 16, marginBottom: 20 },
+
+  actions: { flexDirection: 'row', gap: 12 },
+  cancelBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#F3F4F6', alignItems: 'center' },
+  cancelText: { fontSize: 15, fontWeight: '600', color: theme.colors.textSecondary },
+  saveBtn: { flex: 2, paddingVertical: 14, borderRadius: 12, backgroundColor: theme.colors.primary, alignItems: 'center' },
+  saveText: { fontSize: 15, fontWeight: '600', color: '#fff' },
 });
 
 export default UserProfileScreen;

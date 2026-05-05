@@ -86,7 +86,11 @@ const ChangePasswordLoggedInScreen = () => {
 
         setLoading(true);
         try {
-            await authService.changePassword(formData);
+            await authService.changePassword({
+                current_password: formData.mat_khau_cu,
+                password: formData.mat_khau_moi,
+                password_confirmation: formData.mat_khau_moi_confirmation,
+            });
             setShowSuccessModal(true);
         } catch (error: any) {
             console.error('Change password error:', error);
