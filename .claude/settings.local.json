@@ -47,7 +47,27 @@
       "Read(//tmp/**)",
       "Bash(git commit *)",
       "WebFetch(domain:docs.openmap.vn)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "mcp__plugin_claude-mem_mcp-search__get_observations",
+      "WebFetch(domain:www.reddit.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:designmd.ai)",
+      "Bash(curl -sL https://designmd.ai/)",
+      "Bash(curl -sL \"https://designmd.ai/\")",
+      "Bash(curl -sL \"https://designmd.ai/what-is-design-md\")",
+      "Bash(curl -sL \"https://designmd.ai/chef/genesis\")",
+      "Bash(curl -sL \"https://antigravity-kit-v2.vercel.app/docs\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -sL \"https://antigravity-kit-v2.vercel.app/docs/getting-started/installation\")",
+      "Bash(curl -sL \"https://antigravity-kit-v2.vercel.app/docs/core-concepts/workflows\")",
+      "Bash(curl -sL \"https://antigravity-kit-v2.vercel.app/docs/workflows/advanced-ui-design\")",
+      "Bash(curl -sL https://antigravity-kit-v2.vercel.app/docs/__TRACKED_VAR__)",
+      "Bash(curl -sL \"https://antigravity-kit-v2.vercel.app/docs/guide/examples/ui-design\")",
+      "Bash(curl -sL \"https://next-saas-starter-ashy.vercel.app/\")",
+      "Read(//private/tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(npx next *)",
+      "Bash(git *)"
     ]
   }
 }

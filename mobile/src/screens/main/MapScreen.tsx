@@ -1,22 +1,32 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform,
-  ScrollView, TextInput, Animated, Image,
+  ScrollView, TextInput, Animated, Image, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapboxGL from '@rnmapbox/maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { theme } from '../../theme';
+import { theme, cardStyles } from '../../theme';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { OPENMAP_STYLE_URL } from '../../config/mapbox';
 import { mapService } from '../../services/mapService';
 import { reportService } from '../../services/reportService';
 import { MapReport, MapBounds } from '../../types/api/map';
-// ReportDetail used as 'any' in sheet due to mixed API field names
 import { incidentService, Incident } from '../../services/incidentService';
 
 MapboxGL.setAccessToken('');
+
+// ─── Layer Types ─────────────────────────────────────────────
+type LayerKey = 'alerts' | 'shelters' | 'flood_zones' | 'flood_points' | 'flood_streets';
+
+const LAYER_CONFIGS: Array<{ key: LayerKey; label: string; color: string; icon: string }> = [
+  { key: 'flood_zones',   label: 'Vùng ngập',     color: '#EF4444', icon: 'map-marker-radius' },
+  { key: 'flood_streets', label: 'Đường ngập',    color: '#3B82F6', icon: 'waves' },
+  { key: 'flood_points',  label: 'Điểm ngập',     color: '#3B82F6', icon: 'water' },
+  { key: 'alerts',        label: 'Cảnh báo',       color: '#EF4444', icon: 'alert' },
+  { key: 'shelters',      label: 'Trú ẩn',         color: '#16A34A', icon: 'home-heart' },
+];
 
 // ─── Constants ─────────────────────────────────────────────
 const DA_NANG_CENTER: [number, number] = [108.2122, 16.0680];
@@ -50,7 +60,11 @@ const MOCK_PATROLS = [
 ];
 
 const SEVERITY_COLORS: Record<string, string> = {
-  critical: '#EF4444', high: '#F97316', medium: '#F59E0B', low: '#10B981',
+  critical: '#EF4444', high: '#F97316', medium: '#F59E0B', low: '#3B82F6',
+};
+
+const SEVERITY_LABELS: Record<string, string> = {
+  critical: 'Nghiêm trọng', high: 'Cao', medium: 'Trung bình', low: 'Thấp',
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -62,6 +76,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const getCategoryColor = (id: number) => CITIZEN_CATEGORIES.find(c => c.id === id)?.color || '#8E8E93';
+
+const getSeverityColor = (severity: string) => SEVERITY_COLORS[severity] || '#6B7280';
 
 // ─── Component ─────────────────────────────────────────────
 const MapScreen = () => {
@@ -84,11 +100,42 @@ const MapScreen = () => {
   const [mapIncidents, setMapIncidents] = useState<Incident[]>([]);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [mapIcons, setMapIcons] = useState<Record<string, any>>({});
+  const [showLayers, setShowLayers] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
+  const [activeLayers, setActiveLayers] = useState<Set<LayerKey>>(
+    new Set(['alerts', 'shelters', 'flood_zones', 'flood_streets'] as LayerKey[])
+  );
+  const [locating, setLocating] = useState(false);
 
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const mapRef = useRef<MapboxGL.MapView>(null);
   const slideAnim = useRef(new Animated.Value(500)).current;
   const backdropAnim = useRef(new Animated.Value(0)).current;
+  const layerPanelAnim = useRef(new Animated.Value(-200)).current;
+
+  // ─── Layer Toggle ───────────────────────────────────────────
+  const toggleLayer = (key: LayerKey) => {
+    setActiveLayers(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const toggleLayerPanel = () => {
+    const toValue = showLayers ? -200 : 0;
+    Animated.spring(layerPanelAnim, {
+      toValue,
+      tension: 100,
+      friction: 12,
+      useNativeDriver: true,
+    }).start();
+    setShowLayers(!showLayers);
+  };
 
   // ─── Icon Generation ─────────────────────────────────────
   useEffect(() => {
@@ -235,6 +282,10 @@ const MapScreen = () => {
 
   // ─── Handlers ────────────────────────────────────────────
   const centerUserLocation = () => {
+    if (!userLocation && cameraRef.current) {
+      setLocating(true);
+      return;
+    }
     if (userLocation && cameraRef.current) {
       cameraRef.current.setCamera({ centerCoordinate: userLocation, zoomLevel: 15, animationDuration: 1000 });
     }
@@ -472,6 +523,108 @@ const MapScreen = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Layer Controls - Top Right */}
+      <View style={styles.layerControlsContainer}>
+        {/* Locate Button */}
+        <TouchableOpacity style={styles.layerBtn} onPress={centerUserLocation}>
+          <Icon name="crosshairs-gps" size={20} color={locating ? theme.colors.primary : theme.colors.textSecondary} />
+        </TouchableOpacity>
+
+        {/* Refresh Button */}
+        <TouchableOpacity style={styles.layerBtn} onPress={fetchMapReports}>
+          <Icon name="refresh" size={20} color={loading ? theme.colors.primary : theme.colors.textSecondary} />
+        </TouchableOpacity>
+
+        {/* Layers Toggle Button */}
+        <TouchableOpacity style={styles.layerBtn} onPress={toggleLayerPanel}>
+          <Icon name="layers" size={20} color={showLayers ? theme.colors.primary : theme.colors.textSecondary} />
+        </TouchableOpacity>
+
+        {/* Legend Toggle Button */}
+        <TouchableOpacity style={styles.legendBtn} onPress={() => setShowLegend(!showLegend)}>
+          <Icon name="map-marker" size={18} color={showLegend ? theme.colors.primary : theme.colors.textSecondary} />
+          <Text style={styles.legendBtnText}>Chú giải</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Layer Panel */}
+      {showLayers && (
+        <Animated.View style={[styles.layerPanel, { transform: [{ translateX: layerPanelAnim }] }]}>
+          <View style={styles.layerPanelHeader}>
+            <Icon name="layers" size={14} color={theme.colors.primary} />
+            <Text style={styles.layerPanelTitle}>Lớp bản đồ</Text>
+            <TouchableOpacity onPress={toggleLayerPanel} style={styles.layerPanelClose}>
+              <Icon name="close" size={16} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+          {LAYER_CONFIGS.map(cfg => {
+            const isActive = activeLayers.has(cfg.key);
+            return (
+              <TouchableOpacity
+                key={cfg.key}
+                style={styles.layerItem}
+                onPress={() => toggleLayer(cfg.key)}
+              >
+                <Icon name={cfg.icon} size={18} color={isActive ? cfg.color : theme.colors.textTertiary} />
+                <Text style={[styles.layerItemLabel, { color: isActive ? theme.colors.text : theme.colors.textTertiary }]}>
+                  {cfg.label}
+                </Text>
+                <View style={[
+                  styles.layerToggle,
+                  { backgroundColor: isActive ? theme.colors.primary : theme.colors.border }
+                ]}>
+                  <View style={[
+                    styles.layerToggleDot,
+                    { transform: [{ translateX: isActive ? 12 : 2 }] }
+                  ]} />
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </Animated.View>
+      )}
+
+      {/* Legend Panel */}
+      {showLegend && (
+        <Animated.View style={styles.legendPanel}>
+          <Text style={styles.legendTitle}>CHÚ GIẢI</Text>
+          <View style={styles.legendContent}>
+            {/* Severity levels */}
+            <View style={styles.legendSection}>
+              <Text style={styles.legendSectionTitle}>Mức độ nghiêm trọng</Text>
+              {[
+                { color: '#EF4444', label: 'Nghiêm trọng' },
+                { color: '#F97316', label: 'Cao' },
+                { color: '#F59E0B', label: 'Trung bình' },
+                { color: '#3B82F6', label: 'Thấp' },
+              ].map(item => (
+                <View key={item.color} style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                  <Text style={styles.legendItemText}>{item.label}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Layer types */}
+            <View style={styles.legendSection}>
+              <Text style={styles.legendSectionTitle}>Loại đối tượng</Text>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendSquare, { backgroundColor: '#16A34A' }]} />
+                <Text style={styles.legendItemText}>Trú ẩn</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={styles.legendLine} />
+                <Text style={styles.legendItemText}>Đường ngập</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: '#3B82F6' }]} />
+                <Text style={styles.legendItemText}>Điểm ngập</Text>
+              </View>
+            </View>
+          </View>
+        </Animated.View>
+      )}
+
       {/* Bottom Sheet */}
       {showSheet && (
         <>
@@ -563,8 +716,14 @@ const ReportSheet = ({ report, detail, loading, onClose, onNavigate }: {
 const IncidentSheet = ({ incident, onClose, onNavigate }: {
   incident: Incident; onClose: () => void; onNavigate: (id: number) => void;
 }) => {
-  const sevColor = SEVERITY_COLORS[incident.severity] || '#10B981';
+  const sevColor = getSeverityColor(incident.severity);
+  const sevLabel = SEVERITY_LABELS[incident.severity] || incident.severity || 'Thấp';
   const statColor = STATUS_COLORS[incident.status] || '#6B7280';
+  const statLabel = STATUS_LABELS[incident.status] || incident.status || 'Mở';
+
+  const handleCallEmergency = () => {
+    Linking.openURL('tel:113');
+  };
 
   return (
     <>
@@ -579,12 +738,13 @@ const IncidentSheet = ({ incident, onClose, onNavigate }: {
       </View>
 
       <View style={styles.badgeRow}>
-        <View style={[styles.badge, { backgroundColor: sevColor + '15' }]}>
-          <Text style={[styles.badgeText, { color: sevColor }]}>{incident.severity?.toUpperCase()}</Text>
+        <View style={[styles.badge, { backgroundColor: sevColor + '18', borderWidth: 1, borderColor: sevColor + '40' }]}>
+          <Icon name="alert" size={12} color={sevColor} />
+          <Text style={[styles.badgeText, { color: sevColor }]}>{sevLabel.toUpperCase()}</Text>
         </View>
         <View style={[styles.badge, { backgroundColor: statColor + '15' }]}>
           <View style={[styles.dot, { backgroundColor: statColor }]} />
-          <Text style={[styles.badgeText, { color: statColor }]}>{STATUS_LABELS[incident.status] || incident.status}</Text>
+          <Text style={[styles.badgeText, { color: statColor }]}>{statLabel}</Text>
         </View>
       </View>
 
@@ -610,6 +770,13 @@ const IncidentSheet = ({ incident, onClose, onNavigate }: {
       </View>
 
       <View style={styles.sheetActions}>
+        <TouchableOpacity
+          style={[styles.actionBtnOutline, { borderColor: theme.colors.border }]}
+          onPress={handleCallEmergency}
+        >
+          <Icon name="phone" size={18} color="#EF4444" />
+          <Text style={[styles.actionBtnOutlineText, { color: '#EF4444' }]}>Gọi khẩn cấp</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.primaryBtn} onPress={() => onNavigate(incident.id)}>
           <Icon name="shield-alert-outline" size={18} color="#fff" />
           <Text style={styles.primaryBtnText}>Chi tiết sự cố</Text>
@@ -706,6 +873,186 @@ const styles = StyleSheet.create({
     backgroundColor: '#EF4444', paddingVertical: 14, borderRadius: 12,
   },
   primaryBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  actionBtnOutline: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    flex: 1, paddingVertical: 14, borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  actionBtnOutlineText: { fontSize: 14, fontWeight: '600' },
+
+  // ─── Layer Controls ────────────────────────────────────────
+  layerControlsContainer: {
+    position: 'absolute',
+    top: Platform.select({ ios: 100, android: 90 }),
+    right: 12,
+    alignItems: 'center',
+    gap: 8,
+  },
+  layerBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#f3f4f6',
+  },
+  legendBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#f3f4f6',
+  },
+  legendBtnText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+  },
+
+  // ─── Layer Panel ──────────────────────────────────────────
+  layerPanel: {
+    position: 'absolute',
+    top: Platform.select({ ios: 100, android: 90 }),
+    right: 64,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    minWidth: 180,
+    overflow: 'hidden',
+  },
+  layerPanelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+    backgroundColor: '#fafafa',
+  },
+  layerPanelTitle: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+  layerPanelClose: {
+    padding: 4,
+  },
+  layerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  layerItemLabel: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  layerToggle: {
+    width: 32,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  layerToggleDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+  },
+
+  // ─── Legend Panel ─────────────────────────────────────────
+  legendPanel: {
+    position: 'absolute',
+    bottom: Platform.select({ ios: 110, android: 90 }),
+    left: 12,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    minWidth: 160,
+    maxWidth: 200,
+    overflow: 'hidden',
+  },
+  legendTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+    letterSpacing: 1,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  legendContent: {
+    paddingHorizontal: 14,
+    paddingBottom: 12,
+  },
+  legendSection: {
+    marginBottom: 10,
+  },
+  legendSectionTitle: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: theme.colors.textTertiary,
+    marginBottom: 6,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  legendDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  legendSquare: {
+    width: 12,
+    height: 12,
+    borderRadius: 3,
+  },
+  legendLine: {
+    width: 20,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: '#3B82F6',
+  },
+  legendItemText: {
+    fontSize: 11,
+    color: theme.colors.text,
+  },
 });
 
 export default MapScreen;

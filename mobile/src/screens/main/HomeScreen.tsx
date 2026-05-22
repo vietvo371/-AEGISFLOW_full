@@ -23,17 +23,17 @@ type NavigationProp = CompositeNavigationProp<
 >;
 
 const QUICK_ACTIONS = [
-  { id: 'report', label: 'Báo cáo\nngập', icon: 'file-document-edit-outline', color: '#3B82F6', bg: '#EFF6FF', screen: 'CreateReport' },
-  { id: 'rescue', label: 'Cứu hộ', icon: 'lifebuoy', color: '#EF4444', bg: '#FEF2F2', screen: 'RescueRequest' },
-  { id: 'shelter', label: 'Trú ẩn', icon: 'home-roof', color: '#22C55E', bg: '#F0FDF4', screen: 'ShelterList' },
-  { id: 'map', label: 'Bản đồ', icon: 'map-marker-radius', color: '#7a5af8', bg: '#F5F3FF', tab: 'Map' },
+  { id: 'report', icon: 'file-document-edit-outline', color: '#3B82F6', bg: '#EFF6FF', tab: 'Map', labelKey: 'reportFlood' },
+  { id: 'rescue', icon: 'lifebuoy', color: '#EF4444', bg: '#FEF2F2', tab: 'SOS', labelKey: 'rescue' },
+  { id: 'shelter', icon: 'home-roof', color: '#22C55E', bg: '#F0FDF4', tab: 'Shelters', labelKey: 'shelters' },
+  { id: 'map', icon: 'map-marker-radius', color: '#7a5af8', bg: '#F5F3FF', tab: 'Map', labelKey: 'viewMap' },
 ] as const;
 
-const SEVERITY_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  critical: { label: 'NGHIÊM TRỌNG', color: '#EF4444', bg: '#FEF2F2' },
-  high: { label: 'CAO', color: '#F97316', bg: '#FFF7ED' },
-  medium: { label: 'TRUNG BÌNH', color: '#EAB308', bg: '#FEFCE8' },
-  low: { label: 'THẤP', color: '#3B82F6', bg: '#EFF6FF' },
+const SEVERITY_CONFIG: Record<string, { labelKey: string; color: string; bg: string }> = {
+  critical: { labelKey: 'critical', color: '#ef4444', bg: '#FEF2F2' },
+  high: { labelKey: 'high', color: '#F97316', bg: '#FFF7ED' },
+  medium: { labelKey: 'medium', color: '#EAB308', bg: '#FEFCE8' },
+  low: { labelKey: 'low', color: '#3B82F6', bg: '#EFF6FF' },
 };
 
 const HomeScreen = () => {
@@ -73,7 +73,6 @@ const HomeScreen = () => {
 
   const handleQuickAction = (action: typeof QUICK_ACTIONS[number]) => {
     if ('tab' in action) navigation.navigate(action.tab as any);
-    else if ('screen' in action) navigation.navigate(action.screen as any);
   };
 
   const firstName = user?.name?.split(' ').pop() || 'Cư dân';
@@ -94,7 +93,7 @@ const HomeScreen = () => {
           <View style={styles.headerTop}>
             <View style={{ flex: 1 }}>
               <Text style={styles.headerDate}>{dateStr}</Text>
-              <Text style={styles.headerGreeting}>Xin chào, {firstName} 👋</Text>
+              <Text style={styles.headerGreeting}>{t('citizen.dashboard.greeting', firstName)}</Text>
             </View>
             <TouchableOpacity
               style={styles.notifBtn}
@@ -112,7 +111,7 @@ const HomeScreen = () => {
           {/* AI Status Chip */}
           <View style={styles.aiChip}>
             <View style={styles.aiDot} />
-            <Text style={styles.aiChipText}>{t('home.aiMonitoring', 'AI đang theo dõi khu vực của bạn')}</Text>
+            <Text style={styles.aiChipText}>{t('citizen.dashboard.subtitle')}</Text>
           </View>
         </SafeAreaView>
       </View>
@@ -128,21 +127,24 @@ const HomeScreen = () => {
             <Icon name="weather-partly-cloudy" size={48} color="#F59E0B" />
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.weatherTemp}>{temp}°</Text>
-              <Text style={styles.weatherDesc}>{t('home.weatherDesc', 'Mưa rào, độ ẩm cao')}</Text>
+              <Text style={styles.weatherDesc}>{t('citizen.dashboard.weather')}</Text>
             </View>
           </View>
           <View style={styles.weatherMeta}>
             <View style={styles.weatherMetaItem}>
               <Icon name="water-percent" size={14} color="#3B82F6" />
               <Text style={styles.weatherMetaText}>{humidity}%</Text>
+              <Text style={styles.weatherMetaLabel}>{t('citizen.dashboard.humidity')}</Text>
             </View>
             <View style={styles.weatherMetaItem}>
               <Icon name="weather-pouring" size={14} color="#3B82F6" />
               <Text style={styles.weatherMetaText}>{rainfall}mm/h</Text>
+              <Text style={styles.weatherMetaLabel}>{t('citizen.dashboard.rainfall')}</Text>
             </View>
             <View style={styles.weatherMetaItem}>
               <Icon name="weather-windy" size={14} color="#3B82F6" />
               <Text style={styles.weatherMetaText}>12km/h</Text>
+              <Text style={styles.weatherMetaLabel}>{t('citizen.dashboard.wind')}</Text>
             </View>
           </View>
         </View>
@@ -151,18 +153,18 @@ const HomeScreen = () => {
         <View style={styles.predictionCard}>
           <View style={styles.predictionHeader}>
             <Icon name="brain" size={18} color="#fff" />
-            <Text style={styles.predictionTitle}>{t('home.aiPrediction', 'Dự báo AI thông minh')}</Text>
+            <Text style={styles.predictionTitle}>{t('citizen.dashboard.aiPrediction')}</Text>
           </View>
-          <Text style={styles.predictionSub}>{t('home.predictionUpdate', 'Cập nhật 5 phút trước')}</Text>
+          <Text style={styles.predictionSub}>{t('common.refresh')}</Text>
 
           <View style={styles.predictionBody}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.predictionRisk}>{t('home.floodRisk', 'Nguy cơ ngập trong 2 giờ tới')}</Text>
-              <Text style={styles.predictionDetail}>{t('home.floodArea', 'Khu vực Quận 7 — Mực nước dự kiến 0.5m')}</Text>
+              <Text style={styles.predictionRisk}>{t('citizen.dashboard.floodRisk')}</Text>
+              <Text style={styles.predictionDetail}>{t('citizen.dashboard.riskAssessment')}</Text>
             </View>
             <View style={styles.predictionPercent}>
               <Text style={styles.percentValue}>78%</Text>
-              <Text style={styles.percentLabel}>{t('home.confidence', 'ĐỘ TIN CẬY')}</Text>
+              <Text style={styles.percentLabel}>{t('citizen.dashboard.reliability').toUpperCase()}</Text>
             </View>
           </View>
         </View>
@@ -171,15 +173,15 @@ const HomeScreen = () => {
         <View style={styles.metricsRow}>
           <View style={styles.metricItem}>
             <Text style={styles.metricValue}>{rainfall}mm</Text>
-            <Text style={styles.metricLabel}>{t('home.rainfall', 'LƯỢNG MƯA')}</Text>
+            <Text style={styles.metricLabel}>{t('citizen.dashboard.rainfall').toUpperCase()}</Text>
           </View>
           <View style={styles.metricItem}>
             <Text style={styles.metricValue}>1.2m</Text>
-            <Text style={styles.metricLabel}>{t('home.tideLevel', 'TRIỀU CƯỜNG')}</Text>
+            <Text style={styles.metricLabel}>{t('flood.waterLevel').toUpperCase()}</Text>
           </View>
           <View style={styles.metricItem}>
             <Text style={styles.metricValue}>85%</Text>
-            <Text style={styles.metricLabel}>{t('home.saturation', 'ĐỘ BÃO HÒA')}</Text>
+            <Text style={styles.metricLabel}>{t('citizen.dashboard.humidity').toUpperCase()}</Text>
           </View>
         </View>
 
@@ -188,10 +190,10 @@ const HomeScreen = () => {
           <View style={styles.riskHeader}>
             <View style={styles.riskHeaderLeft}>
               <Icon name="shield-alert-outline" size={20} color="#F59E0B" />
-              <Text style={styles.riskTitle}>{t('home.riskAssessment', 'Đánh giá rủi ro khu vực')}</Text>
+              <Text style={styles.riskTitle}>{t('citizen.dashboard.riskAssessment')}</Text>
             </View>
             <View style={styles.riskBadge}>
-              <Text style={styles.riskBadgeText}>{t('home.medium', 'Trung bình')}</Text>
+              <Text style={styles.riskBadgeText}>{t('citizen.alerts.medium')}</Text>
             </View>
           </View>
 
@@ -207,35 +209,38 @@ const HomeScreen = () => {
             <View style={styles.riskGridItem}>
               <Icon name="weather-pouring" size={20} color="#3B82F6" />
               <View>
-                <Text style={styles.riskGridLabel}>{t('home.rainMetric', 'Lượng mưa')}</Text>
+                <Text style={styles.riskGridLabel}>{t('citizen.dashboard.rainfall')}</Text>
                 <Text style={styles.riskGridValue}>{rainfall}mm/h</Text>
               </View>
             </View>
             <View style={styles.riskGridItem}>
               <Icon name="waves" size={20} color="#F97316" />
               <View>
-                <Text style={styles.riskGridLabel}>{t('home.waterLevel', 'Mực nước')}</Text>
+                <Text style={styles.riskGridLabel}>{t('flood.waterLevel')}</Text>
                 <Text style={styles.riskGridValue}>0.3m</Text>
               </View>
             </View>
             <View style={styles.riskGridItem}>
               <Icon name="chart-line" size={20} color="#EF4444" />
               <View>
-                <Text style={styles.riskGridLabel}>{t('home.tide', 'Triều cường')}</Text>
-                <Text style={styles.riskGridValue}>{t('home.peak', 'Cao điểm')}</Text>
+                <Text style={styles.riskGridLabel}>{t('flood.status.monitoring')}</Text>
+                <Text style={styles.riskGridValue}>{t('flood.rising')}</Text>
               </View>
             </View>
             <View style={styles.riskGridItem}>
               <Icon name="pipe-leak" size={20} color="#22C55E" />
               <View>
-                <Text style={styles.riskGridLabel}>{t('home.drainage', 'Thoát nước')}</Text>
-                <Text style={styles.riskGridValue}>{t('home.normal', 'Bình thường')}</Text>
+                <Text style={styles.riskGridLabel}>{t('flood.safetyTips.drainage', 'Drainage')}</Text>
+                <Text style={styles.riskGridValue}>{t('common.normal', 'Normal')}</Text>
               </View>
             </View>
           </View>
         </View>
 
         {/* Quick Actions - colorful */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{t('citizen.dashboard.quickActions')}</Text>
+        </View>
         <View style={styles.quickRow}>
           {QUICK_ACTIONS.map(action => (
             <TouchableOpacity
@@ -247,7 +252,7 @@ const HomeScreen = () => {
               <View style={[styles.quickIcon, { backgroundColor: action.bg }]}>
                 <Icon name={action.icon} size={22} color={action.color} />
               </View>
-              <Text style={styles.quickLabel}>{action.label}</Text>
+              <Text style={styles.quickLabel}>{t(`citizen.dashboard.${action.labelKey}`)}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -264,10 +269,10 @@ const HomeScreen = () => {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.alertBannerTitle} numberOfLines={2}>
-                {criticalAlert.title || t('home.criticalAlert', 'Cảnh báo ngập nghiêm trọng')}
+                {criticalAlert.title || t('citizen.alerts.critical')}
               </Text>
               <Text style={styles.alertBannerDesc} numberOfLines={1}>
-                {criticalAlert.description || 'Đường Nguyễn Văn Linh, Q7 — 0.8m'}
+                {criticalAlert.description || ''}
               </Text>
             </View>
             <Icon name="chevron-right" size={22} color="rgba(255,255,255,0.7)" />
@@ -276,9 +281,9 @@ const HomeScreen = () => {
 
         {/* Active Alerts Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('home.activeAlerts', 'Cảnh báo đang hoạt động')}</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.dashboard.activeAlerts')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Alerts' as any)} style={styles.seeAllBtn}>
-            <Text style={styles.seeAll}>{t('common.seeAll', 'Xem tất cả')}</Text>
+            <Text style={styles.seeAll}>{t('common.all', 'Xem tất cả')}</Text>
             <Icon name="arrow-right" size={14} color="#7a5af8" />
           </TouchableOpacity>
         </View>
@@ -288,7 +293,7 @@ const HomeScreen = () => {
         ) : activeAlerts.length === 0 ? (
           <View style={styles.emptyCard}>
             <Icon name="shield-check-outline" size={40} color="#22C55E" />
-            <Text style={styles.emptyText}>{t('home.safe', 'Khu vực của bạn hiện tại an toàn')}</Text>
+            <Text style={styles.emptyText}>{t('citizen.alerts.allClear', 'Khu vực an toàn')}</Text>
           </View>
         ) : (
           activeAlerts.slice(0, 4).map(alert => {
@@ -309,13 +314,13 @@ const HomeScreen = () => {
                     <View style={styles.alertCardMeta}>
                       <Icon name="clock-outline" size={12} color={theme.colors.textTertiary} />
                       <Text style={styles.alertCardTime}>
-                        {alert.created_at ? getTimeAgo(alert.created_at) : ''}
+                        {alert.created_at ? getTimeAgo(alert.created_at, t) : ''}
                       </Text>
                     </View>
                   </View>
                 </View>
                 <View style={[styles.severityBadge, { backgroundColor: sev.bg }]}>
-                  <Text style={[styles.severityBadgeText, { color: sev.color }]}>{sev.label}</Text>
+                  <Text style={[styles.severityBadgeText, { color: sev.color }]}>{t(`citizen.alerts.${sev.labelKey}`).toUpperCase()}</Text>
                 </View>
               </TouchableOpacity>
             );
@@ -328,10 +333,10 @@ const HomeScreen = () => {
   );
 };
 
-function getTimeAgo(dateStr: string): string {
+function getTimeAgo(dateStr: string, t: (key: string, fallback?: string) => string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `${minutes} phút trước`;
+  if (minutes < 60) return `${minutes} ${t('citizen.alerts.minutesAgo').replace('{{count}}', String(minutes)).split(' ')[0]} trước`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} giờ trước`;
   return `${Math.floor(hours / 24)} ngày trước`;
@@ -390,6 +395,7 @@ const styles = StyleSheet.create({
   weatherMeta: { flexDirection: 'row', gap: SPACING.lg },
   weatherMetaItem: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
   weatherMetaText: { fontSize: FONT_SIZE.xs, color: theme.colors.textSecondary },
+  weatherMetaLabel: { fontSize: 8, color: theme.colors.textTertiary },
 
   // AI Prediction Card
   predictionCard: {
@@ -446,7 +452,7 @@ const styles = StyleSheet.create({
     width: 52, height: 52, borderRadius: 26,
     justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.xs,
   },
-  quickLabel: { fontSize: FONT_SIZE['2xs'], color: theme.colors.text, textAlign: 'center', fontWeight: '500' },
+  quickLabel: { fontSize: FONT_SIZE['2xs'], color: theme.colors.text, textAlign: 'center', fontWeight: '500', marginTop: SPACING.xs },
 
   // Alert Banner
   alertBanner: {

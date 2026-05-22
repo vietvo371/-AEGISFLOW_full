@@ -10,19 +10,12 @@ import { useTranslation } from 'react-i18next';
 import { theme, FONT_SIZE, SPACING, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING } from '../../theme';
 import { alertService, AlertItem } from '../../services/alertService';
 
-const SEVERITY_CONFIG: Record<string, { label: string; color: string; borderColor: string }> = {
-  critical: { label: 'NGHIÊM TRỌNG', color: '#EF4444', borderColor: '#EF4444' },
-  high: { label: 'CAO', color: '#F97316', borderColor: '#F97316' },
-  medium: { label: 'TRUNG BÌNH', color: '#EAB308', borderColor: '#EAB308' },
-  low: { label: 'THẤP', color: '#3B82F6', borderColor: '#3B82F6' },
-};
-
-const FILTERS = [
-  { key: 'all', label: 'Tất cả' },
-  { key: 'critical', label: 'Nghiêm trọng' },
-  { key: 'high', label: 'Cao' },
-  { key: 'medium', label: 'Trung bình' },
-] as const;
+const SEVERITY_CONFIG = (t: (key: string) => string): Record<string, { label: string; color: string; borderColor: string }> => ({
+  critical: { label: t('citizen.alerts.critical'), color: '#EF4444', borderColor: '#EF4444' },
+  high: { label: t('citizen.alerts.high'), color: '#F97316', borderColor: '#F97316' },
+  medium: { label: t('citizen.alerts.medium'), color: '#EAB308', borderColor: '#EAB308' },
+  low: { label: t('citizen.alerts.low'), color: '#3B82F6', borderColor: '#3B82F6' },
+});
 
 const AlertsScreen = () => {
   const { t } = useTranslation();
@@ -33,6 +26,15 @@ const AlertsScreen = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [activeFilter, setActiveFilter] = useState<string>('all');
+
+  const FILTERS = [
+    { key: 'all', label: t('citizen.alerts.all') },
+    { key: 'critical', label: t('citizen.alerts.critical') },
+    { key: 'high', label: t('citizen.alerts.high') },
+    { key: 'medium', label: t('citizen.alerts.medium') },
+  ] as const;
+
+  const severityConfig = SEVERITY_CONFIG(t);
 
   const fetchAlerts = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
     try {
@@ -67,7 +69,7 @@ const AlertsScreen = () => {
     : alerts.filter(a => a.severity === activeFilter);
 
   const renderAlert = ({ item }: { item: AlertItem }) => {
-    const severity = SEVERITY_CONFIG[item.severity] || SEVERITY_CONFIG.medium;
+    const severity = severityConfig[item.severity] || severityConfig.medium;
 
     return (
       <TouchableOpacity
@@ -93,13 +95,13 @@ const AlertsScreen = () => {
             <View style={styles.timeRow}>
               <Icon name="clock-outline" size={13} color="#9CA3AF" />
               <Text style={styles.timeText}>
-                {item.created_at ? getTimeAgo(item.created_at) : ''}
+                {item.created_at ? getTimeAgo(item.created_at, t) : ''}
               </Text>
             </View>
             {item.status === 'active' && (
               <View style={styles.statusBadge}>
                 <View style={styles.statusDot} />
-                <Text style={styles.statusText}>{t('alerts.active', 'Đang hoạt động')}</Text>
+                <Text style={styles.statusText}>{t('citizen.alerts.active')}</Text>
               </View>
             )}
           </View>
@@ -112,8 +114,8 @@ const AlertsScreen = () => {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('alerts.title', 'Cảnh báo')}</Text>
-        <Text style={styles.headerSubtitle}>{t('alerts.subtitle', 'Cập nhật tình hình ngập lụt & thời tiết')}</Text>
+        <Text style={styles.headerTitle}>{t('citizen.alerts.title')}</Text>
+        <Text style={styles.headerSubtitle}>{t('citizen.alerts.subtitle')}</Text>
 
         {/* Filter Chips */}
         <View style={styles.filterRow}>
@@ -134,6 +136,7 @@ const AlertsScreen = () => {
       {loading && alerts.length === 0 ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
         </View>
       ) : (
         <FlatList
@@ -148,8 +151,8 @@ const AlertsScreen = () => {
           ListEmptyComponent={
             <View style={styles.center}>
               <Icon name="bell-check-outline" size={56} color="#D1D5DB" />
-              <Text style={styles.emptyText}>{t('alerts.empty', 'Không có cảnh báo nào')}</Text>
-              <Text style={styles.emptySubtext}>{t('alerts.safe', 'Khu vực của bạn hiện tại an toàn')}</Text>
+              <Text style={styles.emptyText}>{t('citizen.alerts.noAlerts')}</Text>
+              <Text style={styles.emptySubtext}>{t('citizen.alerts.allClear')}</Text>
             </View>
           }
         />
@@ -158,13 +161,13 @@ const AlertsScreen = () => {
   );
 };
 
-function getTimeAgo(dateStr: string): string {
+function getTimeAgo(dateStr: string, t: (key: string) => string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `${minutes} phút trước`;
+  if (minutes < 60) return `${minutes} ${t('common.time.minutesAgo', { count: minutes })}`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} giờ trước`;
-  return `${Math.floor(hours / 24)} ngày trước`;
+  if (hours < 24) return `${hours} ${t('common.time.hoursAgo', { count: hours })}`;
+  return `${Math.floor(hours / 24)} ${t('common.time.daysAgo', { count: Math.floor(hours / 24) })}`;
 }
 
 const styles = StyleSheet.create({
@@ -220,6 +223,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING['4xl'] },
   emptyText: { fontSize: FONT_SIZE.md, fontWeight: '600', color: theme.colors.text, marginTop: SPACING.lg },
   emptySubtext: { fontSize: FONT_SIZE.xs, color: theme.colors.textTertiary, marginTop: SPACING.xs },
+  loadingText: { fontSize: FONT_SIZE.sm, color: theme.colors.textSecondary, marginTop: SPACING.md },
 });
 
 export default AlertsScreen;

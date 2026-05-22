@@ -80,13 +80,13 @@ const WeatherDetailScreen: React.FC = () => {
   };
 
   const getAlertText = (level: string): string => {
-    const texts: Record<string, string> = {
-      'none': 'Không có cảnh báo',
-      'low': 'Cảnh báo nhẹ',
-      'medium': 'Cảnh báo vừa',
-      'high': 'Cảnh báo cao',
+    const keyMap: Record<string, string> = {
+      'none': 'citizen.weather.risk.low',
+      'low': 'citizen.weather.risk.low',
+      'medium': 'citizen.weather.risk.medium',
+      'high': 'citizen.weather.risk.high',
     };
-    return texts[level] || 'Không có cảnh báo';
+    return t(keyMap[level] || 'citizen.weather.risk.low');
   };
 
   if (loading) {
@@ -124,7 +124,7 @@ const WeatherDetailScreen: React.FC = () => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Icon name="arrow-left" size={24} color={theme.colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('flood.title')} & Thời tiết</Text>
+          <Text style={styles.headerTitle}>{t('citizen.weather.title')}</Text>
           <View style={styles.headerRight} />
         </Animated.View>
 
@@ -140,9 +140,9 @@ const WeatherDetailScreen: React.FC = () => {
                 {getAlertText(weather?.alert_level || 'none')}
               </Text>
               <Text style={styles.alertSubtitle}>
-                {weather?.alert_level === 'high' ? 'Nguy cơ ngập lụt cao - Hạn chế di chuyển' :
-                 weather?.alert_level === 'medium' ? 'Có khả năng mưa lớn - Cẩn thận' :
-                 'Theo dõi tình hình thời tiết'}
+                {weather?.alert_level === 'high' ? t('citizen.weather.tips.stayHome') :
+                 weather?.alert_level === 'medium' ? t('citizen.weather.tips.monitorUpdates') :
+                 t('citizen.weather.tips.monitorUpdates')}
               </Text>
             </View>
           </Animated.View>
@@ -158,24 +158,24 @@ const WeatherDetailScreen: React.FC = () => {
             />
             <View style={styles.currentInfo}>
               <Text style={styles.temperature}>{current?.temperature ?? '--'}°C</Text>
-              <Text style={styles.condition}>{current?.condition || 'Không xác định'}</Text>
+              <Text style={styles.condition}>{current?.condition || '--'}</Text>
             </View>
           </View>
           
           <View style={styles.currentDetails}>
             <View style={styles.detailItem}>
               <Icon name="water-percent" size={24} color={theme.colors.info} />
-              <Text style={styles.detailLabel}>Độ ẩm</Text>
+              <Text style={styles.detailLabel}>{t('citizen.weather.details.humidity')}</Text>
               <Text style={styles.detailValue}>{current?.humidity ?? '--'}%</Text>
             </View>
             <View style={styles.detailItem}>
               <Icon name="weather-rainy" size={24} color={theme.colors.primary} />
-              <Text style={styles.detailLabel}>Lượng mưa</Text>
+              <Text style={styles.detailLabel}>{t('citizen.weather.details.rainfall')}</Text>
               <Text style={styles.detailValue}>{current?.rainfall ?? '--'} mm</Text>
             </View>
             <View style={styles.detailItem}>
               <Icon name="weather-windy" size={24} color={theme.colors.warning} />
-              <Text style={styles.detailLabel}>Tốc độ gió</Text>
+              <Text style={styles.detailLabel}>{t('citizen.weather.details.wind')}</Text>
               <Text style={styles.detailValue}>{current?.wind_speed ?? '--'} km/h</Text>
             </View>
           </View>
@@ -183,12 +183,12 @@ const WeatherDetailScreen: React.FC = () => {
 
         {/* Forecast Section */}
         <Animated.View entering={FadeInDown.duration(500).delay(300)} style={styles.section}>
-          <Text style={styles.sectionTitle}>Dự báo 24h</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.weather.hourlyForecast')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.forecastScroll}>
             {hourlyForecast.slice(0, 12).map((hour, index) => (
               <View key={index} style={styles.forecastItem}>
                 <Text style={styles.forecastTime}>
-                  {index === 0 ? 'Hiện tại' : `${index}h`}
+                  {index === 0 ? t('citizen.weather.current') : `${index}h`}
                 </Text>
                 <Icon 
                   name={getWeatherIcon(hour.condition)} 
@@ -205,34 +205,34 @@ const WeatherDetailScreen: React.FC = () => {
 
         {/* Weather Stats Grid */}
         <Animated.View entering={FadeInDown.duration(500).delay(400)} style={styles.section}>
-          <Text style={styles.sectionTitle}>Chỉ số thời tiết</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.weather.details.temperature')}</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
               <Icon name="thermometer" size={32} color={theme.colors.error} />
               <Text style={styles.statValue}>{current?.temperature ?? '--'}°C</Text>
-              <Text style={styles.statLabel}>Nhiệt độ</Text>
+              <Text style={styles.statLabel}>{t('citizen.weather.details.temperature')}</Text>
             </View>
             <View style={styles.statCard}>
               <Icon name="water" size={32} color={theme.colors.info} />
               <Text style={styles.statValue}>{current?.humidity ?? '--'}%</Text>
-              <Text style={styles.statLabel}>Độ ẩm</Text>
+              <Text style={styles.statLabel}>{t('citizen.weather.details.humidity')}</Text>
             </View>
             <View style={styles.statCard}>
               <Icon name="weather-rain" size={32} color={theme.colors.primary} />
               <Text style={styles.statValue}>{current?.rainfall ?? '--'} mm</Text>
-              <Text style={styles.statLabel}>Lượng mưa</Text>
+              <Text style={styles.statLabel}>{t('citizen.weather.details.rainfall')}</Text>
             </View>
             <View style={styles.statCard}>
               <Icon name="weather-windy-variant" size={32} color={theme.colors.warning} />
               <Text style={styles.statValue}>{current?.wind_speed ?? '--'} km/h</Text>
-              <Text style={styles.statLabel}>Gió</Text>
+              <Text style={styles.statLabel}>{t('citizen.weather.details.wind')}</Text>
             </View>
           </View>
         </Animated.View>
 
         {/* Flood Risk Info */}
         <Animated.View entering={FadeInDown.duration(500).delay(500)} style={styles.section}>
-          <Text style={styles.sectionTitle}>Cảnh báo ngập lụt</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.weather.floodRisk')}</Text>
           <View style={styles.floodCard}>
             <View style={styles.floodHeader}>
               <Icon name="alert-flood" size={32} color={getAlertColor(weather?.alert_level || 'none')} />
@@ -241,22 +241,22 @@ const WeatherDetailScreen: React.FC = () => {
                   {getAlertText(weather?.alert_level || 'none')}
                 </Text>
                 <Text style={styles.floodSubtitle}>
-                  Cập nhật: {current?.timestamp ? new Date(current.timestamp).toLocaleString('vi-VN') : '--'}
+                  {t('common.retry')}: {current?.timestamp ? new Date(current.timestamp).toLocaleString('vi-VN') : '--'}
                 </Text>
               </View>
             </View>
             <View style={styles.floodLevels}>
               <View style={[styles.floodLevel, { backgroundColor: theme.colors.success + '20' }]}>
                 <View style={[styles.floodDot, { backgroundColor: theme.colors.success }]} />
-                <Text style={styles.floodLevelText}>Bình thường</Text>
+                <Text style={styles.floodLevelText}>{t('flood.risk.low')}</Text>
               </View>
               <View style={[styles.floodLevel, { backgroundColor: theme.colors.warning + '20' }]}>
                 <View style={[styles.floodDot, { backgroundColor: theme.colors.warning }]} />
-                <Text style={styles.floodLevelText}>Cảnh báo</Text>
+                <Text style={styles.floodLevelText}>{t('flood.risk.medium')}</Text>
               </View>
               <View style={[styles.floodLevel, { backgroundColor: theme.colors.error + '20' }]}>
                 <View style={[styles.floodDot, { backgroundColor: theme.colors.error }]} />
-                <Text style={styles.floodLevelText}>Nguy hiểm</Text>
+                <Text style={styles.floodLevelText}>{t('flood.risk.high')}</Text>
               </View>
             </View>
           </View>

@@ -124,11 +124,11 @@ const ShelterListScreen: React.FC = () => {
 
   const getStatusText = (status: string): string => {
     const texts: Record<string, string> = {
-      'available': 'Còn chỗ',
-      'limited': 'Sắp đầy',
-      'full': 'Đã đầy',
+      'available': t('citizen.shelters.open'),
+      'limited': t('citizen.shelters.almostFull'),
+      'full': t('citizen.shelters.closed'),
     };
-    return texts[status] || 'Còn chỗ';
+    return texts[status] || t('citizen.shelters.open');
   };
 
   const getStatusIcon = (status: string): string => {
@@ -152,12 +152,12 @@ const ShelterListScreen: React.FC = () => {
 
   const getShelterTypeText = (type: string): string => {
     const texts: Record<string, string> = {
-      'school': 'Trường học',
-      'community': 'Cộng đồng',
-      'government': 'Cơ quan nhà nước',
-      'religious': 'Tôn giáo',
+      'school': t('citizen.shelters.school'),
+      'community': t('citizen.shelters.community'),
+      'government': t('citizen.shelters.government'),
+      'religious': t('citizen.shelters.religious'),
     };
-    return texts[type] || 'Khác';
+    return texts[type] || t('citizen.shelters.other');
   };
 
   const filteredShelters = shelters.filter(shelter =>
@@ -196,7 +196,7 @@ const ShelterListScreen: React.FC = () => {
               <View style={styles.shelterMeta}>
                 <Icon name="map-marker" size={14} color={theme.colors.textSecondary} />
                 <Text style={styles.shelterAddress} numberOfLines={1}>
-                  {item.dia_chi || 'Địa chỉ không xác định'}
+                  {item.dia_chi || t('citizen.shelters.unknownAddress')}
                 </Text>
               </View>
             </View>
@@ -208,7 +208,7 @@ const ShelterListScreen: React.FC = () => {
 
           <View style={styles.shelterStats}>
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Sức chứa</Text>
+              <Text style={styles.statLabel}>{t('citizen.shelters.capacity')}</Text>
               <Text style={styles.statValue}>{item.hien_tai}/{item.suc_chua}</Text>
             </View>
             <View style={styles.capacityBar}>
@@ -273,7 +273,7 @@ const ShelterListScreen: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Điểm Sơ Tán</Text>
+        <Text style={styles.headerTitle}>{t('citizen.shelters.title')}</Text>
         <TouchableOpacity style={styles.filterButton}>
           <Icon name="filter-variant" size={24} color={theme.colors.primary} />
         </TouchableOpacity>
@@ -285,7 +285,7 @@ const ShelterListScreen: React.FC = () => {
           <Icon name="magnify" size={20} color={theme.colors.textSecondary} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Tìm kiếm điểm sơ tán..."
+            placeholder={t('citizen.shelters.searchShelter')}
             placeholderTextColor={theme.colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -302,12 +302,12 @@ const ShelterListScreen: React.FC = () => {
       <View style={styles.summaryContainer}>
         <View style={styles.summaryItem}>
           <Icon name="home-city" size={20} color={theme.colors.primary} />
-          <Text style={styles.summaryText}>{shelters.length} điểm</Text>
+          <Text style={styles.summaryText}>{shelters.length} {t('citizen.shelters.locations')}</Text>
         </View>
         <View style={styles.summaryItem}>
           <Icon name="account-group" size={20} color={theme.colors.success} />
           <Text style={styles.summaryText}>
-            {shelters.reduce((sum, s) => sum + (s.suc_chua - s.hien_tai), 0)} chỗ trống
+            {shelters.reduce((sum, s) => sum + (s.suc_chua - s.hien_tai), 0)} {t('citizen.shelters.bedsAvailable')}
           </Text>
         </View>
         <View style={styles.summaryItem}>
@@ -343,8 +343,8 @@ const ShelterListScreen: React.FC = () => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Icon name="home-off" size={48} color={theme.colors.textSecondary} />
-            <Text style={styles.emptyText}>Không tìm thấy điểm sơ tán</Text>
-            <Text style={styles.emptySubtext}>Thử thay đổi từ khóa tìm kiếm</Text>
+            <Text style={styles.emptyText}>{t('citizen.shelters.noShelters')}</Text>
+            <Text style={styles.emptySubtext}>{t('citizen.shelters.noSheltersMessage')}</Text>
           </View>
         }
       />

@@ -6,41 +6,43 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import Geolocation from 'react-native-geolocation-service';
 import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { rescueService, CreateRescueRequestData } from '../../services/rescueService';
 import { mapService } from '../../services/mapService';
 
-const URGENCY_OPTIONS = [
-  { value: 'low', label: 'Thấp', color: '#3B82F6', icon: 'information' },
-  { value: 'medium', label: 'Trung bình', color: '#EAB308', icon: 'alert-circle' },
-  { value: 'high', label: 'Cao', color: '#F97316', icon: 'alert' },
-  { value: 'critical', label: 'Khẩn cấp', color: '#EF4444', icon: 'alert-octagon' },
-] as const;
-
-const CATEGORY_OPTIONS = [
-  { value: 'rescue', label: 'Cứu hộ', icon: 'lifebuoy' },
-  { value: 'medical', label: 'Y tế', icon: 'hospital-box' },
-  { value: 'evacuation', label: 'Sơ tán', icon: 'exit-run' },
-  { value: 'food', label: 'Lương thực', icon: 'food' },
-  { value: 'water', label: 'Nước sạch', icon: 'cup-water' },
-  { value: 'shelter', label: 'Nơi trú ẩn', icon: 'home-roof' },
-  { value: 'other', label: 'Khác', icon: 'dots-horizontal' },
-] as const;
-
-const VULNERABLE_OPTIONS = [
-  { value: 'children', label: 'Trẻ em' },
-  { value: 'elderly', label: 'Người già' },
-  { value: 'disabled', label: 'Người khuyết tật' },
-  { value: 'pregnant', label: 'Phụ nữ mang thai' },
-];
-
 const RescueRequestScreen = () => {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(true);
+
+  const URGENCY_OPTIONS = [
+    { value: 'low', label: t('citizen.rescue.form.urgency_low') || t('incidents.severity.low'), color: '#3B82F6', icon: 'information' },
+    { value: 'medium', label: t('incidents.severity.medium'), color: '#EAB308', icon: 'alert-circle' },
+    { value: 'high', label: t('incidents.severity.high'), color: '#F97316', icon: 'alert' },
+    { value: 'critical', label: t('incidents.severity.critical'), color: '#EF4444', icon: 'alert-octagon' },
+  ] as const;
+
+  const CATEGORY_OPTIONS = [
+    { value: 'rescue', label: t('citizen.rescue.form.rescue'), icon: 'lifebuoy' },
+    { value: 'medical', label: t('citizen.rescue.form.medical'), icon: 'hospital-box' },
+    { value: 'evacuation', label: t('citizen.rescue.form.evacuation'), icon: 'exit-run' },
+    { value: 'food', label: t('citizen.rescue.form.food'), icon: 'food' },
+    { value: 'water', label: t('citizen.rescue.form.water'), icon: 'cup-water' },
+    { value: 'shelter', label: t('citizen.rescue.form.shelter'), icon: 'home-roof' },
+    { value: 'other', label: t('citizen.sos.form.other'), icon: 'dots-horizontal' },
+  ] as const;
+
+  const VULNERABLE_OPTIONS = [
+    { value: 'children', label: t('citizen.sos.form.children') },
+    { value: 'elderly', label: t('citizen.sos.form.elderly') },
+    { value: 'disabled', label: t('citizen.sos.form.disabled') },
+    { value: 'pregnant', label: t('citizen.sos.form.pregnant') },
+  ];
 
   const [form, setForm] = useState<Partial<CreateRescueRequestData>>({
     caller_name: user?.name || '',
@@ -81,30 +83,27 @@ const RescueRequestScreen = () => {
 
   const handleSubmit = async () => {
     if (!form.caller_name?.trim()) {
-      Alert.alert('Lỗi', 'Vui lòng nhập họ tên');
+      Alert.alert(t('common.error'), t('auth.nameRequired'));
       return;
     }
     if (!form.latitude || !form.longitude) {
-      Alert.alert('Lỗi', 'Chưa xác định được vị trí. Vui lòng bật GPS.');
+      Alert.alert(t('common.error'), t('citizen.sos.form.getLocation') + ' - GPS');
       return;
     }
     if (!form.address?.trim()) {
-      Alert.alert('Lỗi', 'Vui lòng nhập địa chỉ');
-      return;
+      Alert.alert(t('common.error'), t('citizen.sos.form.address') + ' ' + t('citizen.sos.form.required'));
     }
 
     setSubmitting(true);
     try {
       const res = await rescueService.createRescueRequest(form as CreateRescueRequestData);
       if (res.success) {
-        Alert.alert('Thành công', 'Yêu cầu cứu hộ đã được gửi. Đội cứu hộ sẽ sớm liên hệ.', [
-          { text: 'OK', onPress: () => navigation.goBack() },
-        ]);
+        Alert.alert(t('common.success'), t('citizen.sos.success.message'));
       } else {
-        Alert.alert('Lỗi', res.message || 'Không thể gửi yêu cầu');
+        Alert.alert(t('common.error'), res.message || t('errors.unknownError'));
       }
     } catch {
-      Alert.alert('Lỗi', 'Không thể gửi yêu cầu. Vui lòng thử lại.');
+      Alert.alert(t('common.error'), t('errors.unknownError'));
     } finally {
       setSubmitting(false);
     }
@@ -116,7 +115,7 @@ const RescueRequestScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Icon name="arrow-left" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.topBarTitle}>Yêu cầu cứu hộ</Text>
+        <Text style={styles.topBarTitle}>{t('citizen.sos.title')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -128,32 +127,32 @@ const RescueRequestScreen = () => {
           <View style={styles.emergencyBanner}>
             <Icon name="phone-alert" size={24} color="#EF4444" />
             <Text style={styles.emergencyText}>
-              Nếu tình huống nguy hiểm, hãy gọi 113/114/115
+              {t('citizen.sos.warningMessage')}
             </Text>
           </View>
 
           {/* Thông tin cá nhân */}
-          <Text style={styles.sectionTitle}>Thông tin liên hệ</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.rescue.form.fullName')}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Họ và tên *"
+            placeholder={t('auth.enterFullName')}
             value={form.caller_name}
             onChangeText={v => setField('caller_name', v)}
           />
           <TextInput
             style={styles.input}
-            placeholder="Số điện thoại"
+            placeholder={t('citizen.rescue.form.phone')}
             value={form.caller_phone}
             onChangeText={v => setField('caller_phone', v)}
             keyboardType="phone-pad"
           />
 
           {/* Vị trí */}
-          <Text style={styles.sectionTitle}>Vị trí</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.sos.form.address')}</Text>
           {loadingLocation ? (
             <View style={styles.locationLoading}>
               <ActivityIndicator size="small" color={theme.colors.primary} />
-              <Text style={styles.locationLoadingText}>Đang xác định vị trí...</Text>
+              <Text style={styles.locationLoadingText}>{t('citizen.sos.form.gettingLocation')}</Text>
             </View>
           ) : (
             <View style={styles.locationInfo}>
@@ -165,14 +164,14 @@ const RescueRequestScreen = () => {
           )}
           <TextInput
             style={styles.input}
-            placeholder="Địa chỉ chi tiết *"
+            placeholder={t('citizen.sos.form.addressPlaceholder')}
             value={form.address}
             onChangeText={v => setField('address', v)}
             multiline
           />
 
           {/* Mức độ khẩn cấp */}
-          <Text style={styles.sectionTitle}>Mức độ khẩn cấp *</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.rescue.form.urgency')} *</Text>
           <View style={styles.optionGrid}>
             {URGENCY_OPTIONS.map(opt => (
               <TouchableOpacity
@@ -192,7 +191,7 @@ const RescueRequestScreen = () => {
           </View>
 
           {/* Loại hỗ trợ */}
-          <Text style={styles.sectionTitle}>Loại hỗ trợ cần *</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.rescue.form.category')} *</Text>
           <View style={styles.categoryGrid}>
             {CATEGORY_OPTIONS.map(opt => (
               <TouchableOpacity
@@ -216,7 +215,7 @@ const RescueRequestScreen = () => {
           </View>
 
           {/* Số người */}
-          <Text style={styles.sectionTitle}>Số người cần hỗ trợ</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.rescue.form.peopleCount')}</Text>
           <View style={styles.counterRow}>
             <TouchableOpacity
               style={styles.counterBtn}
@@ -234,7 +233,7 @@ const RescueRequestScreen = () => {
           </View>
 
           {/* Nhóm dễ bị tổn thương */}
-          <Text style={styles.sectionTitle}>Nhóm cần ưu tiên</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.sos.form.vulnerableGroups')}</Text>
           <View style={styles.optionGrid}>
             {VULNERABLE_OPTIONS.map(opt => {
               const selected = form.vulnerable_groups?.includes(opt.value);
@@ -258,17 +257,17 @@ const RescueRequestScreen = () => {
           </View>
 
           {/* Mô tả */}
-          <Text style={styles.sectionTitle}>Mô tả tình huống</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.sos.form.description')}</Text>
           <TextInput
             style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
-            placeholder="Mô tả chi tiết tình trạng hiện tại..."
+            placeholder={t('citizen.sos.form.descriptionPlaceholder')}
             value={form.description}
             onChangeText={v => setField('description', v)}
             multiline
           />
 
           {/* Mực nước */}
-          <Text style={styles.sectionTitle}>Mực nước (mét, nếu biết)</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.rescue.form.waterLevel')}</Text>
           <TextInput
             style={styles.input}
             placeholder="VD: 0.5"
@@ -288,7 +287,7 @@ const RescueRequestScreen = () => {
             ) : (
               <>
                 <Icon name="send" size={20} color="#fff" />
-                <Text style={styles.submitBtnText}>Gửi yêu cầu cứu hộ</Text>
+                <Text style={styles.submitBtnText}>{t('citizen.sos.form.submit')}</Text>
               </>
             )}
           </TouchableOpacity>

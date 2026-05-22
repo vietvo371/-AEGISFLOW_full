@@ -96,16 +96,16 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                 })}
             </View>
 
-            {/* ONLY Render Floating Center Button for CITIZEN MODE (5 Tabs) */}
+            {/* SOS FAB Button - Màu đỏ giống web */}
             {!isEmergency && (
                 <View style={[styles.floatingButtonContainer, { bottom: Math.max(insets.bottom, 12) + 20 }]}>
                     <TouchableOpacity
                         style={styles.floatingButton}
-                        onPress={() => navigation.navigate('CreateReport')}
+                        onPress={() => navigation.navigate('SOS')}
                         activeOpacity={0.8}
                     >
                         <LinearGradient
-                            colors={[theme.colors.primary, theme.colors.info]}
+                            colors={['#EF4444', '#DC2626']} // Gradient đỏ cho SOS
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}
                             style={styles.floatingButtonGradient}
@@ -179,12 +179,12 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.white,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 4, // create a distinct border effect (white border before gradient)
+        padding: 4,
         ...Platform.select({
             ios: {
-                shadowColor: theme.colors.primary,
+                shadowColor: '#EF4444',
                 shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.3,
+                shadowOpacity: 0.4,
                 shadowRadius: 12,
             },
             android: {

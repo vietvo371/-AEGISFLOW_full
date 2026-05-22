@@ -1,12 +1,12 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { NavigatorScreenParams } from '@react-navigation/native';
 
-// Citizen role tabs
+// Citizen role tabs - Web-like layout
 export type CitizenTabParamList = {
   Home: undefined;
   Map: undefined;
-  CreateReport: undefined;
-  Alerts: undefined;
+  SOS: undefined; // FAB button - đỏ
+  Shelters: undefined;
   Profile: undefined;
 };
 

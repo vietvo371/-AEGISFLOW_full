@@ -84,7 +84,8 @@ const CitizenTab = createBottomTabNavigator<CitizenTabParamList>();
 const EmergencyTab = createBottomTabNavigator<EmergencyTabParamList>();
 
 // ============================================================================
-// CITIZEN TABS — Home / Map / Report(+) / Alerts / Profile
+// CITIZEN TABS — Home / Map / SOS / Shelters / Profile
+// Layout giống web: Home | Map | SOS (đỏ FAB) | Shelters | Profile
 // ============================================================================
 const CitizenTabs = () => {
   const tabScreenOptions = {
@@ -115,26 +116,25 @@ const CitizenTabs = () => {
         }}
       />
       <CitizenTab.Screen
-        name="CreateReport"
-        component={CreateReportScreen}
+        name="SOS"
+        component={RescueRequestScreen}
         options={{
-          tabBarIcon: ({ color }) => <Icon name="plus" size={TAB_BAR.iconSize} color={color} />,
-          tabBarButton: () => null, // Center FAB handled by CustomTabBar
+          tabBarButton: () => null,
         }}
       />
       <CitizenTab.Screen
-        name="Alerts"
-        component={AlertsScreen}
+        name="Shelters"
+        component={ShelterListScreen}
         options={{
-          title: 'Cảnh báo',
-          tabBarIcon: ({ color }) => <Icon name="bell-outline" size={TAB_BAR.iconSize} color={color} />,
+          title: 'Trú ẩn',
+          tabBarIcon: ({ color }) => <Icon name="home-heart" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
       <CitizenTab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          title: 'Cá nhân',
+          title: 'Hồ sơ',
           tabBarIcon: ({ color }) => <Icon name="account-circle" size={TAB_BAR.iconSize} color={color} />,
         }}
       />

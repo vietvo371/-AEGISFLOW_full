@@ -46,12 +46,12 @@ const ProfileScreen = () => {
 
   const handleLogout = () => {
     Alert.alert(
-      t('profile.logoutTitle', 'Đăng xuất'),
-      t('profile.logoutMessage', 'Bạn có chắc muốn đăng xuất?'),
+      t('citizen.profile.logout', 'Đăng xuất'),
+      t('citizen.profile.logoutConfirm', 'Bạn có chắc chắn muốn đăng xuất?'),
       [
         { text: t('common.cancel', 'Hủy'), style: 'cancel' },
         {
-          text: t('profile.logout', 'Đăng xuất'), style: 'destructive',
+          text: t('citizen.profile.logout', 'Đăng xuất'), style: 'destructive',
           onPress: async () => {
             await signOut();
             navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
@@ -66,14 +66,14 @@ const ProfileScreen = () => {
     : '?';
 
   const MENU_GROUP_1 = [
-    { id: 'myReports', icon: 'file-document-multiple-outline', label: t('profile.myReports', 'Báo cáo của tôi'), screen: 'MyReports', badge: reportCount > 0 ? reportCount : undefined },
-    { id: 'myRescue', icon: 'lifebuoy', label: t('profile.myRescue', 'Yêu cầu cứu hộ'), screen: 'MyRescueRequests' },
-    { id: 'notifications', icon: 'bell-outline', label: t('profile.notifications', 'Thông báo'), screen: 'NotificationSettings', badge: unreadCount > 0 ? unreadCount : undefined },
+    { id: 'myReports', icon: 'file-document-multiple-outline', label: t('citizen.profile.myReports', 'Phản ánh của tôi'), screen: 'MyReports', badge: reportCount > 0 ? reportCount : undefined },
+    { id: 'myRescue', icon: 'lifebuoy', label: t('citizen.profile.myRescue', 'Yêu cầu cứu hộ'), screen: 'MyRescueRequests' },
+    { id: 'notifications', icon: 'bell-outline', label: t('citizen.profile.notifications', 'Thông báo'), screen: 'NotificationSettings', badge: unreadCount > 0 ? unreadCount : undefined },
   ];
 
   const MENU_GROUP_2 = [
-    { id: 'security', icon: 'lock-outline', label: t('profile.changePassword', 'Đổi mật khẩu'), screen: 'ChangePasswordLoggedIn' },
-    { id: 'about', icon: 'information-outline', label: t('profile.about', 'Giới thiệu'), screen: 'About' },
+    { id: 'security', icon: 'lock-outline', label: t('citizen.profile.changePassword', 'Đổi mật khẩu'), screen: 'ChangePasswordLoggedIn' },
+    { id: 'about', icon: 'information-outline', label: t('citizen.profile.about', 'Giới thiệu'), screen: 'About' },
   ];
 
   const renderMenuItem = (item: any, isLast: boolean) => (
@@ -120,7 +120,7 @@ const ProfileScreen = () => {
             onPress={() => navigation.navigate('UserProfile', { userId: user?.id })}
           >
             <Icon name="pencil-outline" size={ICON_SIZE.xs} color={theme.colors.text} />
-            <Text style={styles.editBtnText}>{t('profile.edit', 'Chỉnh sửa')}</Text>
+            <Text style={styles.editBtnText}>{t('citizen.profile.editProfile', 'Chỉnh sửa')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -137,7 +137,7 @@ const ProfileScreen = () => {
         {/* Logout */}
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
           <Icon name="logout" size={ICON_SIZE.sm} color={theme.colors.error} />
-          <Text style={styles.logoutText}>{t('profile.logout', 'Đăng xuất')}</Text>
+          <Text style={styles.logoutText}>{t('citizen.profile.logout', 'Đăng xuất')}</Text>
         </TouchableOpacity>
 
         <Text style={styles.version}>AegisFlow AI v1.0.0</Text>
