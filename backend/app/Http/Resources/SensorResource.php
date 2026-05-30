@@ -28,6 +28,7 @@ class SensorResource extends JsonResource
             'alert_threshold' => $this->alert_threshold,
             'danger_threshold' => $this->danger_threshold,
             'reading_interval_seconds' => $this->reading_interval_seconds,
+            'metadata' => $this->metadata ?? [],
             'is_active' => $this->is_active,
             'flood_zone' => $this->whenLoaded('floodZone', function () {
                 return [

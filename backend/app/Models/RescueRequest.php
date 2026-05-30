@@ -129,6 +129,10 @@ class RescueRequest extends Model
 
     public function getLocationAttribute(): ?array
     {
+        if (DB::connection()->getDriverName() !== 'pgsql') {
+            return null;
+        }
+
         $result = DB::selectOne("
             SELECT ST_X(geometry::geometry) as lng, ST_Y(geometry::geometry) as lat
             FROM rescue_requests WHERE id = ?
@@ -142,7 +146,7 @@ class RescueRequest extends Model
      */
     public function calculatePriorityScore(): float
     {
-        $score = 50;
+        $score = 40;
 
         // 1. Mức độ khẩn (30 điểm)
         $urgency = UrgencyEnum::from($this->urgency);

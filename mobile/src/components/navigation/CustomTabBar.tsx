@@ -4,10 +4,11 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, TAB_BAR } from '../../theme';
+import { theme, SPACING, BORDER_RADIUS, TAB_BAR } from '../../theme';
 
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
     const insets = useSafeAreaInsets();
+    const bottomInset = Platform.OS === 'ios' ? Math.max(insets.bottom, 12) : 12;
     // Assuming Citizen mode has 5 tabs and Emergency mode has 4 tabs
     const isEmergency = state.routes.length === 4;
     
@@ -18,8 +19,11 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
     return (
         <View style={styles.container}>
             <View style={[
-                styles.tabBar, 
-                { paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 12) : 12 }
+                styles.tabBar,
+                {
+                    paddingBottom: bottomInset,
+                    minHeight: 64 + bottomInset,
+                },
             ]}>
                 {state.routes.map((route, index) => {
                     const { options } = descriptors[route.key];
@@ -98,7 +102,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
 
             {/* SOS FAB Button - Màu đỏ giống web */}
             {!isEmergency && (
-                <View style={[styles.floatingButtonContainer, { bottom: Math.max(insets.bottom, 12) + 20 }]}>
+                <View style={styles.floatingButtonContainer}>
                     <TouchableOpacity
                         style={styles.floatingButton}
                         onPress={() => navigation.navigate('SOS')}
@@ -131,6 +135,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: BORDER_RADIUS['2xl'],
         paddingTop: 8,
         paddingHorizontal: SPACING.sm,
+        alignItems: 'flex-start',
         ...Platform.select({
             ios: {
                 shadowColor: theme.colors.black,
@@ -166,16 +171,16 @@ const styles = StyleSheet.create({
     },
     floatingButtonContainer: {
         position: 'absolute',
-        top: -24, // Break out precisely upwards
+        top: -30,
         left: '50%',
-        marginLeft: -32, // -width/2 to center horizontally
+        marginLeft: -34,
         alignItems: 'center',
         zIndex: 10,
     },
     floatingButton: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
+        width: 68,
+        height: 68,
+        borderRadius: 34,
         backgroundColor: theme.colors.white,
         justifyContent: 'center',
         alignItems: 'center',
@@ -195,7 +200,7 @@ const styles = StyleSheet.create({
     floatingButtonGradient: {
         width: '100%',
         height: '100%',
-        borderRadius: 32,
+        borderRadius: 34,
         justifyContent: 'center',
         alignItems: 'center',
     },

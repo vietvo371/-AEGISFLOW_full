@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-
 use App\Enums\RescueRequestStatusEnum;
 use App\Events\RescueRequestCreated;
 use App\Events\RescueRequestUpdated;
 use App\Helpers\ApiResponse;
+use App\Http\Controllers\Controller;
 use App\Models\RescueRequest;
 use App\Models\RescueTeam;
 use Illuminate\Http\Request;
@@ -22,17 +21,22 @@ class RescueRequestController extends Controller
     public function index(Request $request)
     {
         $query = RescueRequest::with(['district', 'assignedTeam', 'reporter'])
-            ->orderBy('priority_score', 'desc')
-            ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('priority_score', 'desc');
 
         // Citizens chỉ thấy yêu cầu của mình
         $user = $request->user();
-        if (! $user->hasRole(['city_admin', 'rescue_operator', 'traffic_operator'])) {
+        if (! $user->hasRole(['city_admin', 'rescue_operator', 'rescue_team', 'traffic_operator'])) {
             $query->where('reported_by', $user->id);
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $statuses = explode(',', $request->status);
+            if (count($statuses) > 1) {
+                $query->whereIn('status', $statuses);
+            } else {
+                $query->where('status', $request->status);
+            }
         }
 
         if ($request->filled('urgency')) {
@@ -62,8 +66,8 @@ class RescueRequestController extends Controller
     {
         $query = RescueRequest::with(['district', 'assignedTeam'])
             ->pending()
-            ->orderBy('priority_score', 'desc')
-            ->orderBy('created_at', 'asc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('priority_score', 'desc');
 
         $requests = $query->paginate($request->get('per_page', 50));
 
@@ -89,7 +93,7 @@ class RescueRequestController extends Controller
 
         // Citizens chỉ thấy yêu cầu của mình
         $user = $request->user();
-        if (! $user->hasRole(['city_admin', 'rescue_operator', 'traffic_operator'])) {
+        if (! $user->hasRole(['city_admin', 'rescue_operator', 'rescue_team', 'traffic_operator'])) {
             if ($req->reported_by !== $user->id) {
                 return ApiResponse::forbidden();
             }
@@ -147,7 +151,7 @@ class RescueRequestController extends Controller
         // Lưu PostGIS geometry
         if (DB::connection()->getDriverName() === 'pgsql') {
             DB::statement(
-                "UPDATE rescue_requests SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?",
+                'UPDATE rescue_requests SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
                 [$data['longitude'], $data['latitude'], $req->id]
             );
         }
@@ -253,7 +257,7 @@ class RescueRequestController extends Controller
 
         // Cập nhật trạng thái đặc biệt
         if ($data['status'] === 'completed') {
-            $req->completed();
+            $req->complete();
         }
 
         $eventTypes = [
@@ -267,8 +271,11 @@ class RescueRequestController extends Controller
             'event_type' => $data['status'],
             'description' => $eventTypes[$data['status']] ?? 'Cập nhật trạng thái',
             'actor_id' => $user->id,
-            'old_status' => $oldStatus,
-            'new_status' => $data['status'],
+            'metadata' => [
+                'old_status' => $oldStatus,
+                'new_status' => $data['status'],
+                'notes' => $data['notes'] ?? null,
+            ],
         ]);
 
         // Broadcast event

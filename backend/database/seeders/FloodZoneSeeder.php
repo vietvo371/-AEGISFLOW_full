@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\FloodZone;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -68,11 +67,18 @@ class FloodZoneSeeder extends Seeder
             $zone['created_at'] = now();
             $zone['updated_at'] = now();
 
-            $id = DB::table('flood_zones')->insertGetId($zone);
+            $existing = DB::table('flood_zones')->where('slug', $zone['slug'])->first();
+
+            if ($existing) {
+                DB::table('flood_zones')->where('id', $existing->id)->update($zone);
+                $id = $existing->id;
+            } else {
+                $id = DB::table('flood_zones')->insertGetId($zone);
+            }
 
             if ($driver === 'pgsql') {
                 DB::statement(
-                    "UPDATE flood_zones SET geometry = ST_GeomFromText(?, 4326) WHERE id = ?",
+                    'UPDATE flood_zones SET geometry = ST_GeomFromText(?, 4326) WHERE id = ?',
                     [$geometry, $id]
                 );
             }

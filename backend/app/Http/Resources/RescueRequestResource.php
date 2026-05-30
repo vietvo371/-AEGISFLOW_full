@@ -23,6 +23,7 @@ class RescueRequestResource extends JsonResource
             'photo_urls' => $this->photo_urls ?? [],
             'water_level_m' => $this->water_level_m,
             'accessibility_notes' => $this->accessibility_notes,
+            'location' => $this->location,
             'status' => $this->status,
             'priority_score' => $this->priority_score,
             'eta_minutes' => $this->eta_minutes,

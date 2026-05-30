@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform,
-  ScrollView, TextInput, Animated, Image, Linking,
+  ScrollView, TextInput, Animated, Image, Linking, Alert, PermissionsAndroid,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import Geolocation from 'react-native-geolocation-service';
 import MapboxGL from '@rnmapbox/maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { theme, cardStyles } from '../../theme';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { OPENMAP_STYLE_URL } from '../../config/mapbox';
+import env from '../../config/env';
 import { mapService } from '../../services/mapService';
 import { reportService } from '../../services/reportService';
 import { MapReport, MapBounds } from '../../types/api/map';
@@ -59,6 +61,27 @@ const MOCK_PATROLS = [
   { id: 8002, type: 'patrol', title: 'Xe Cứu Y tế 115 ĐN', location: { lat: 16.0595, lng: 108.2150 }, status: 'standby', severity: 'low', description: 'Đang túc trực tại cơ sở y tế.' },
 ];
 
+const MOCK_FLOODED_ROUTES: any = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: { name: 'Đường Hàm Nghi', depth: '0.6m', level: 'High' },
+      geometry: { type: 'LineString', coordinates: [[108.2120, 16.0645], [108.2160, 16.0665]] }
+    },
+    {
+      type: 'Feature',
+      properties: { name: 'Đường Nguyễn Văn Linh', depth: '0.4m', level: 'Medium' },
+      geometry: { type: 'LineString', coordinates: [[108.2155, 16.0620], [108.2210, 16.0615]] }
+    },
+    {
+      type: 'Feature',
+      properties: { name: 'Đường Lê Duẩn', depth: '0.2m', level: 'Low' },
+      geometry: { type: 'LineString', coordinates: [[108.2180, 16.0690], [108.2250, 16.0710]] }
+    }
+  ]
+};
+
 const SEVERITY_COLORS: Record<string, string> = {
   critical: '#EF4444', high: '#F97316', medium: '#F59E0B', low: '#3B82F6',
 };
@@ -79,12 +102,95 @@ const getCategoryColor = (id: number) => CITIZEN_CATEGORIES.find(c => c.id === i
 
 const getSeverityColor = (severity: string) => SEVERITY_COLORS[severity] || '#6B7280';
 
+const FALLBACK_INCIDENT_IMAGES: Record<string, any> = {
+  traffic: require('../../assets/images/started/map.jpg'),
+  congestion: require('../../assets/images/started/map.jpg'),
+  accident: require('../../assets/images/started/security.jpg'),
+  construction: require('../../assets/images/started/community.jpg'),
+  flood: require('../../assets/images/started/map.jpg'),
+  heavy_rain: require('../../assets/images/started/map.jpg'),
+  weather: require('../../assets/images/started/AiGreen.jpg'),
+  environment: require('../../assets/images/started/community.jpg'),
+  trash: require('../../assets/images/started/community.jpg'),
+  fire: require('../../assets/images/started/security.jpg'),
+  other: require('../../assets/images/started/welcome.jpg'),
+};
+
+const normalizeImageUrl = (value: any): string | null => {
+  if (!value) return null;
+  if (typeof value === 'string') {
+    if (!value.trim()) return null;
+    if (value.startsWith('http') || value.startsWith('file://') || value.startsWith('data:')) return value;
+    const path = value.startsWith('/') ? value : `/${value}`;
+    return `${env.API_URL}${path}`;
+  }
+  if (typeof value === 'object') {
+    return normalizeImageUrl(
+      value.url ||
+      value.uri ||
+      value.thumbnail_url ||
+      value.duong_dan_hinh_anh ||
+      value.image_url ||
+      value.path
+    );
+  }
+  return null;
+};
+
+const getIncidentImageSources = (incident: Incident): any[] => {
+  const payload = incident as any;
+  const metadata = payload.metadata || {};
+  const candidates = [
+    payload.photo_urls,
+    payload.image_urls,
+    payload.images,
+    payload.media,
+    payload.hinh_anhs,
+    metadata.photo_urls,
+    metadata.image_urls,
+    metadata.images,
+    metadata.media,
+    metadata.thumbnail_url,
+    metadata.image_url,
+  ].flat().filter(Boolean);
+
+  const urls = Array.from(new Set(candidates.map(normalizeImageUrl).filter(Boolean))) as string[];
+  if (urls.length > 0) {
+    return urls.map(uri => ({ uri }));
+  }
+
+  return [FALLBACK_INCIDENT_IMAGES[incident.type] || FALLBACK_INCIDENT_IMAGES.other];
+};
+
+type ShelterRouteTarget = {
+  id: number;
+  name: string;
+  address?: string;
+  latitude: number;
+  longitude: number;
+};
+
+const isFiniteNumber = (value: any): value is number => typeof value === 'number' && Number.isFinite(value);
+const isValidCoordinate = (coordinate: any): coordinate is [number, number] => (
+  Array.isArray(coordinate) &&
+  coordinate.length >= 2 &&
+  isFiniteNumber(coordinate[0]) &&
+  isFiniteNumber(coordinate[1])
+);
+const toCoordinate = (longitude: any, latitude: any): [number, number] | null => {
+  const lng = Number(longitude);
+  const lat = Number(latitude);
+  return Number.isFinite(lng) && Number.isFinite(lat) ? [lng, lat] : null;
+};
+
 // ─── Component ─────────────────────────────────────────────
 const MapScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute();
+  const routeParams = route.params as { shelterRoute?: ShelterRouteTarget } | undefined;
   const isEmergency = route.name === 'SituationMap';
   const { isConnected, listen, subscribe, unsubscribe } = useWebSocket();
+  const insets = useSafeAreaInsets();
 
   const [userLocation, setUserLocation] = useState<number[] | null>(null);
   const [selectedCategory, setSelectedCategory] = useState(-1);
@@ -106,12 +212,52 @@ const MapScreen = () => {
     new Set(['alerts', 'shelters', 'flood_zones', 'flood_streets'] as LayerKey[])
   );
   const [locating, setLocating] = useState(false);
+  const [activeShelterRoute, setActiveShelterRoute] = useState<ShelterRouteTarget | null>(null);
 
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const mapRef = useRef<MapboxGL.MapView>(null);
   const slideAnim = useRef(new Animated.Value(500)).current;
   const backdropAnim = useRef(new Animated.Value(0)).current;
-  const layerPanelAnim = useRef(new Animated.Value(-200)).current;
+  const layerPanelAnim = useRef(new Animated.Value(300)).current;
+
+  // ─── Location Permission Request ─────────────────────────────
+  const requestLocationPermission = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        const auth = await Geolocation.requestAuthorization('whenInUse');
+        return auth === 'granted';
+      } else {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Quyền truy cập vị trí',
+            message: 'AegisFlow AI cần truy cập vị trí của bạn để hiển thị trên bản đồ.',
+            buttonNeutral: 'Hỏi lại sau',
+            buttonNegative: 'Hủy',
+            buttonPositive: 'Đồng ý',
+          }
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      }
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    requestLocationPermission().then(granted => {
+      if (granted) {
+        Geolocation.getCurrentPosition(
+          position => {
+            setUserLocation([position.coords.longitude, position.coords.latitude]);
+          },
+          () => {},
+          { enableHighAccuracy: true }
+        );
+      }
+    });
+  }, []);
 
   // ─── Layer Toggle ───────────────────────────────────────────
   const toggleLayer = (key: LayerKey) => {
@@ -127,7 +273,7 @@ const MapScreen = () => {
   };
 
   const toggleLayerPanel = () => {
-    const toValue = showLayers ? -200 : 0;
+    const toValue = showLayers ? 300 : 0;
     Animated.spring(layerPanelAnim, {
       toValue,
       tension: 100,
@@ -209,7 +355,7 @@ const MapScreen = () => {
         }
       }
     } catch (e) {
-      console.error('Error fetching map data:', e);
+      console.warn('Network error when fetching map data (backend might be offline).');
     } finally {
       setLoading(false);
     }
@@ -240,6 +386,29 @@ const MapScreen = () => {
   useEffect(() => {
     if (mapLoaded) fetchMapReports();
   }, [selectedCategory]);
+
+  useEffect(() => {
+    const target = routeParams?.shelterRoute;
+    const destination = target ? toCoordinate(target.longitude, target.latitude) : null;
+    if (!target || !destination) return;
+
+    setActiveShelterRoute(target);
+    setActiveLayers(prev => new Set([...prev, 'shelters']));
+
+    if (cameraRef.current) {
+      const origin = isValidCoordinate(userLocation) ? userLocation : DA_NANG_CENTER;
+      const center: [number, number] = [
+        (origin[0] + destination[0]) / 2,
+        (origin[1] + destination[1]) / 2,
+      ];
+
+      cameraRef.current.setCamera({
+        centerCoordinate: center,
+        zoomLevel: 13,
+        animationDuration: 900,
+      });
+    }
+  }, [routeParams?.shelterRoute, userLocation]);
 
   // ─── WebSocket ───────────────────────────────────────────
   useEffect(() => {
@@ -281,13 +450,39 @@ const MapScreen = () => {
   };
 
   // ─── Handlers ────────────────────────────────────────────
-  const centerUserLocation = () => {
-    if (!userLocation && cameraRef.current) {
+  const centerUserLocation = async () => {
+    if (!userLocation || typeof userLocation[0] !== 'number' || typeof userLocation[1] !== 'number') {
       setLocating(true);
+      const hasPermission = await requestLocationPermission();
+      if (hasPermission) {
+        Geolocation.getCurrentPosition(
+          position => {
+            const coords: [number, number] = [position.coords.longitude, position.coords.latitude];
+            setUserLocation(coords);
+            if (cameraRef.current) {
+              cameraRef.current.setCamera({
+                centerCoordinate: coords,
+                zoomLevel: 15,
+                animationDuration: 1000
+              });
+            }
+            setLocating(false);
+          },
+          error => {
+            console.warn(error);
+            setLocating(false);
+            Alert.alert('Không thể xác định vị trí', 'Vui lòng kiểm tra dịch vụ định vị trên thiết bị.');
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        );
+      } else {
+        setLocating(false);
+      }
       return;
     }
-    if (userLocation && cameraRef.current) {
-      cameraRef.current.setCamera({ centerCoordinate: userLocation, zoomLevel: 15, animationDuration: 1000 });
+    if (cameraRef.current) {
+      cameraRef.current.setCamera({ centerCoordinate: userLocation as [number, number], zoomLevel: 15, animationDuration: 1000 });
+      setLocating(false);
     }
   };
 
@@ -305,12 +500,19 @@ const MapScreen = () => {
   // ─── GeoJSON Features ───────────────────────────────────
   const getFeatures = () => {
     if (!isEmergency) {
-      return mapReports.map(r => ({
-        type: 'Feature' as const,
-        id: r.id.toString(),
-        geometry: { type: 'Point' as const, coordinates: [r.kinh_do, r.vi_do] },
-        properties: { ...r, _isIncident: false },
-      }));
+      return mapReports
+        .filter(r => {
+          if (r.danh_muc === 5) {
+            return activeLayers.has('flood_points');
+          }
+          return activeLayers.has('alerts');
+        })
+        .map(r => ({
+          type: 'Feature' as const,
+          id: r.id.toString(),
+          geometry: { type: 'Point' as const, coordinates: [r.kinh_do, r.vi_do] },
+          properties: { ...r, _isIncident: false },
+        }));
     }
 
     let features: any[] = [];
@@ -319,32 +521,84 @@ const MapScreen = () => {
     else if (selectedCategory === 2) incidents = mapIncidents.filter(i => i.type !== 'congestion');
 
     if (selectedCategory === -1 || selectedCategory <= 2) {
-      features.push(...incidents.map(inc => ({
-        type: 'Feature', id: inc.id.toString(),
-        geometry: { type: 'Point', coordinates: [inc.location?.lng || 108.2122, inc.location?.lat || 16.0680] },
-        properties: {
-          ...inc, _isIncident: true,
-          _severityColor: SEVERITY_COLORS[inc.severity] || '#10B981',
-          _isCritical: inc.severity === 'critical' ? 1 : 0,
-        },
-      })));
+      if (activeLayers.has('alerts')) {
+        features.push(...incidents.map(inc => ({
+          type: 'Feature', id: inc.id.toString(),
+          geometry: { type: 'Point', coordinates: [inc.location?.lng || 108.2122, inc.location?.lat || 16.0680] },
+          properties: {
+            ...inc, _isIncident: true,
+            _severityColor: SEVERITY_COLORS[inc.severity] || '#10B981',
+            _isCritical: inc.severity === 'critical' ? 1 : 0,
+          },
+        })));
+      }
     }
     if (selectedCategory === -1 || selectedCategory === 3) {
-      features.push(...MOCK_CAMERAS.map(c => ({
-        type: 'Feature', id: c.id.toString(),
-        geometry: { type: 'Point', coordinates: [c.location.lng, c.location.lat] },
-        properties: { ...c, _isIncident: true, _severityColor: '#06B6D4', _isCritical: 0 },
-      })));
+      if (activeLayers.has('alerts')) {
+        features.push(...MOCK_CAMERAS.map(c => ({
+          type: 'Feature', id: c.id.toString(),
+          geometry: { type: 'Point', coordinates: [c.location.lng, c.location.lat] },
+          properties: { ...c, _isIncident: true, _severityColor: '#06B6D4', _isCritical: 0 },
+        })));
+      }
     }
     if (selectedCategory === -1 || selectedCategory === 4) {
-      features.push(...MOCK_PATROLS.map(p => ({
-        type: 'Feature', id: p.id.toString(),
-        geometry: { type: 'Point', coordinates: [p.location.lng, p.location.lat] },
-        properties: { ...p, _isIncident: true, _severityColor: '#10B981', _isCritical: 0 },
-      })));
+      if (activeLayers.has('alerts')) {
+        features.push(...MOCK_PATROLS.map(p => ({
+          type: 'Feature', id: p.id.toString(),
+          geometry: { type: 'Point', coordinates: [p.location.lng, p.location.lat] },
+          properties: { ...p, _isIncident: true, _severityColor: '#10B981', _isCritical: 0 },
+        })));
+      }
     }
     return features;
   };
+
+  // ─── Shelter Features ────────────────────────────────────
+  const getShelterFeatures = () => {
+    return shelters
+      .flatMap(s => {
+        const coordinate = toCoordinate(s.longitude, s.latitude);
+        if (!coordinate) return [];
+
+        return [{
+          type: 'Feature' as const,
+          id: `shelter_${s.id}`,
+          geometry: { type: 'Point' as const, coordinates: coordinate },
+          properties: {
+            ...s,
+            _isShelter: true,
+            _icon: 'icon_shelter',
+            _color: s.tinh_trang === 'full' ? '#EF4444' : s.tinh_trang === 'limited' ? '#F59E0B' : '#10B981',
+          },
+        }];
+      });
+  };
+
+  const getShelterRouteGeoJSON = () => {
+    if (!activeShelterRoute) return null;
+
+    const origin = isValidCoordinate(userLocation) ? userLocation : DA_NANG_CENTER;
+    const destination = toCoordinate(activeShelterRoute.longitude, activeShelterRoute.latitude);
+    if (!destination) return null;
+
+    return {
+      type: 'FeatureCollection' as const,
+      features: [
+        {
+          type: 'Feature' as const,
+          id: `route_to_shelter_${activeShelterRoute.id}`,
+          properties: { name: activeShelterRoute.name },
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: [origin, destination],
+          },
+        },
+      ],
+    };
+  };
+
+  const shelterRouteGeoJSON = getShelterRouteGeoJSON();
 
   // ─── Render ──────────────────────────────────────────────
   return (
@@ -375,6 +629,32 @@ const MapScreen = () => {
 
         {Object.keys(mapIcons).length > 0 && <MapboxGL.Images images={mapIcons} />}
 
+        {shelterRouteGeoJSON && (
+          <MapboxGL.ShapeSource id="shelterRouteSource" shape={shelterRouteGeoJSON}>
+            <MapboxGL.LineLayer
+              id="shelterRouteShadow"
+              style={{
+                lineColor: '#ffffff',
+                lineWidth: 9,
+                lineOpacity: 0.9,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+            <MapboxGL.LineLayer
+              id="shelterRouteLine"
+              style={{
+                lineColor: theme.colors.primary,
+                lineWidth: 5,
+                lineOpacity: 0.95,
+                lineCap: 'round',
+                lineJoin: 'round',
+                lineDasharray: [1.2, 1.2],
+              }}
+            />
+          </MapboxGL.ShapeSource>
+        )}
+
         {/* Traffic Lines */}
         {trafficGeoJSON && (
           <MapboxGL.ShapeSource id="trafficEdgesSource" shape={trafficGeoJSON}>
@@ -398,10 +678,103 @@ const MapScreen = () => {
           <MapboxGL.ShapeSource id="floodZonesSource" shape={floodZonesGeoJSON}>
             <MapboxGL.FillLayer
               id="floodZonesFill"
+              visible={activeLayers.has('flood_zones')}
               style={{
                 fillColor: ['match', ['get', 'risk_level'], 'High', '#EF4444', 'Medium', '#F59E0B', 'Low', '#3B82F6', '#3B82F6'] as any,
-                fillOpacity: 0.4,
-                fillOutlineColor: '#ffffff',
+                fillOpacity: 0.35,
+              }}
+            />
+            <MapboxGL.LineLayer
+              id="floodZonesOutline"
+              visible={activeLayers.has('flood_zones')}
+              style={{
+                lineColor: ['match', ['get', 'risk_level'], 'High', '#B91C1C', 'Medium', '#B45309', 'Low', '#1D4ED8', '#1D4ED8'] as any,
+                lineWidth: 2,
+                lineDasharray: [2, 2],
+              }}
+            />
+            <MapboxGL.SymbolLayer
+              id="floodZonesLabel"
+              visible={activeLayers.has('flood_zones')}
+              style={{
+                textField: [
+                  'format', 
+                  'Vùng ngập ', 
+                  ['match', ['get', 'risk_level'], 'High', 'Cao', 'Medium', 'Trung bình', 'Low', 'Thấp', 'Thấp']
+                ],
+                textSize: 12,
+                textColor: '#ffffff',
+                textHaloColor: ['match', ['get', 'risk_level'], 'High', '#B91C1C', 'Medium', '#B45309', 'Low', '#1D4ED8', '#1D4ED8'] as any,
+                textHaloWidth: 1.5,
+                textAnchor: 'center',
+                textAllowOverlap: false,
+              }}
+            />
+          </MapboxGL.ShapeSource>
+        )}
+
+        {/* Flooded Routes */}
+        {(selectedCategory === -1 || selectedCategory === 5) && (
+          <MapboxGL.ShapeSource id="floodedRoutesSource" shape={MOCK_FLOODED_ROUTES}>
+            <MapboxGL.LineLayer
+              id="floodedRoutesLine"
+              visible={activeLayers.has('flood_streets')}
+              style={{
+                lineColor: ['match', ['get', 'level'], 'High', '#B91C1C', 'Medium', '#B45309', 'Low', '#1D4ED8', '#1D4ED8'] as any,
+                lineWidth: 5,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+            <MapboxGL.SymbolLayer
+              id="floodedRoutesLabel"
+              visible={activeLayers.has('flood_streets')}
+              style={{
+                symbolPlacement: 'line',
+                textField: ['format', ['get', 'name'], ' (', ['get', 'depth'], ')'],
+                textSize: 12,
+                textColor: '#1E293B',
+                textHaloColor: '#ffffff',
+                textHaloWidth: 2,
+              }}
+            />
+          </MapboxGL.ShapeSource>
+        )}
+
+        {/* Shelter Markers */}
+        {shelters.length > 0 && (
+          <MapboxGL.ShapeSource
+            id="sheltersSource"
+            shape={{ type: 'FeatureCollection', features: getShelterFeatures() }}
+            onPress={(e) => {
+              const f = e.features[0];
+              if (f?.properties) {
+                Alert.alert(
+                  f.properties.ten_diem || 'Điểm trú ẩn',
+                  `Địa chỉ: ${f.properties.dia_chi || 'Không rõ'}\nSức chứa: ${f.properties.hien_tai || 0}/${f.properties.suc_chua || 0} người\nTrạng thái: ${f.properties.tinh_trang === 'full' ? 'Đầy' : f.properties.tinh_trang === 'limited' ? 'Hạn chế' : 'Còn chỗ'}`
+                );
+              }
+            }}
+          >
+            <MapboxGL.CircleLayer
+              id="shelterCircles"
+              visible={activeLayers.has('shelters')}
+              style={{
+                circleRadius: ['interpolate', ['linear'], ['zoom'], 10, 8, 14, 13] as any,
+                circleColor: ['get', '_color'] as any,
+                circleStrokeWidth: 2,
+                circleStrokeColor: '#ffffff',
+                circleOpacity: 0.95,
+              }}
+            />
+            <MapboxGL.SymbolLayer
+              id="shelterIcons"
+              visible={activeLayers.has('shelters')}
+              style={{
+                iconImage: 'icon_shelter',
+                iconSize: 0.45,
+                iconAllowOverlap: true,
+                iconAnchor: 'center',
               }}
             />
           </MapboxGL.ShapeSource>
@@ -429,6 +802,7 @@ const MapScreen = () => {
               id="criticalRing"
               filter={['==', ['get', '_isCritical'], 1]}
               belowLayerID="markerCircles"
+              visible={activeLayers.has('alerts')}
               style={{ circleRadius: 22, circleColor: 'transparent', circleStrokeWidth: 3, circleStrokeColor: '#EF444480' }}
             />
           ) : (
@@ -436,6 +810,7 @@ const MapScreen = () => {
           )}
           <MapboxGL.CircleLayer
             id="markerCircles"
+            visible={activeLayers.has('alerts')}
             style={{
               circleRadius: ['interpolate', ['linear'], ['zoom'], 10, isEmergency ? 8 : 6, 14, isEmergency ? 14 : 11] as any,
               circleColor: isEmergency
@@ -448,6 +823,7 @@ const MapScreen = () => {
           />
           <MapboxGL.SymbolLayer
             id="reportsLayer"
+            visible={activeLayers.has('alerts')}
             style={{
               iconImage: isEmergency
                 ? (['match', ['get', 'type'], 'accident', 'icon_accident', 'congestion', 'icon_congestion', 'construction', 'icon_construction', 'weather', 'icon_weather', 'camera', 'icon_camera', 'patrol', 'icon_patrol', 'icon_default'] as any)
@@ -470,8 +846,8 @@ const MapScreen = () => {
       )}
 
       {/* Header overlay */}
-      <SafeAreaView style={styles.headerOverlay} edges={['top']}>
-        <View style={styles.searchRow}>
+      <View style={[styles.headerOverlay, { paddingTop: Math.max(insets.top, 10) }]} pointerEvents="box-none">
+        <View style={styles.searchRow} pointerEvents="box-none">
           <View style={styles.searchBar}>
             <Icon name="magnify" size={20} color={theme.colors.textSecondary} />
             <TextInput
@@ -485,8 +861,38 @@ const MapScreen = () => {
           </View>
         </View>
 
+        {activeShelterRoute && (
+          <View style={styles.routeBanner}>
+            <View style={styles.routeBannerIcon}>
+              <Icon name="navigation-variant" size={18} color={theme.colors.white} />
+            </View>
+            <View style={styles.routeBannerTextWrap}>
+              <Text style={styles.routeBannerTitle} numberOfLines={1}>
+                Đang dẫn tới {activeShelterRoute.name}
+              </Text>
+              {!!activeShelterRoute.address && (
+                <Text style={styles.routeBannerSub} numberOfLines={1}>
+                  {activeShelterRoute.address}
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity
+              style={styles.routeBannerClose}
+              onPress={() => setActiveShelterRoute(null)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Icon name="close" size={18} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Filter chips */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterScrollView}
+          contentContainerStyle={styles.filterRow}
+        >
           {(isEmergency ? EMERGENCY_CATEGORIES : CITIZEN_CATEGORIES).map(cat => {
             const isActive = selectedCategory === cat.id;
             const color = cat.color || theme.colors.primary;
@@ -514,17 +920,17 @@ const MapScreen = () => {
             );
           })}
         </ScrollView>
-      </SafeAreaView>
+      </View>
 
       {/* GPS FAB */}
-      <View style={styles.fabContainer}>
+      <View style={styles.fabContainer} pointerEvents="box-none">
         <TouchableOpacity style={styles.fab} onPress={centerUserLocation}>
           <Icon name="crosshairs-gps" size={22} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
 
       {/* Layer Controls - Top Right */}
-      <View style={styles.layerControlsContainer}>
+      <View style={[styles.layerControlsContainer, { top: insets.top + 90, zIndex: 99 }]} pointerEvents="box-none">
         {/* Locate Button */}
         <TouchableOpacity style={styles.layerBtn} onPress={centerUserLocation}>
           <Icon name="crosshairs-gps" size={20} color={locating ? theme.colors.primary : theme.colors.textSecondary} />
@@ -548,41 +954,49 @@ const MapScreen = () => {
       </View>
 
       {/* Layer Panel */}
-      {showLayers && (
-        <Animated.View style={[styles.layerPanel, { transform: [{ translateX: layerPanelAnim }] }]}>
-          <View style={styles.layerPanelHeader}>
-            <Icon name="layers" size={14} color={theme.colors.primary} />
-            <Text style={styles.layerPanelTitle}>Lớp bản đồ</Text>
-            <TouchableOpacity onPress={toggleLayerPanel} style={styles.layerPanelClose}>
-              <Icon name="close" size={16} color={theme.colors.textSecondary} />
-            </TouchableOpacity>
-          </View>
-          {LAYER_CONFIGS.map(cfg => {
-            const isActive = activeLayers.has(cfg.key);
-            return (
-              <TouchableOpacity
-                key={cfg.key}
-                style={styles.layerItem}
-                onPress={() => toggleLayer(cfg.key)}
-              >
-                <Icon name={cfg.icon} size={18} color={isActive ? cfg.color : theme.colors.textTertiary} />
-                <Text style={[styles.layerItemLabel, { color: isActive ? theme.colors.text : theme.colors.textTertiary }]}>
-                  {cfg.label}
-                </Text>
+      <Animated.View
+        style={[
+          styles.layerPanel,
+          {
+            top: insets.top + 90,
+            zIndex: 100,
+            transform: [{ translateX: layerPanelAnim }]
+          }
+        ]}
+        pointerEvents={showLayers ? "auto" : "none"}
+      >
+        <View style={styles.layerPanelHeader}>
+          <Icon name="layers" size={14} color={theme.colors.primary} />
+          <Text style={styles.layerPanelTitle}>Lớp bản đồ</Text>
+          <TouchableOpacity onPress={toggleLayerPanel} style={styles.layerPanelClose}>
+            <Icon name="close" size={16} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+        {LAYER_CONFIGS.map(cfg => {
+          const isActive = activeLayers.has(cfg.key);
+          return (
+            <TouchableOpacity
+              key={cfg.key}
+              style={styles.layerItem}
+              onPress={() => toggleLayer(cfg.key)}
+            >
+              <Icon name={cfg.icon} size={18} color={isActive ? cfg.color : theme.colors.textTertiary} />
+              <Text style={[styles.layerItemLabel, { color: isActive ? theme.colors.text : theme.colors.textTertiary }]}>
+                {cfg.label}
+              </Text>
+              <View style={[
+                styles.layerToggle,
+                { backgroundColor: isActive ? theme.colors.primary : theme.colors.border }
+              ]}>
                 <View style={[
-                  styles.layerToggle,
-                  { backgroundColor: isActive ? theme.colors.primary : theme.colors.border }
-                ]}>
-                  <View style={[
-                    styles.layerToggleDot,
-                    { transform: [{ translateX: isActive ? 12 : 2 }] }
-                  ]} />
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </Animated.View>
-      )}
+                  styles.layerToggleDot,
+                  { transform: [{ translateX: isActive ? 12 : 2 }] }
+                ]} />
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </Animated.View>
 
       {/* Legend Panel */}
       {showLegend && (
@@ -689,9 +1103,12 @@ const ReportSheet = ({ report, detail, loading, onClose, onNavigate }: {
 
           {detail.hinh_anhs && detail.hinh_anhs.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }}>
-              {detail.hinh_anhs.map((img: any) => (
-                <Image key={img.id} source={{ uri: img.duong_dan_hinh_anh }} style={styles.thumb} />
-              ))}
+              {detail.hinh_anhs.map((img: any) => {
+                const uri = normalizeImageUrl(img);
+                return uri ? (
+                  <Image key={img.id || uri} source={{ uri }} style={styles.thumb} resizeMode="cover" />
+                ) : null;
+              })}
             </ScrollView>
           )}
 
@@ -720,6 +1137,7 @@ const IncidentSheet = ({ incident, onClose, onNavigate }: {
   const sevLabel = SEVERITY_LABELS[incident.severity] || incident.severity || 'Thấp';
   const statColor = STATUS_COLORS[incident.status] || '#6B7280';
   const statLabel = STATUS_LABELS[incident.status] || incident.status || 'Mở';
+  const imageSources = getIncidentImageSources(incident);
 
   const handleCallEmergency = () => {
     Linking.openURL('tel:113');
@@ -736,6 +1154,17 @@ const IncidentSheet = ({ incident, onClose, onNavigate }: {
           <Icon name="close" size={18} color={theme.colors.textSecondary} />
         </TouchableOpacity>
       </View>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.incidentMediaScroll}>
+        {imageSources.map((source, index) => (
+          <Image
+            key={`${incident.id}-image-${index}`}
+            source={source}
+            style={styles.incidentHeroImage}
+            resizeMode="cover"
+          />
+        ))}
+      </ScrollView>
 
       <View style={styles.badgeRow}>
         <View style={[styles.badge, { backgroundColor: sevColor + '18', borderWidth: 1, borderColor: sevColor + '40' }]}>
@@ -801,7 +1230,50 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4,
   },
   searchInput: { flex: 1, marginLeft: 8, fontSize: 14, color: theme.colors.text },
+  routeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 10,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  routeBannerIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  routeBannerTextWrap: { flex: 1 },
+  routeBannerTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+  routeBannerSub: {
+    marginTop: 2,
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+  },
+  routeBannerClose: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+  },
 
+  filterScrollView: { marginRight: 60 },
   filterRow: { paddingTop: 10, paddingBottom: 4, gap: 8, paddingRight: 16 },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -849,6 +1321,14 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
   infoText: { flex: 1, fontSize: 13, color: theme.colors.textSecondary },
   thumb: { width: 160, height: 100, borderRadius: 10, marginRight: 10, backgroundColor: '#F3F4F6' },
+  incidentMediaScroll: { marginBottom: 12 },
+  incidentHeroImage: {
+    width: 280,
+    height: 132,
+    borderRadius: 14,
+    marginRight: 10,
+    backgroundColor: '#F3F4F6',
+  },
 
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,

@@ -82,7 +82,6 @@ return new class extends Migration
                 $table->decimal('quality_score', 3, 2)->nullable();
                 $table->string('source', 30)->default('sensor');
 
-                $table->primary(['id', 'recorded_at']);
                 $table->index(['sensor_id', 'recorded_at']);
                 $table->index(['sensor_id', 'is_anomaly']);
             });

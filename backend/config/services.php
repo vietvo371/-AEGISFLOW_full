@@ -9,12 +9,12 @@ return [
     */
 
     'ai' => [
-        'url' => env('AI_SERVICE_URL', 'http://localhost:8001'),
+        'url' => env('AI_SERVICE_URL', 'http://localhost:5005'),
         'key' => env('AI_SERVICE_KEY'),
         'timeout' => env('AI_PREDICTION_TIMEOUT', 30),
         'endpoints' => [
             'predict_flood' => '/api/predict/flood',
-            'predict_rainfall' => '/api/predict/rainfall',
+            'predict_rainfall' => '/api/predict-risk',
             'simulate' => '/api/simulate',
         ],
     ],
@@ -40,6 +40,10 @@ return [
     'openweather' => [
         'key' => env('OPENWEATHER_API_KEY', ''),
         'base_url' => 'https://api.openweathermap.org/data/2.5',
+    ],
+
+    'openmap' => [
+        'key' => env('OPENMAP_API_KEY', ''),
     ],
 
     /*

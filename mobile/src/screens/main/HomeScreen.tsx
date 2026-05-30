@@ -11,7 +11,7 @@ import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { RootStackParamList, CitizenTabParamList } from '../../navigation/types';
-import { theme, FONT_SIZE, SPACING, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING } from '../../theme';
+import { theme, FONT_SIZE, SPACING, BORDER_RADIUS, SCREEN_PADDING } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import { alertService, AlertItem } from '../../services/alertService';
@@ -93,7 +93,7 @@ const HomeScreen = () => {
           <View style={styles.headerTop}>
             <View style={{ flex: 1 }}>
               <Text style={styles.headerDate}>{dateStr}</Text>
-              <Text style={styles.headerGreeting}>{t('citizen.dashboard.greeting', firstName)}</Text>
+              <Text style={styles.headerGreeting}>{t('citizen.dashboard.greeting', { name: firstName || 'Người dùng' })}</Text>
             </View>
             <TouchableOpacity
               style={styles.notifBtn}
@@ -333,13 +333,15 @@ const HomeScreen = () => {
   );
 };
 
-function getTimeAgo(dateStr: string, t: (key: string, fallback?: string) => string): string {
+function getTimeAgo(dateStr: string, t: (key: string, options?: any) => string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `${minutes} ${t('citizen.alerts.minutesAgo').replace('{{count}}', String(minutes)).split(' ')[0]} trước`;
+  if (minutes < 1) return t('citizen.alerts.justNow') || 'Vừa xong';
+  if (minutes < 60) return t('citizen.alerts.minutesAgo', { count: minutes }) || `${minutes} phút trước`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} giờ trước`;
-  return `${Math.floor(hours / 24)} ngày trước`;
+  if (hours < 24) return t('citizen.alerts.hoursAgo', { count: hours }) || `${hours} giờ trước`;
+  const days = Math.floor(hours / 24);
+  return t('home.time.daysAgo', { count: days }) || `${days} ngày trước`;
 }
 
 const styles = StyleSheet.create({

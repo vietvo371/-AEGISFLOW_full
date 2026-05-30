@@ -1,0 +1,3525 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "hai_chau",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.2022,
+          16.0544
+        ]
+      },
+      "properties": {
+        "id": "hai_chau",
+        "name": "Hai Chau",
+        "district": "hai_chau",
+        "elevation": 2.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.3,
+        "population_density": 15000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "thanh_khe",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.19,
+          16.06
+        ]
+      },
+      "properties": {
+        "id": "thanh_khe",
+        "name": "Thanh Khe",
+        "district": "thanh_khe",
+        "elevation": 3.5,
+        "node_type": "district",
+        "drainage_capacity": 0.4,
+        "population_density": 12000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "lien_chieu",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.15,
+          16.07
+        ]
+      },
+      "properties": {
+        "id": "lien_chieu",
+        "name": "Lien Chieu",
+        "district": "lien_chieu",
+        "elevation": 8.0,
+        "node_type": "district",
+        "drainage_capacity": 0.7,
+        "population_density": 8000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ngu_hanh_son",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.245,
+          16.065
+        ]
+      },
+      "properties": {
+        "id": "ngu_hanh_son",
+        "name": "Ngu Hanh Son",
+        "district": "ngu_hanh_son",
+        "elevation": 15.0,
+        "node_type": "district",
+        "drainage_capacity": 0.9,
+        "population_density": 5000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "son_tra",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.25,
+          16.08
+        ]
+      },
+      "properties": {
+        "id": "son_tra",
+        "name": "Son Tra",
+        "district": "son_tra",
+        "elevation": 25.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.9,
+        "population_density": 4000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "cam_le",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.18,
+          16.045
+        ]
+      },
+      "properties": {
+        "id": "cam_le",
+        "name": "Cam Le",
+        "district": "cam_le",
+        "elevation": 5.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.5,
+        "population_density": 6000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hoa_vang",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.12,
+          16.03
+        ]
+      },
+      "properties": {
+        "id": "hoa_vang",
+        "name": "Hoa Vang",
+        "district": "hoa_vang",
+        "elevation": 20.0,
+        "node_type": "district",
+        "drainage_capacity": 0.9,
+        "population_density": 1000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hoang_sa",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.12,
+          16.15
+        ]
+      },
+      "properties": {
+        "id": "hoang_sa",
+        "name": "Hoang Sa",
+        "district": "hoang_sa",
+        "elevation": 2.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.8,
+        "population_density": 10
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "phuoc_my",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.21,
+          16.058
+        ]
+      },
+      "properties": {
+        "id": "phuoc_my",
+        "name": "Phuoc My",
+        "district": "phuoc_my",
+        "elevation": 1.5,
+        "node_type": "intersection",
+        "drainage_capacity": 0.2,
+        "population_density": 18000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "an_trung",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.205,
+          16.052
+        ]
+      },
+      "properties": {
+        "id": "an_trung",
+        "name": "An Trung",
+        "district": "an_trung",
+        "elevation": 2.5,
+        "node_type": "intersection",
+        "drainage_capacity": 0.3,
+        "population_density": 14000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hoa_thuan",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.198,
+          16.048
+        ]
+      },
+      "properties": {
+        "id": "hoa_thuan",
+        "name": "Hoa Thuan",
+        "district": "hoa_thuan",
+        "elevation": 3.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.4,
+        "population_density": 12000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "thac_bac",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.192,
+          16.055
+        ]
+      },
+      "properties": {
+        "id": "thac_bac",
+        "name": "Thac Bac",
+        "district": "thac_bac",
+        "elevation": 4.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.5,
+        "population_density": 10000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "thanh_khe_tay",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.185,
+          16.058
+        ]
+      },
+      "properties": {
+        "id": "thanh_khe_tay",
+        "name": "Thanh Khe Tay",
+        "district": "thanh_khe",
+        "elevation": 3.0,
+        "node_type": "district",
+        "drainage_capacity": 0.35,
+        "population_density": 13000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tam_thuan",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.188,
+          16.065
+        ]
+      },
+      "properties": {
+        "id": "tam_thuan",
+        "name": "Tam Thuan",
+        "district": "tam_thuan",
+        "elevation": 4.5,
+        "node_type": "intersection",
+        "drainage_capacity": 0.5,
+        "population_density": 9000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "phuoc_hiep",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.18,
+          16.062
+        ]
+      },
+      "properties": {
+        "id": "phuoc_hiep",
+        "name": "Phuoc Hiep",
+        "district": "phuoc_hiep",
+        "elevation": 5.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.6,
+        "population_density": 7000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "cho_bac",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.195,
+          16.05
+        ]
+      },
+      "properties": {
+        "id": "cho_bac",
+        "name": "Cho Bac",
+        "district": "cho_bac",
+        "elevation": 1.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.1,
+        "population_density": 20000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "nguyen_van_thoai",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.2,
+          16.052
+        ]
+      },
+      "properties": {
+        "id": "nguyen_van_thoai",
+        "name": "Nguyen Van Thoai",
+        "district": "nguyen_van_thoai",
+        "elevation": 1.2,
+        "node_type": "intersection",
+        "drainage_capacity": 0.15,
+        "population_density": 15000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "duy_tan",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.195,
+          16.055
+        ]
+      },
+      "properties": {
+        "id": "duy_tan",
+        "name": "Duy Tan",
+        "district": "duy_tan",
+        "elevation": 1.8,
+        "node_type": "intersection",
+        "drainage_capacity": 0.2,
+        "population_density": 16000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ong_ich_khiem",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.195,
+          16.06
+        ]
+      },
+      "properties": {
+        "id": "ong_ich_khiem",
+        "name": "Ong Ich Khiem",
+        "district": "ong_ich_khiem",
+        "elevation": 2.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.25,
+        "population_density": 14000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ham_tuy",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.192,
+          16.052
+        ]
+      },
+      "properties": {
+        "id": "ham_tuy",
+        "name": "Ham Tuy",
+        "district": "ham_tuy",
+        "elevation": 2.2,
+        "node_type": "intersection",
+        "drainage_capacity": 0.3,
+        "population_density": 12000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "song_han",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.205,
+          16.056
+        ]
+      },
+      "properties": {
+        "id": "song_han",
+        "name": "Song Han",
+        "district": "song_han",
+        "elevation": 1.5,
+        "node_type": "river",
+        "drainage_capacity": 0.2,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "cau_song_han",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.203,
+          16.054
+        ]
+      },
+      "properties": {
+        "id": "cau_song_han",
+        "name": "Cau Song Han",
+        "district": "song_han",
+        "elevation": 2.0,
+        "node_type": "river",
+        "drainage_capacity": 0.3,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "cau_thuan_phuoc",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.22,
+          16.07
+        ]
+      },
+      "properties": {
+        "id": "cau_thuan_phuoc",
+        "name": "Cau Thuan Phuoc",
+        "district": "cau_thuan_phuoc",
+        "elevation": 5.0,
+        "node_type": "river",
+        "drainage_capacity": 0.6,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "song_cu_da_nang",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.18,
+          16.05
+        ]
+      },
+      "properties": {
+        "id": "song_cu_da_nang",
+        "name": "Song Cu Da Nang",
+        "district": "song_cu_da_nang",
+        "elevation": 1.0,
+        "node_type": "river",
+        "drainage_capacity": 0.1,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "vincom",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.208,
+          16.054
+        ]
+      },
+      "properties": {
+        "id": "vincom",
+        "name": "Vincom",
+        "district": "vincom",
+        "elevation": 2.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.3,
+        "population_density": 5000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "con_shopping_market",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.196,
+          16.052
+        ]
+      },
+      "properties": {
+        "id": "con_shopping_market",
+        "name": "Con Shopping Market",
+        "district": "con_shopping_market",
+        "elevation": 1.5,
+        "node_type": "intersection",
+        "drainage_capacity": 0.2,
+        "population_density": 8000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "kruskal_zone",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.205,
+          16.058
+        ]
+      },
+      "properties": {
+        "id": "kruskal_zone",
+        "name": "Kruskal Zone",
+        "district": "kruskal_zone",
+        "elevation": 1.8,
+        "node_type": "intersection",
+        "drainage_capacity": 0.25,
+        "population_density": 6000
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "bv_da_nang",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.2,
+          16.055
+        ]
+      },
+      "properties": {
+        "id": "bv_da_nang",
+        "name": "BV Da Nang",
+        "district": "bv_da_nang",
+        "elevation": 2.5,
+        "node_type": "landmark",
+        "drainage_capacity": 0.3,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "bv_ung_buou",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.21,
+          16.065
+        ]
+      },
+      "properties": {
+        "id": "bv_ung_buou",
+        "name": "BV Ung Buou",
+        "district": "bv_ung_buou",
+        "elevation": 5.0,
+        "node_type": "landmark",
+        "drainage_capacity": 0.6,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "truong_dh_kt",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.18,
+          16.058
+        ]
+      },
+      "properties": {
+        "id": "truong_dh_kt",
+        "name": "Truong \u0110H Kt",
+        "district": "truong_dh_kt",
+        "elevation": 6.0,
+        "node_type": "landmark",
+        "drainage_capacity": 0.7,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "kcx_hoa_khanh",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.175,
+          16.035
+        ]
+      },
+      "properties": {
+        "id": "kcx_hoa_khanh",
+        "name": "KCX Hoa Khanh",
+        "district": "kcx_hoa_khanh",
+        "elevation": 1.5,
+        "node_type": "industrial",
+        "drainage_capacity": 0.2,
+        "population_density": 500
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "kcx_thanh_vinh",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.165,
+          16.025
+        ]
+      },
+      "properties": {
+        "id": "kcx_thanh_vinh",
+        "name": "KCX Thanh Vinh",
+        "district": "kcx_thanh_vinh",
+        "elevation": 2.0,
+        "node_type": "industrial",
+        "drainage_capacity": 0.3,
+        "population_density": 300
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "my_khe",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.24,
+          16.058
+        ]
+      },
+      "properties": {
+        "id": "my_khe",
+        "name": "My Khe",
+        "district": "my_khe",
+        "elevation": 1.0,
+        "node_type": "district",
+        "drainage_capacity": 0.95,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "non_nuoc",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.26,
+          16.055
+        ]
+      },
+      "properties": {
+        "id": "non_nuoc",
+        "name": "Non Nuoc",
+        "district": "non_nuoc",
+        "elevation": 2.0,
+        "node_type": "intersection",
+        "drainage_capacity": 0.95,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "nui_nam_o",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.2,
+          16.1
+        ]
+      },
+      "properties": {
+        "id": "nui_nam_o",
+        "name": "Nui Nam O",
+        "district": "nui_nam_o",
+        "elevation": 150.0,
+        "node_type": "highland",
+        "drainage_capacity": 1.0,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "nui_than_tai",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.23,
+          16.09
+        ]
+      },
+      "properties": {
+        "id": "nui_than_tai",
+        "name": "Nui Than Tai",
+        "district": "nui_than_tai",
+        "elevation": 100.0,
+        "node_type": "highland",
+        "drainage_capacity": 1.0,
+        "population_density": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2022,
+            16.0544
+          ],
+          [
+            108.205,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hai_chau",
+        "to": "an_trung",
+        "distance_m": 400.9264917020358,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.285
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2022,
+            16.0544
+          ],
+          [
+            108.198,
+            16.048
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hai_chau",
+        "to": "hoa_thuan",
+        "distance_m": 841.352714590684,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.315
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2022,
+            16.0544
+          ],
+          [
+            108.192,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hai_chau",
+        "to": "thac_bac",
+        "distance_m": 1091.9927566417346,
+        "road_type": "primary",
+        "elevation_diff": 2.0,
+        "water_flow_factor": 0.32000000000000006
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2022,
+            16.0544
+          ],
+          [
+            108.195,
+            16.05
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hai_chau",
+        "to": "cho_bac",
+        "distance_m": 911.7735986122062,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.18000000000000002
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2022,
+            16.0544
+          ],
+          [
+            108.205,
+            16.056
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hai_chau",
+        "to": "song_han",
+        "distance_m": 348.1012148224054,
+        "road_type": "primary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2022,
+            16.0544
+          ],
+          [
+            108.203,
+            16.054
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hai_chau",
+        "to": "cau_song_han",
+        "distance_m": 96.36527786364341,
+        "road_type": "secondary",
+        "elevation_diff": 0.0,
+        "water_flow_factor": 0.3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.19,
+            16.06
+          ],
+          [
+            108.185,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thanh_khe",
+        "to": "thanh_khe_tay",
+        "distance_m": 578.7152396348833,
+        "road_type": "residential",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.35624999999999996
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.19,
+            16.06
+          ],
+          [
+            108.192,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thanh_khe",
+        "to": "thac_bac",
+        "distance_m": 595.6350679744893,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.4275
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.19,
+            16.06
+          ],
+          [
+            108.15,
+            16.07
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thanh_khe",
+        "to": "lien_chieu",
+        "distance_m": 4416.377551640682,
+        "road_type": "secondary",
+        "elevation_diff": 4.5,
+        "water_flow_factor": 0.30250000000000005
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.19,
+            16.06
+          ],
+          [
+            108.188,
+            16.065
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thanh_khe",
+        "to": "tam_thuan",
+        "distance_m": 595.633141649158,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.405
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.15,
+            16.07
+          ],
+          [
+            108.19,
+            16.06
+          ]
+        ]
+      },
+      "properties": {
+        "from": "lien_chieu",
+        "to": "thanh_khe",
+        "distance_m": 4416.377551640682,
+        "road_type": "secondary",
+        "elevation_diff": 4.5,
+        "water_flow_factor": 0.30250000000000005
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.15,
+            16.07
+          ],
+          [
+            108.18,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "lien_chieu",
+        "to": "truong_dh_kt",
+        "distance_m": 3472.217072647621,
+        "road_type": "secondary",
+        "elevation_diff": 2.0,
+        "water_flow_factor": 0.5599999999999999
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.15,
+            16.07
+          ],
+          [
+            108.22,
+            16.07
+          ]
+        ]
+      },
+      "properties": {
+        "from": "lien_chieu",
+        "to": "cau_thuan_phuoc",
+        "distance_m": 7479.492866747313,
+        "road_type": "secondary",
+        "elevation_diff": 3.0,
+        "water_flow_factor": 0.4549999999999999
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.15,
+            16.07
+          ],
+          [
+            108.175,
+            16.035
+          ]
+        ]
+      },
+      "properties": {
+        "from": "lien_chieu",
+        "to": "kcx_hoa_khanh",
+        "distance_m": 4720.497814927225,
+        "road_type": "secondary",
+        "elevation_diff": 6.5,
+        "water_flow_factor": 0.15749999999999997
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.245,
+            16.065
+          ],
+          [
+            108.25,
+            16.08
+          ]
+        ]
+      },
+      "properties": {
+        "from": "ngu_hanh_son",
+        "to": "son_tra",
+        "distance_m": 1751.3952946695747,
+        "road_type": "primary",
+        "elevation_diff": 10.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.245,
+            16.065
+          ],
+          [
+            108.22,
+            16.07
+          ]
+        ]
+      },
+      "properties": {
+        "from": "ngu_hanh_son",
+        "to": "cau_thuan_phuoc",
+        "distance_m": 2728.5252728615715,
+        "road_type": "secondary",
+        "elevation_diff": 10.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.245,
+            16.065
+          ],
+          [
+            108.26,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "ngu_hanh_son",
+        "to": "non_nuoc",
+        "distance_m": 1950.7670497897516,
+        "road_type": "secondary",
+        "elevation_diff": 13.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.25,
+            16.08
+          ],
+          [
+            108.245,
+            16.065
+          ]
+        ]
+      },
+      "properties": {
+        "from": "son_tra",
+        "to": "ngu_hanh_son",
+        "distance_m": 1751.3952946695747,
+        "road_type": "primary",
+        "elevation_diff": 10.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.25,
+            16.08
+          ],
+          [
+            108.22,
+            16.07
+          ]
+        ]
+      },
+      "properties": {
+        "from": "son_tra",
+        "to": "cau_thuan_phuoc",
+        "distance_m": 3392.8049144041183,
+        "road_type": "secondary",
+        "elevation_diff": 20.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.25,
+            16.08
+          ],
+          [
+            108.21,
+            16.065
+          ]
+        ]
+      },
+      "properties": {
+        "from": "son_tra",
+        "to": "bv_ung_buou",
+        "distance_m": 4587.8700982028895,
+        "road_type": "secondary",
+        "elevation_diff": 20.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.25,
+            16.08
+          ],
+          [
+            108.24,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "son_tra",
+        "to": "my_khe",
+        "distance_m": 2669.4621955996286,
+        "road_type": "secondary",
+        "elevation_diff": 24.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.045
+          ],
+          [
+            108.188,
+            16.065
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cam_le",
+        "to": "tam_thuan",
+        "distance_m": 2382.5441218970705,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.475
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.045
+          ],
+          [
+            108.18,
+            16.062
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cam_le",
+        "to": "phuoc_hiep",
+        "distance_m": 1890.3137529574385,
+        "road_type": "secondary",
+        "elevation_diff": 0.0,
+        "water_flow_factor": 0.55
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.045
+          ],
+          [
+            108.18,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cam_le",
+        "to": "truong_dh_kt",
+        "distance_m": 1445.5340463790549,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.54
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.045
+          ],
+          [
+            108.18,
+            16.05
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cam_le",
+        "to": "song_cu_da_nang",
+        "distance_m": 555.9746332226831,
+        "road_type": "secondary",
+        "elevation_diff": 4.0,
+        "water_flow_factor": 0.18
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.12,
+            16.03
+          ],
+          [
+            108.18,
+            16.05
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hoa_vang",
+        "to": "song_cu_da_nang",
+        "distance_m": 6786.674825516439,
+        "road_type": "secondary",
+        "elevation_diff": 19.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.12,
+            16.03
+          ],
+          [
+            108.165,
+            16.025
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hoa_vang",
+        "to": "kcx_thanh_vinh",
+        "distance_m": 4841.301516607758,
+        "road_type": "secondary",
+        "elevation_diff": 18.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.12,
+            16.03
+          ],
+          [
+            108.12,
+            16.15
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hoa_vang",
+        "to": "hoang_sa",
+        "distance_m": 13343.391197346766,
+        "road_type": "secondary",
+        "elevation_diff": 18.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.12,
+            16.15
+          ],
+          [
+            108.12,
+            16.03
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hoang_sa",
+        "to": "hoa_vang",
+        "distance_m": 13343.391197346766,
+        "road_type": "secondary",
+        "elevation_diff": 18.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.12,
+            16.15
+          ],
+          [
+            108.2,
+            16.1
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hoang_sa",
+        "to": "nui_nam_o",
+        "distance_m": 10195.021616345024,
+        "road_type": "secondary",
+        "elevation_diff": 148.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.21,
+            16.058
+          ],
+          [
+            108.2022,
+            16.0544
+          ]
+        ]
+      },
+      "properties": {
+        "from": "phuoc_my",
+        "to": "hai_chau",
+        "distance_m": 924.6307783032728,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.21,
+            16.058
+          ],
+          [
+            108.195,
+            16.06
+          ]
+        ]
+      },
+      "properties": {
+        "from": "phuoc_my",
+        "to": "ong_ich_khiem",
+        "distance_m": 1618.19157750574,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.21375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.21,
+            16.058
+          ],
+          [
+            108.208,
+            16.054
+          ]
+        ]
+      },
+      "properties": {
+        "from": "phuoc_my",
+        "to": "vincom",
+        "distance_m": 493.46024877148835,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.21,
+            16.058
+          ],
+          [
+            108.205,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "phuoc_my",
+        "to": "kruskal_zone",
+        "distance_m": 534.2817140796749,
+        "road_type": "secondary",
+        "elevation_diff": 0.30000000000000004,
+        "water_flow_factor": 0.21825
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.205,
+            16.052
+          ],
+          [
+            108.2022,
+            16.0544
+          ]
+        ]
+      },
+      "properties": {
+        "from": "an_trung",
+        "to": "hai_chau",
+        "distance_m": 400.9264917020358,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.285
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.205,
+            16.052
+          ],
+          [
+            108.198,
+            16.048
+          ]
+        ]
+      },
+      "properties": {
+        "from": "an_trung",
+        "to": "hoa_thuan",
+        "distance_m": 870.2698268770655,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.33249999999999996
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.205,
+            16.052
+          ],
+          [
+            108.2,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "an_trung",
+        "to": "nguyen_van_thoai",
+        "distance_m": 534.2978158237731,
+        "road_type": "secondary",
+        "elevation_diff": 1.3,
+        "water_flow_factor": 0.19574999999999998
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.198,
+            16.048
+          ],
+          [
+            108.2022,
+            16.0544
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hoa_thuan",
+        "to": "hai_chau",
+        "distance_m": 841.352714590684,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.315
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.198,
+            16.048
+          ],
+          [
+            108.205,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hoa_thuan",
+        "to": "an_trung",
+        "distance_m": 870.2698268770655,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.33249999999999996
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.198,
+            16.048
+          ],
+          [
+            108.192,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hoa_thuan",
+        "to": "ham_tuy",
+        "distance_m": 780.3332806170156,
+        "road_type": "secondary",
+        "elevation_diff": 0.7999999999999998,
+        "water_flow_factor": 0.322
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.198,
+            16.048
+          ],
+          [
+            108.195,
+            16.05
+          ]
+        ]
+      },
+      "properties": {
+        "from": "hoa_thuan",
+        "to": "cho_bac",
+        "distance_m": 390.16796293132256,
+        "road_type": "secondary",
+        "elevation_diff": 2.0,
+        "water_flow_factor": 0.2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.192,
+            16.055
+          ],
+          [
+            108.2022,
+            16.0544
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thac_bac",
+        "to": "hai_chau",
+        "distance_m": 1091.9927566417346,
+        "road_type": "primary",
+        "elevation_diff": 2.0,
+        "water_flow_factor": 0.32000000000000006
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.192,
+            16.055
+          ],
+          [
+            108.195,
+            16.06
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thac_bac",
+        "to": "ong_ich_khiem",
+        "distance_m": 641.7731771956585,
+        "road_type": "secondary",
+        "elevation_diff": 2.0,
+        "water_flow_factor": 0.30000000000000004
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.192,
+            16.055
+          ],
+          [
+            108.185,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thac_bac",
+        "to": "thanh_khe_tay",
+        "distance_m": 819.0133449519656,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.3825
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.192,
+            16.055
+          ],
+          [
+            108.19,
+            16.06
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thac_bac",
+        "to": "thanh_khe",
+        "distance_m": 595.6350679744893,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.4275
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.185,
+            16.058
+          ],
+          [
+            108.19,
+            16.06
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thanh_khe_tay",
+        "to": "thanh_khe",
+        "distance_m": 578.7152396348833,
+        "road_type": "residential",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.35624999999999996
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.185,
+            16.058
+          ],
+          [
+            108.18,
+            16.062
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thanh_khe_tay",
+        "to": "phuoc_hiep",
+        "distance_m": 695.1835733327403,
+        "road_type": "secondary",
+        "elevation_diff": 2.0,
+        "water_flow_factor": 0.38
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.185,
+            16.058
+          ],
+          [
+            108.192,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thanh_khe_tay",
+        "to": "ham_tuy",
+        "distance_m": 1002.3111823329807,
+        "road_type": "secondary",
+        "elevation_diff": 0.7999999999999998,
+        "water_flow_factor": 0.299
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.185,
+            16.058
+          ],
+          [
+            108.195,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "thanh_khe_tay",
+        "to": "duy_tan",
+        "distance_m": 1119.4301287077255,
+        "road_type": "secondary",
+        "elevation_diff": 1.2,
+        "water_flow_factor": 0.24200000000000002
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.188,
+            16.065
+          ],
+          [
+            108.19,
+            16.06
+          ]
+        ]
+      },
+      "properties": {
+        "from": "tam_thuan",
+        "to": "thanh_khe",
+        "distance_m": 595.633141649158,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.405
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.188,
+            16.065
+          ],
+          [
+            108.18,
+            16.062
+          ]
+        ]
+      },
+      "properties": {
+        "from": "tam_thuan",
+        "to": "phuoc_hiep",
+        "distance_m": 917.6100519794113,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.5225
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.188,
+            16.065
+          ],
+          [
+            108.18,
+            16.045
+          ]
+        ]
+      },
+      "properties": {
+        "from": "tam_thuan",
+        "to": "cam_le",
+        "distance_m": 2382.5441218970705,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.475
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.062
+          ],
+          [
+            108.185,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "phuoc_hiep",
+        "to": "thanh_khe_tay",
+        "distance_m": 695.1835733327403,
+        "road_type": "secondary",
+        "elevation_diff": 2.0,
+        "water_flow_factor": 0.38
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.062
+          ],
+          [
+            108.188,
+            16.065
+          ]
+        ]
+      },
+      "properties": {
+        "from": "phuoc_hiep",
+        "to": "tam_thuan",
+        "distance_m": 917.6100519794113,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.5225
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.062
+          ],
+          [
+            108.18,
+            16.045
+          ]
+        ]
+      },
+      "properties": {
+        "from": "phuoc_hiep",
+        "to": "cam_le",
+        "distance_m": 1890.3137529574385,
+        "road_type": "secondary",
+        "elevation_diff": 0.0,
+        "water_flow_factor": 0.55
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.195,
+            16.05
+          ],
+          [
+            108.2022,
+            16.0544
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cho_bac",
+        "to": "hai_chau",
+        "distance_m": 911.7735986122062,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.18000000000000002
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.195,
+            16.05
+          ],
+          [
+            108.198,
+            16.048
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cho_bac",
+        "to": "hoa_thuan",
+        "distance_m": 390.16796293132256,
+        "road_type": "secondary",
+        "elevation_diff": 2.0,
+        "water_flow_factor": 0.2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.195,
+            16.05
+          ],
+          [
+            108.196,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cho_bac",
+        "to": "con_shopping_market",
+        "distance_m": 246.7312865632814,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.14250000000000002
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2,
+            16.052
+          ],
+          [
+            108.205,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "nguyen_van_thoai",
+        "to": "an_trung",
+        "distance_m": 534.2978158237731,
+        "road_type": "secondary",
+        "elevation_diff": 1.3,
+        "water_flow_factor": 0.19574999999999998
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2,
+            16.052
+          ],
+          [
+            108.195,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "nguyen_van_thoai",
+        "to": "duy_tan",
+        "distance_m": 629.8798777207351,
+        "road_type": "secondary",
+        "elevation_diff": 0.6000000000000001,
+        "water_flow_factor": 0.16449999999999998
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2,
+            16.052
+          ],
+          [
+            108.196,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "nguyen_van_thoai",
+        "to": "con_shopping_market",
+        "distance_m": 427.43825266366287,
+        "road_type": "secondary",
+        "elevation_diff": 0.30000000000000004,
+        "water_flow_factor": 0.16974999999999998
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.195,
+            16.055
+          ],
+          [
+            108.2,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "duy_tan",
+        "to": "nguyen_van_thoai",
+        "distance_m": 629.8798777207351,
+        "road_type": "secondary",
+        "elevation_diff": 0.6000000000000001,
+        "water_flow_factor": 0.16449999999999998
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.195,
+            16.055
+          ],
+          [
+            108.195,
+            16.06
+          ]
+        ]
+      },
+      "properties": {
+        "from": "duy_tan",
+        "to": "ong_ich_khiem",
+        "distance_m": 555.9746332226831,
+        "road_type": "secondary",
+        "elevation_diff": 0.19999999999999996,
+        "water_flow_factor": 0.2205
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.195,
+            16.055
+          ],
+          [
+            108.205,
+            16.056
+          ]
+        ]
+      },
+      "properties": {
+        "from": "duy_tan",
+        "to": "song_han",
+        "distance_m": 1074.3466809928257,
+        "road_type": "secondary",
+        "elevation_diff": 0.30000000000000004,
+        "water_flow_factor": 0.194
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.195,
+            16.06
+          ],
+          [
+            108.192,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "ong_ich_khiem",
+        "to": "thac_bac",
+        "distance_m": 641.7731771956585,
+        "road_type": "secondary",
+        "elevation_diff": 2.0,
+        "water_flow_factor": 0.30000000000000004
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.195,
+            16.06
+          ],
+          [
+            108.21,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "ong_ich_khiem",
+        "to": "phuoc_my",
+        "distance_m": 1618.19157750574,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.21375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.195,
+            16.06
+          ],
+          [
+            108.195,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "ong_ich_khiem",
+        "to": "duy_tan",
+        "distance_m": 555.9746332226831,
+        "road_type": "secondary",
+        "elevation_diff": 0.19999999999999996,
+        "water_flow_factor": 0.2205
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.195,
+            16.06
+          ],
+          [
+            108.2,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "ong_ich_khiem",
+        "to": "bv_da_nang",
+        "distance_m": 771.0811738167533,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.26125
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.192,
+            16.052
+          ],
+          [
+            108.198,
+            16.048
+          ]
+        ]
+      },
+      "properties": {
+        "from": "ham_tuy",
+        "to": "hoa_thuan",
+        "distance_m": 780.3332806170156,
+        "road_type": "secondary",
+        "elevation_diff": 0.7999999999999998,
+        "water_flow_factor": 0.322
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.192,
+            16.052
+          ],
+          [
+            108.185,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "ham_tuy",
+        "to": "thanh_khe_tay",
+        "distance_m": 1002.3111823329807,
+        "road_type": "secondary",
+        "elevation_diff": 0.7999999999999998,
+        "water_flow_factor": 0.299
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.192,
+            16.052
+          ],
+          [
+            108.19,
+            16.06
+          ]
+        ]
+      },
+      "properties": {
+        "from": "ham_tuy",
+        "to": "thanh_khe",
+        "distance_m": 914.8715643188901,
+        "road_type": "secondary",
+        "elevation_diff": 1.2999999999999998,
+        "water_flow_factor": 0.3045
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.205,
+            16.056
+          ],
+          [
+            108.2022,
+            16.0544
+          ]
+        ]
+      },
+      "properties": {
+        "from": "song_han",
+        "to": "hai_chau",
+        "distance_m": 348.1012148224054,
+        "road_type": "primary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.205,
+            16.056
+          ],
+          [
+            108.195,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "song_han",
+        "to": "duy_tan",
+        "distance_m": 1074.3466809928257,
+        "road_type": "secondary",
+        "elevation_diff": 0.30000000000000004,
+        "water_flow_factor": 0.194
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.205,
+            16.056
+          ],
+          [
+            108.208,
+            16.054
+          ]
+        ]
+      },
+      "properties": {
+        "from": "song_han",
+        "to": "vincom",
+        "distance_m": 390.1600263657972,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.205,
+            16.056
+          ],
+          [
+            108.203,
+            16.054
+          ]
+        ]
+      },
+      "properties": {
+        "from": "song_han",
+        "to": "cau_song_han",
+        "distance_m": 308.4343292118838,
+        "road_type": "residential",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.203,
+            16.054
+          ],
+          [
+            108.2022,
+            16.0544
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cau_song_han",
+        "to": "hai_chau",
+        "distance_m": 96.36527786364341,
+        "road_type": "secondary",
+        "elevation_diff": 0.0,
+        "water_flow_factor": 0.3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.203,
+            16.054
+          ],
+          [
+            108.205,
+            16.056
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cau_song_han",
+        "to": "song_han",
+        "distance_m": 308.4343292118838,
+        "road_type": "residential",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.203,
+            16.054
+          ],
+          [
+            108.2,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cau_song_han",
+        "to": "bv_da_nang",
+        "distance_m": 339.3116962640989,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.285
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.22,
+            16.07
+          ],
+          [
+            108.25,
+            16.08
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cau_thuan_phuoc",
+        "to": "son_tra",
+        "distance_m": 3392.8049144041183,
+        "road_type": "secondary",
+        "elevation_diff": 20.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.22,
+            16.07
+          ],
+          [
+            108.245,
+            16.065
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cau_thuan_phuoc",
+        "to": "ngu_hanh_son",
+        "distance_m": 2728.5252728615715,
+        "road_type": "secondary",
+        "elevation_diff": 10.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.22,
+            16.07
+          ],
+          [
+            108.15,
+            16.07
+          ]
+        ]
+      },
+      "properties": {
+        "from": "cau_thuan_phuoc",
+        "to": "lien_chieu",
+        "distance_m": 7479.492866747313,
+        "road_type": "secondary",
+        "elevation_diff": 3.0,
+        "water_flow_factor": 0.4549999999999999
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.05
+          ],
+          [
+            108.18,
+            16.045
+          ]
+        ]
+      },
+      "properties": {
+        "from": "song_cu_da_nang",
+        "to": "cam_le",
+        "distance_m": 555.9746332226831,
+        "road_type": "secondary",
+        "elevation_diff": 4.0,
+        "water_flow_factor": 0.18
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.05
+          ],
+          [
+            108.175,
+            16.035
+          ]
+        ]
+      },
+      "properties": {
+        "from": "song_cu_da_nang",
+        "to": "kcx_hoa_khanh",
+        "distance_m": 1751.4198583219943,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.14250000000000002
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.05
+          ],
+          [
+            108.12,
+            16.03
+          ]
+        ]
+      },
+      "properties": {
+        "from": "song_cu_da_nang",
+        "to": "hoa_vang",
+        "distance_m": 6786.674825516439,
+        "road_type": "secondary",
+        "elevation_diff": 19.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.208,
+            16.054
+          ],
+          [
+            108.21,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "vincom",
+        "to": "phuoc_my",
+        "distance_m": 493.46024877148835,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.208,
+            16.054
+          ],
+          [
+            108.205,
+            16.056
+          ]
+        ]
+      },
+      "properties": {
+        "from": "vincom",
+        "to": "song_han",
+        "distance_m": 390.1600263657972,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.208,
+            16.054
+          ],
+          [
+            108.205,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "vincom",
+        "to": "kruskal_zone",
+        "distance_m": 548.2659521474875,
+        "road_type": "secondary",
+        "elevation_diff": 0.19999999999999996,
+        "water_flow_factor": 0.2695
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.196,
+            16.052
+          ],
+          [
+            108.195,
+            16.05
+          ]
+        ]
+      },
+      "properties": {
+        "from": "con_shopping_market",
+        "to": "cho_bac",
+        "distance_m": 246.7312865632814,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.14250000000000002
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.196,
+            16.052
+          ],
+          [
+            108.2,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "con_shopping_market",
+        "to": "nguyen_van_thoai",
+        "distance_m": 427.43825266366287,
+        "road_type": "secondary",
+        "elevation_diff": 0.30000000000000004,
+        "water_flow_factor": 0.16974999999999998
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.196,
+            16.052
+          ],
+          [
+            108.192,
+            16.052
+          ]
+        ]
+      },
+      "properties": {
+        "from": "con_shopping_market",
+        "to": "ham_tuy",
+        "distance_m": 427.43825266366287,
+        "road_type": "secondary",
+        "elevation_diff": 0.7000000000000002,
+        "water_flow_factor": 0.23249999999999998
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.205,
+            16.058
+          ],
+          [
+            108.21,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "kruskal_zone",
+        "to": "phuoc_my",
+        "distance_m": 534.2817140796749,
+        "road_type": "secondary",
+        "elevation_diff": 0.30000000000000004,
+        "water_flow_factor": 0.21825
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.205,
+            16.058
+          ],
+          [
+            108.208,
+            16.054
+          ]
+        ]
+      },
+      "properties": {
+        "from": "kruskal_zone",
+        "to": "vincom",
+        "distance_m": 548.2659521474875,
+        "road_type": "secondary",
+        "elevation_diff": 0.19999999999999996,
+        "water_flow_factor": 0.2695
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.205,
+            16.058
+          ],
+          [
+            108.195,
+            16.06
+          ]
+        ]
+      },
+      "properties": {
+        "from": "kruskal_zone",
+        "to": "ong_ich_khiem",
+        "distance_m": 1091.4547968843408,
+        "road_type": "secondary",
+        "elevation_diff": 0.19999999999999996,
+        "water_flow_factor": 0.245
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2,
+            16.055
+          ],
+          [
+            108.203,
+            16.054
+          ]
+        ]
+      },
+      "properties": {
+        "from": "bv_da_nang",
+        "to": "cau_song_han",
+        "distance_m": 339.3116962640989,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.285
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2,
+            16.055
+          ],
+          [
+            108.195,
+            16.06
+          ]
+        ]
+      },
+      "properties": {
+        "from": "bv_da_nang",
+        "to": "ong_ich_khiem",
+        "distance_m": 771.0811738167533,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.26125
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2,
+            16.055
+          ],
+          [
+            108.195,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "bv_da_nang",
+        "to": "duy_tan",
+        "distance_m": 534.2897656856355,
+        "road_type": "secondary",
+        "elevation_diff": 0.7,
+        "water_flow_factor": 0.2325
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.21,
+            16.065
+          ],
+          [
+            108.25,
+            16.08
+          ]
+        ]
+      },
+      "properties": {
+        "from": "bv_ung_buou",
+        "to": "son_tra",
+        "distance_m": 4587.8700982028895,
+        "road_type": "secondary",
+        "elevation_diff": 20.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.21,
+            16.065
+          ],
+          [
+            108.23,
+            16.09
+          ]
+        ]
+      },
+      "properties": {
+        "from": "bv_ung_buou",
+        "to": "nui_than_tai",
+        "distance_m": 3506.2958488590193,
+        "road_type": "secondary",
+        "elevation_diff": 95.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.058
+          ],
+          [
+            108.15,
+            16.07
+          ]
+        ]
+      },
+      "properties": {
+        "from": "truong_dh_kt",
+        "to": "lien_chieu",
+        "distance_m": 3472.217072647621,
+        "road_type": "secondary",
+        "elevation_diff": 2.0,
+        "water_flow_factor": 0.5599999999999999
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.058
+          ],
+          [
+            108.18,
+            16.062
+          ]
+        ]
+      },
+      "properties": {
+        "from": "truong_dh_kt",
+        "to": "phuoc_hiep",
+        "distance_m": 444.77970657838347,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.585
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.18,
+            16.058
+          ],
+          [
+            108.18,
+            16.045
+          ]
+        ]
+      },
+      "properties": {
+        "from": "truong_dh_kt",
+        "to": "cam_le",
+        "distance_m": 1445.5340463790549,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.54
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.175,
+            16.035
+          ],
+          [
+            108.15,
+            16.07
+          ]
+        ]
+      },
+      "properties": {
+        "from": "kcx_hoa_khanh",
+        "to": "lien_chieu",
+        "distance_m": 4720.497814927225,
+        "road_type": "secondary",
+        "elevation_diff": 6.5,
+        "water_flow_factor": 0.15749999999999997
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.175,
+            16.035
+          ],
+          [
+            108.18,
+            16.05
+          ]
+        ]
+      },
+      "properties": {
+        "from": "kcx_hoa_khanh",
+        "to": "song_cu_da_nang",
+        "distance_m": 1751.4198583219943,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.14250000000000002
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.175,
+            16.035
+          ],
+          [
+            108.165,
+            16.025
+          ]
+        ]
+      },
+      "properties": {
+        "from": "kcx_hoa_khanh",
+        "to": "kcx_thanh_vinh",
+        "distance_m": 1542.2645523283466,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.165,
+            16.025
+          ],
+          [
+            108.175,
+            16.035
+          ]
+        ]
+      },
+      "properties": {
+        "from": "kcx_thanh_vinh",
+        "to": "kcx_hoa_khanh",
+        "distance_m": 1542.2645523283466,
+        "road_type": "secondary",
+        "elevation_diff": 0.5,
+        "water_flow_factor": 0.2375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.165,
+            16.025
+          ],
+          [
+            108.12,
+            16.03
+          ]
+        ]
+      },
+      "properties": {
+        "from": "kcx_thanh_vinh",
+        "to": "hoa_vang",
+        "distance_m": 4841.301516607758,
+        "road_type": "secondary",
+        "elevation_diff": 18.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.24,
+            16.058
+          ],
+          [
+            108.245,
+            16.065
+          ]
+        ]
+      },
+      "properties": {
+        "from": "my_khe",
+        "to": "ngu_hanh_son",
+        "distance_m": 944.0858986023039,
+        "road_type": "secondary",
+        "elevation_diff": 14.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.24,
+            16.058
+          ],
+          [
+            108.25,
+            16.08
+          ]
+        ]
+      },
+      "properties": {
+        "from": "my_khe",
+        "to": "son_tra",
+        "distance_m": 2669.4621955996286,
+        "road_type": "secondary",
+        "elevation_diff": 24.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.24,
+            16.058
+          ],
+          [
+            108.26,
+            16.055
+          ]
+        ]
+      },
+      "properties": {
+        "from": "my_khe",
+        "to": "non_nuoc",
+        "distance_m": 2163.0207658217923,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.855
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.26,
+            16.055
+          ],
+          [
+            108.245,
+            16.065
+          ]
+        ]
+      },
+      "properties": {
+        "from": "non_nuoc",
+        "to": "ngu_hanh_son",
+        "distance_m": 1950.7670497897516,
+        "road_type": "secondary",
+        "elevation_diff": 13.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.26,
+            16.055
+          ],
+          [
+            108.24,
+            16.058
+          ]
+        ]
+      },
+      "properties": {
+        "from": "non_nuoc",
+        "to": "my_khe",
+        "distance_m": 2163.0207658217923,
+        "road_type": "secondary",
+        "elevation_diff": 1.0,
+        "water_flow_factor": 0.855
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2,
+            16.1
+          ],
+          [
+            108.15,
+            16.07
+          ]
+        ]
+      },
+      "properties": {
+        "from": "nui_nam_o",
+        "to": "lien_chieu",
+        "distance_m": 6298.08103997305,
+        "road_type": "secondary",
+        "elevation_diff": 142.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2,
+            16.1
+          ],
+          [
+            108.12,
+            16.15
+          ]
+        ]
+      },
+      "properties": {
+        "from": "nui_nam_o",
+        "to": "hoang_sa",
+        "distance_m": 10195.021616345024,
+        "road_type": "secondary",
+        "elevation_diff": 148.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.23,
+            16.09
+          ],
+          [
+            108.25,
+            16.08
+          ]
+        ]
+      },
+      "properties": {
+        "from": "nui_than_tai",
+        "to": "son_tra",
+        "distance_m": 2408.838389142394,
+        "road_type": "secondary",
+        "elevation_diff": 75.0,
+        "water_flow_factor": 0.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.23,
+            16.09
+          ],
+          [
+            108.21,
+            16.065
+          ]
+        ]
+      },
+      "properties": {
+        "from": "nui_than_tai",
+        "to": "bv_ung_buou",
+        "distance_m": 3506.2958488590193,
+        "road_type": "secondary",
+        "elevation_diff": 95.0,
+        "water_flow_factor": 0.1
+      }
+    }
+  ],
+  "metadata": {
+    "total_nodes": 36,
+    "total_edges": 115,
+    "districts": [
+      "hoa_thuan",
+      "cam_le",
+      "cau_thuan_phuoc",
+      "hai_chau",
+      "kcx_thanh_vinh",
+      "nui_nam_o",
+      "truong_dh_kt",
+      "nui_than_tai",
+      "song_han",
+      "phuoc_hiep",
+      "vincom",
+      "nguyen_van_thoai",
+      "song_cu_da_nang",
+      "ham_tuy",
+      "kruskal_zone",
+      "cho_bac",
+      "an_trung",
+      "phuoc_my",
+      "thanh_khe",
+      "tam_thuan",
+      "thac_bac",
+      "non_nuoc",
+      "kcx_hoa_khanh",
+      "con_shopping_market",
+      "duy_tan",
+      "bv_ung_buou",
+      "my_khe",
+      "hoang_sa",
+      "bv_da_nang",
+      "lien_chieu",
+      "hoa_vang",
+      "ngu_hanh_son",
+      "son_tra",
+      "ong_ich_khiem"
+    ]
+  }
+}

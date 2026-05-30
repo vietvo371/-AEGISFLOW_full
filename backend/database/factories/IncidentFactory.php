@@ -7,6 +7,7 @@ use App\Enums\IncidentTypeEnum;
 use App\Enums\IncidentStatusEnum;
 use App\Enums\IncidentSourceEnum;
 use App\Models\Incident;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -29,9 +30,9 @@ class IncidentFactory extends Factory
             'status' => IncidentStatusEnum::REPORTED->value,
             'source' => fake()->randomElement(IncidentSourceEnum::values()),
             'address' => fake()->address(),
-            'district_id' => fake()->numberBetween(1, 7),
+            'district_id' => null,
             'water_level_m' => fake()->randomFloat(2, 0, 5),
-            'reported_by' => 1,
+            'reported_by' => User::factory(),
         ];
     }
 

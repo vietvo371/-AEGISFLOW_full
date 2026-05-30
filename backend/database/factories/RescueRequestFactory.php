@@ -6,6 +6,7 @@ use App\Enums\UrgencyEnum;
 use App\Enums\RescueCategoryEnum;
 use App\Enums\RescueRequestStatusEnum;
 use App\Models\RescueRequest;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +22,7 @@ class RescueRequestFactory extends Factory
             'caller_name' => fake()->name(),
             'caller_phone' => fake()->phoneNumber(),
             'address' => fake()->address(),
-            'district_id' => fake()->numberBetween(1, 7),
+            'district_id' => null,
             'urgency' => fake()->randomElement(UrgencyEnum::values()),
             'category' => fake()->randomElement(RescueCategoryEnum::values()),
             'people_count' => fake()->numberBetween(1, 20),
@@ -31,7 +32,7 @@ class RescueRequestFactory extends Factory
             ),
             'description' => fake()->paragraph(),
             'status' => RescueRequestStatusEnum::PENDING->value,
-            'reported_by' => 5,
+            'reported_by' => User::factory(),
         ];
     }
 

@@ -9,6 +9,7 @@ use App\Models\Incident;
 use App\Models\RescueRequest;
 use App\Models\Prediction;
 use Illuminate\Support\Collection;
+use Spatie\Permission\Exceptions\RoleDoesNotExist;
 
 /**
  * NotificationBroadcastService — Gửi notification đến nhiều users
@@ -28,14 +29,18 @@ class NotificationBroadcastService
         string $body,
         array $data = []
     ): int {
-        $tokens = UserDevice::whereHas('user', function ($query) use ($role) {
-            $query->role($role);
-        })
-        ->active()
-        ->notificationsEnabled()
-        ->pluck('fcm_token')
-        ->filter()
-        ->toArray();
+        try {
+            $tokens = UserDevice::whereHas('user', function ($query) use ($role) {
+                $query->role($role);
+            })
+            ->active()
+            ->notificationsEnabled()
+            ->pluck('fcm_token')
+            ->filter()
+            ->toArray();
+        } catch (RoleDoesNotExist) {
+            return 0;
+        }
 
         if (empty($tokens)) {
             return 0;

@@ -17,6 +17,8 @@ const env = {
 
   // MapTiler Configuration (Open Source Map Provider)
   MAPTILER_API_KEY: 'YOUR_MAPTILER_API_KEY', // Get free key from https://cloud.maptiler.com
+  OPENMAP_API_KEY: 'YOUR_OPENMAP_API_KEY',
+  OPENMAP_STYLE_URL: 'https://tiles.openmap.vn/styles/day-v1/style.json',
 
   // Các cấu hình khác
   TIMEOUT: 15000,

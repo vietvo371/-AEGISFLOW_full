@@ -6,39 +6,45 @@ Train RandomForest Classifier cho flood risk prediction.
 
 import json
 import joblib
+import csv
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import (
     classification_report, f1_score, precision_score, recall_score,
     accuracy_score, confusion_matrix, roc_auc_score
 )
-from sklearn.pipeline import Pipeline
 
 SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR.parent / "data"
 MODEL_DIR = SCRIPT_DIR
+FEATURES = ["water_level_m", "rainfall_mm", "hours_rain", "tide_level", "historical_score"]
 
 
 def load_dataset() -> tuple:
     """Load and prepare dataset."""
-    df = pd.read_csv(DATA_DIR / "flood_danang_2019_2024.csv")
-    features = ["water_level_m", "rainfall_mm", "hours_rain", "tide_level", "historical_score"]
-    X = df[features].values
-    y = df["risk_level"].values
-    return X, y, df
+    rows = []
+    labels = []
+
+    with open(DATA_DIR / "flood_danang_2019_2024.csv", newline="") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            rows.append([float(row[feature]) for feature in FEATURES])
+            labels.append(row["risk_level"])
+
+    return np.array(rows, dtype=float), np.array(labels), labels
 
 
 def train_model(X_train, y_train, X_test, y_test, label_encoder):
     """Train RandomForest with hyperparameter tuning."""
     
     # Compute class weights for imbalanced data
-    label_counts = pd.Series(y_train).value_counts()
+    label_counts = Counter(y_train)
     n_samples = len(y_train)
     n_classes = len(label_counts)
     class_weight = {
@@ -120,7 +126,7 @@ def evaluate_model(model, X_train, X_test, y_train, y_test, label_encoder):
     
     # Feature importance
     results["feature_importance"] = dict(zip(
-        ["water_level_m", "rainfall_mm", "hours_rain", "tide_level", "historical_score"],
+        FEATURES,
         model.feature_importances_.tolist()
     ))
     
@@ -137,7 +143,7 @@ def main():
     print("Loading dataset...")
     X, y, df = load_dataset()
     print(f"Dataset: {X.shape[0]} samples, {X.shape[1]} features")
-    print(f"Classes: {pd.Series(y).value_counts().to_dict()}")
+    print(f"Classes: {dict(Counter(y))}")
     
     # Encode labels
     label_encoder = LabelEncoder()
@@ -161,7 +167,7 @@ def main():
     joblib.dump({
         "model": model,
         "label_encoder": label_encoder,
-        "feature_names": ["water_level_m", "rainfall_mm", "hours_rain", "tide_level", "historical_score"],
+        "feature_names": FEATURES,
         "version": "1.0.0",
         "trained_at": datetime.now().isoformat(),
     }, model_path)
@@ -170,7 +176,24 @@ def main():
     # Save metrics
     metrics_path = MODEL_DIR / "model_metrics.json"
     # Convert non-serializable
-    metrics_out = {k: v for k, v in results.items() if k not in ["confusion_matrix"]}
+    metrics_out = {
+        "model_name": "AegisFlow Flood Nowcasting RandomForest Classifier",
+        "version": "1.0.0",
+        "trained_at": datetime.now().isoformat(),
+        "algorithm": "RandomForestClassifier",
+        "framework": "scikit-learn",
+        "dataset": "flood_danang_2019_2024.csv",
+        "dataset_samples": int(X.shape[0]),
+        "dataset_features": FEATURES,
+        "dataset_classes": list(label_encoder.classes_),
+        "prediction_horizons_minutes": [30, 60],
+        "notes": (
+            "Model trained on seeded/synthetic Da Nang flood data. Runtime batch "
+            "predictions use hybrid_random_forest: ML classification blended with "
+            "water-level/rainfall threshold nowcasting for 30-60 minute demo forecasts."
+        ),
+        **{k: v for k, v in results.items() if k not in ["confusion_matrix"]},
+    }
     with open(metrics_path, "w") as f:
         json.dump(metrics_out, f, indent=2, default=str)
     print(f"Metrics saved to: {metrics_path}")

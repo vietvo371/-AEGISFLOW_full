@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-
 use App\Helpers\ApiResponse;
+use App\Http\Controllers\Controller;
 use App\Models\RescueTeam;
 use Illuminate\Http\Request;
 
@@ -103,6 +102,8 @@ class RescueTeamController extends Controller
             'vehicle_count' => $team->vehicle_count,
             'personnel_count' => $team->personnel_count,
             'phone' => $team->phone,
+            'current_latitude' => $team->current_latitude,
+            'current_longitude' => $team->current_longitude,
             'location' => $team->location,
             'district' => $team->district ? ['id' => $team->district->id, 'name' => $team->district->name] : null,
             'created_at' => $team->created_at?->toIso8601String(),

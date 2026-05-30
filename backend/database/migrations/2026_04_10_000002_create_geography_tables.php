@@ -13,8 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // Drop existing tables if they exist (resilience)
-        DB::statement('DROP TABLE IF EXISTS wards CASCADE');
-        DB::statement('DROP TABLE IF EXISTS districts CASCADE');
+        $this->dropGeographyTables();
 
         // Districts
         Schema::create('districts', function (Blueprint $table) {
@@ -51,7 +50,18 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::statement('DROP TABLE IF EXISTS wards CASCADE');
-        DB::statement('DROP TABLE IF EXISTS districts CASCADE');
+        $this->dropGeographyTables();
+    }
+
+    private function dropGeographyTables(): void
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement('DROP TABLE IF EXISTS wards CASCADE');
+            DB::statement('DROP TABLE IF EXISTS districts CASCADE');
+            return;
+        }
+
+        Schema::dropIfExists('wards');
+        Schema::dropIfExists('districts');
     }
 };

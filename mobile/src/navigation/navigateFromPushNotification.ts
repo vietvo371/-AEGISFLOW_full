@@ -79,7 +79,7 @@ export function navigateFromPushData(data: Record<string, string>): boolean {
     case 'alert':
       // Navigate đến Alert detail hoặc Alerts list
       if (id) {
-        navigationRef.navigate('Alerts', { alertId: id } as any);
+        navigationRef.navigate('AlertDetail', { id } as any);
       } else {
         navigationRef.navigate('Alerts' as any);
       }

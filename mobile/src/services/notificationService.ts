@@ -14,8 +14,15 @@ export const notificationService = {
     },
 
     getUnreadCount: async (): Promise<ApiResponse<{ count: number }>> => {
-        const response = await api.get<ApiResponse<{ count: number }>>('/notifications/unread-count');
-        return response.data;
+        try {
+            const response = await api.get<ApiResponse<{ count: number }>>('/notifications/unread-count');
+            return response.data;
+        } catch (error: any) {
+            if (error?.response?.status === 401) {
+                return { success: true, message: 'Unauthenticated', data: { count: 0 } };
+            }
+            throw error;
+        }
     },
 
     markAsRead: async (id: number): Promise<ApiResponse<any>> => {
@@ -29,8 +36,8 @@ export const notificationService = {
     },
 
     // Backend không có endpoint này - silent fail
-    deleteNotification: async (id: number): Promise<ApiResponse<void>> => {
-        return { success: true, message: 'Xóa thông báo không được hỗ trợ', data: null };
+    deleteNotification: async (_id: number): Promise<ApiResponse<void>> => {
+        return { success: true, message: 'Xóa thông báo không được hỗ trợ', data: undefined };
     },
 
     // Backend không có endpoint này - silent fail

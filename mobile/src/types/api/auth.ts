@@ -1,6 +1,6 @@
 import { ApiResponse } from './common';
 
-export type UserRole = 'citizen' | 'emergency' | 'traffic_operator' | 'urban_planner' | 'admin';
+export type UserRole = 'citizen' | 'emergency';
 
 export interface User {
   id: number;

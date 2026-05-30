@@ -12,8 +12,16 @@ Mapbox.setAccessToken('');
 // Disable telemetry
 Mapbox.setTelemetryEnabled(false);
 
+const openMapStyleUrl =
+  (env as any).OPENMAP_STYLE_URL ||
+  'https://tiles.openmap.vn/styles/day-v1/style.json';
+const openMapApiKey = (env as any).OPENMAP_API_KEY || '';
+
 // OpenMapVN Style URL
-export const OPENMAP_STYLE_URL = env.OPENMAP_STYLE_URL;
+export const OPENMAP_STYLE_URL =
+  openMapApiKey && !openMapStyleUrl.includes('apikey=')
+    ? `${openMapStyleUrl}${openMapStyleUrl.includes('?') ? '&' : '?'}apikey=${openMapApiKey}`
+    : openMapStyleUrl;
 
 // Configure camera settings
 export const DEFAULT_CAMERA_CONFIG = {
@@ -31,4 +39,3 @@ export const DA_NANG_CENTER = {
 };
 
 export default Mapbox;
-

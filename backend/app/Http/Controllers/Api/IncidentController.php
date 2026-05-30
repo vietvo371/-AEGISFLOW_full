@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-
+use App\Enums\AlertStatusEnum;
+use App\Enums\AlertTypeEnum;
 use App\Enums\IncidentSourceEnum;
 use App\Enums\IncidentStatusEnum;
-use App\Enums\AlertTypeEnum;
-use App\Enums\AlertStatusEnum;
 use App\Events\IncidentCreated;
 use App\Helpers\ApiResponse;
+use App\Http\Controllers\Controller;
 use App\Models\Alert;
 use App\Models\Incident;
 use Illuminate\Http\Request;
@@ -62,18 +61,34 @@ class IncidentController extends Controller
             $query->where('type', $request->type);
         }
 
+        if ($request->filled('search')) {
+            $search = trim((string) $request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%");
+            });
+        }
+
         if ($request->filled('district_id')) {
             $query->where('district_id', $request->district_id);
         }
 
         // Nearby filter by lat/lng
         if ($request->filled('lat') && $request->filled('lng')) {
-            $lat = $request->lat;
-            $lng = $request->lng;
-            $radius = $request->get('radius', 5); // km
-            $query->selectRaw("*, (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance", [$lat, $lng, $lat])
-                ->having('distance', '<=', $radius)
-                ->orderBy('distance');
+            $lat = (float)$request->lat;
+            $lng = (float)$request->lng;
+            $radius = (float)$request->get('radius', 5); // km
+            if (DB::connection()->getDriverName() === 'pgsql') {
+                $radiusMeters = $radius * 1000;
+                $query->selectRaw('*, (ST_Distance(geometry::geography, ST_MakePoint(?, ?)::geography) / 1000.0) AS distance', [$lng, $lat])
+                    ->whereRaw('ST_DWithin(geometry::geography, ST_MakePoint(?, ?)::geography, ?)', [$lng, $lat, $radiusMeters])
+                    ->orderBy('distance');
+            } else {
+                $query->selectRaw('*, (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$lat, $lng, $lat])
+                    ->having('distance', '<=', $radius)
+                    ->orderBy('distance');
+            }
         }
 
         $incidents = $query->paginate($request->get('per_page', 20));
@@ -145,7 +160,7 @@ class IncidentController extends Controller
         // Lưu PostGIS geometry
         if (DB::connection()->getDriverName() === 'pgsql') {
             DB::statement(
-                "UPDATE incidents SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?",
+                'UPDATE incidents SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
                 [$data['longitude'], $data['latitude'], $incident->id]
             );
         }
@@ -163,7 +178,7 @@ class IncidentController extends Controller
         // Auto-create alert for citizen-reported incidents with high/critical severity
         if ($source === IncidentSourceEnum::CITIZEN->value && in_array($data['severity'], ['high', 'critical'])) {
             $alert = Alert::create([
-                'title' => '[Từ báo cáo] ' . $data['title'],
+                'title' => '[Từ báo cáo] '.$data['title'],
                 'description' => $data['description'] ?? null,
                 'alert_type' => $alertType->value,
                 'severity' => $data['severity'],
@@ -175,9 +190,9 @@ class IncidentController extends Controller
                 'issued_by' => $user->id,
             ]);
 
-            if (isset($data['latitude']) && isset($data['longitude'])) {
+            if (isset($data['latitude']) && isset($data['longitude']) && DB::connection()->getDriverName() === 'pgsql') {
                 DB::statement(
-                    "UPDATE alerts SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?",
+                    'UPDATE alerts SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
                     [$data['longitude'], $data['latitude'], $alert->id]
                 );
             }
@@ -218,12 +233,15 @@ class IncidentController extends Controller
         $oldSeverity = $incident->severity;
 
         $incident->fill($data);
+        if (($data['status'] ?? null) === IncidentStatusEnum::RESOLVED->value && ! $incident->resolved_at) {
+            $incident->resolved_at = now();
+        }
         $incident->save();
 
         // Cập nhật geometry
         if (isset($data['latitude'], $data['longitude']) && DB::connection()->getDriverName() === 'pgsql') {
             DB::statement(
-                "UPDATE incidents SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?",
+                'UPDATE incidents SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
                 [$data['longitude'], $data['latitude'], $incident->id]
             );
         }

@@ -21,6 +21,12 @@ class LocationSeeder extends Seeder
             ['title' => 'Mưa lớn kéo dài quận Cẩm Lệ', 'lat' => 16.0102, 'lng' => 108.1893],
             // Cảnh báo sạt lở đồi Hòa Vang
             ['title' => 'Cảnh báo sạt lở đồi Hòa Vang', 'lat' => 15.9823, 'lng' => 108.0912],
+            // Kẹt xe nghiêm trọng ngã tư Nguyễn Văn Linh - Hàm Nghi
+            ['title' => 'Kẹt xe nghiêm trọng ngã tư Nguyễn Văn Linh - Hàm Nghi', 'lat' => 16.0612, 'lng' => 108.2122],
+            // Nước hồ Thạc Gián có hiện tượng đổi màu
+            ['title' => 'Nước hồ Thạc Gián có hiện tượng đổi màu', 'lat' => 16.0645, 'lng' => 108.2115],
+            // Bãi rác tự phát gây cản trở thoát nước
+            ['title' => 'Bãi rác tự phát gây cản trở thoát nước', 'lat' => 16.0655, 'lng' => 108.2102],
         ];
 
         foreach ($incidents as $i) {
@@ -98,9 +104,9 @@ class LocationSeeder extends Seeder
 
         foreach ($alerts as $index => $alertId) {
             $coord = $alertCoords[$index % count($alertCoords)];
-            // Thêm jitter nhỏ để không chồng lên nhau
-            $lat = $coord[0] + (($index * 0.0031) % 0.02) - 0.01;
-            $lng = $coord[1] + (($index * 0.0047) % 0.02) - 0.01;
+            // Thêm jitter nhỏ để không chồng lên nhau (dùng phép chia tỷ lệ thay vì modulo float trong PHP)
+            $lat = $coord[0] + (($index * 31) % 200) / 10000 - 0.01;
+            $lng = $coord[1] + (($index * 47) % 200) / 10000 - 0.01;
             DB::table('alerts')
                 ->where('id', $alertId)
                 ->update([

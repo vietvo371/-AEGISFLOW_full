@@ -36,17 +36,18 @@ export const checkToken = async (navigation: NavigationProp<any>) => {
     try {
         const token = await getToken();
         if (token) {
-            const res = await api.get('/check-login');
-            if (res.data?.status) {
-                // Update token if a new one is provided
+            const res = await api.get('/auth/me');
+            if (res.data?.success) {
+                // Update token if a new one is provided in response (if any)
                 const newToken = res.data?.token ?? res.data?.data?.token;
                 if (newToken && newToken !== token) {
                     await saveToken(newToken);
                 }
                 return true;
             } else {
-                // Token is invalid, clear it and redirect to login
+                // Token is invalid, clear everything and redirect to login
                 await removeToken();
+                await removeUser().catch(() => {});
                 navigation.dispatch(
                     CommonActions.reset({
                         index: 0,
@@ -62,9 +63,10 @@ export const checkToken = async (navigation: NavigationProp<any>) => {
         }
         return false;
     } catch (error) {
-        console.error('Token check error:', error);
-        // Clear token on error and redirect to login
+        console.warn('Token check error:', error);
+        // Clear token and user data on error and redirect to login
         await removeToken();
+        await removeUser().catch(() => {});
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,

@@ -25,16 +25,25 @@ export const useNotifications = () => {
 
   // Function to fetch unread count from API
   const fetchUnreadCount = useCallback(async () => {
+    if (!user?.id) {
+      setUnreadCount(0);
+      return;
+    }
+
     try {
       const response = await notificationService.getUnreadCount();
       if (response.success) {
         console.log('📊 Unread count from API:', response.data.count);
         setUnreadCount(response.data.count);
       }
-    } catch (error) {
-      console.error('❌ Error fetching unread count:', error);
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        setUnreadCount(0);
+        return;
+      }
+      console.warn('Could not fetch unread notification count:', error?.message || error);
     }
-  }, []);
+  }, [user?.id]);
 
   // Function to register refresh callback
   const registerRefreshCallback = useCallback((callback: RefreshCallback) => {
@@ -90,7 +99,6 @@ export const useNotifications = () => {
       
       // Tạo message dựa trên status change
       let message = '';
-      let icon = '';
       
       switch (newStatus) {
         case 0: // Tiếp nhận
@@ -270,7 +278,16 @@ export const useNotifications = () => {
       unsubscribe(userChannel);
       unsubscribe(trafficChannel);
     };
-  }, [isConnected, user?.id]);
+  }, [
+    fetchUnreadCount,
+    isConnected,
+    listen,
+    subscribe,
+    subscribePusher,
+    triggerRefresh,
+    unsubscribe,
+    user?.id,
+  ]);
 
   const markAsRead = (notificationId: string) => {
     setNotifications(prev =>

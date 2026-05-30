@@ -7,9 +7,63 @@ use App\Http\Controllers\Controller;
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class MapController extends Controller
 {
+    private function openMapApiKey(): string
+    {
+        return config('services.openmap.key')
+            ?: env('OPENMAP_API_KEY', '6TTIZbUWJmRMSpiYzQ0YY8z5v8wv43w0');
+    }
+
+    /**
+     * Forward geocoding qua OpenMapVN
+     * GET /api/map/geocode/forward?text=...
+     */
+    public function geocodeForward(Request $request)
+    {
+        $text = trim((string) $request->query('text', ''));
+
+        if ($text === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Missing text query.',
+            ], 422);
+        }
+
+        $response = Http::timeout(8)->get('https://mapapis.openmap.vn/v1/geocode', [
+            'text' => $text,
+            'apikey' => $this->openMapApiKey(),
+        ]);
+
+        return response()->json($response->json(), $response->status());
+    }
+
+    /**
+     * Reverse geocoding qua OpenMapVN
+     * GET /api/map/geocode/reverse?lat=...&lng=...
+     */
+    public function geocodeReverse(Request $request)
+    {
+        $lat = $request->query('lat');
+        $lng = $request->query('lng');
+
+        if (!is_numeric($lat) || !is_numeric($lng)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Latitude and longitude must be numbers.',
+            ], 422);
+        }
+
+        $response = Http::timeout(8)->get('https://mapapis.openmap.vn/v1/geocode/reverse', [
+            'latlng' => sprintf('%s,%s', $lat, $lng),
+            'apikey' => $this->openMapApiKey(),
+        ]);
+
+        return response()->json($response->json(), $response->status());
+    }
+
     /**
      * Incidents dạng GeoJSON cho map
      * GET /api/map/incidents
@@ -28,13 +82,33 @@ class MapController extends Controller
         }
 
         if ($request->filled('danh_muc')) {
-            $query->where('type', $request->danh_muc);
+            $danhMucVal = $request->danh_muc;
+            if (is_numeric($danhMucVal)) {
+                $danhMuc = (int)$danhMucVal;
+                $types = match ($danhMuc) {
+                    1 => ['traffic', 'congestion'],
+                    2 => ['environment'],
+                    3 => ['fire'],
+                    4 => ['trash', 'garbage'],
+                    5 => ['flood', 'heavy_rain', 'landslide', 'dam_failure'],
+                    default => ['other'],
+                };
+                $query->whereIn('type', $types);
+            } else {
+                $query->where('type', $danhMucVal);
+            }
         }
 
         // Bounds filter for map viewport
         if ($request->filled(['min_lon', 'min_lat', 'max_lon', 'max_lat'])) {
-            $query->whereBetween('longitude', [$request->min_lon, $request->max_lon])
-                  ->whereBetween('latitude', [$request->min_lat, $request->max_lat]);
+            if (DB::connection()->getDriverName() === 'pgsql') {
+                $query->whereRaw("geometry && ST_MakeEnvelope(?, ?, ?, ?, 4326)", [
+                    (float)$request->min_lon,
+                    (float)$request->min_lat,
+                    (float)$request->max_lon,
+                    (float)$request->max_lat
+                ]);
+            }
         }
 
         $incidents = $query->limit(200)->get();

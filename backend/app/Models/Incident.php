@@ -154,6 +154,10 @@ class Incident extends Model
      */
     public function getLocationAttribute(): ?array
     {
+        if (DB::connection()->getDriverName() !== 'pgsql') {
+            return null;
+        }
+
         $result = DB::selectOne("
             SELECT ST_X(geometry::geometry) as lng, ST_Y(geometry::geometry) as lat
             FROM incidents WHERE id = ?
@@ -167,14 +171,68 @@ class Incident extends Model
      */
     public function toGeoJson(): array
     {
-        $geometry = DB::selectOne("
-            SELECT ST_AsGeoJSON(geometry) as geojson FROM incidents WHERE id = ?
-        ", [$this->id]);
+        $geometry = null;
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $geometry = DB::selectOne("
+                SELECT ST_AsGeoJSON(geometry) as geojson FROM incidents WHERE id = ?
+            ", [$this->id]);
+        }
+
+        // Mapping for Vietnamese/Mobile app fields
+        $danhMuc = match ($this->type) {
+            'traffic', 'congestion' => 1,
+            'environment' => 2,
+            'fire' => 3,
+            'trash', 'garbage' => 4,
+            'flood', 'heavy_rain', 'landslide', 'dam_failure' => 5,
+            default => 6,
+        };
+
+        $danhMucText = match ($this->type) {
+            'traffic', 'congestion' => 'Giao thông',
+            'environment' => 'Môi trường',
+            'fire' => 'Hỏa hoạn',
+            'trash', 'garbage' => 'Rác thải',
+            'flood' => 'Ngập lụt',
+            'heavy_rain' => 'Mưa lớn',
+            'landslide' => 'Sạt lở',
+            'dam_failure' => 'Sự cố đập',
+            default => 'Khác',
+        };
+
+        $trangThai = match ($this->status) {
+            'reported' => 1,
+            'verified' => 2,
+            'responding' => 3,
+            'resolved' => 4,
+            'closed' => 5,
+            default => 1,
+        };
+
+        $uuTien = match ($this->severity) {
+            'low' => 1,
+            'medium' => 2,
+            'high' => 3,
+            'critical' => 4,
+            default => 1,
+        };
+
+        $markerColor = match ($danhMuc) {
+            1 => '#FF9500',
+            2 => '#34C759',
+            3 => '#FF3B30',
+            4 => '#8E6F3E',
+            5 => '#007AFF',
+            default => '#8E8E93',
+        };
+
+        $reporterName = $this->relationLoaded('reporter') && $this->reporter ? $this->reporter->name : 'Người dân';
 
         return [
             'type' => 'Feature',
             'id' => $this->id,
             'properties' => [
+                // English properties (for Dashboard/Web app)
                 'id' => $this->id,
                 'title' => $this->title,
                 'type' => $this->type,
@@ -183,6 +241,15 @@ class Incident extends Model
                 'source' => $this->source,
                 'address' => $this->address,
                 'water_level_m' => $this->water_level_m,
+
+                // Vietnamese properties (for Mobile app)
+                'tieu_de' => $this->title,
+                'danh_muc' => $danhMuc,
+                'danh_muc_text' => $danhMucText,
+                'trang_thai' => $trangThai,
+                'uu_tien' => $uuTien,
+                'marker_color' => $markerColor,
+                'nguoi_dung' => $reporterName,
             ],
             'geometry' => $geometry ? json_decode($geometry->geojson) : null,
         ];

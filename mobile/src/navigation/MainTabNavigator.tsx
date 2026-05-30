@@ -260,6 +260,7 @@ const MainNavigator = () => {
         <Stack.Screen name="SensorDetail" component={SensorDetailScreen} />
 
         {/* Alerts & Rescue */}
+        <Stack.Screen name="Alerts" component={AlertsScreen} />
         <Stack.Screen name="AlertDetail" component={AlertDetailScreen} />
         <Stack.Screen name="RescueRequest" component={RescueRequestScreen} />
         <Stack.Screen name="MyRescueRequests" component={MyRescueRequestsScreen} />

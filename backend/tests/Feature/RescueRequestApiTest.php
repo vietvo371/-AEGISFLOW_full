@@ -25,12 +25,12 @@ class RescueRequestApiTest extends TestCase
 
         $this->citizen = User::factory()->create();
         $this->citizen->assignRole(\Spatie\Permission\Models\Role::create([
-            'name' => 'Công dân', 'slug' => 'citizen',
+            'name' => 'citizen', 'display_name' => 'Công dân', 'slug' => 'citizen',
         ]));
 
         $this->operator = User::factory()->create();
         $this->operator->assignRole(\Spatie\Permission\Models\Role::create([
-            'name' => 'Điều phối viên', 'slug' => 'rescue_operator',
+            'name' => 'rescue_operator', 'display_name' => 'Điều phối viên', 'slug' => 'rescue_operator',
         ]));
     }
 

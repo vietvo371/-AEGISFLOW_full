@@ -4,7 +4,15 @@ import { NavigatorScreenParams } from '@react-navigation/native';
 // Citizen role tabs - Web-like layout
 export type CitizenTabParamList = {
   Home: undefined;
-  Map: undefined;
+  Map: {
+    shelterRoute?: {
+      id: number;
+      name: string;
+      address?: string;
+      latitude: number;
+      longitude: number;
+    };
+  } | undefined;
   SOS: undefined; // FAB button - đỏ
   Shelters: undefined;
   Profile: undefined;
@@ -65,6 +73,7 @@ export type RootStackParamList = {
   About: undefined;
 
   // Alerts
+  Alerts: { alertId?: number } | undefined;
   AlertDetail: { id: number };
 
   // Rescue

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Platform } from 'react-native';
-import { getToken, removeToken, saveToken } from "./TokenManager";
+import { getToken, removeToken, saveToken, removeUser } from "./TokenManager";
 import { navigate, resetTo } from "../navigation/NavigationService";
 import Geolocation from 'react-native-geolocation-service';
 import i18n from '../i18n';
@@ -106,13 +106,13 @@ const MAX_RETRY_ATTEMPTS = 2;
 const shouldRetry = (error: any, retryCount: number) => {
   if (retryCount >= MAX_RETRY_ATTEMPTS) return false;
   if (error.response?.status === 422) return false;
+  if (error.response?.status === 401) return false;
   if (error.response?.status === 403) return false;
   const status = error.response?.status;
   return (
     !error.response ||
     error.code === 'ECONNABORTED' ||
     /timeout/i.test(error.message) ||
-    status === 401 ||
     (status !== undefined && status >= 500 && status <= 599)
   );
 };
@@ -150,16 +150,20 @@ api.interceptors.response.use(
 
     // For 401/403 errors
     if (error.response?.status === 401 || error.response?.status === 403) {
-      // Check if this is a login request - don't show modal for login failures
-      const isLoginRequest = config.url?.includes('/auth/login');
-      
-      // Only show "Session Expired" if the original request actually had a token
-      // If no Authorization header was sent, it's just a normal "not logged in" status
-      const hasToken = !!config.headers?.Authorization;
+      // Check if this is a public or login/register route
+      const url = config.url || '';
+      const isPublicRoute = url.includes('/auth/login') || 
+                           url.includes('/auth/register') ||
+                           url.includes('/public/') ||
+                           url.includes('/auth/forgot-password') ||
+                           url.includes('/auth/accept-otp-password') ||
+                           url.includes('/auth/reset-password');
 
-      if (!isLoginRequest && hasToken) {
-        // Only remove token and show modal for authenticated requests that fail
-        removeToken();
+      if (!isPublicRoute) {
+        // Clear both token and user data completely on auth failure
+        removeToken().catch(() => {});
+        removeUser().catch(() => {});
+        
         if (!isShowingAuthAlert) {
           isShowingAuthAlert = true;
 

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-
 use App\Helpers\ApiResponse;
-use App\Models\AIModel;
+use App\Http\Controllers\Controller;
+use App\Jobs\CallAIPrediction;
 use App\Models\Prediction;
 use Illuminate\Http\Request;
 
@@ -30,6 +29,27 @@ class PredictionController extends Controller
 
         if ($request->filled('flood_zone_id')) {
             $query->where('flood_zone_id', $request->flood_zone_id);
+        }
+
+        if ($request->filled('horizon_minutes')) {
+            $query->where('horizon_minutes', (int) $request->horizon_minutes);
+        }
+
+        if ($request->filled('period')) {
+            $minutes = match ($request->period) {
+                '30m' => 30,
+                '1h' => 60,
+                '3h' => 180,
+                '6h' => 360,
+                '12h' => 720,
+                '24h' => 1440,
+                '48h' => 2880,
+                default => null,
+            };
+
+            if ($minutes) {
+                $query->where('horizon_minutes', '<=', $minutes);
+            }
         }
 
         if ($request->boolean('recent_only')) {
@@ -71,16 +91,24 @@ class PredictionController extends Controller
             'incident_id' => 'nullable|exists:incidents,id',
             'flood_zone_id' => 'nullable|exists:flood_zones,id',
             'horizon_minutes' => 'nullable|integer|in:15,30,60,120,240,1440',
+            'sync' => 'nullable|boolean',
         ]);
 
         $horizon = $data['horizon_minutes'] ?? 60;
 
-        // Trigger job async
-        \App\Jobs\CallAIPrediction::dispatch(
-            $data['incident_id'] ?? null,
-            $data['flood_zone_id'] ?? null,
-            $horizon
-        );
+        if ($request->boolean('sync')) {
+            CallAIPrediction::dispatchSync(
+                $data['incident_id'] ?? null,
+                $data['flood_zone_id'] ?? null,
+                $horizon
+            );
+        } else {
+            CallAIPrediction::dispatch(
+                $data['incident_id'] ?? null,
+                $data['flood_zone_id'] ?? null,
+                $horizon
+            );
+        }
 
         return ApiResponse::success([
             'message' => 'Yêu cầu dự đoán đã được gửi',
@@ -133,15 +161,17 @@ class PredictionController extends Controller
                 'id' => $p->floodZone->id,
                 'name' => $p->floodZone->name,
             ] : null,
+            'district' => $p->district ? [
+                'id' => $p->district->id,
+                'name' => $p->district->name,
+            ] : null,
+            'input_data' => $p->input_data,
             'processing_time_ms' => $p->processing_time_ms,
+            'created_at' => $p->created_at?->toIso8601String(),
+            'updated_at' => $p->updated_at?->toIso8601String(),
         ];
 
         if ($detailed) {
-            $data['input_data'] = $p->input_data;
-            $data['district'] = $p->district ? [
-                'id' => $p->district->id,
-                'name' => $p->district->name,
-            ] : null;
             $data['verified_by'] = $p->verifier ? [
                 'id' => $p->verifier->id,
                 'name' => $p->verifier->name,

@@ -139,6 +139,18 @@ class DataSeeder extends Seeder
              'status' => 'responding', 'source' => 'operator',
              'address' => 'Đường đèo Hòa Vang', 'district_id' => 3,
              'reported_by' => 2],
+            ['title' => 'Kẹt xe nghiêm trọng ngã tư Nguyễn Văn Linh - Hàm Nghi', 'type' => 'traffic', 'severity' => 'medium',
+             'status' => 'reported', 'source' => 'citizen',
+             'address' => 'Ngã tư Nguyễn Văn Linh - Hàm Nghi, Hải Châu', 'district_id' => 4,
+             'reported_by' => 1],
+            ['title' => 'Nước hồ Thạc Gián có hiện tượng đổi màu', 'type' => 'environment', 'severity' => 'low',
+             'status' => 'verified', 'source' => 'citizen',
+             'address' => 'Hồ Thạc Gián, Thanh Khê', 'district_id' => 5,
+             'reported_by' => 1],
+            ['title' => 'Bãi rác tự phát gây cản trở thoát nước', 'type' => 'trash', 'severity' => 'medium',
+             'status' => 'responding', 'source' => 'citizen',
+             'address' => 'Đường Lê Duẩn, Thanh Khê', 'district_id' => 5,
+             'reported_by' => 1],
         ];
 
         foreach ($incidents as $i) {

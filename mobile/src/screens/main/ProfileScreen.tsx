@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   RefreshControl, Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -61,8 +61,10 @@ const ProfileScreen = () => {
     );
   };
 
-  const initials = user?.name
-    ? user.name.split(' ').map((w: string) => w[0]).slice(-2).join('').toUpperCase()
+  const currentUser = user || contextUser;
+  const fullName = currentUser?.ho_ten || currentUser?.name || '';
+  const initials = fullName
+    ? fullName.split(' ').map((w: string) => w[0]).slice(-2).join('').toUpperCase()
     : '?';
 
   const MENU_GROUP_1 = [
@@ -100,8 +102,10 @@ const ProfileScreen = () => {
     </TouchableOpacity>
   );
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -112,12 +116,12 @@ const ProfileScreen = () => {
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
-          <Text style={styles.userName}>{user?.name || t('common.user', 'Người dùng')}</Text>
-          <Text style={styles.userEmail}>{user?.email || ''}</Text>
+          <Text style={styles.userName}>{fullName || t('common.user', 'Người dùng')}</Text>
+          <Text style={styles.userEmail}>{currentUser?.email || ''}</Text>
 
           <TouchableOpacity
             style={styles.editBtn}
-            onPress={() => navigation.navigate('UserProfile', { userId: user?.id })}
+            onPress={() => navigation.navigate('UserProfile', { userId: currentUser?.id })}
           >
             <Icon name="pencil-outline" size={ICON_SIZE.xs} color={theme.colors.text} />
             <Text style={styles.editBtnText}>{t('citizen.profile.editProfile', 'Chỉnh sửa')}</Text>
@@ -143,7 +147,7 @@ const ProfileScreen = () => {
         <Text style={styles.version}>AegisFlow AI v1.0.0</Text>
         <View style={{ height: SPACING['3xl'] }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

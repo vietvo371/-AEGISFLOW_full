@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet, SectionList, TouchableOpacity, ActivityIndicator, RefreshControl, Platform } from 'react-native';
+import { View, Text, StyleSheet, SectionList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import PageHeader from '../../component/PageHeader';
-import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, SCREEN_PADDING, hp } from '../../theme';
+import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, hp } from '../../theme';
 import { useNotifications, Notification as WSNotification } from '../../hooks/useNotifications';
 import { notificationService } from '../../services/notificationService';
 import { Notification as APINotification } from '../../types/api/notification';
@@ -26,23 +25,22 @@ const NotificationsScreen = () => {
 
   // WebSocket notifications (realtime)
   const wsHook = useNotifications();
-  console.log('🔍 wsHook:', wsHook);
 
   const [apiNotifications, setApiNotifications] = useState<APINotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Convert API notification to unified format
   const convertAPINotification = (n: any): UnifiedNotification => {
-    // Standardize incident ID extraction
     const reportId = n.data?.id || n.data?.incident_id;
     return {
       id: `api-${n.id}`,
       type: n.type || 'system',
       title: n.title,
-      message: n.message,
-      timestamp: new Date(n.created_at || n.ngay_tao),
-      read: !!n.read,
+      message: n.body || n.message,
+      timestamp: new Date(n.created_at),
+      read: !!n.read_at,
       data: reportId ? { id: reportId, ...n.data } : n.data,
       source: 'api',
     };
@@ -61,15 +59,20 @@ const NotificationsScreen = () => {
   });
 
   // Fetch notifications from API
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (isSilent = false) => {
     try {
+      if (!isSilent) setLoading(true);
+      setError(null);
       const response = await notificationService.getNotifications();
       console.log('🔍 fetchNotifications response:', response);
       if (response.success) {
-        setApiNotifications(response.data);
+        setApiNotifications(response.data?.data || response.data || []);
+      } else {
+        setError(response.message || 'Không thể tải thông báo');
       }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+    } catch (err: any) {
+      console.warn('Error fetching notifications:', err?.message || err);
+      setError(err?.message || 'Lỗi kết nối máy chủ');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -82,7 +85,7 @@ const NotificationsScreen = () => {
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchNotifications();
+    fetchNotifications(true);
   };
 
   // Merge and sort notifications
@@ -126,27 +129,20 @@ const NotificationsScreen = () => {
   const handleMarkAllRead = async () => {
     console.log('📖 Marking all notifications as read...');
     
-    // 1. Optimistic Update for UI (Instant feedback)
-    // Mark WebSocket notifications in hook
+    // 1. Optimistic Update for UI
     if (wsHook?.markAllAsRead) {
       wsHook.markAllAsRead();
     }
-    
-    // Mark API notifications in local state
-    setApiNotifications(prev => prev.map(n => ({ ...n, da_doc: true })));
+    setApiNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
     
     // 2. Perform API Call
     try {
-      const response = await notificationService.markAllAsRead();
-      console.log('✅ API Mark all as read response:', response);
-      
-      // 3. Refetch to sync with server truth after a short delay to allow DB processing
+      await notificationService.markAllAsRead();
       setTimeout(() => {
-        fetchNotifications();
+        fetchNotifications(true);
       }, 500);
-    } catch (error) {
-      console.error('❌ Error marking all as read:', error);
-      // Optional: Rollback if needed, but usually users prefer keeping it "read" visually
+    } catch (err) {
+      console.error('❌ Error marking all as read:', err);
     }
   };
 
@@ -155,9 +151,6 @@ const NotificationsScreen = () => {
     
     // Optimistic reading
     if (!item.read) {
-      console.log('📖 Marking single notification as read...');
-      
-      // WebSocket source handling
       if (item.source === 'websocket') {
         if (wsHook?.markAsRead) {
           const wsId = item.id.replace('ws-', '');
@@ -165,34 +158,29 @@ const NotificationsScreen = () => {
         }
       } 
       
-      // API source handling
       const apiIdStr = item.id.replace('api-', '');
       if (item.source === 'api' || !isNaN(Number(apiIdStr))) {
         try {
           const apiId = parseInt(apiIdStr);
-          // Mark in local state optimistically
           setApiNotifications(prev =>
-            prev.map(n => n.id === apiId ? { ...n, da_doc: true } : n)
+            prev.map(n => n.id === apiId ? { ...n, read_at: new Date().toISOString() } : n)
           );
           await notificationService.markAsRead(apiId);
-        } catch (error) {
-          console.error('❌ Error marking as read:', error);
+        } catch (err) {
+          console.error('❌ Error marking as read:', err);
         }
       }
     }
 
-    // Navigate to report/incident detail
+    // Navigate to detail
     const isReportNotification = item.type === 'report_status' || 
                                   item.type === 'report_status_update';
     const isIncidentNotification = item.type === 'incident_created';
     
     if ((isReportNotification || isIncidentNotification) && item.data?.id) {
-      console.log('🚀 Navigating to Detail with ID:', item.data.id);
       navigation.navigate('IncidentDetail' as any, { 
         id: item.data.id
       } as any);
-    } else {
-      console.log('⚠️ No detail data to navigate to. Type:', item.type, 'Data:', item.data);
     }
   };
 
@@ -220,7 +208,7 @@ const NotificationsScreen = () => {
       case 'points_updated':
         return theme.colors.success;
       case 'incident_created':
-        return '#EF4444';
+        return '#F04438';
       case 'new_nearby_report':
         return '#7a5af8';
       default:
@@ -248,9 +236,9 @@ const NotificationsScreen = () => {
           !item.read && { borderLeftColor: typeColor }
         ]}
         onPress={() => handleNotificationPress(item)}
-        activeOpacity={0.8}
+        activeOpacity={0.85}
       >
-        <View style={[styles.iconWrapper, { backgroundColor: typeColor + '10' }]}>
+        <View style={[styles.iconWrapper, { backgroundColor: typeColor + '12' }]}>
           <Icon name={getIconForType(item.type)} size={22} color={typeColor} />
         </View>
 
@@ -286,12 +274,15 @@ const NotificationsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <PageHeader
         title="Thông báo"
         variant="default"
-        rightIcon="check-all"
-        onRightPress={handleMarkAllRead}
+        rightComponent={
+          <TouchableOpacity onPress={handleMarkAllRead} style={styles.headerRightTextButton} activeOpacity={0.7}>
+            <Text style={styles.headerRightText}>Đọc tất cả</Text>
+          </TouchableOpacity>
+        }
         showBack={true}
         showNotification={false}
       />
@@ -307,7 +298,7 @@ const NotificationsScreen = () => {
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
+          contentContainerStyle={[styles.listContainer, allNotifications.length === 0 && { flexGrow: 1 }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -318,17 +309,41 @@ const NotificationsScreen = () => {
           }
           stickySectionHeadersEnabled={false}
           ListEmptyComponent={
-            <View style={styles.emptyWrapper}>
-              <View style={styles.emptyIconCircle}>
-                <Icon name="bell-off-outline" size={48} color="#CBD5E1" />
+            error ? (
+              <View style={styles.emptyCard}>
+                <View style={styles.emptyIconOutlineError}>
+                  <View style={styles.emptyIconCircleError}>
+                    <Icon name="wifi-off" size={42} color="#F04438" />
+                  </View>
+                </View>
+                <Text style={styles.emptyTitle}>Lỗi kết nối máy chủ</Text>
+                <Text style={styles.emptySub}>
+                  Không thể đồng bộ thông báo từ AegisFlow. Vui lòng kiểm tra lại đường truyền internet của bạn.
+                </Text>
+                <TouchableOpacity style={styles.retryButton} onPress={onRefresh} activeOpacity={0.8}>
+                  <Icon name="refresh" size={18} color="#F04438" />
+                  <Text style={styles.retryButtonText}>Thử lại</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={styles.emptyTitle}>Hộp thư trống</Text>
-              <Text style={styles.emptySub}>Bạn không có thông báo nào vào lúc này</Text>
-            </View>
+            ) : (
+              <View style={styles.emptyCard}>
+                <View style={styles.emptyIconOutline}>
+                  <View style={styles.emptyIconCircle}>
+                    <Icon name="bell-off-outline" size={42} color={theme.colors.primary} />
+                  </View>
+                </View>
+                <Text style={styles.emptyTitle}>Hộp thư trống</Text>
+                <Text style={styles.emptySub}>Bạn không có thông báo nào vào lúc này.</Text>
+                <TouchableOpacity style={styles.refreshButton} onPress={onRefresh} activeOpacity={0.8}>
+                  <Icon name="refresh" size={18} color="#FFF" />
+                  <Text style={styles.refreshButtonText}>Làm mới</Text>
+                </TouchableOpacity>
+              </View>
+            )
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -361,17 +376,22 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.xl,
     marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    ...theme.shadows.sm,
+    borderColor: '#EEF2F6',
+    shadowColor: '#090A1D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 8,
+    elevation: 2,
   },
   unreadItem: {
-    backgroundColor: '#F7F9FC',
+    backgroundColor: '#F5F3FF', // Brand light violet background
     borderLeftWidth: 4,
+    borderColor: '#DDD6FE',
   },
   iconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
@@ -394,7 +414,7 @@ const styles = StyleSheet.create({
   },
   unreadTitleText: {
     fontWeight: '800',
-    color: '#0F172A',
+    color: theme.colors.primary,
   },
   itemTimeText: {
     fontSize: 11,
@@ -403,11 +423,11 @@ const styles = StyleSheet.create({
   },
   itemMessageText: {
     fontSize: FONT_SIZE.sm,
-    color: '#64748B',
+    color: '#475569',
     lineHeight: 20,
   },
   unreadMessageText: {
-    color: '#334155',
+    color: '#1E1B4B',
     fontWeight: '500',
   },
   actionRow: {
@@ -445,34 +465,118 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontWeight: '600',
   },
-  emptyWrapper: {
-    paddingTop: hp('15%'),
-    alignItems: 'center',
+  emptyCard: {
+    flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: hp('10%'),
   },
-  emptyIconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F1F5F9',
+  emptyIconOutline: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: 'rgba(122, 90, 248, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.lg,
   },
+  emptyIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(122, 90, 248, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(122, 90, 248, 0.15)',
+  },
+  emptyIconOutlineError: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: 'rgba(240, 68, 56, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  emptyIconCircleError: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(240, 68, 56, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(240, 68, 56, 0.15)',
+  },
   emptyTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '800',
-    color: '#334155',
-    marginBottom: 4,
+    fontWeight: '850',
+    color: '#1E293B',
+    marginBottom: SPACING.sm,
   },
   emptySub: {
-    fontSize: FONT_SIZE.sm,
-    color: '#94A3B8',
+    fontSize: FONT_SIZE.xs,
+    color: '#64748B',
     textAlign: 'center',
-    paddingHorizontal: SPACING.xl,
+    lineHeight: 18,
+    paddingHorizontal: SPACING.md,
+    marginBottom: SPACING.xl,
+  },
+  refreshButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    borderRadius: 24,
+    gap: 6,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  refreshButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F04438',
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    borderRadius: 24,
+    gap: 6,
+    shadowColor: '#F04438',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  retryButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  headerRightTextButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: 'rgba(122, 90, 248, 0.08)',
+  },
+  headerRightText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.colors.primary,
   },
 });
 
 export default NotificationsScreen;
+
+
 
 

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Prediction — Kết quả dự đoán lũ
@@ -17,6 +18,7 @@ class Prediction extends Model
 
     protected $fillable = [
         'model_id',
+        'incident_id',
         'model_version',
         'prediction_type',
         'target_area',
@@ -81,7 +83,7 @@ class Prediction extends Model
         return $this->hasMany(PredictionDetail::class, 'prediction_id');
     }
 
-    public function recommendation(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function recommendation(): HasOne
     {
         return $this->hasOne(Recommendation::class, 'prediction_id');
     }

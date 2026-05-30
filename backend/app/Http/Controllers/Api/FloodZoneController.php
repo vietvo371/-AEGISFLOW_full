@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-
 use App\Enums\FloodZoneRiskEnum;
 use App\Enums\FloodZoneStatusEnum;
 use App\Helpers\ApiResponse;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\FloodZoneResource;
 use App\Models\FloodZone;
 use Illuminate\Http\Request;
@@ -34,6 +33,15 @@ class FloodZoneController extends Controller
 
         if ($request->filled('risk_level')) {
             $query->where('risk_level', $request->risk_level);
+        }
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
         }
 
         $zones = $query->paginate($request->get('per_page', 20));
@@ -98,7 +106,7 @@ class FloodZoneController extends Controller
         // Lưu geometry PostGIS
         if (! empty($data['geometry']) && DB::connection()->getDriverName() === 'pgsql') {
             DB::statement(
-                "UPDATE flood_zones SET geometry = ST_GeomFromText(?, 4326) WHERE id = ?",
+                'UPDATE flood_zones SET geometry = ST_GeomFromText(?, 4326) WHERE id = ?',
                 [$data['geometry'], $zone->id]
             );
         }
@@ -138,7 +146,7 @@ class FloodZoneController extends Controller
 
         if (! empty($data['geometry']) && DB::connection()->getDriverName() === 'pgsql') {
             DB::statement(
-                "UPDATE flood_zones SET geometry = ST_GeomFromText(?, 4326) WHERE id = ?",
+                'UPDATE flood_zones SET geometry = ST_GeomFromText(?, 4326) WHERE id = ?',
                 [$data['geometry'], $zone->id]
             );
         }

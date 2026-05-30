@@ -57,6 +57,7 @@ logs/
 
 # Model files
 *.pkl
+!models/flood_risk_model.pkl
 *.h5
 *.pt
 *.pth

@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -34,6 +35,10 @@ class UserController extends Controller
             $query->where('is_active', $request->boolean('is_active'));
         }
 
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
         $users = $query->paginate($request->get('per_page', 20));
 
         $data = $users->map(fn ($u) => $this->formatUser($u));
@@ -52,8 +57,13 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => ['required', Password::min(8)],
             'phone' => 'nullable|string|max:20',
-            'role' => 'required|exists:roles,id',
+            'role' => 'required|string',
         ]);
+
+        $role = $this->findRole($data['role']);
+        if (! $role) {
+            return ApiResponse::validationError(['role' => ['Vai trò không hợp lệ']]);
+        }
 
         $user = User::create([
             'name' => $data['name'],
@@ -63,10 +73,24 @@ class UserController extends Controller
             'is_active' => true,
         ]);
 
-        $role = \Spatie\Permission\Models\Role::find($data['role']);
         $user->assignRole($role);
 
         return ApiResponse::created($this->formatUser($user->fresh()));
+    }
+
+    /**
+     * Chi tiết người dùng
+     * GET /api/admin/users/{id}
+     */
+    public function show(int $id)
+    {
+        $user = User::with('roles')->find($id);
+
+        if (! $user) {
+            return ApiResponse::notFound('Không tìm thấy người dùng');
+        }
+
+        return ApiResponse::success($this->formatUser($user));
     }
 
     /**
@@ -85,13 +109,30 @@ class UserController extends Controller
             'name' => 'sometimes|string|max:255',
             'phone' => 'nullable|string|max:20',
             'is_active' => 'sometimes|boolean',
-            'role' => 'sometimes|exists:roles,id',
+            'status' => 'sometimes|in:active,inactive',
+            'role' => 'sometimes|string',
         ]);
+
+        $roleValue = $data['role'] ?? null;
+        $role = null;
+
+        if ($roleValue !== null) {
+            $role = $this->findRole($roleValue);
+            if (! $role) {
+                return ApiResponse::validationError(['role' => ['Vai trò không hợp lệ']]);
+            }
+        }
+
+        if (isset($data['status'])) {
+            $data['is_active'] = $data['status'] === 'active';
+            unset($data['status']);
+        }
+
+        unset($data['role']);
 
         $user->update($data);
 
-        if (isset($data['role'])) {
-            $role = \Spatie\Permission\Models\Role::find($data['role']);
+        if ($role) {
             $user->syncRoles([$role]);
         }
 
@@ -130,6 +171,8 @@ class UserController extends Controller
             'phone' => $user->phone,
             'avatar' => $user->avatar,
             'is_active' => $user->is_active,
+            'status' => $user->is_active ? 'active' : 'inactive',
+            'role' => $user->roles->first()?->name,
             'roles' => $user->roles->map(fn ($r) => [
                 'id' => $r->id,
                 'name' => $r->name,
@@ -137,6 +180,15 @@ class UserController extends Controller
             ]),
             'created_at' => $user->created_at?->toIso8601String(),
             'last_login_at' => $user->last_login_at?->toIso8601String(),
+            'last_login' => $user->last_login_at?->toIso8601String(),
         ];
+    }
+
+    protected function findRole(string|int $value): ?Role
+    {
+        return Role::query()
+            ->where('id', $value)
+            ->orWhere('name', $value)
+            ->first();
     }
 }

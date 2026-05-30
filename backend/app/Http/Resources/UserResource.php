@@ -22,6 +22,7 @@ class UserResource extends JsonResource
             'avatar_url' => $this->avatar_url,
             'status' => $this->status,
             'role' => $this->roles->first()?->name ?? 'citizen',
+            'roles' => $this->getRoleNames(),
             'permissions' => $this->getAllPermissions()->pluck('name'),
             'last_login_at' => $this->last_login_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),

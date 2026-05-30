@@ -1,0 +1,477 @@
+{
+  "hai_chau": {
+    "id": "hai_chau",
+    "lat": 16.0544,
+    "lng": 108.2022,
+    "elevation": 2.0,
+    "neighbors": [
+      "an_trung",
+      "hoa_thuan",
+      "thac_bac",
+      "cho_bac",
+      "song_han",
+      "cau_song_han"
+    ],
+    "district": "hai_chau",
+    "drainage_capacity": 0.3
+  },
+  "thanh_khe": {
+    "id": "thanh_khe",
+    "lat": 16.06,
+    "lng": 108.19,
+    "elevation": 3.5,
+    "neighbors": [
+      "thanh_khe_tay",
+      "thac_bac",
+      "lien_chieu",
+      "tam_thuan"
+    ],
+    "district": "thanh_khe",
+    "drainage_capacity": 0.4
+  },
+  "lien_chieu": {
+    "id": "lien_chieu",
+    "lat": 16.07,
+    "lng": 108.15,
+    "elevation": 8.0,
+    "neighbors": [
+      "thanh_khe",
+      "truong_dh_kt",
+      "cau_thuan_phuoc",
+      "kcx_hoa_khanh"
+    ],
+    "district": "lien_chieu",
+    "drainage_capacity": 0.7
+  },
+  "ngu_hanh_son": {
+    "id": "ngu_hanh_son",
+    "lat": 16.065,
+    "lng": 108.245,
+    "elevation": 15.0,
+    "neighbors": [
+      "son_tra",
+      "cau_thuan_phuoc",
+      "non_nuoc"
+    ],
+    "district": "ngu_hanh_son",
+    "drainage_capacity": 0.9
+  },
+  "son_tra": {
+    "id": "son_tra",
+    "lat": 16.08,
+    "lng": 108.25,
+    "elevation": 25.0,
+    "neighbors": [
+      "ngu_hanh_son",
+      "cau_thuan_phuoc",
+      "bv_ung_buou",
+      "my_khe"
+    ],
+    "district": "son_tra",
+    "drainage_capacity": 0.9
+  },
+  "cam_le": {
+    "id": "cam_le",
+    "lat": 16.045,
+    "lng": 108.18,
+    "elevation": 5.0,
+    "neighbors": [
+      "tam_thuan",
+      "phuoc_hiep",
+      "truong_dh_kt",
+      "song_cu_da_nang"
+    ],
+    "district": "cam_le",
+    "drainage_capacity": 0.5
+  },
+  "hoa_vang": {
+    "id": "hoa_vang",
+    "lat": 16.03,
+    "lng": 108.12,
+    "elevation": 20.0,
+    "neighbors": [
+      "song_cu_da_nang",
+      "kcx_thanh_vinh",
+      "hoang_sa"
+    ],
+    "district": "hoa_vang",
+    "drainage_capacity": 0.9
+  },
+  "hoang_sa": {
+    "id": "hoang_sa",
+    "lat": 16.15,
+    "lng": 108.12,
+    "elevation": 2.0,
+    "neighbors": [
+      "hoa_vang",
+      "nui_nam_o"
+    ],
+    "district": "hoang_sa",
+    "drainage_capacity": 0.8
+  },
+  "phuoc_my": {
+    "id": "phuoc_my",
+    "lat": 16.058,
+    "lng": 108.21,
+    "elevation": 1.5,
+    "neighbors": [
+      "hai_chau",
+      "ong_ich_khiem",
+      "vincom",
+      "kruskal_zone"
+    ],
+    "district": "phuoc_my",
+    "drainage_capacity": 0.2
+  },
+  "an_trung": {
+    "id": "an_trung",
+    "lat": 16.052,
+    "lng": 108.205,
+    "elevation": 2.5,
+    "neighbors": [
+      "hai_chau",
+      "hoa_thuan",
+      "nguyen_van_thoai"
+    ],
+    "district": "an_trung",
+    "drainage_capacity": 0.3
+  },
+  "hoa_thuan": {
+    "id": "hoa_thuan",
+    "lat": 16.048,
+    "lng": 108.198,
+    "elevation": 3.0,
+    "neighbors": [
+      "hai_chau",
+      "an_trung",
+      "ham_tuy",
+      "cho_bac"
+    ],
+    "district": "hoa_thuan",
+    "drainage_capacity": 0.4
+  },
+  "thac_bac": {
+    "id": "thac_bac",
+    "lat": 16.055,
+    "lng": 108.192,
+    "elevation": 4.0,
+    "neighbors": [
+      "hai_chau",
+      "ong_ich_khiem",
+      "thanh_khe_tay",
+      "thanh_khe"
+    ],
+    "district": "thac_bac",
+    "drainage_capacity": 0.5
+  },
+  "thanh_khe_tay": {
+    "id": "thanh_khe_tay",
+    "lat": 16.058,
+    "lng": 108.185,
+    "elevation": 3.0,
+    "neighbors": [
+      "thanh_khe",
+      "phuoc_hiep",
+      "ham_tuy",
+      "duy_tan"
+    ],
+    "district": "thanh_khe",
+    "drainage_capacity": 0.35
+  },
+  "tam_thuan": {
+    "id": "tam_thuan",
+    "lat": 16.065,
+    "lng": 108.188,
+    "elevation": 4.5,
+    "neighbors": [
+      "thanh_khe",
+      "phuoc_hiep",
+      "cam_le"
+    ],
+    "district": "tam_thuan",
+    "drainage_capacity": 0.5
+  },
+  "phuoc_hiep": {
+    "id": "phuoc_hiep",
+    "lat": 16.062,
+    "lng": 108.18,
+    "elevation": 5.0,
+    "neighbors": [
+      "thanh_khe_tay",
+      "tam_thuan",
+      "cam_le"
+    ],
+    "district": "phuoc_hiep",
+    "drainage_capacity": 0.6
+  },
+  "cho_bac": {
+    "id": "cho_bac",
+    "lat": 16.05,
+    "lng": 108.195,
+    "elevation": 1.0,
+    "neighbors": [
+      "hai_chau",
+      "hoa_thuan",
+      "con_shopping_market"
+    ],
+    "district": "cho_bac",
+    "drainage_capacity": 0.1
+  },
+  "nguyen_van_thoai": {
+    "id": "nguyen_van_thoai",
+    "lat": 16.052,
+    "lng": 108.2,
+    "elevation": 1.2,
+    "neighbors": [
+      "an_trung",
+      "duy_tan",
+      "con_shopping_market"
+    ],
+    "district": "nguyen_van_thoai",
+    "drainage_capacity": 0.15
+  },
+  "duy_tan": {
+    "id": "duy_tan",
+    "lat": 16.055,
+    "lng": 108.195,
+    "elevation": 1.8,
+    "neighbors": [
+      "nguyen_van_thoai",
+      "ong_ich_khiem",
+      "song_han"
+    ],
+    "district": "duy_tan",
+    "drainage_capacity": 0.2
+  },
+  "ong_ich_khiem": {
+    "id": "ong_ich_khiem",
+    "lat": 16.06,
+    "lng": 108.195,
+    "elevation": 2.0,
+    "neighbors": [
+      "thac_bac",
+      "phuoc_my",
+      "duy_tan",
+      "bv_da_nang"
+    ],
+    "district": "ong_ich_khiem",
+    "drainage_capacity": 0.25
+  },
+  "ham_tuy": {
+    "id": "ham_tuy",
+    "lat": 16.052,
+    "lng": 108.192,
+    "elevation": 2.2,
+    "neighbors": [
+      "hoa_thuan",
+      "thanh_khe_tay",
+      "thanh_khe"
+    ],
+    "district": "ham_tuy",
+    "drainage_capacity": 0.3
+  },
+  "song_han": {
+    "id": "song_han",
+    "lat": 16.056,
+    "lng": 108.205,
+    "elevation": 1.5,
+    "neighbors": [
+      "hai_chau",
+      "duy_tan",
+      "vincom",
+      "cau_song_han"
+    ],
+    "district": "song_han",
+    "drainage_capacity": 0.2
+  },
+  "cau_song_han": {
+    "id": "cau_song_han",
+    "lat": 16.054,
+    "lng": 108.203,
+    "elevation": 2.0,
+    "neighbors": [
+      "hai_chau",
+      "song_han",
+      "bv_da_nang"
+    ],
+    "district": "song_han",
+    "drainage_capacity": 0.3
+  },
+  "cau_thuan_phuoc": {
+    "id": "cau_thuan_phuoc",
+    "lat": 16.07,
+    "lng": 108.22,
+    "elevation": 5.0,
+    "neighbors": [
+      "son_tra",
+      "ngu_hanh_son",
+      "lien_chieu"
+    ],
+    "district": "cau_thuan_phuoc",
+    "drainage_capacity": 0.6
+  },
+  "song_cu_da_nang": {
+    "id": "song_cu_da_nang",
+    "lat": 16.05,
+    "lng": 108.18,
+    "elevation": 1.0,
+    "neighbors": [
+      "cam_le",
+      "kcx_hoa_khanh",
+      "hoa_vang"
+    ],
+    "district": "song_cu_da_nang",
+    "drainage_capacity": 0.1
+  },
+  "vincom": {
+    "id": "vincom",
+    "lat": 16.054,
+    "lng": 108.208,
+    "elevation": 2.0,
+    "neighbors": [
+      "phuoc_my",
+      "song_han",
+      "kruskal_zone"
+    ],
+    "district": "vincom",
+    "drainage_capacity": 0.3
+  },
+  "con_shopping_market": {
+    "id": "con_shopping_market",
+    "lat": 16.052,
+    "lng": 108.196,
+    "elevation": 1.5,
+    "neighbors": [
+      "cho_bac",
+      "nguyen_van_thoai",
+      "ham_tuy"
+    ],
+    "district": "con_shopping_market",
+    "drainage_capacity": 0.2
+  },
+  "kruskal_zone": {
+    "id": "kruskal_zone",
+    "lat": 16.058,
+    "lng": 108.205,
+    "elevation": 1.8,
+    "neighbors": [
+      "phuoc_my",
+      "vincom",
+      "ong_ich_khiem"
+    ],
+    "district": "kruskal_zone",
+    "drainage_capacity": 0.25
+  },
+  "bv_da_nang": {
+    "id": "bv_da_nang",
+    "lat": 16.055,
+    "lng": 108.2,
+    "elevation": 2.5,
+    "neighbors": [
+      "cau_song_han",
+      "ong_ich_khiem",
+      "duy_tan"
+    ],
+    "district": "bv_da_nang",
+    "drainage_capacity": 0.3
+  },
+  "bv_ung_buou": {
+    "id": "bv_ung_buou",
+    "lat": 16.065,
+    "lng": 108.21,
+    "elevation": 5.0,
+    "neighbors": [
+      "son_tra",
+      "nui_than_tai"
+    ],
+    "district": "bv_ung_buou",
+    "drainage_capacity": 0.6
+  },
+  "truong_dh_kt": {
+    "id": "truong_dh_kt",
+    "lat": 16.058,
+    "lng": 108.18,
+    "elevation": 6.0,
+    "neighbors": [
+      "lien_chieu",
+      "phuoc_hiep",
+      "cam_le"
+    ],
+    "district": "truong_dh_kt",
+    "drainage_capacity": 0.7
+  },
+  "kcx_hoa_khanh": {
+    "id": "kcx_hoa_khanh",
+    "lat": 16.035,
+    "lng": 108.175,
+    "elevation": 1.5,
+    "neighbors": [
+      "lien_chieu",
+      "song_cu_da_nang",
+      "kcx_thanh_vinh"
+    ],
+    "district": "kcx_hoa_khanh",
+    "drainage_capacity": 0.2
+  },
+  "kcx_thanh_vinh": {
+    "id": "kcx_thanh_vinh",
+    "lat": 16.025,
+    "lng": 108.165,
+    "elevation": 2.0,
+    "neighbors": [
+      "kcx_hoa_khanh",
+      "hoa_vang"
+    ],
+    "district": "kcx_thanh_vinh",
+    "drainage_capacity": 0.3
+  },
+  "my_khe": {
+    "id": "my_khe",
+    "lat": 16.058,
+    "lng": 108.24,
+    "elevation": 1.0,
+    "neighbors": [
+      "ngu_hanh_son",
+      "son_tra",
+      "non_nuoc"
+    ],
+    "district": "my_khe",
+    "drainage_capacity": 0.95
+  },
+  "non_nuoc": {
+    "id": "non_nuoc",
+    "lat": 16.055,
+    "lng": 108.26,
+    "elevation": 2.0,
+    "neighbors": [
+      "ngu_hanh_son",
+      "my_khe"
+    ],
+    "district": "non_nuoc",
+    "drainage_capacity": 0.95
+  },
+  "nui_nam_o": {
+    "id": "nui_nam_o",
+    "lat": 16.1,
+    "lng": 108.2,
+    "elevation": 150.0,
+    "neighbors": [
+      "lien_chieu",
+      "hoang_sa"
+    ],
+    "district": "nui_nam_o",
+    "drainage_capacity": 1.0
+  },
+  "nui_than_tai": {
+    "id": "nui_than_tai",
+    "lat": 16.09,
+    "lng": 108.23,
+    "elevation": 100.0,
+    "neighbors": [
+      "son_tra",
+      "bv_ung_buou"
+    ],
+    "district": "nui_than_tai",
+    "drainage_capacity": 1.0
+  }
+}

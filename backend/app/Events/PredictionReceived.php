@@ -39,6 +39,16 @@ class PredictionReceived implements ShouldBroadcast
             'horizon_minutes' => $this->prediction->horizon_minutes,
             'prediction_for' => $this->prediction->prediction_for?->toIso8601String(),
             'issued_at' => $this->prediction->issued_at?->toIso8601String(),
+            'created_at' => $this->prediction->created_at?->toIso8601String(),
+            'input_data' => $this->prediction->input_data,
+            'district' => $this->prediction->relationLoaded('district') ? [
+                'id' => $this->prediction->district->id,
+                'name' => $this->prediction->district->name,
+            ] : null,
+            'flood_zone' => $this->prediction->relationLoaded('floodZone') ? [
+                'id' => $this->prediction->floodZone->id,
+                'name' => $this->prediction->floodZone->name,
+            ] : null,
         ];
     }
 }

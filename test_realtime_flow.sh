@@ -45,8 +45,8 @@ fi
 echo -e "${GREEN}✅ Login successful!${NC}"
 echo ""
 
-# Step 2: Create Incident (should trigger .incident.created)
-echo -e "${BLUE}[2/6]${NC} Tạo Incident mới (test .incident.created)..."
+# Step 2: Create Incident (should trigger .IncidentCreated)
+echo -e "${BLUE}[2/6]${NC} Tạo Incident mới (test .IncidentCreated)..."
 echo ""
 
 INCIDENT_RESPONSE=$(curl -s -X POST "$API_URL/incidents" \
@@ -74,8 +74,8 @@ else
 fi
 echo ""
 
-# Step 3: Create Alert (should trigger .alert.created)
-echo -e "${BLUE}[3/6]${NC} Tạo Alert mới (test .alert.created)..."
+# Step 3: Create Alert (should trigger .AlertCreated)
+echo -e "${BLUE}[3/6]${NC} Tạo Alert mới (test .AlertCreated)..."
 echo ""
 
 ALERT_RESPONSE=$(curl -s -X POST "$API_URL/alerts" \
@@ -100,8 +100,8 @@ else
 fi
 echo ""
 
-# Step 4: Create Rescue Request (should trigger .rescue_request.created)
-echo -e "${BLUE}[4/6]${NC} Tạo Rescue Request (test .rescue_request.created)..."
+# Step 4: Create Rescue Request (should trigger .RescueRequestCreated)
+echo -e "${BLUE}[4/6]${NC} Tạo Rescue Request (test .RescueRequestCreated)..."
 echo ""
 
 RESCUE_RESPONSE=$(curl -s -X POST "$API_URL/rescue-requests" \
@@ -130,8 +130,8 @@ else
 fi
 echo ""
 
-# Step 5: Update Rescue Request (should trigger .rescue_request.updated)
-echo -e "${BLUE}[5/6]${NC} Cập nhật Rescue Request (test .rescue_request.updated)..."
+# Step 5: Update Rescue Request (should trigger .RescueRequestUpdated)
+echo -e "${BLUE}[5/6]${NC} Cập nhật Rescue Request (test .RescueRequestUpdated)..."
 echo ""
 
 if [ -n "$RESCUE_ID" ]; then
@@ -149,8 +149,8 @@ else
 fi
 echo ""
 
-# Step 6: Resolve Incident (should trigger .incident.resolved)
-echo -e "${BLUE}[6/6]${NC} Giải quyết Incident (test .incident.resolved)..."
+# Step 6: Resolve Incident (should trigger .IncidentResolved)
+echo -e "${BLUE}[6/6]${NC} Giải quyết Incident (test .IncidentResolved)..."
 echo ""
 
 if [ -n "$INCIDENT_ID" ]; then
@@ -178,11 +178,11 @@ echo -e "Alert ID:        ${GREEN}$ALERT_ID${NC}"
 echo -e "Rescue Request:  ${GREEN}$RESCUE_ID${NC}"
 echo ""
 echo "Check your frontend browser console for realtime events:"
-echo "  🔔 .incident.created"
-echo "  🔔 .alert.created"
-echo "  🔔 .rescue_request.created"
-echo "  🔔 .rescue_request.updated"
-echo "  ✅ .incident.resolved"
+echo "  🔔 .IncidentCreated"
+echo "  🔔 .AlertCreated"
+echo "  🔔 .RescueRequestCreated"
+echo "  🔔 .RescueRequestUpdated"
+echo "  ✅ .IncidentResolved"
 echo ""
 echo -e "${GREEN}==============================================${NC}"
 echo "  Realtime Test Flow Complete!"

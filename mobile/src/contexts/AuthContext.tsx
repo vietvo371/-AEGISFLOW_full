@@ -37,7 +37,6 @@ interface AuthContextData {
   userRole: UserRole | null;
   isCitizen: boolean;
   isEmergency: boolean;
-  isOperator: boolean;
 
   // Auth Methods
   validateLogin: (email: string, password: string) => LoginValidationResult;
@@ -83,14 +82,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const initializeApp = async () => {
     try {
-      // Chỉ đọc user từ AsyncStorage — KHÔNG gọi API
-      // API call để verify token sẽ do LoadingScreen xử lý (có timeout riêng)
-      const user = await authService.getUser();
-      if (user?.id) {
-        setUser(user);
+      const storedUser = await authService.getUser();
+      const token = await authService.getToken();
+      
+      if (storedUser?.id && token) {
+        try {
+          // Verify token against backend on startup
+          const verifiedUser = await authService.getProfile();
+          if (verifiedUser?.id) {
+            setUser(verifiedUser);
+            // Save updated user data just in case
+            await AsyncStorage.setItem('@user_data', JSON.stringify(verifiedUser));
+          } else {
+            // Invalid data structure, clear session
+            await authService.logout();
+            setUser(null);
+          }
+        } catch (apiError: any) {
+          console.log('🔍 Token validation on startup:', apiError?.message || apiError);
+          // If it is a 401/403 auth failure, we must log out
+          if (apiError.response?.status === 401 || apiError.response?.status === 403) {
+            await authService.logout();
+            setUser(null);
+          } else {
+            // Keep offline user if it's just a network/server connection issue
+            setUser(storedUser);
+          }
+        }
+      } else {
+        // No valid token or user stored, clear everything
+        await authService.logout();
+        setUser(null);
       }
     } catch (error) {
       console.log('Init error:', error);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -127,6 +153,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: credentials.email,
         password: credentials.password,
       });
+
+      const roles = response.user?.roles || [];
+      const hasAllowedRole = roles.includes('citizen') || roles.includes('emergency');
+
+      if (!hasAllowedRole) {
+        // Đăng xuất ngay lập tức nếu API trả về thành công nhưng không đúng quyền
+        try { await authService.logout(); } catch (e) {}
+        return { success: false, error: 'Ứng dụng di động chỉ dành cho Người dân và Đội cứu hộ.' };
+      }
 
       setUser(response.user);
  
@@ -192,18 +227,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const getPrimaryRole = (): UserRole | null => {
     if (!user?.roles?.length) return null;
-    // Priority: admin > emergency > traffic_operator > urban_planner > citizen
-    const priority: UserRole[] = ['admin', 'emergency', 'traffic_operator', 'urban_planner', 'citizen'];
-    for (const role of priority) {
-      if (user.roles.includes(role)) return role;
-    }
-    return user.roles[0] as UserRole;
+    if (user.roles.includes('emergency')) return 'emergency';
+    if (user.roles.includes('citizen')) return 'citizen';
+    return null;
   };
 
   const userRole = getPrimaryRole();
   const isCitizen = userRole === 'citizen';
   const isEmergency = userRole === 'emergency';
-  const isOperator = userRole === 'traffic_operator' || userRole === 'urban_planner' || userRole === 'admin';
 
   // ============================================================================
   // PROVIDER
@@ -218,7 +249,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userRole,
         isCitizen,
         isEmergency,
-        isOperator,
         validateLogin,
         signIn,
         signUp,

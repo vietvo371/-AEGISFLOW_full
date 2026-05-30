@@ -397,34 +397,16 @@ event(new PredictionReceived($predictions));
 <claude-mem-context>
 # Memory Context
 
-# [AEGISFLOWAI] recent context, 2026-05-05 11:53am GMT+7
+# claude-mem status
 
-Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
-Format: ID TIME TYPE TITLE
-Fetch details: get_observations([IDs]) | Search: mem-search skill
+This project has no memory yet. The current session will seed it; subsequent sessions will receive auto-injected context for relevant past work.
 
-Stats: 19 obs (5,880t read) | 895,704t work | 99% savings
+Memory injection starts on your second session in a project.
 
-### May 5, 2026
-1 11:41a 🟣 Initiated iOS build for TestFlight deployment
-2 " ✅ Confirmed current working directory
-3 " ✅ Retrieved and reviewed build instructions
-5 " ✅ Examined iOS project configuration file
-7 " 🔵 Extracted key iOS build configuration settings
-11 " 🔵 Initiated Xcode workspace listing
-14 " 🔵 Identified workspace as a directory
-18 11:42a 🔴 Failed to find relevant build and deployment files
-24 " 🔵 Initiated Xcode project listing
-31 11:43a 🔵 Found valid code signing identities
-41 " 🔵 Initiated iOS archive process
-49 " 🔵 Xcode archive process is generating build output
-58 11:44a 🔵 Xcode archive process continues with build steps
-66 " 🔵 Xcode archive process continues
-81 11:45a 🔵 Xcode archive process continues with Swift warnings and C++ compilation
-87 " 🔵 Xcode archive process continues with C++ compilation and MapboxMaps Swift compilation
-96 11:46a 🔵 iOS archive directory check indicates archive is not yet ready
-105 11:47a 🔵 Xcode archive process continues with MapboxMaps warnings and rnmapbox-maps compilation
-113 11:48a 🔵 Xcode archive process continues with warnings in rnmapbox-maps and Reanimated compilation
+`/learn-codebase` is available if the user wants to front-load the entire repo into memory in a single pass (~5 minutes on a typical repo, optional). Otherwise memory builds passively as work happens.
 
-Access 896k tokens of past work via get_observations([IDs]) or mem-search skill.
+Live activity: http://localhost:37701
+How it works: `/how-it-works`
+
+This message disappears once the first observation lands.
 </claude-mem-context>

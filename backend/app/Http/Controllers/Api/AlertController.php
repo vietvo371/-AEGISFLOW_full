@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-
-use App\Enums\AlertTypeEnum;
 use App\Enums\AlertStatusEnum;
+use App\Enums\AlertTypeEnum;
 use App\Events\AlertCreated;
-use App\Events\AlertUpdated;
 use App\Events\AlertResolved;
+use App\Events\AlertUpdated;
 use App\Helpers\ApiResponse;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\AlertResource;
 use App\Models\Alert;
 use Illuminate\Http\Request;
@@ -94,6 +93,7 @@ class AlertController extends Controller
             'affected_districts.*' => 'exists:districts,id',
             'affected_wards' => 'nullable|array',
             'affected_flood_zones' => 'nullable|array',
+            'affected_flood_zones.*' => 'exists:flood_zones,id',
             'radius_km' => 'nullable|numeric|min:0',
             'effective_from' => 'nullable|date',
             'effective_until' => 'nullable|date|after:effective_from',
@@ -109,7 +109,6 @@ class AlertController extends Controller
             'alert_type' => $data['alert_type'],
             'severity' => $data['severity'],
             'status' => AlertStatusEnum::ACTIVE->value,
-            'geometry' => $data['geometry'] ?? null,
             'affected_districts' => $data['affected_districts'] ?? [],
             'affected_wards' => $data['affected_wards'] ?? [],
             'affected_flood_zones' => $data['affected_flood_zones'] ?? [],
@@ -125,7 +124,7 @@ class AlertController extends Controller
         // Lưu geometry PostGIS
         if (! empty($data['geometry']) && DB::connection()->getDriverName() === 'pgsql') {
             DB::statement(
-                "UPDATE alerts SET geometry = ST_GeomFromText(?, 4326) WHERE id = ?",
+                'UPDATE alerts SET geometry = ST_GeomFromText(?, 4326) WHERE id = ?',
                 [$data['geometry'], $alert->id]
             );
         }
@@ -187,7 +186,7 @@ class AlertController extends Controller
             $geometry = null;
             if (DB::connection()->getDriverName() === 'pgsql') {
                 $result = DB::selectOne(
-                    "SELECT ST_AsGeoJSON(geometry) as geojson FROM alerts WHERE id = ?",
+                    'SELECT ST_AsGeoJSON(geometry) as geojson FROM alerts WHERE id = ?',
                     [$alert->id]
                 );
                 $geometry = $result?->geojson ? json_decode($result->geojson) : null;

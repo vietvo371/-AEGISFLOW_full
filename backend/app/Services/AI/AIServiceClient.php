@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class AIServiceClient
 {
     private string $baseUrl;
+
     private int $timeout;
 
     public function __construct()
@@ -23,12 +24,12 @@ class AIServiceClient
     {
         try {
             $response = Http::timeout($this->timeout)
-                ->post("{$this->baseUrl}/predict-risk", [
+                ->post("{$this->baseUrl}/api/predict-risk", [
                     'water_level_m' => $waterLevel,
                     'rainfall_mm' => $rainfall,
                     'hours_rain' => $hours,
                     'tide_level' => $tide,
-                    'historical_score' => $history
+                    'historical_score' => $history,
                 ]);
 
             if ($response->successful()) {
@@ -37,12 +38,13 @@ class AIServiceClient
 
             Log::error('AI Service Error (predict-risk)', [
                 'status' => $response->status(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
-            
+
             return null;
         } catch (\Exception $e) {
             Log::error('AI Service Connection Failed (predict-risk)', ['message' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -54,27 +56,28 @@ class AIServiceClient
     {
         try {
             $response = Http::timeout($this->timeout)
-                ->post("{$this->baseUrl}/calculate-priority", [
+                ->post("{$this->baseUrl}/api/calculate-priority", [
                     'urgency' => $urgency,
                     'vulnerable_groups' => $vulnerableGroups,
                     'people_count' => $peopleCount,
                     'water_level_m' => $waterLevel,
                     'created_at_iso' => $createdAtIso,
-                    'has_incident' => $hasIncident
+                    'has_incident' => $hasIncident,
                 ]);
 
             if ($response->successful()) {
                 return $response->json();
             }
-            
+
             Log::error('AI Service Error (calculate-priority)', [
                 'status' => $response->status(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
-            
+
             return null;
         } catch (\Exception $e) {
             Log::error('AI Service Connection Failed (calculate-priority)', ['message' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -86,15 +89,16 @@ class AIServiceClient
     {
         try {
             $response = Http::timeout($this->timeout)
-                ->post("{$this->baseUrl}/score-shelter", $data);
+                ->post("{$this->baseUrl}/api/score-shelter", $data);
 
             if ($response->successful()) {
                 return $response->json();
             }
-            
+
             return null;
         } catch (\Exception $e) {
             Log::error('AI Service Connection Failed (score-shelter)', ['message' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -106,21 +110,22 @@ class AIServiceClient
     {
         try {
             $response = Http::timeout($this->timeout)
-                ->post("{$this->baseUrl}/optimize-route", [
+                ->post("{$this->baseUrl}/api/optimize-route", [
                     'start_lat' => $startLat,
                     'start_lon' => $startLon,
                     'end_lat' => $endLat,
                     'end_lon' => $endLon,
-                    'flooded_areas' => $floodedAreas
+                    'flooded_areas' => $floodedAreas,
                 ]);
 
             if ($response->successful()) {
                 return $response->json();
             }
-            
+
             return null;
         } catch (\Exception $e) {
             Log::error('AI Service Connection Failed (optimize-route)', ['message' => $e->getMessage()]);
+
             return null;
         }
     }

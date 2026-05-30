@@ -1,8 +1,26 @@
 <?php
 
-use App\Enums\AlertTypeEnum;
-use App\Enums\RecommendationTypeEnum;
-use App\Helpers\ApiResponse;
+use App\Http\Controllers\Api\Admin\SystemController;
+use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\AIChatController;
+use App\Http\Controllers\Api\AlertController;
+use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EvacuationRouteController;
+use App\Http\Controllers\Api\FcmTokenController;
+use App\Http\Controllers\Api\FloodZoneController;
+use App\Http\Controllers\Api\IncidentController;
+use App\Http\Controllers\Api\MapController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PredictionController;
+use App\Http\Controllers\Api\RecommendationController;
+use App\Http\Controllers\Api\RescueRequestController;
+use App\Http\Controllers\Api\RescueTeamController;
+use App\Http\Controllers\Api\SensorController;
+use App\Http\Controllers\Api\SensorDataController;
+use App\Http\Controllers\Api\ShelterController;
+use App\Http\Controllers\Api\UploadController;
+use App\Http\Controllers\Api\WeatherDataController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,9 +33,15 @@ use Illuminate\Support\Facades\Route;
 // PUBLIC ROUTES (Không cần đăng nhập)
 // ============================================================
 Route::prefix('public')->group(function () {
-    Route::get('incidents', [App\Http\Controllers\Api\IncidentController::class, 'publicList']);
-    Route::get('flood-zones/geojson', [App\Http\Controllers\Api\FloodZoneController::class, 'geojson']);
-    Route::get('alerts/geojson', [App\Http\Controllers\Api\AlertController::class, 'geojson']);
+    Route::get('incidents', [IncidentController::class, 'publicList']);
+    Route::get('flood-zones/geojson', [FloodZoneController::class, 'geojson']);
+    Route::get('alerts/geojson', [AlertController::class, 'geojson']);
+    Route::get('map/shelters', [MapController::class, 'shelters']);
+});
+
+Route::prefix('map/geocode')->group(function () {
+    Route::get('forward', [MapController::class, 'geocodeForward']);
+    Route::get('reverse', [MapController::class, 'geocodeReverse']);
 });
 
 // ============================================================
@@ -25,21 +49,21 @@ Route::prefix('public')->group(function () {
 // ============================================================
 Route::prefix('auth')->group(function () {
     Route::middleware('throttle:auth')->group(function () {
-        Route::post('login', [App\Http\Controllers\Api\AuthController::class, 'login']);
-        Route::post('register', [App\Http\Controllers\Api\AuthController::class, 'register']);
-        Route::post('forgot-password', [App\Http\Controllers\Api\AuthController::class, 'forgotPassword']);
-        Route::post('accept-otp-password', [App\Http\Controllers\Api\AuthController::class, 'verifyOtp']);
-        Route::post('reset-password', [App\Http\Controllers\Api\AuthController::class, 'resetPassword']);
-        Route::post('verify-email', [App\Http\Controllers\Api\AuthController::class, 'verifyEmail']);
-        Route::post('resend-otp', [App\Http\Controllers\Api\AuthController::class, 'resendOtp']);
+        Route::post('login', [AuthController::class, 'login']);
+        Route::post('register', [AuthController::class, 'register']);
+        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('accept-otp-password', [AuthController::class, 'verifyOtp']);
+        Route::post('reset-password', [AuthController::class, 'resetPassword']);
+        Route::post('verify-email', [AuthController::class, 'verifyEmail']);
+        Route::post('resend-otp', [AuthController::class, 'resendOtp']);
     });
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('me', [App\Http\Controllers\Api\AuthController::class, 'me']);
-        Route::put('profile', [App\Http\Controllers\Api\AuthController::class, 'updateProfile']);
-        Route::post('change-password', [App\Http\Controllers\Api\AuthController::class, 'changePassword']);
-        Route::post('logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
-        Route::post('refresh', [App\Http\Controllers\Api\AuthController::class, 'refresh']);
+        Route::get('me', [AuthController::class, 'me']);
+        Route::put('profile', [AuthController::class, 'updateProfile']);
+        Route::post('change-password', [AuthController::class, 'changePassword']);
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('refresh', [AuthController::class, 'refresh']);
     });
 });
 
@@ -49,134 +73,135 @@ Route::prefix('auth')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
 
     // ── Incidents ──────────────────────────────────────────
-    Route::apiResource('incidents', App\Http\Controllers\Api\IncidentController::class)
+    Route::apiResource('incidents', IncidentController::class)
         ->only('index', 'show', 'store', 'update');
 
     // ── Rescue Requests ─────────────────────────────────────
-    Route::apiResource('rescue-requests', App\Http\Controllers\Api\RescueRequestController::class)
+    Route::get('rescue-requests/pending', [RescueRequestController::class, 'pending']);
+    Route::put('rescue-requests/{id}/assign', [RescueRequestController::class, 'assign']);
+    Route::put('rescue-requests/{id}/status', [RescueRequestController::class, 'updateStatus']);
+    Route::post('rescue-requests/{id}/rate', [RescueRequestController::class, 'rate']);
+    Route::apiResource('rescue-requests', RescueRequestController::class)
         ->only('index', 'show', 'store', 'update');
-    Route::get('rescue-requests/pending', [App\Http\Controllers\Api\RescueRequestController::class, 'pending']);
-    Route::put('rescue-requests/{id}/assign', [App\Http\Controllers\Api\RescueRequestController::class, 'assign']);
-    Route::put('rescue-requests/{id}/status', [App\Http\Controllers\Api\RescueRequestController::class, 'updateStatus']);
-    Route::post('rescue-requests/{id}/rate', [App\Http\Controllers\Api\RescueRequestController::class, 'rate']);
 
     // ── Flood Zones ─────────────────────────────────────────
-    Route::get('flood-zones/geojson', [App\Http\Controllers\Api\FloodZoneController::class, 'geojson']);
-    Route::apiResource('flood-zones', App\Http\Controllers\Api\FloodZoneController::class)
+    Route::get('flood-zones/geojson', [FloodZoneController::class, 'geojson']);
+    Route::apiResource('flood-zones', FloodZoneController::class)
         ->only('index', 'show', 'store', 'update', 'destroy');
 
     // ── Sensors ─────────────────────────────────────────────
-    Route::get('sensors', [App\Http\Controllers\Api\SensorController::class, 'index']);
-    Route::get('sensors/{id}', [App\Http\Controllers\Api\SensorController::class, 'show']);
-    Route::get('sensors/{id}/readings', [App\Http\Controllers\Api\SensorController::class, 'readings']);
+    Route::get('sensors', [SensorController::class, 'index']);
+    Route::get('sensors/{id}', [SensorController::class, 'show']);
+    Route::get('sensors/{id}/readings', [SensorController::class, 'readings']);
 
     // ── Weather Data ───────────────────────────────────────
-    Route::get('weather/current', [App\Http\Controllers\Api\WeatherDataController::class, 'current']);
-    Route::get('weather/history', [App\Http\Controllers\Api\WeatherDataController::class, 'history']);
-    Route::get('weather/summary', [App\Http\Controllers\Api\WeatherDataController::class, 'summary']);
+    Route::get('weather/current', [WeatherDataController::class, 'current']);
+    Route::get('weather/history', [WeatherDataController::class, 'history']);
+    Route::get('weather/summary', [WeatherDataController::class, 'summary']);
 
     // ── Rescue Teams ────────────────────────────────────────
-    Route::apiResource('rescue-teams', App\Http\Controllers\Api\RescueTeamController::class)
+    Route::apiResource('rescue-teams', RescueTeamController::class)
         ->only('index', 'show');
-    Route::put('rescue-teams/{id}/location', [App\Http\Controllers\Api\RescueTeamController::class, 'updateLocation']);
+    Route::put('rescue-teams/{id}/location', [RescueTeamController::class, 'updateLocation']);
 
     // ── Upload ────────────────────────────────────────────
-    Route::post('upload', [App\Http\Controllers\Api\UploadController::class, 'store']);
+    Route::post('upload', [UploadController::class, 'store']);
 
     // ── Shelters ───────────────────────────────────────────
-    Route::apiResource('shelters', App\Http\Controllers\Api\ShelterController::class)
-        ->only('index', 'show');
+    Route::apiResource('shelters', ShelterController::class)
+        ->only('index', 'show', 'store');
+    Route::put('shelters/{id}/occupancy', [ShelterController::class, 'updateOccupancy']);
 
     // ── Predictions ─────────────────────────────────────────
-    Route::get('predictions', [App\Http\Controllers\Api\PredictionController::class, 'index']);
-    Route::get('predictions/{id}', [App\Http\Controllers\Api\PredictionController::class, 'show']);
-    Route::put('predictions/{id}/verify', [App\Http\Controllers\Api\PredictionController::class, 'verify']);
+    Route::get('predictions', [PredictionController::class, 'index']);
+    Route::get('predictions/{id}', [PredictionController::class, 'show']);
+    Route::put('predictions/{id}/verify', [PredictionController::class, 'verify']);
 
     // ── Recommendations ──────────────────────────────────────
-    Route::get('recommendations', [App\Http\Controllers\Api\RecommendationController::class, 'index']);
-    Route::get('recommendations/{id}', [App\Http\Controllers\Api\RecommendationController::class, 'show']);
-    Route::put('recommendations/{id}/approve', [App\Http\Controllers\Api\RecommendationController::class, 'approve']);
-    Route::put('recommendations/{id}/reject', [App\Http\Controllers\Api\RecommendationController::class, 'reject']);
+    Route::get('recommendations', [RecommendationController::class, 'index']);
+    Route::get('recommendations/{id}', [RecommendationController::class, 'show']);
+    Route::put('recommendations/{id}/approve', [RecommendationController::class, 'approve']);
+    Route::put('recommendations/{id}/reject', [RecommendationController::class, 'reject']);
 
     // ── Alerts ──────────────────────────────────────────────
-    Route::apiResource('alerts', App\Http\Controllers\Api\AlertController::class)
+    Route::apiResource('alerts', AlertController::class)
         ->only('index', 'show', 'store', 'update');
-    Route::put('alerts/{id}/status', [App\Http\Controllers\Api\AlertController::class, 'updateStatus']);
+    Route::put('alerts/{id}/status', [AlertController::class, 'updateStatus']);
 
     // ── Notifications ──────────────────────────────────────
-    Route::get('notifications/unread', [App\Http\Controllers\Api\NotificationController::class, 'unread']);
-    Route::get('notifications/unread-count', [App\Http\Controllers\Api\NotificationController::class, 'unreadCount']);
-    Route::put('notifications/read-all', [App\Http\Controllers\Api\NotificationController::class, 'markAllRead']);
-    Route::get('notifications', [App\Http\Controllers\Api\NotificationController::class, 'index']);
-    Route::put('notifications/{id}/read', [App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
+    Route::get('notifications/unread', [NotificationController::class, 'unread']);
+    Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::put('notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::put('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
     // ── FCM Device Management ──────────────────────────────
     Route::prefix('fcm')->group(function () {
-        Route::post('register', [App\Http\Controllers\Api\FcmTokenController::class, 'register']);
-        Route::get('devices', [App\Http\Controllers\Api\FcmTokenController::class, 'listDevices']);
-        Route::put('devices/{id}', [App\Http\Controllers\Api\FcmTokenController::class, 'updateDevice']);
-        Route::delete('devices/{id}', [App\Http\Controllers\Api\FcmTokenController::class, 'deleteDevice']);
-        Route::delete('token/{token}', [App\Http\Controllers\Api\FcmTokenController::class, 'deleteByToken']);
-        Route::post('refresh', [App\Http\Controllers\Api\FcmTokenController::class, 'refreshToken']);
-        Route::post('subscribe', [App\Http\Controllers\Api\FcmTokenController::class, 'subscribeTopic']);
-        Route::post('unsubscribe', [App\Http\Controllers\Api\FcmTokenController::class, 'unsubscribeTopic']);
+        Route::post('register', [FcmTokenController::class, 'register']);
+        Route::get('devices', [FcmTokenController::class, 'listDevices']);
+        Route::put('devices/{id}', [FcmTokenController::class, 'updateDevice']);
+        Route::delete('devices/{id}', [FcmTokenController::class, 'deleteDevice']);
+        Route::delete('token/{token}', [FcmTokenController::class, 'deleteByToken']);
+        Route::post('refresh', [FcmTokenController::class, 'refreshToken']);
+        Route::post('subscribe', [FcmTokenController::class, 'subscribeTopic']);
+        Route::post('unsubscribe', [FcmTokenController::class, 'unsubscribeTopic']);
     });
 
     // ── Map ────────────────────────────────────────────────
     Route::prefix('map')->group(function () {
-        Route::get('all', [App\Http\Controllers\Api\MapController::class, 'all']);
-        Route::get('incidents', [App\Http\Controllers\Api\MapController::class, 'incidents']);
-        Route::get('flood-zones', [App\Http\Controllers\Api\MapController::class, 'floodZones']);
-        Route::get('rescue-teams', [App\Http\Controllers\Api\MapController::class, 'rescueTeams']);
-        Route::get('shelters', [App\Http\Controllers\Api\MapController::class, 'shelters']);
-        Route::get('flood-reports', [App\Http\Controllers\Api\MapController::class, 'floodReports']);
-        Route::get('sensor-stations', [App\Http\Controllers\Api\MapController::class, 'sensorStations']);
-        Route::get('flood-events', [App\Http\Controllers\Api\MapController::class, 'floodEvents']);
+        Route::get('all', [MapController::class, 'all']);
+        Route::get('incidents', [MapController::class, 'incidents']);
+        Route::get('flood-zones', [MapController::class, 'floodZones']);
+        Route::get('rescue-teams', [MapController::class, 'rescueTeams']);
+        Route::get('shelters', [MapController::class, 'shelters']);
+        Route::get('flood-reports', [MapController::class, 'floodReports']);
+        Route::get('sensor-stations', [MapController::class, 'sensorStations']);
+        Route::get('flood-events', [MapController::class, 'floodEvents']);
     });
 
     // ── Analytics ──────────────────────────────────────────
-    Route::get('analytics/overview', [App\Http\Controllers\Api\AnalyticsController::class, 'overview']);
+    Route::get('analytics/overview', [AnalyticsController::class, 'overview']);
 
     // ── Evacuation Routes ──────────────────────────────────
-    Route::get('evacuation-routes', [App\Http\Controllers\Api\EvacuationRouteController::class, 'index']);
-    Route::get('evacuation-routes/{id}', [App\Http\Controllers\Api\EvacuationRouteController::class, 'show']);
+    Route::get('evacuation-routes', [EvacuationRouteController::class, 'index']);
+    Route::get('evacuation-routes/{id}', [EvacuationRouteController::class, 'show']);
 
     // ── AI Chat (Groq) ──────────────────────────────────────
-    Route::post('ai/chat', [App\Http\Controllers\Api\AIChatController::class, 'chat']);
-    Route::get('ai/status', [App\Http\Controllers\Api\AIChatController::class, 'status']);
+    Route::post('ai/chat', [AIChatController::class, 'chat']);
+    Route::get('ai/status', [AIChatController::class, 'status']);
 
     // ============================================================
-    // OPERATOR ROUTES (role: city_admin, rescue_operator)
+    // OPERATOR ROUTES (role: city_admin, rescue_operator, rescue_team)
     // ============================================================
-    Route::middleware('role_or_permission:city_admin,rescue_operator')->group(function () {
+    Route::middleware('role_or_permission:city_admin|rescue_operator|rescue_team')->group(function () {
 
         // Trigger AI prediction
-        Route::post('predictions/trigger', [App\Http\Controllers\Api\PredictionController::class, 'trigger']);
+        Route::post('predictions/trigger', [PredictionController::class, 'trigger']);
 
         // Sensor data ingestion
-        Route::post('sensor-data', [App\Http\Controllers\Api\SensorDataController::class, 'ingest']);
-        Route::post('sensor-data/batch', [App\Http\Controllers\Api\SensorDataController::class, 'batchIngest']);
+        Route::post('sensor-data', [SensorDataController::class, 'ingest']);
+        Route::post('sensor-data/batch', [SensorDataController::class, 'batchIngest']);
 
         // CRUD Flood Zones
-        Route::apiResource('flood-zones', App\Http\Controllers\Api\FloodZoneController::class)
+        Route::apiResource('flood-zones', FloodZoneController::class)
             ->only('store', 'update', 'destroy');
 
         // CRUD Alerts
-        Route::apiResource('alerts', App\Http\Controllers\Api\AlertController::class)
+        Route::apiResource('alerts', AlertController::class)
             ->only('store', 'update');
 
         // CRUD Rescue Requests (quản lý)
-        Route::put('rescue-requests/{id}/assign', [App\Http\Controllers\Api\RescueRequestController::class, 'assign']);
-        Route::put('rescue-requests/{id}/status', [App\Http\Controllers\Api\RescueRequestController::class, 'updateStatus']);
+        Route::put('rescue-requests/{id}/assign', [RescueRequestController::class, 'assign']);
+        Route::put('rescue-requests/{id}/status', [RescueRequestController::class, 'updateStatus']);
 
         // Weather data ingestion
-        Route::post('weather', [App\Http\Controllers\Api\WeatherDataController::class, 'store']);
-        Route::post('weather/batch', [App\Http\Controllers\Api\WeatherDataController::class, 'batchStore']);
+        Route::post('weather', [WeatherDataController::class, 'store']);
+        Route::post('weather/batch', [WeatherDataController::class, 'batchStore']);
 
         // CRUD Evacuation Routes
-        Route::post('evacuation-routes', [App\Http\Controllers\Api\EvacuationRouteController::class, 'store']);
-        Route::put('evacuation-routes/{id}', [App\Http\Controllers\Api\EvacuationRouteController::class, 'update']);
-        Route::delete('evacuation-routes/{id}', [App\Http\Controllers\Api\EvacuationRouteController::class, 'destroy']);
+        Route::post('evacuation-routes', [EvacuationRouteController::class, 'store']);
+        Route::put('evacuation-routes/{id}', [EvacuationRouteController::class, 'update']);
+        Route::delete('evacuation-routes/{id}', [EvacuationRouteController::class, 'destroy']);
     });
 
     // ============================================================
@@ -185,8 +210,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:city_admin')->prefix('admin')->group(function () {
 
         // User management
-        Route::apiResource('users', App\Http\Controllers\Api\Admin\UserController::class);
-        Route::get('stats', [App\Http\Controllers\Api\Admin\SystemController::class, 'stats']);
-        Route::get('logs', [App\Http\Controllers\Api\Admin\SystemController::class, 'logs']);
+        Route::apiResource('users', UserController::class);
+        Route::get('stats', [SystemController::class, 'stats']);
+        Route::get('logs', [SystemController::class, 'logs']);
     });
 });

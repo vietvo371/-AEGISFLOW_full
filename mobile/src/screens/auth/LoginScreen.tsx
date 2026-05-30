@@ -39,7 +39,7 @@ interface LoginScreenProps {
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
   const { validateLogin, signIn, isEmergency } = useAuth();
-  const { t, getCurrentLanguage } = useTranslation();
+  const { t, getCurrentLanguage, changeLanguage } = useTranslation();
   const [email, setEmail] = useState(route?.params?.email || '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,16 +53,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
 
     // Validate email
     if (!email.trim()) {
-      newErrors.email = 'Vui lòng nhập email';
+      newErrors.email = t('auth.emailRequired') || 'Vui lòng nhập email';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email không hợp lệ';
+      newErrors.email = t('auth.validEmail') || 'Email không hợp lệ';
     }
 
     // Validate password
     if (!password) {
-      newErrors.password = 'Vui lòng nhập mật khẩu';
+      newErrors.password = t('auth.passwordRequired') || 'Vui lòng nhập mật khẩu';
     } else if (password.length < 6) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+      newErrors.password = t('auth.passwordMinLength') || 'Mật khẩu phải có ít nhất 6 ký tự';
     }
 
     setErrors(newErrors);
@@ -96,12 +96,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
         if (result.errors) {
           setErrors(result.errors);
         } else if (result.error) {
-          AlertService.error('Đăng nhập thất bại', result.error);
+          AlertService.error(t('auth.loginFailed') || 'Đăng nhập thất bại', result.error);
         }
       }
     } catch (error: any) {
       console.log('error login', error);
-      AlertService.error('Đăng nhập thất bại', error.message || 'Đã có lỗi xảy ra.');
+      AlertService.error(t('auth.loginFailed') || 'Đăng nhập thất bại', error.message || 'Đã có lỗi xảy ra.');
     } finally {
       setLoading(false);
     }
@@ -139,9 +139,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
         <LanguageSelector
           visible={showLanguageSelector}
           onClose={() => setShowLanguageSelector(false)}
-          onSelect={(code: string) => {
-            // Handle language change
-            console.log('Selected language:', code);
+          onSelect={async (code: string) => {
+            await changeLanguage(code);
+            setShowLanguageSelector(false);
           }}
           currentLanguage={getCurrentLanguage()}
         />
@@ -166,7 +166,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
               style={styles.welcomeText}
               entering={FadeInDown.duration(800).delay(200).springify()}
             >
-              Chào mừng đến với
+              {getCurrentLanguage() === 'vi' ? 'Chào mừng đến với' : 'Welcome to'}
             </Animated.Text>
 
             <Animated.Image
@@ -183,16 +183,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
             entering={SlideInDown.duration(800).delay(800).springify()}
           >
             <View style={styles.formHeader}>
-              <Text style={styles.formTitle}>Đăng nhập</Text>
+              <Text style={styles.formTitle}>{t('auth.login') || 'Đăng nhập'}</Text>
               <Text style={styles.formSubtitle}>
-                Đăng nhập để báo cáo và theo dõi sự cố đô thị
+                {getCurrentLanguage() === 'vi' 
+                  ? 'Đăng nhập để báo cáo và theo dõi sự cố đô thị' 
+                  : 'Sign in to report and track urban incidents'}
               </Text>
             </View>
 
             <View style={styles.form}>
               <InputCustom
-                label="Email"
-                placeholder="Nhập địa chỉ email"
+                label={t('auth.email') || 'Email'}
+                placeholder={t('auth.enterEmail') || 'Nhập địa chỉ email'}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -203,8 +205,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
                 containerStyle={styles.input}
               />
               <InputCustom
-                label="Mật khẩu"
-                placeholder="Nhập mật khẩu"
+                label={t('auth.password') || 'Mật khẩu'}
+                placeholder={t('auth.enterPassword') || 'Nhập mật khẩu'}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -228,51 +230,27 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
                     size={24}
                     color={rememberMe ? theme.colors.primary : theme.colors.textSecondary}
                   />
-                  <Text style={styles.rememberMeText}>Nhớ mật khẩu</Text>
+                  <Text style={styles.rememberMeText}>
+                    {t('auth.rememberPassword') ? t('auth.rememberPassword').replace('?', '') : 'Nhớ mật khẩu'}
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => navigation.navigate('ForgotPassword')}
                 >
-                  <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
+                  <Text style={styles.forgotPasswordText}>
+                    {t('auth.forgotPassword') || 'Quên mật khẩu?'}
+                  </Text>
                 </TouchableOpacity>
               </View>
 
               <ButtonCustom
-                title="Đăng nhập"
+                title={t('auth.login') || 'Đăng nhập'}
                 onPress={handleLogin}
                 style={styles.loginButton}
                 icon="login"
               />
 
-              {/* Social Login */}
-              {/* <View style={styles.socialContainer}>
-                <TouchableOpacity
-                  style={[styles.socialButton, styles.googleButton]}
-                  onPress={() => handleSocialLogin('Google')}
-                  activeOpacity={0.7}
-                >
-                  <Icon name="google" size={24} color="#DB4437" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.socialButton, styles.facebookButton]}
-                  onPress={() => handleSocialLogin('Facebook')}
-                  activeOpacity={0.7}
-                >
-                  <Icon name="whatsapp" size={24} color="#4267B2" />
-                </TouchableOpacity>
-
-                {Platform.OS === 'ios' && (
-                  <TouchableOpacity
-                    style={[styles.socialButton, styles.appleButton]}
-                    onPress={() => handleSocialLogin('Apple')}
-                    activeOpacity={0.7}
-                  >
-                    <Icon name="apple" size={24} color="#000000" />
-                  </TouchableOpacity>
-                )}
-              </View> */}
             </View>
           </Animated.View>
 
@@ -286,25 +264,25 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
               style={styles.registerLink}
             >
               <Text style={styles.registerText}>
-                Chưa có tài khoản?{' '}
-                <Text style={styles.registerLinkText}>Đăng ký ngay</Text>
+                {t('auth.dontHaveAccount') || 'Chưa có tài khoản?'}{' '}
+                <Text style={styles.registerLinkText}>
+                  {t('auth.signUp') || 'Đăng ký ngay'}
+                </Text>
               </Text>
             </TouchableOpacity>
-
-
 
             {/* Security Badge */}
             <View style={styles.securityBadge}>
               <Icon name="shield-check" size={ICON_SIZE.xs} color={theme.colors.primary} />
               <Text style={styles.securityText}>
-                Dữ liệu được bảo mật và mã hóa
+                {t('auth.dataProtected') || 'Dữ liệu được bảo mật và mã hóa'}
               </Text>
             </View>
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <LoadingOverlay visible={loading} message="Đang đăng nhập..." />
+      <LoadingOverlay visible={loading} message={t('auth.signingIn') || 'Đang đăng nhập...'} />
     </SafeAreaView>
   );
 };

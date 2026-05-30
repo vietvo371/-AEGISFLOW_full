@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -10,8 +11,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Permission\Contracts\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -25,18 +31,18 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $phone
  * @property string|null $avatar
  * @property bool $is_active
- * @property \Carbon\Carbon|null $last_login_at
+ * @property Carbon|null $last_login_at
  * @property string|null $last_login_ip
  * @property string|null $provider
  * @property string|null $provider_id
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property \Carbon\Carbon|null $deleted_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
  */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens, HasRoles, SoftDeletes;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     #[Fillable(['name', 'email', 'password', 'phone', 'avatar', 'is_active', 'last_login_at', 'last_login_ip', 'provider', 'provider_id'])]
     #[Hidden(['password', 'remember_token'])]
@@ -125,7 +131,7 @@ class User extends Authenticatable
      */
     public function notifications(): MorphMany
     {
-        return $this->morphMany(\Illuminate\Notifications\DatabaseNotification::class, 'notifiable')
+        return $this->morphMany(DatabaseNotification::class, 'notifiable')
             ->orderBy('created_at', 'desc');
     }
 
@@ -134,7 +140,7 @@ class User extends Authenticatable
      */
     public function activities(): HasMany
     {
-        return $this->hasMany(\Spatie\Activitylog\Models\Activity::class, 'causer_id')
+        return $this->hasMany(Activity::class, 'causer_id')
             ->where('causer_type', self::class);
     }
 
@@ -153,10 +159,32 @@ class User extends Authenticatable
     /**
      * Kiểm tra user có role cụ thể không
      */
-    public function hasRole(string|array $role): bool
+    public function hasRole($roles, ?string $guard = null): bool
     {
-        $roles = is_array($role) ? $role : [$role];
-        return $this->roles()->whereIn('name', $roles)->exists();
+        if ($roles instanceof Collection) {
+            $roles = $roles->all();
+        }
+
+        $roleNames = collect(Arr::flatten((array) $roles))
+            ->map(function ($role) {
+                if ($role instanceof Role) {
+                    return $role->name;
+                }
+
+                if ($role instanceof \BackedEnum) {
+                    return $role->value;
+                }
+
+                return $role;
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        return $this->roles()
+            ->when($guard, fn ($query) => $query->where('guard_name', $guard))
+            ->whereIn('name', $roleNames)
+            ->exists();
     }
 
     /**
