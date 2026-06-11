@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -11,14 +12,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Xóa data cũ trước khi seed lại (tránh duplicate)
+        DB::statement('TRUNCATE TABLE recommendations, alerts, predictions, rescue_requests, incidents, sensors, rescue_teams, shelters, flood_zones, districts, ai_models RESTART IDENTITY CASCADE');
+
         $this->call([
             RolePermissionSeeder::class,
             UserSeeder::class,
             GeographySeeder::class,
             FloodZoneSeeder::class,
             DataSeeder::class,
-            RealDataSeeder::class,  // Data thực tế từ muangap.danang.gov.vn
-            DemoDataSeeder::class,  // Seed dữ liệu demo cho video pitch
+            RealDataSeeder::class,
+            DemoDataSeeder::class,
             LocationSeeder::class,
         ]);
     }

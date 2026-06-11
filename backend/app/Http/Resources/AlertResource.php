@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\District;
 use App\Models\FloodZone;
+use App\Support\DaNangLandMask;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
@@ -61,6 +62,12 @@ class AlertResource extends JsonResource
             );
             if ($result?->geojson) {
                 $geometry = json_decode($result->geojson, true);
+                if (! DaNangLandMask::featureIsLikelyLand([
+                    'type' => 'Feature',
+                    'geometry' => $geometry,
+                ])) {
+                    $geometry = null;
+                }
             }
         }
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -82,7 +81,7 @@ const HelpCenterScreen = () => {
     ];
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.container}>
             <PageHeader title="Trung tâm trợ giúp" variant="default" />
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -148,7 +147,7 @@ const HelpCenterScreen = () => {
                     </View>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 };
 

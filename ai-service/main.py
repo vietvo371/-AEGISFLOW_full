@@ -1,8 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 from api.calculations import router as calculations_router
 from api.alert_generator import router as alert_router
 from api.realtime import router as realtime_router
+from services.route_optimizer import get_route_optimizer
 
 app = FastAPI(
     title="AegisFlow AI Service",
@@ -30,14 +32,29 @@ app.include_router(realtime_router, prefix="/api", tags=["realtime"])
 async def root():
     return {"message": "AegisFlow AI Service is running", "status": "online", "version": "2.0.0"}
 
-# Keep the mock optimize-evacuation for now as placeholder for later routing implementation
 @app.get("/api/optimize-evacuation", tags=["routing"])
-async def optimize_evacuation(start_node: str, end_node: str):
-    return {
-        "route": [start_node, "Node_A", "Node_B", end_node],
-        "estimated_time_minutes": 15,
-        "safety_score": 0.95
-    }
+async def optimize_evacuation(
+    start_lat: float = Query(..., description="Start latitude"),
+    start_lng: float = Query(..., description="Start longitude"),
+    end_lat: float = Query(..., description="End latitude"),
+    end_lng: float = Query(..., description="End longitude"),
+    flood_lat: Optional[float] = Query(None, description="Flooded area latitude"),
+    flood_lng: Optional[float] = Query(None, description="Flooded area longitude"),
+    flood_depth: float = Query(1.5, description="Flood depth in meters"),
+):
+    flooded_areas = []
+    if flood_lat is not None and flood_lng is not None:
+        flooded_areas.append({"lat": flood_lat, "lng": flood_lng, "depth_m": flood_depth})
+
+    optimizer = get_route_optimizer()
+    result = optimizer.calculate_optimal_route(
+        start_lat=start_lat,
+        start_lon=start_lng,
+        end_lat=end_lat,
+        end_lon=end_lng,
+        flooded_areas=flooded_areas,
+    )
+    return result
 
 if __name__ == "__main__":
     import uvicorn

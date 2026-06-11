@@ -9,6 +9,8 @@
 #   ./run_all.sh backend  → chỉ chạy backend
 #   ./run_all.sh frontend → chỉ chạy frontend
 #   ./run_all.sh reverb   → chỉ chạy WebSocket
+#   ./run_all.sh queue    → chỉ chạy queue worker
+#   ./run_all.sh schedule → chỉ chạy scheduler
 #   ./run_all.sh ai       → chỉ chạy AI service
 # ============================================
 
@@ -77,6 +79,11 @@ start_queue() {
   run_service "Queue" "$ROOT_DIR/backend" "queue.log" "$PHP_BIN" artisan queue:work --tries=3 --sleep=1
 }
 
+start_scheduler() {
+  echo -e "${YELLOW}⏱️  Starting Laravel Scheduler...${NC}"
+  run_service "Scheduler" "$ROOT_DIR/backend" "scheduler.log" "$PHP_BIN" artisan schedule:work
+}
+
 start_ai() {
   echo -e "${BLUE}🤖 Starting AI Service (port 5005)...${NC}"
   run_service "AI" "$ROOT_DIR/ai-service" "ai.log" ./venv/bin/python main.py
@@ -101,6 +108,8 @@ if [ -z "$1" ]; then
   sleep 1
   start_queue
   sleep 1
+  start_scheduler
+  sleep 1
   start_ai
 
   echo ""
@@ -109,11 +118,15 @@ if [ -z "$1" ]; then
   echo "  🐘 Backend:   http://localhost:8000"
   echo "  ⚛️ Frontend:  http://localhost:3000"
   echo "  🔌 Reverb WS: ws://localhost:8080"
+  echo "  ⚙️ Queue:     worker running"
+  echo "  ⏱️ Scheduler: schedule:work running"
   echo "  🤖 AI Engine: http://localhost:5005"
   echo ""
   echo "Logs:"
   echo "  tail -f .dev-logs/frontend.log"
   echo "  tail -f .dev-logs/backend.log"
+  echo "  tail -f .dev-logs/queue.log"
+  echo "  tail -f .dev-logs/scheduler.log"
   echo ""
   echo -e "${YELLOW}Press Ctrl+C to stop all services.${NC}"
   wait
@@ -122,9 +135,11 @@ else
     backend)  start_backend ;;
     frontend) start_frontend ;;
     reverb)   start_reverb ;;
+    queue)    start_queue ;;
+    schedule) start_scheduler ;;
     ai)       start_ai ;;
     *)
-      echo "Usage: ./run_all.sh [backend|frontend|reverb|ai]"
+      echo "Usage: ./run_all.sh [backend|frontend|reverb|queue|schedule|ai]"
       echo "  Không có tham số = chạy tất cả"
       ;;
   esac

@@ -1,16 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, StatusBar } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNotifications } from '../hooks/useNotifications';
-import { theme } from '../theme/colors';
 
 export const NotificationBanner = () => {
   const { notifications, markAsRead } = useNotifications();
   const insets = useSafeAreaInsets();
-  const slideAnim = useRef(new Animated.Value(-100)).current;
+  const slideAnim = useRef(new Animated.Value(-120)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const progressAnim = useRef(new Animated.Value(1)).current;
+  const touchStartY = useRef(0);
   
   const latestNotification = notifications.find(n => !n.read);
 
@@ -19,15 +18,6 @@ export const NotificationBanner = () => {
     console.log('🎨 NotificationBanner component mounted');
     return () => console.log('🎨 NotificationBanner component unmounted');
   }, []);
-
-  // DEBUG: Log notifications
-  useEffect(() => {
-    console.log('🎨 NotificationBanner - Total notifications:', notifications.length);
-    console.log('🎨 NotificationBanner - Latest unread:', latestNotification?.id);
-    if (notifications.length > 0) {
-      console.log('🎨 All notifications:', JSON.stringify(notifications, null, 2));
-    }
-  }, [notifications.length]);
 
   useEffect(() => {
     if (latestNotification) {
@@ -40,30 +30,22 @@ export const NotificationBanner = () => {
     if (!latestNotification) return;
 
     // Reset animations
-    slideAnim.setValue(-100);
+    slideAnim.setValue(-120);
     fadeAnim.setValue(0);
-    progressAnim.setValue(1);
 
     // Show toast animation
     Animated.parallel([
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 300,
+        duration: 350,
         useNativeDriver: true,
       }),
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 300,
+        duration: 250,
         useNativeDriver: true,
       }),
     ]).start();
-
-    // Progress bar animation (5 seconds)
-    Animated.timing(progressAnim, {
-      toValue: 0,
-      duration: 5000,
-      useNativeDriver: false,
-    }).start();
 
     // Auto hide after 5 seconds
     const timer = setTimeout(() => {
@@ -76,13 +58,13 @@ export const NotificationBanner = () => {
   const hideToast = () => {
     Animated.parallel([
       Animated.timing(slideAnim, {
-        toValue: -100,
+        toValue: -120,
         duration: 300,
         useNativeDriver: true,
       }),
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 300,
+        duration: 250,
         useNativeDriver: true,
       }),
     ]).start(() => {
@@ -92,69 +74,65 @@ export const NotificationBanner = () => {
     });
   };
 
+  const handleTouchStart = (e: any) => {
+    touchStartY.current = e.nativeEvent.pageY;
+  };
+
+  const handleTouchEnd = (e: any) => {
+    const touchEndY = e.nativeEvent.pageY;
+    const diffY = touchEndY - touchStartY.current;
+    
+    // If swiped up by more than 20 pixels, dismiss immediately!
+    if (diffY < -20) {
+      console.log('👆 Swiped up to dismiss toast!');
+      hideToast();
+    }
+  };
+
   if (!latestNotification) return null;
 
   const getToastConfig = () => {
     const newStatus = latestNotification.data?.new_status;
-    
-    // For report_status type, color by status
+    let accentColor = '#3B82F6'; // Default Blue (Info)
+    let icon = 'bell-outline';
+
     if (latestNotification.type === 'report_status') {
-      if (newStatus === 3) { // Hoàn thành
-        return {
-          backgroundColor: theme.colors.successLight,
-          icon: 'check-circle',
-          iconColor: theme.colors.success,
-          borderColor: theme.colors.success,
-        };
+      if (newStatus === 3) {
+        accentColor = '#10B981'; // Success Green
+        icon = 'check-circle';
+      } else if (newStatus === 4) {
+        accentColor = '#EF4444'; // Error Red
+        icon = 'close-circle';
+      } else {
+        accentColor = '#3B82F6'; // Info Blue
+        icon = 'information-outline';
       }
-      if (newStatus === 4) { // Từ chối
-        return {
-          backgroundColor: theme.colors.errorLight,
-          icon: 'close-circle',
-          iconColor: theme.colors.error,
-          borderColor: theme.colors.error,
-        };
+    } else {
+      switch (latestNotification.type) {
+        case 'points_updated':
+          accentColor = '#F59E0B'; // Amber Gold
+          icon = 'star';
+          break;
+        case 'incident_created':
+          accentColor = '#EF4444'; // Emergency Red
+          icon = 'alert-decagram';
+          break;
+        case 'new_nearby_report':
+          accentColor = '#8B5CF6'; // Violet
+          icon = 'map-marker-radius';
+          break;
+        default:
+          if (latestNotification.title.toLowerCase().includes('ai')) {
+            accentColor = '#8B5CF6'; // Purple for AI
+            icon = 'brain';
+          } else {
+            accentColor = '#3B82F6'; // Blue
+            icon = 'bell-badge-outline';
+          }
       }
-      // Default report status (Đang xử lý, Xác minh, etc)
-      return {
-        backgroundColor: theme.colors.infoLight,
-        icon: 'information-outline',
-        iconColor: theme.colors.info,
-        borderColor: theme.colors.info,
-      };
     }
 
-    // Other notification types
-    switch (latestNotification.type) {
-      case 'points_updated':
-        return {
-          backgroundColor: theme.colors.successLight,
-          icon: 'star-circle',
-          iconColor: theme.colors.success,
-          borderColor: theme.colors.success,
-        };
-      case 'incident_created':
-        return {
-          backgroundColor: '#FEF2F2',
-          icon: 'alert-circle',
-          iconColor: '#EF4444',
-          borderColor: '#EF4444',
-        };
-      case 'new_nearby_report':
-        return {
-          backgroundColor: '#EDE7F6', // Purple light
-          icon: 'map-marker-alert',
-          iconColor: '#7a5af8',
-          borderColor: '#7a5af8',
-        };
-      default:
-        return {
-          backgroundColor: theme.colors.infoLight,
-          icon: 'bell',
-          iconColor: theme.colors.info,
-          borderColor: theme.colors.info,
-        };
-    }
+    return { accentColor, icon };
   };
 
   const config = getToastConfig();
@@ -164,61 +142,45 @@ export const NotificationBanner = () => {
       style={[
         styles.container,
         {
-          top: insets.top + 10, // Safe area top + 10px margin
+          top: insets.top + 8,
           transform: [{ translateY: slideAnim }],
           opacity: fadeAnim,
         },
       ]}
     >
       <TouchableOpacity
-        style={[
-          styles.toast,
-          {
-            backgroundColor: config.backgroundColor,
-            borderColor: config.borderColor,
-          },
-        ]}
-        activeOpacity={0.9}
+        style={styles.toast}
+        activeOpacity={0.95}
         onPress={hideToast}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        {/* Progress bar */}
-        <View style={styles.progressContainer}>
-          <Animated.View
+        {/* Glow Left Accent */}
+        <View style={[styles.leftGlow, { backgroundColor: config.accentColor }]} />
+
+        {/* Content Wrapper */}
+        <View style={styles.content}>
+          {/* Glowing Icon Wrapper */}
+          <View
             style={[
-              styles.progressBar,
+              styles.iconWrapper,
               {
-                width: progressAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0%', '100%'],
-                }),
-                backgroundColor: config.borderColor,
+                backgroundColor: `${config.accentColor}12`,
+                borderColor: `${config.accentColor}28`,
               },
             ]}
-          />
-        </View>
-
-        {/* Toast content */}
-        <View style={styles.content}>
-          <View style={styles.iconContainer}>
-            <Icon name={config.icon} size={24} color={config.iconColor} />
+          >
+            <Icon name={config.icon} size={18} color={config.accentColor} />
           </View>
           
           <View style={styles.textContainer}>
             <Text style={styles.title} numberOfLines={1}>
               {latestNotification.title}
             </Text>
-            <Text style={styles.message} numberOfLines={3}>
+            <Text style={styles.message} numberOfLines={2}>
               {latestNotification.message}
             </Text>
           </View>
-
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={hideToast}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Icon name="close" size={20} color={theme.colors.textSecondary} />
-          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     </Animated.View>
@@ -228,53 +190,62 @@ export const NotificationBanner = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    // top sẽ được set dynamic bằng insets.top
-    left: 16,
-    right: 16,
+    left: 12,
+    right: 12,
     zIndex: 999999,
   },
   toast: {
-    borderRadius: 12,
+    backgroundColor: '#0F172A', // Obsidian Deep Obsidian Slate
+    borderRadius: 24, // High premium rounded capsule shape
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)', // Subtle glass lighting border
     overflow: 'hidden',
-    ...theme.shadows.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.32,
+    shadowRadius: 18,
+    elevation: 12,
   },
-  progressContainer: {
-    height: 3,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  progressBar: {
-    height: '100%',
-    opacity: 0.6,
+  leftGlow: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 4, // Left vertical glow bar
   },
   content: {
+    flex: 1,
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: 14,
-    paddingTop: 12,
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingLeft: 20, // Add padding to avoid overlapping leftGlow
   },
-  iconContainer: {
+  iconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
     marginRight: 12,
-    marginTop: 2,
   },
   textContainer: {
     flex: 1,
-    marginRight: 8,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.colors.text,
-    marginBottom: 4,
-    fontFamily: theme.typography.fontFamily,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF', // Pure premium white text
+    marginBottom: 2,
+    fontFamily: Platform.OS === 'ios' ? 'SF Pro Display' : 'Roboto',
   },
   message: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    lineHeight: 20,
-    fontFamily: theme.typography.fontFamily,
-  },
-  closeButton: {
-    padding: 4,
-    marginTop: 0,
+    fontSize: 12,
+    color: '#94A3B8', // Soft readable Slate Gray
+    lineHeight: 16,
+    fontFamily: Platform.OS === 'ios' ? 'SF Pro Display' : 'Roboto',
   },
 });

@@ -6,7 +6,7 @@ export interface Incident {
     id: number;
     title: string;
     description: string | null;
-    type: 'accident' | 'congestion' | 'construction' | 'weather' | 'other';
+    type: 'flood' | 'heavy_rain' | 'landslide' | 'dam_failure' | 'other';
     severity: 'low' | 'medium' | 'high' | 'critical';
     status: 'open' | 'investigating' | 'resolved' | 'closed';
     source: 'operator' | 'citizen' | 'auto_detected';

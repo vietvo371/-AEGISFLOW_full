@@ -202,6 +202,10 @@ class RescueRequestController extends Controller
      */
     public function assign(Request $request, int $id)
     {
+        if (! $request->user()->hasRole(['city_admin', 'rescue_operator', 'rescue_team'])) {
+            return ApiResponse::forbidden('Bạn không có quyền phân công yêu cầu cứu hộ');
+        }
+
         $req = RescueRequest::find($id);
 
         if (! $req) {
@@ -238,6 +242,10 @@ class RescueRequestController extends Controller
      */
     public function updateStatus(Request $request, int $id)
     {
+        if (! $request->user()->hasRole(['city_admin', 'rescue_operator', 'rescue_team'])) {
+            return ApiResponse::forbidden('Bạn không có quyền cập nhật trạng thái yêu cầu cứu hộ');
+        }
+
         $req = RescueRequest::find($id);
 
         if (! $req) {
@@ -327,6 +335,7 @@ class RescueRequestController extends Controller
             'people_count' => $req->people_count,
             'vulnerable_groups' => $req->vulnerable_groups ?? [],
             'description' => $req->description,
+            'photo_urls' => $req->photo_urls ?? [],
             'status' => $req->status,
             'status_label' => $req->translated('status'),
             'priority_score' => $req->priority_score,
@@ -347,7 +356,6 @@ class RescueRequestController extends Controller
         if ($detailed) {
             $data['ward'] = $req->ward ? ['id' => $req->ward->id, 'name' => $req->ward->name] : null;
             $data['incident'] = $req->incident ? ['id' => $req->incident->id, 'title' => $req->incident->title] : null;
-            $data['photo_urls'] = $req->photo_urls ?? [];
             $data['accessibility_notes'] = $req->accessibility_notes;
             $data['reporter'] = $req->reporter ? ['id' => $req->reporter->id, 'name' => $req->reporter->name] : null;
             $data['completed_at'] = $req->completed_at?->toIso8601String();

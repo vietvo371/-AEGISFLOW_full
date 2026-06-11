@@ -71,8 +71,39 @@ export interface IncidentFilterParams {
 }
 
 // Legacy types (giữ lại cho tương thích ngược)
-export interface Report extends Incident {}
-export interface ReportDetail extends IncidentDetail {}
+export interface Report extends Incident {
+    tieu_de: string;
+    mo_ta?: string;
+    trang_thai: number;
+    dia_chi?: string | null;
+    vi_do?: number | string | any;
+    kinh_do?: number | string | any;
+    danh_muc?: number;
+    danh_muc_id?: number;
+    uu_tien_id?: number;
+    la_cong_khai?: boolean;
+    the_tags?: string | string[];
+    nhan_ai?: boolean;
+    han_phan_hoi?: string;
+    thoi_gian_phan_hoi_thuc_te?: string;
+    uu_tien?: {
+        ten_muc: string;
+        cap_do: number;
+    } | null | any;
+    created_at: string;
+    updated_at?: string;
+    luot_ung_ho?: number;
+    luot_khong_ung_ho?: number;
+}
+export interface ReportDetail extends IncidentDetail, Report {
+    mo_ta: string;
+    luot_xem: number;
+    hinh_anhs?: MediaItem[];
+    binh_luans?: Comment[];
+    luot_ung_ho: number;
+    luot_khong_ung_ho?: number;
+    media?: Media[];
+}
 export interface CreateReportRequest {
     tieu_de: string;
     mo_ta: string;
@@ -133,6 +164,7 @@ export interface Media {
     url: string;
     type: 'image' | 'video';
     thumbnail_url?: string;
+    ai_analysis?: any;
 }
 
 export interface MediaItem {

@@ -26,10 +26,6 @@ interface ReportFiltersProps {
 
 const CATEGORIES = [
     { value: -1, label: 'Tất cả danh mục' },
-    { value: 1, label: 'Giao thông', icon: 'car', color: theme.colors.primary },
-    { value: 2, label: 'Môi trường', icon: 'leaf', color: theme.colors.success },
-    { value: 3, label: 'Cháy nổ', icon: 'fire', color: theme.colors.error },
-    { value: 4, label: 'Rác thải', icon: 'trash-can', color: theme.colors.warning },
     { value: 5, label: 'Ngập lụt', icon: 'weather-pouring', color: theme.colors.info },
     { value: 6, label: 'Khác', icon: 'dots-horizontal', color: theme.colors.textSecondary },
 ];

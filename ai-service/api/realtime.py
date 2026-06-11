@@ -11,6 +11,7 @@ from services.realtime_prediction import (
 )
 from services.flood_calculator import calculate_flood_risk
 from services.flood_spread_bfs import FloodSpreadBFS
+from services.anomaly_detector import get_anomaly_detector
 
 router = APIRouter()
 
@@ -387,4 +388,181 @@ async def get_flood_spread_prediction(
             }
             for p in sorted(result.predictions, key=lambda x: x.arrival_time_minutes)[:20]
         ]
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Anomaly Detection Endpoints
+# ─────────────────────────────────────────────────────────────────────────────
+
+class AnomalyIngestRequest(BaseModel):
+    sensor_id: str
+    value: float
+    sensor_type: str = "water_level"  # water_level | rain_gauge | tide_gauge
+    timestamp: Optional[str] = None
+
+
+class AnomalyBatchRequest(BaseModel):
+    readings: List[Dict[str, Any]]
+
+
+@router.post("/anomaly/ingest")
+async def ingest_anomaly_check(request: AnomalyIngestRequest):
+    """
+    Gửi một reading vào anomaly detector.
+    Trả về event nếu phát hiện bất thường, hoặc {"anomaly": null} nếu bình thường.
+    """
+    from datetime import datetime as dt
+    detector = get_anomaly_detector()
+    ts = None
+    if request.timestamp:
+        try:
+            ts = dt.fromisoformat(request.timestamp.replace("Z", "+00:00"))
+        except ValueError:
+            pass
+
+    event = detector.ingest(
+        sensor_id=request.sensor_id,
+        value=request.value,
+        sensor_type=request.sensor_type,
+        timestamp=ts,
+    )
+
+    if event:
+        return {
+            "anomaly": {
+                "sensor_id": event.sensor_id,
+                "value": event.value,
+                "z_score": event.z_score,
+                "baseline_mean": event.baseline_mean,
+                "baseline_std": event.baseline_std,
+                "severity": event.severity,
+                "anomaly_type": event.anomaly_type,
+                "timestamp": event.timestamp,
+                "message": event.message,
+            }
+        }
+    return {"anomaly": None}
+
+
+@router.post("/anomaly/batch")
+async def ingest_anomaly_batch(request: AnomalyBatchRequest):
+    """
+    Gửi nhiều readings cùng lúc, nhận về danh sách tất cả bất thường phát hiện được.
+    """
+    detector = get_anomaly_detector()
+    events = detector.ingest_batch(request.readings)
+
+    return {
+        "total_readings": len(request.readings),
+        "anomalies_found": len(events),
+        "anomalies": [
+            {
+                "sensor_id": e.sensor_id,
+                "value": e.value,
+                "z_score": e.z_score,
+                "severity": e.severity,
+                "anomaly_type": e.anomaly_type,
+                "timestamp": e.timestamp,
+                "message": e.message,
+            }
+            for e in events
+        ],
+    }
+
+
+@router.get("/anomaly/stats")
+async def get_anomaly_stats():
+    """Thống kê baseline của tất cả cảm biến đang được theo dõi."""
+    detector = get_anomaly_detector()
+    return {
+        "sensors": detector.get_all_stats(),
+        "total_sensors_tracked": len(detector._histories),
+    }
+
+
+# ── Real-Station Simulator v2 (175 trạm thực tế Đà Nẵng) ─────────────────────
+
+from services.sensor_simulator_v2 import get_simulator_v2, FloodScenario as ScenarioEnum
+
+
+@router.get("/v2/stations")
+async def list_stations_v2():
+    """Danh sách 175 trạm thực tế (93 nước + 82 mưa) từ muangap.danang.gov.vn."""
+    sim = get_simulator_v2()
+    sim.tick()
+    return {
+        "stations": sim.get_all_readings(),
+        "count": sim.get_station_count(),
+        "scenario": sim.get_scenario(),
+    }
+
+
+@router.get("/v2/stations/high-risk")
+async def get_high_risk_stations_v2(top_n: int = 10):
+    """Top N trạm có mức độ nguy hiểm cao nhất hiện tại."""
+    sim = get_simulator_v2()
+    sim.tick()
+    return {
+        "high_risk_stations": sim.get_high_risk_stations(top_n),
+        "scenario": sim.get_scenario(),
+    }
+
+
+@router.get("/v2/aggregated")
+async def get_aggregated_v2():
+    """Dữ liệu tổng hợp từ toàn bộ trạm — dùng trực tiếp cho flood prediction."""
+    sim = get_simulator_v2()
+    sim.tick()
+    return {
+        "input": sim.get_aggregated_input(),
+        "station_count": sim.get_station_count(),
+        "scenario": sim.get_scenario(),
+    }
+
+
+class ScenarioRequest(BaseModel):
+    scenario: str  # normal | light_rain | heavy_rain | flood_event | typhoon
+
+
+@router.post("/v2/scenario")
+async def set_scenario_v2(req: ScenarioRequest):
+    """Đặt kịch bản mô phỏng cho toàn bộ hệ thống sensor."""
+    scenario_map = {
+        "normal": ScenarioEnum.NORMAL,
+        "light_rain": ScenarioEnum.LIGHT_RAIN,
+        "heavy_rain": ScenarioEnum.HEAVY_RAIN,
+        "flood_event": ScenarioEnum.FLOOD_EVENT,
+        "typhoon": ScenarioEnum.TYPHOON,
+    }
+    if req.scenario not in scenario_map:
+        raise HTTPException(status_code=400, detail=f"Invalid scenario. Choose: {list(scenario_map.keys())}")
+    sim = get_simulator_v2()
+    sim.set_scenario(scenario_map[req.scenario])
+    return {"status": "ok", "scenario": req.scenario, "message": f"Scenario set to {req.scenario}"}
+
+
+@router.post("/v2/predict")
+async def predict_from_realstations():
+    """Chạy flood prediction dùng dữ liệu tổng hợp từ 175 trạm thực tế."""
+    from services.flood_calculator import calculate_flood_risk
+    sim = get_simulator_v2()
+    sim.tick()
+    agg = sim.get_aggregated_input()
+    result = calculate_flood_risk(
+        water_level_m=agg["water_level_m"],
+        rainfall_mm=agg["rainfall_mm"],
+        hours_rain=int(agg["hours_rain"]),
+        tide_level=agg.get("tide_level", 0.0),
+        historical_score=agg.get("historical_score", 0.0),
+        water_level_trend=agg.get("water_level_trend", 0.0),
+        rain_6h=agg.get("rain_6h", 0.0),
+        soil_saturation=agg.get("soil_saturation", 0.0),
+    )
+    return {
+        "prediction": result,
+        "data_source": "real_stations_v2",
+        "station_count": sim.get_station_count(),
+        "scenario": sim.get_scenario(),
+        "aggregated_input": agg,
     }

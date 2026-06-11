@@ -8,6 +8,7 @@ export interface RescueRequestItem {
   address: string;
   latitude?: number;
   longitude?: number;
+  location?: { lat?: number | string | null; lng?: number | string | null } | null;
   urgency: string;
   urgency_label?: string;
   priority?: string;
@@ -39,9 +40,27 @@ export interface CreateRescueRequestData {
   description?: string;
   water_level_m?: number;
   accessibility_notes?: string;
+  photo_urls?: string[];
 }
 
 export type RescueRequest = RescueRequestItem;
+
+const toNumber = (value: number | string | null | undefined): number | undefined => {
+  if (value === null || value === undefined || value === '') return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const normalizeRequest = (item: any): RescueRequestItem => {
+  const lat = toNumber(item?.latitude) ?? toNumber(item?.location?.lat);
+  const lng = toNumber(item?.longitude) ?? toNumber(item?.location?.lng);
+
+  return {
+    ...item,
+    latitude: lat,
+    longitude: lng,
+  };
+};
 
 export const rescueService = {
   createRescueRequest: async (data: CreateRescueRequestData): Promise<ApiResponse<any>> => {
@@ -51,11 +70,21 @@ export const rescueService = {
 
   getMyRescueRequests: async (params?: { status?: string; page?: number }): Promise<ApiResponse<any>> => {
     const response = await api.get<ApiResponse<any>>('/rescue-requests', { params });
+    const payload = response.data.data;
+    if (Array.isArray(payload?.data)) {
+      response.data.data = {
+        ...payload,
+        data: payload.data.map(normalizeRequest),
+      };
+    } else if (Array.isArray(payload)) {
+      response.data.data = payload.map(normalizeRequest);
+    }
     return response.data;
   },
 
   getRescueRequestDetail: async (id: number): Promise<ApiResponse<RescueRequestItem>> => {
     const response = await api.get<ApiResponse<RescueRequestItem>>(`/rescue-requests/${id}`);
+    response.data.data = normalizeRequest(response.data.data);
     return response.data;
   },
 
@@ -71,17 +100,21 @@ export const rescueService = {
 
   getRequests: async (): Promise<any[]> => {
     const response = await api.get<ApiResponse<any>>('/rescue-requests');
-    return response.data.data;
+    const payload = response.data.data;
+    const items = Array.isArray(payload?.data) ? payload.data : payload;
+    return Array.isArray(items) ? items.map(normalizeRequest) : [];
   },
 
   getRequest: async (id: number): Promise<any> => {
     const response = await api.get<ApiResponse<any>>(`/rescue-requests/${id}`);
-    return response.data.data;
+    return normalizeRequest(response.data.data);
   },
 
   getPending: async (): Promise<any[]> => {
     const response = await api.get<ApiResponse<any>>('/rescue-requests/pending');
-    return response.data.data;
+    const payload = response.data.data;
+    const items = Array.isArray(payload?.data) ? payload.data : payload;
+    return Array.isArray(items) ? items.map(normalizeRequest) : [];
   },
 
   updateStatus: async (id: number, status: string): Promise<any> => {

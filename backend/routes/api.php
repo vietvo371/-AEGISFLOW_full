@@ -62,6 +62,8 @@ Route::prefix('auth')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::put('profile', [AuthController::class, 'updateProfile']);
         Route::post('change-password', [AuthController::class, 'changePassword']);
+        Route::post('avatar', [AuthController::class, 'uploadAvatar']);
+        Route::delete('account', [AuthController::class, 'deleteAccount']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('refresh', [AuthController::class, 'refresh']);
     });
@@ -122,6 +124,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('recommendations/{id}', [RecommendationController::class, 'show']);
     Route::put('recommendations/{id}/approve', [RecommendationController::class, 'approve']);
     Route::put('recommendations/{id}/reject', [RecommendationController::class, 'reject']);
+    Route::post('recommendations/{id}/analyze', [RecommendationController::class, 'analyze']);
 
     // ── Alerts ──────────────────────────────────────────────
     Route::apiResource('alerts', AlertController::class)
@@ -213,5 +216,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('users', UserController::class);
         Route::get('stats', [SystemController::class, 'stats']);
         Route::get('logs', [SystemController::class, 'logs']);
+        Route::get('system-settings', [SystemController::class, 'settings']);
+        Route::put('system-settings', [SystemController::class, 'updateSettings']);
     });
 });

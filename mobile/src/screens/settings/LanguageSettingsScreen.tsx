@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -27,10 +26,10 @@ const LANGUAGES: Language[] = [
 
 const LanguageSettingsScreen = () => {
     const navigation = useNavigation();
-    const { i18n } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [selectedLanguage, setSelectedLanguage] = useState('vi');
 
-    React.useEffect(() => {
+    useEffect(() => {
         loadLanguage();
     }, []);
 
@@ -56,14 +55,14 @@ const LanguageSettingsScreen = () => {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
-            <PageHeader title="Ngôn ngữ" variant="default" />
+        <View style={styles.container}>
+            <PageHeader title={t('language.title', 'Ngôn ngữ')} variant="default" />
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Chọn ngôn ngữ hiển thị</Text>
+                    <Text style={styles.sectionTitle}>{t('language.selectLanguage', 'Chọn ngôn ngữ hiển thị')}</Text>
                     <Text style={styles.sectionDescription}>
-                        Thay đổi ngôn ngữ hiển thị của ứng dụng
+                        {t('language.changeLanguageDesc', 'Thay đổi ngôn ngữ hiển thị của ứng dụng')}
                     </Text>
 
                     <View style={styles.languageList}>
@@ -94,11 +93,11 @@ const LanguageSettingsScreen = () => {
                 <View style={styles.noteSection}>
                     <Icon name="information-outline" size={ICON_SIZE.md} color={theme.colors.info} />
                     <Text style={styles.noteText}>
-                        Một số nội dung có thể chưa được dịch hoàn toàn. Chúng tôi đang nỗ lực cải thiện.
+                        {t('language.incompleteTranslationNote', 'Một số nội dung có thể chưa được dịch hoàn toàn. Chúng tôi đang nỗ lực cải thiện.')}
                     </Text>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 };
 

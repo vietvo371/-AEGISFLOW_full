@@ -12,6 +12,7 @@ import React, {
   ReactNode,
 } from 'react';
 import NetInfo from '@react-native-community/netinfo';
+import api from '../utils/Api';
 import OfflineStorage from '../services/OfflineStorage';
 import {
   OfflineQueueItem,
@@ -319,15 +320,12 @@ export const useOfflineData = (): OfflineDataContextType => {
 
 // Helper function to process a single queue item
 async function processQueueItem(item: OfflineQueueItem): Promise<void> {
-  // This is a placeholder - actual implementation would make API calls
   console.log(`[OfflineData] Processing: ${item.method} ${item.endpoint}`);
-  // In real implementation:
-  // const response = await api.request({
-  //   method: item.method,
-  //   url: item.endpoint,
-  //   data: item.payload,
-  // });
-  // if (!response.ok) throw new Error('Request failed');
+  await api.request({
+    method: item.method,
+    url: item.endpoint,
+    data: item.payload,
+  });
 }
 
 export default OfflineDataProvider;

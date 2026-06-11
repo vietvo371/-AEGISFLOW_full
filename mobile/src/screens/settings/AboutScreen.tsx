@@ -1,32 +1,33 @@
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import PageHeader from '../../component/PageHeader';
 import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING } from '../../theme';
+import { useTranslation } from 'react-i18next';
 
 const AboutScreen = () => {
     const navigation = useNavigation();
+    const { t } = useTranslation();
 
     const appInfo = {
         name: 'AegisFlow AI',
         version: '1.0.0',
         buildNumber: '100',
-        description: 'Ứng dụng báo cáo và quản lý sự cố đô thị thông minh',
+        description: t('aboutScreen.description', 'Smart urban incident reporting and management application'),
     };
 
     const features = [
-        { icon: 'map-marker-alert', title: 'Báo cáo sự cố', description: 'Báo cáo các vấn đề đô thị nhanh chóng' },
-        { icon: 'chart-line', title: 'Theo dõi tiến độ', description: 'Cập nhật tình trạng xử lý real-time' },
-        { icon: 'account-group', title: 'Cộng đồng', description: 'Kết nối với cư dân thành phố' },
-        { icon: 'shield-check', title: 'Xác thực', description: 'Hệ thống xác thực danh tính an toàn' },
+        { icon: 'map-marker-alert', title: t('aboutScreen.features.report.title', 'Incident Reporting'), description: t('aboutScreen.features.report.description', 'Report urban problems quickly') },
+        { icon: 'chart-line', title: t('aboutScreen.features.tracking.title', 'Progress Tracking'), description: t('aboutScreen.features.tracking.description', 'Update real-time processing status') },
+        { icon: 'account-group', title: t('aboutScreen.features.community.title', 'Community'), description: t('aboutScreen.features.community.description', 'Connect with city residents') },
+        { icon: 'shield-check', title: t('aboutScreen.features.auth.title', 'Authentication'), description: t('aboutScreen.features.auth.description', 'Secure identity verification system') },
     ];
 
     const teamMembers = [
-        { name: 'Phát triển', email: 'dev@aegisflow.ai' },
-        { name: 'Hỗ trợ', email: 'support@aegisflow.ai' },
-        { name: 'Kinh doanh', email: 'business@aegisflow.ai' },
+        { name: t('aboutScreen.contactRoles.dev', 'Development'), email: 'dev@aegisflow.ai' },
+        { name: t('aboutScreen.contactRoles.support', 'Support'), email: 'support@aegisflow.ai' },
+        { name: t('aboutScreen.contactRoles.business', 'Business'), email: 'business@aegisflow.ai' },
     ];
 
     const socialLinks = [
@@ -37,8 +38,8 @@ const AboutScreen = () => {
     ];
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
-            <PageHeader title="Về ứng dụng" variant="default" />
+        <View style={styles.container}>
+            <PageHeader title={t('aboutScreen.title', 'About Application')} variant="default" />
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {/* App Logo & Info */}
@@ -47,13 +48,13 @@ const AboutScreen = () => {
                         <Icon name="city-variant" size={64} color={theme.colors.primary} />
                     </View>
                     <Text style={styles.appName}>{appInfo.name}</Text>
-                    <Text style={styles.appVersion}>Phiên bản {appInfo.version} ({appInfo.buildNumber})</Text>
+                    <Text style={styles.appVersion}>{t('aboutScreen.version', `Version ${appInfo.version} (${appInfo.buildNumber})`, { version: appInfo.version, build: appInfo.buildNumber })}</Text>
                     <Text style={styles.appDescription}>{appInfo.description}</Text>
                 </View>
 
                 {/* Features */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Tính năng nổi bật</Text>
+                    <Text style={styles.sectionTitle}>{t('aboutScreen.highlightedFeatures', 'Highlighted Features')}</Text>
                     <View style={styles.featureGrid}>
                         {features.map((feature, index) => (
                             <View key={index} style={styles.featureCard}>
@@ -70,16 +71,15 @@ const AboutScreen = () => {
                 {/* Mission */}
                 <View style={styles.missionSection}>
                     <Icon name="target" size={ICON_SIZE.xl} color={theme.colors.primary} />
-                    <Text style={styles.missionTitle}>Sứ mệnh của chúng tôi</Text>
+                    <Text style={styles.missionTitle}>{t('aboutScreen.ourMission', 'Our Mission')}</Text>
                     <Text style={styles.missionText}>
-                        Xây dựng một thành phố thông minh, kết nối cư dân với chính quyền để cùng nhau
-                        giải quyết các vấn đề đô thị một cách nhanh chóng và hiệu quả.
+                        {t('aboutScreen.missionText', 'Building a smart city, connecting residents with authorities to solve urban issues together quickly and effectively.')}
                     </Text>
                 </View>
 
                 {/* Contact Team */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Liên hệ</Text>
+                    <Text style={styles.sectionTitle}>{t('aboutScreen.contact', 'Contact')}</Text>
                     <View style={styles.contactList}>
                         {teamMembers.map((member, index) => (
                             <TouchableOpacity
@@ -100,7 +100,7 @@ const AboutScreen = () => {
 
                 {/* Social Media */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Theo dõi chúng tôi</Text>
+                    <Text style={styles.sectionTitle}>{t('aboutScreen.followUs', 'Follow Us')}</Text>
                     <View style={styles.socialGrid}>
                         {socialLinks.map((social, index) => (
                             <TouchableOpacity
@@ -121,14 +121,14 @@ const AboutScreen = () => {
                         style={styles.legalLink}
                         onPress={() => Linking.openURL('https://aegisflow.ai/privacy')}
                     >
-                        <Text style={styles.legalText}>Chính sách bảo mật</Text>
+                        <Text style={styles.legalText}>{t('aboutScreen.privacyPolicy', 'Privacy Policy')}</Text>
                     </TouchableOpacity>
                     <Text style={styles.legalDivider}>•</Text>
                     <TouchableOpacity
                         style={styles.legalLink}
                         onPress={() => Linking.openURL('https://aegisflow.ai/terms')}
                     >
-                        <Text style={styles.legalText}>Điều khoản sử dụng</Text>
+                        <Text style={styles.legalText}>{t('aboutScreen.termsOfUse', 'Terms of Use')}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -137,7 +137,7 @@ const AboutScreen = () => {
                     © 2025 AegisFlow AI. All rights reserved.
                 </Text>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 };
 

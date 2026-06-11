@@ -1,6 +1,6 @@
 import api from '../utils/Api';
 import { ApiResponse } from '../types/api/common';
-import { Incident, IncidentDetail, IncidentFilterParams } from '../types/api/report';
+import { Incident, IncidentDetail, IncidentFilterParams, ReportDetail } from '../types/api/report';
 
 // Mapping từ mobile category ID (1-6) → backend incident type
 const CATEGORY_TO_TYPE: Record<number, string> = {
@@ -68,8 +68,8 @@ export const reportService = {
         return response.data;
     },
 
-    getReportDetail: async (id: number): Promise<ApiResponse<IncidentDetail>> => {
-        const response = await api.get<ApiResponse<IncidentDetail>>(`/incidents/${id}`);
+    getReportDetail: async (id: number): Promise<ApiResponse<ReportDetail>> => {
+        const response = await api.get<ApiResponse<ReportDetail>>(`/incidents/${id}`);
         return response.data;
     },
 

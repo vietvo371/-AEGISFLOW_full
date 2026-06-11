@@ -14,13 +14,30 @@ const EmergencyProfileScreen = () => {
     const toggleDuty = () => setIsOnDuty(previousState => !previousState);
 
     const currentUser: any = user;
+    const isRescue = currentUser?.roles?.includes('rescue_team');
 
-    const operatorStats = [
-        { id: 1, label: 'Đang xử lý', value: '12', icon: 'clock-outline', color: '#F59E0B' },
-        { id: 2, label: 'Hoàn thành ca', value: '8', icon: 'check-circle-outline', color: '#10B981' },
-        { id: 3, label: 'Tốc độ phản hồi', value: '2.5m', icon: 'lightning-bolt-outline', color: '#3B82F6' },
-        { id: 4, label: 'Độ tin cậy', value: '98%', icon: 'shield-check-outline', color: '#7a5af8' },
-    ];
+    const profileTitle  = isRescue ? 'Hồ sơ Cứu hộ' : 'Hồ sơ Tác nhân';
+    const profileSub    = isRescue ? 'Lực lượng Phản ứng nhanh' : 'Trung tâm Điều phối Đô thị';
+    const defaultName   = isRescue ? 'Đội viên Cứu hộ' : 'Tác nhân Hệ thống';
+    const roleName      = isRescue ? 'Thành viên Đội cứu hộ' : 'Chuyên viên Điều phối';
+    const badgeName     = isRescue ? 'Cơ động' : 'Hạng S';
+    const section1Title = isRescue ? 'Hiệu suất cứu hộ' : 'Chỉ số hiệu suất';
+    const section2Title = isRescue ? 'Quản lý Cứu hộ' : 'Quản lý Nghiệp vụ';
+    const historyText   = isRescue ? 'Lịch sử cứu hộ' : 'Lịch sử điều phối';
+
+    const operatorStats = isRescue 
+        ? [
+            { id: 1, label: 'Đang xử lý', value: '2', icon: 'run-fast', color: '#3B82F6' },
+            { id: 2, label: 'Đã cứu hộ', value: '15', icon: 'lifebuoy', color: '#10B981' },
+            { id: 3, label: 'Quãng đường', value: '45km', icon: 'map-marker-distance', color: '#F59E0B' },
+            { id: 4, label: 'Đánh giá', value: '4.9', icon: 'star', color: '#7a5af8' },
+        ]
+        : [
+            { id: 1, label: 'Đang xử lý', value: '12', icon: 'clock-outline', color: '#F59E0B' },
+            { id: 2, label: 'Hoàn thành ca', value: '8', icon: 'check-circle-outline', color: '#10B981' },
+            { id: 3, label: 'Tốc độ phản hồi', value: '2.5m', icon: 'lightning-bolt-outline', color: '#3B82F6' },
+            { id: 4, label: 'Độ tin cậy', value: '98%', icon: 'shield-check-outline', color: '#7a5af8' },
+        ];
 
     const handleLogout = () => {
         Alert.alert(
@@ -33,17 +50,34 @@ const EmergencyProfileScreen = () => {
         );
     };
 
+    const handleShowRankDetails = () => {
+        if (isRescue) {
+            Alert.alert(
+                'Hệ thống Cấp bậc & Tích điểm AegisFlow',
+                `Quy chế tích điểm và thăng hạng dành cho Đội viên Cứu hộ:\n\n` +
+                `• Nhận & hoàn thành nhiệm vụ: +100 XP\n` +
+                `• Xử lý sự cố nghiêm trọng (Critical): +150 XP\n` +
+                `• Mỗi km quãng đường di chuyển: +10 XP\n` +
+                `• Đạt đánh giá phản hồi từ người dân 5★: +50 XP\n\n` +
+                `Hạng hiện tại của bạn: Cơ động Tinh nhuệ (Cấp 4) - Đã hoàn thành 15 vụ cứu hộ, di chuyển 45km, tích lũy 1,950 XP!`,
+                [{ text: 'Đóng', style: 'cancel' }]
+            );
+        } else {
+            Alert.alert('Thông báo', 'Tính năng xem hiệu suất chi tiết đang được phát triển.');
+        }
+    };
+
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
             {/* Design Hero Area */}
-            <View style={styles.heroBackground}>
+            <View style={[styles.heroBackground, isRescue && styles.heroBackgroundRescue]}>
                 <SafeAreaView edges={['top']}>
                     <View style={styles.heroHeader}>
                         <View>
-                            <Text style={styles.heroTitle}>Hồ sơ Tác nhân</Text>
-                            <Text style={styles.heroSubtitle}>Trung tâm Điều phối Đô thị</Text>
+                            <Text style={styles.heroTitle}>{profileTitle}</Text>
+                            <Text style={styles.heroSubtitle}>{profileSub}</Text>
                         </View>
                         <TouchableOpacity style={styles.notifBtn} onPress={() => navigation.navigate('Notifications')}>
                             <Icon name="bell-outline" size={22} color="white" />
@@ -63,7 +97,7 @@ const EmergencyProfileScreen = () => {
                         {currentUser?.anh_dai_dien ? (
                             <Image source={{ uri: currentUser.anh_dai_dien }} style={styles.avatar} />
                         ) : (
-                            <View style={styles.avatarPlaceholder}>
+                            <View style={[styles.avatarPlaceholder, isRescue && styles.avatarRescue]}>
                                 <Text style={styles.avatarText}>{currentUser?.ho_ten?.charAt(0) || 'E'}</Text>
                             </View>
                         )}
@@ -72,13 +106,15 @@ const EmergencyProfileScreen = () => {
 
                     <View style={styles.profileInfo}>
                         <View style={styles.nameRow}>
-                            <Text style={styles.userName}>{currentUser?.ho_ten || 'Tác nhân Hệ thống'}</Text>
-                            <View style={styles.badge}>
-                                <Text style={styles.badgeText}>Hạng S</Text>
+                            <Text style={styles.userName} numberOfLines={1}>
+                                {currentUser?.ho_ten || defaultName}
+                            </Text>
+                            <View style={[styles.badge, isRescue && styles.badgeRescue]}>
+                                <Text style={[styles.badgeText, isRescue && styles.badgeTextRescue]}>{badgeName}</Text>
                             </View>
                         </View>
-                        <Text style={styles.userRole}>Chuyên viên Điều phối</Text>
-                        <Text style={styles.userEmail}>{currentUser?.email}</Text>
+                        <Text style={styles.userRole}>{roleName}</Text>
+                        <Text style={styles.userEmail} numberOfLines={1}>{currentUser?.email}</Text>
                     </View>
                 </View>
 
@@ -105,8 +141,8 @@ const EmergencyProfileScreen = () => {
 
                 {/* Stats Section */}
                 <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Chỉ số hiệu suất</Text>
-                    <TouchableOpacity>
+                    <Text style={styles.sectionTitle}>{section1Title}</Text>
+                    <TouchableOpacity onPress={handleShowRankDetails}>
                         <Text style={styles.seeDetail}>Chi tiết</Text>
                     </TouchableOpacity>
                 </View>
@@ -123,20 +159,72 @@ const EmergencyProfileScreen = () => {
                     ))}
                 </View>
 
+                {/* Cấp độ & Điểm thưởng Cứu hộ (Gamification Card) */}
+                {isRescue && (
+                    <View style={styles.rewardCard}>
+                        <View style={styles.rewardHeader}>
+                            <View style={styles.rewardHeaderLeft}>
+                                <View style={styles.rankBadge}>
+                                    <Icon name="medal" size={24} color="#F59E0B" />
+                                </View>
+                                <View>
+                                    <Text style={styles.rankTitle}>Cấp độ Cứu hộ: Cấp 4</Text>
+                                    <Text style={styles.rankSubtitle}>Đội viên Cơ động Tinh nhuệ</Text>
+                                </View>
+                            </View>
+                            <Text style={styles.pointsText}>1,950 XP</Text>
+                        </View>
+                        
+                        {/* Progress bar to Level 5 */}
+                        <View style={styles.progressContainer}>
+                            <View style={styles.progressBarBackground}>
+                                <View style={[styles.progressBarFill, { width: '90%' }]} />
+                            </View>
+                            <View style={styles.progressLabelRow}>
+                                <Text style={styles.progressLabelText}>450 / 500 XP để lên Cấp 5</Text>
+                                <Text style={styles.progressPercentText}>90%</Text>
+                            </View>
+                        </View>
+
+                        {/* Badges Row */}
+                        <Text style={styles.badgesLabel}>Huy hiệu đã đạt:</Text>
+                        <View style={styles.badgesContainer}>
+                            <View style={styles.badgeItem}>
+                                <View style={[styles.badgeIconBg, { backgroundColor: '#EFF6FF' }]}>
+                                    <Icon name="shield-star" size={18} color="#2563EB" />
+                                </View>
+                                <Text style={styles.badgeItemText} numberOfLines={1}>Dũng sĩ lũ</Text>
+                            </View>
+                            <View style={styles.badgeItem}>
+                                <View style={[styles.badgeIconBg, { backgroundColor: '#FEF3C7' }]}>
+                                    <Icon name="lightning-bolt" size={18} color="#D97706" />
+                                </View>
+                                <Text style={styles.badgeItemText} numberOfLines={1}>Phản ứng nhanh</Text>
+                            </View>
+                            <View style={styles.badgeItem}>
+                                <View style={[styles.badgeIconBg, { backgroundColor: '#ECFDF5' }]}>
+                                    <Icon name="map-marker-path" size={18} color="#059669" />
+                                </View>
+                                <Text style={styles.badgeItemText} numberOfLines={1}>Băng vạn dặm</Text>
+                            </View>
+                        </View>
+                    </View>
+                )}
+
                 {/* Action Menu */}
-                <Text style={styles.sectionTitle}>Quản lý Nghiệp vụ</Text>
+                <Text style={styles.sectionTitle}>{section2Title}</Text>
                 <View style={styles.menuContainer}>
-                    <TouchableOpacity style={styles.menuItem}>
+                    <TouchableOpacity style={styles.menuItem} onPress={() => (navigation as any).navigate('Incidents')}>
                         <View style={styles.menuItemLeft}>
                             <View style={[styles.menuIcon, { backgroundColor: '#3B82F615' }]}>
                                 <Icon name="history" size={20} color="#3B82F6" />
                             </View>
-                            <Text style={styles.menuText}>Lịch sử điều phối</Text>
+                            <Text style={styles.menuText}>{historyText}</Text>
                         </View>
                         <Icon name="chevron-right" size={20} color="#cbd5e1" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.menuItem}>
+                    <TouchableOpacity style={styles.menuItem} onPress={() => (navigation as any).navigate('MyReports')}>
                         <View style={styles.menuItemLeft}>
                             <View style={[styles.menuIcon, { backgroundColor: '#F59E0B15' }]}>
                                 <Icon name="file-document-edit-outline" size={20} color="#F59E0B" />
@@ -146,7 +234,7 @@ const EmergencyProfileScreen = () => {
                         <Icon name="chevron-right" size={20} color="#cbd5e1" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]}>
+                    <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={() => (navigation as any).navigate('UserProfile')}>
                         <View style={styles.menuItemLeft}>
                             <View style={[styles.menuIcon, { backgroundColor: '#7a5af815' }]}>
                                 <Icon name="shield-key-outline" size={20} color="#7a5af8" />
@@ -180,6 +268,9 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 32,
         borderBottomRightRadius: 32,
     },
+    heroBackgroundRescue: {
+        backgroundColor: '#2563EB', // Blue 600 for rescue
+    },
     heroHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -194,14 +285,14 @@ const styles = StyleSheet.create({
     },
     heroSubtitle: {
         fontSize: FONT_SIZE.sm,
-        color: '#94a3b8',
+        color: '#e2e8f0', // Lighter text
         marginTop: 2,
     },
     notifBtn: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: 'rgba(255,255,255,0.15)',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -227,32 +318,35 @@ const styles = StyleSheet.create({
         marginRight: SPACING.lg,
     },
     avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+        width: 72,
+        height: 72,
+        borderRadius: 36,
         borderWidth: 3,
         borderColor: '#f1f5f9',
     },
     avatarPlaceholder: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+        width: 72,
+        height: 72,
+        borderRadius: 36,
         backgroundColor: '#334155',
         justifyContent: 'center',
         alignItems: 'center',
     },
+    avatarRescue: {
+        backgroundColor: '#3B82F6',
+    },
     avatarText: {
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: 'bold',
         color: 'white',
     },
     statusDot: {
         position: 'absolute',
-        bottom: 4,
-        right: 4,
-        width: 18,
-        height: 18,
-        borderRadius: 9,
+        bottom: 2,
+        right: 2,
+        width: 16,
+        height: 16,
+        borderRadius: 8,
         borderWidth: 3,
         borderColor: 'white',
     },
@@ -263,33 +357,40 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
-        marginBottom: 2,
+        marginBottom: 4,
     },
     userName: {
-        fontSize: FONT_SIZE.lg,
+        flex: 1,
+        fontSize: 17,
         fontWeight: 'bold',
         color: '#1e293b',
     },
     badge: {
         backgroundColor: '#F59E0B20',
         paddingHorizontal: 6,
-        paddingVertical: 2,
+        paddingVertical: 3,
         borderRadius: 6,
+    },
+    badgeRescue: {
+        backgroundColor: '#EFF6FF',
     },
     badgeText: {
         fontSize: 10,
         fontWeight: '800',
         color: '#D97706',
     },
+    badgeTextRescue: {
+        color: '#2563EB',
+    },
     userRole: {
-        fontSize: FONT_SIZE.sm,
+        fontSize: 13,
         color: '#64748b',
         fontWeight: '600',
     },
     userEmail: {
-        fontSize: FONT_SIZE.xs,
+        fontSize: 12,
         color: '#94a3b8',
-        marginTop: 2,
+        marginTop: 4,
     },
     card: {
         backgroundColor: 'white',
@@ -321,12 +422,12 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     cardTitle: {
-        fontSize: FONT_SIZE.md,
+        fontSize: 15,
         fontWeight: 'bold',
         color: '#1e293b',
     },
     cardDesc: {
-        fontSize: FONT_SIZE.xs,
+        fontSize: 12,
         color: '#64748b',
         marginTop: 2,
     },
@@ -335,16 +436,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: SPACING.md,
-        paddingHorizontal: SPACING.sm,
+        paddingHorizontal: 4,
     },
     sectionTitle: {
-        fontSize: FONT_SIZE.md,
+        fontSize: 16,
         fontWeight: 'bold',
-        color: '#475569',
-        letterSpacing: 0.5,
+        color: '#334155',
+        letterSpacing: 0.3,
     },
     seeDetail: {
-        fontSize: FONT_SIZE.xs,
+        fontSize: 13,
         color: '#2563eb',
         fontWeight: 'bold',
     },
@@ -369,14 +470,15 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     statValue: {
-        fontSize: FONT_SIZE.xl,
+        fontSize: 22,
         fontWeight: 'bold',
         color: '#1e293b',
     },
     statLabel: {
-        fontSize: FONT_SIZE.xs,
+        fontSize: 12,
         color: '#64748b',
         marginTop: 2,
+        fontWeight: '500',
     },
     menuContainer: {
         backgroundColor: 'white',
@@ -406,7 +508,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     menuText: {
-        fontSize: FONT_SIZE.md,
+        fontSize: 15,
         color: '#334155',
         fontWeight: '600',
     },
@@ -414,23 +516,130 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#EF444410',
+        backgroundColor: '#FEF2F2',
         paddingVertical: 16,
         borderRadius: 18,
         borderWidth: 1,
-        borderColor: '#EF444425',
+        borderColor: '#FCA5A5',
         gap: 10,
     },
     logoutText: {
-        fontSize: FONT_SIZE.md,
+        fontSize: 15,
         fontWeight: 'bold',
-        color: '#EF4444',
+        color: '#DC2626',
     },
     versionText: {
         textAlign: 'center',
-        fontSize: FONT_SIZE.xs,
+        fontSize: 12,
         color: '#94a3b8',
         marginTop: 24,
+    },
+    rewardCard: {
+        backgroundColor: 'white',
+        borderRadius: 24,
+        padding: 20,
+        marginBottom: SPACING.lg,
+        ...theme.shadows.sm,
+    },
+    rewardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    rewardHeaderLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    rankBadge: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        backgroundColor: '#FFFBEB',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#FEF3C7',
+    },
+    rankTitle: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#1E293B',
+    },
+    rankSubtitle: {
+        fontSize: 12,
+        color: '#64748B',
+        marginTop: 2,
+    },
+    pointsText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#D97706',
+    },
+    progressContainer: {
+        marginBottom: 16,
+    },
+    progressBarBackground: {
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#F1F5F9',
+        overflow: 'hidden',
+    },
+    progressBarFill: {
+        height: '100%',
+        backgroundColor: '#F59E0B',
+        borderRadius: 4,
+    },
+    progressLabelRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 6,
+    },
+    progressLabelText: {
+        fontSize: 11,
+        color: '#64748B',
+        fontWeight: '500',
+    },
+    progressPercentText: {
+        fontSize: 11,
+        color: '#D97706',
+        fontWeight: '700',
+    },
+    badgesLabel: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#475569',
+        marginBottom: 10,
+    },
+    badgesContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 8,
+    },
+    badgeItem: {
+        flex: 1,
+        alignItems: 'center',
+        backgroundColor: '#F8FAFC',
+        borderRadius: 14,
+        paddingVertical: 10,
+        paddingHorizontal: 6,
+        borderWidth: 1,
+        borderColor: '#F1F5F9',
+    },
+    badgeIconBg: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 6,
+    },
+    badgeItemText: {
+        fontSize: 10,
+        fontWeight: '700',
+        color: '#475569',
+        textAlign: 'center',
     }
 });
 

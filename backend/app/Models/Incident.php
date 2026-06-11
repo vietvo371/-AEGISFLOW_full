@@ -154,16 +154,16 @@ class Incident extends Model
      */
     public function getLocationAttribute(): ?array
     {
-        if (DB::connection()->getDriverName() !== 'pgsql') {
+        try {
+            $result = DB::selectOne("
+                SELECT ST_X(geometry) as lng, ST_Y(geometry) as lat
+                FROM incidents WHERE id = ?
+            ", [$this->id]);
+
+            return $result ? ['lat' => $result->lat, 'lng' => $result->lng] : null;
+        } catch (\Exception $e) {
             return null;
         }
-
-        $result = DB::selectOne("
-            SELECT ST_X(geometry::geometry) as lng, ST_Y(geometry::geometry) as lat
-            FROM incidents WHERE id = ?
-        ", [$this->id]);
-
-        return $result ? ['lat' => $result->lat, 'lng' => $result->lng] : null;
     }
 
     /**
@@ -172,10 +172,12 @@ class Incident extends Model
     public function toGeoJson(): array
     {
         $geometry = null;
-        if (DB::connection()->getDriverName() === 'pgsql') {
+        try {
             $geometry = DB::selectOne("
                 SELECT ST_AsGeoJSON(geometry) as geojson FROM incidents WHERE id = ?
             ", [$this->id]);
+        } catch (\Exception $e) {
+            // Ignore
         }
 
         // Mapping for Vietnamese/Mobile app fields
@@ -236,11 +238,32 @@ class Incident extends Model
                 'id' => $this->id,
                 'title' => $this->title,
                 'type' => $this->type,
+                'type_label' => $danhMucText,
                 'severity' => $this->severity,
+                'severity_label' => match ($this->severity) {
+                    'critical' => 'Nghiêm trọng',
+                    'high'     => 'Cao',
+                    'medium'   => 'Trung bình',
+                    'low'      => 'Thấp',
+                    default    => $this->severity,
+                },
                 'status' => $this->status,
+                'status_label' => match ($this->status) {
+                    'reported'   => 'Đã báo cáo',
+                    'verified'   => 'Đã xác minh',
+                    'responding' => 'Đang xử lý',
+                    'resolved'   => 'Đã giải quyết',
+                    'closed'     => 'Đã đóng',
+                    default      => $this->status,
+                },
                 'source' => $this->source,
                 'address' => $this->address,
+                'description' => $this->description,
                 'water_level_m' => $this->water_level_m,
+                'affected_people' => $this->affected_people,
+                'reported_at' => $this->created_at?->format('H:i d/m/Y'),
+                'ward_name' => $this->ward?->name ?? null,
+                'district_name' => $this->district?->name ?? null,
 
                 // Vietnamese properties (for Mobile app)
                 'tieu_de' => $this->title,

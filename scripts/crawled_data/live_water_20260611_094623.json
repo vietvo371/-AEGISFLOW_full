@@ -1,0 +1,932 @@
+[
+  {
+    "station_id": "67930dbba0749fbf4e782ca4",
+    "name": "Phường An Khê",
+    "district": "An Khê",
+    "latitude": 16.060552,
+    "longitude": 108.178533,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563375+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782ca5",
+    "name": "Chợ Phú Xuân - Hòa Sơn",
+    "district": "Hòa Khánh",
+    "latitude": 16.041551,
+    "longitude": 108.105209,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563401+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782ca6",
+    "name": "Tổ 15, Đường Đà Sơn 2",
+    "district": "Hòa Khánh",
+    "latitude": 16.058889,
+    "longitude": 108.153333,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563405+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782ca7",
+    "name": "Tổ 26, phường Hòa Khánh Bắc",
+    "district": "Liên Chiểu",
+    "latitude": 16.084999,
+    "longitude": 108.148384,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563408+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782ca8",
+    "name": "An Ngãi Tây 2 - Hòa Sơn",
+    "district": "Hòa Khánh",
+    "latitude": 16.068439,
+    "longitude": 108.101975,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563412+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782ca9",
+    "name": "Cầu thôn 1 - Hòa Ninh",
+    "district": "Bà Nà",
+    "latitude": 16.058407,
+    "longitude": 108.047224,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563415+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782caa",
+    "name": "Ngã ba Thái Lai - Hòa Nhơn",
+    "district": "Bà Nà",
+    "latitude": 16.006292,
+    "longitude": 108.125481,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563419+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cab",
+    "name": "Cầu Trường Định",
+    "district": "Liên Chiểu",
+    "latitude": 16.107222,
+    "longitude": 108.086944,
+    "water_level_m": 0.25,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563422+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cac",
+    "name": "Tháp báo lũ thôn Lệ Sơn 2(Hòa Tiến)",
+    "district": "Hòa Tiến",
+    "latitude": 15.959333,
+    "longitude": 108.166194,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563425+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cad",
+    "name": "Chợ Thanh Vinh, phường Hòa Khánh Bắc",
+    "district": "Liên Chiểu",
+    "latitude": 16.076149,
+    "longitude": 108.132293,
+    "water_level_m": 0.01,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563428+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cae",
+    "name": "Thôn Lai Châu 1 - Hòa Khương",
+    "district": "Hòa Tiến",
+    "latitude": 15.962341,
+    "longitude": 108.159329,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563431+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782caf",
+    "name": "Thôn Lộc Mỹ - Hòa Bắc",
+    "district": "Hải Vân",
+    "latitude": 16.138339,
+    "longitude": 108.026312,
+    "water_level_m": 0.06,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.563433+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cb0",
+    "name": "Thôn Thái Lai - Hòa Nhơn",
+    "district": "Bà Nà",
+    "latitude": 16.005453,
+    "longitude": 108.125655,
+    "water_level_m": -0.01,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565171+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cb1",
+    "name": "Cầu Tà Lang - Giàn Bí",
+    "district": "Hải Vân",
+    "latitude": 16.119722,
+    "longitude": 107.984444,
+    "water_level_m": 9.38,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565186+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cb2",
+    "name": "Tổ 113, phường Hòa Minh",
+    "district": "Hòa Khánh",
+    "latitude": 16.049194,
+    "longitude": 108.167152,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565192+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cb3",
+    "name": "Đình Làng Túy Loan - Hòa Phong",
+    "district": "Hòa Vang",
+    "latitude": 15.997928,
+    "longitude": 108.136103,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565195+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cb4",
+    "name": "Đập Bara An Trạch",
+    "district": "Hòa Tiến",
+    "latitude": 15.955499,
+    "longitude": 108.154243,
+    "water_level_m": 2.09,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565199+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cb5",
+    "name": "Thôn Tây An - Hòa Châu",
+    "district": "Hòa Xuân",
+    "latitude": 15.99433,
+    "longitude": 108.18722,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565202+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cb6",
+    "name": "Thôn Bồ Bản - Hòa Phong",
+    "district": "Hòa Vang",
+    "latitude": 15.992652,
+    "longitude": 108.142314,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565206+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cb7",
+    "name": "Đường Trần Phú - Hoàng Văn Thụ",
+    "district": "Hải Châu",
+    "latitude": 16.062681,
+    "longitude": 108.22324,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565209+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cb8",
+    "name": "Tổ 26, phường Thanh Khê Tây",
+    "district": "Thanh Khê",
+    "latitude": 16.068106,
+    "longitude": 108.175386,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565212+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cb9",
+    "name": "Gầm cầu Đỏ - Đường Thăng Long",
+    "district": "Cẩm Lệ",
+    "latitude": 16.000278,
+    "longitude": 108.190556,
+    "water_level_m": 0.29,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565215+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cba",
+    "name": "Đường Chu Văn An - Phan Châu Trinh",
+    "district": "Hòa Cường",
+    "latitude": 16.057077,
+    "longitude": 108.218789,
+    "water_level_m": 0.01,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565218+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cbb",
+    "name": "Đường Nguyễn Đôn Tiết - Hải Hồ",
+    "district": "Hải Châu",
+    "latitude": 16.080332,
+    "longitude": 108.215559,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565221+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cbc",
+    "name": "K1120/65 Trường Chinh - Phường An Khê",
+    "district": "An Khê",
+    "latitude": 16.021667,
+    "longitude": 108.189444,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565225+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cbd",
+    "name": "Đường Trần Quý Cáp - Đống Đa",
+    "district": "Hải Châu",
+    "latitude": 16.081111,
+    "longitude": 108.219167,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565256+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cbe",
+    "name": "Ngã ba thôn Nam Yên - Hòa Bắc",
+    "district": "Hải Vân",
+    "latitude": 16.1339,
+    "longitude": 108.049127,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565262+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cbf",
+    "name": "Nhà văn hóa phường Hòa Thuận Tây",
+    "district": "Hòa Cường",
+    "latitude": 16.044715,
+    "longitude": 108.20699,
+    "water_level_m": 0.03,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565265+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cc0",
+    "name": "Phường Hòa Khánh Nam",
+    "district": "Hòa Khánh",
+    "latitude": 16.056239,
+    "longitude": 108.159156,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565268+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cc1",
+    "name": "Đường Quang Trung - Đống Đa",
+    "district": "Hải Châu",
+    "latitude": 16.073889,
+    "longitude": 108.214167,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565271+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cc2",
+    "name": "Tổ 13, phường Tam Thuận",
+    "district": "Thanh Khê",
+    "latitude": 16.074101,
+    "longitude": 108.204488,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565274+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cc3",
+    "name": "UBND phường Hòa Thọ Đông (cũ)",
+    "district": "Cẩm Lệ",
+    "latitude": 16.010556,
+    "longitude": 108.194444,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565277+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cc4",
+    "name": "Tổ 33, phường Hòa Hiệp Bắc",
+    "district": "Hải Vân",
+    "latitude": 16.122708,
+    "longitude": 108.121261,
+    "water_level_m": 0.01,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565280+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cc5",
+    "name": "Tổ 8, phường Thanh Khê Tây",
+    "district": "Thanh Khê",
+    "latitude": 16.064337,
+    "longitude": 108.180974,
+    "water_level_m": 0.15,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565283+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cc6",
+    "name": "Tổ 38, phường Hòa Hiệp Nam",
+    "district": "Hải Vân",
+    "latitude": 16.114097,
+    "longitude": 108.127591,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565286+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cc7",
+    "name": "UBND phường Hòa Thọ Tây (cũ)",
+    "district": "Cẩm Lệ",
+    "latitude": 16.000278,
+    "longitude": 108.184167,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565289+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cc8",
+    "name": "Tổ 61, phường Chính Gián",
+    "district": "Thanh Khê",
+    "latitude": 16.067716,
+    "longitude": 108.193793,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565292+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cc9",
+    "name": "Thôn Nam Yên - Hòa Bắc",
+    "district": "Hải Vân",
+    "latitude": 16.132376,
+    "longitude": 108.051554,
+    "water_level_m": 0.02,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565295+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cca",
+    "name": "Thôn Đông Hòa - Hòa Châu",
+    "district": "Hòa Xuân",
+    "latitude": 15.996579,
+    "longitude": 108.193677,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565297+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782ccb",
+    "name": "Tổ 53, phường Hòa Khê",
+    "district": "Thanh Khê",
+    "latitude": 16.061209,
+    "longitude": 108.185972,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565300+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782ccc",
+    "name": "Cầu Lâm Viên",
+    "district": "Hòa Vang",
+    "latitude": 15.984444,
+    "longitude": 108.073333,
+    "water_level_m": 1.77,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565302+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782ccd",
+    "name": "Đường Nguyễn Phước Tần",
+    "district": "Cẩm Lệ",
+    "latitude": 16.015,
+    "longitude": 108.2,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565305+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cce",
+    "name": "Thôn Cẩm Toại Trung - Hòa Phong",
+    "district": "Hòa Vang",
+    "latitude": 15.980599,
+    "longitude": 108.140094,
+    "water_level_m": -0.01,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565308+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782ccf",
+    "name": "27 Lương Ngọc Quyến - Hải Hồ",
+    "district": "Hải Châu",
+    "latitude": 16.081673,
+    "longitude": 108.21645,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565311+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cd0",
+    "name": "Tháp báo lũ thôn Cẩm Nê(Hòa Tiến)",
+    "district": "Hòa Tiến",
+    "latitude": 15.985833,
+    "longitude": 108.167222,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565314+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cd1",
+    "name": "144 Nguyễn Xuân Hữu - Hòa Thọ Đông",
+    "district": "Cẩm Lệ",
+    "latitude": 16.009668,
+    "longitude": 108.199659,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565317+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cd2",
+    "name": "Tháp báo lũ thôn An Trạch(Hòa Tiến)",
+    "district": "Hòa Tiến",
+    "latitude": 15.955833,
+    "longitude": 108.162222,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565319+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cd3",
+    "name": "Đường Tôn Đản - Phường An Khê",
+    "district": "An Khê",
+    "latitude": 16.028056,
+    "longitude": 108.186389,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565322+00:00"
+  },
+  {
+    "station_id": "67930dbba0749fbf4e782cd4",
+    "name": "Tổ 70, phường Hòa Khánh Nam",
+    "district": "Hòa Khánh",
+    "latitude": 16.047809,
+    "longitude": 108.147527,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565325+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cd5",
+    "name": "Thôn La Bông - Hòa Tiến",
+    "district": "Hòa Tiến",
+    "latitude": 15.970405,
+    "longitude": 108.172493,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565328+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cd6",
+    "name": "Tràn, hồ Đồng Nghệ",
+    "district": "Hòa Tiến",
+    "latitude": 15.949677,
+    "longitude": 108.085328,
+    "water_level_m": 32.05,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565330+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cd7",
+    "name": "Chùa Phước Thiện - Hòa Tiến",
+    "district": "Hòa Tiến",
+    "latitude": 15.959674,
+    "longitude": 108.172382,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565339+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cd8",
+    "name": "Ngã ba Lai Châu - Hòa Khương",
+    "district": "Hòa Tiến",
+    "latitude": 15.973284,
+    "longitude": 108.14778,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565343+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cd9",
+    "name": "Tổ 24, phường Xuân Hà",
+    "district": "Thanh Khê",
+    "latitude": 16.068595,
+    "longitude": 108.193295,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565346+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cda",
+    "name": "Đường Phan Đăng Lưu - Lê Thanh Nghị",
+    "district": "Hòa Cường",
+    "latitude": 16.036667,
+    "longitude": 108.218611,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565349+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cdb",
+    "name": "Cầu Túy Loan",
+    "district": "Hòa Vang",
+    "latitude": 15.993266,
+    "longitude": 108.14215,
+    "water_level_m": 1.34,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565352+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cdc",
+    "name": "Đường Đinh Liệt - Tú Mỡ",
+    "district": "An Khê",
+    "latitude": 16.052778,
+    "longitude": 108.173611,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565354+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cdd",
+    "name": "Tổ 4, phường Hòa Khê",
+    "district": "Thanh Khê",
+    "latitude": 16.063152,
+    "longitude": 108.192169,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565357+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cde",
+    "name": "Tổ 32, phường Hòa Khánh Nam",
+    "district": "Hòa Khánh",
+    "latitude": 16.059076,
+    "longitude": 108.157314,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565373+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cdf",
+    "name": "Thôn Thạch Nham Tây - Hòa Nhơn",
+    "district": "Bà Nà",
+    "latitude": 16.003087,
+    "longitude": 108.138567,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565377+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ce0",
+    "name": "Tổ 73, phường An Khê",
+    "district": "An Khê",
+    "latitude": 16.062891,
+    "longitude": 108.181284,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565380+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ce1",
+    "name": "Tổ 25, phường Hòa Hiệp Nam",
+    "district": "Hải Vân",
+    "latitude": 16.103096,
+    "longitude": 108.130041,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565383+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ce2",
+    "name": "Tổ 42, phường Hòa Khánh Nam",
+    "district": "Hòa Khánh",
+    "latitude": 16.05844,
+    "longitude": 108.154615,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565386+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ce3",
+    "name": "Đường Lê Anh Xuân - Nguyễn Hanh",
+    "district": "Hòa Cường",
+    "latitude": 16.031117,
+    "longitude": 108.225568,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565388+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ce4",
+    "name": "Tổ 13, phường Thanh Khê Tây",
+    "district": "Thanh Khê",
+    "latitude": 16.066995,
+    "longitude": 108.182402,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565391+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ce5",
+    "name": "Tổ 98, phường Hòa Minh",
+    "district": "Hòa Khánh",
+    "latitude": 16.060241,
+    "longitude": 108.16293,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565403+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ce6",
+    "name": "Thôn Thạch Bồ - Hòa Phong",
+    "district": "Hòa Vang",
+    "latitude": 15.983067,
+    "longitude": 108.155657,
+    "water_level_m": -0.01,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565407+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ce7",
+    "name": "Tổ 37, phường Hòa Hiệp Bắc",
+    "district": "Hải Vân",
+    "latitude": 16.117579,
+    "longitude": 108.115398,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565410+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ce8",
+    "name": "K904/35 Trường Chinh - Hòa Phát",
+    "district": "An Khê",
+    "latitude": 16.032327,
+    "longitude": 108.187112,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565413+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ce9",
+    "name": "Đập Bara An Trạch - Hòa Khương",
+    "district": "Hòa Tiến",
+    "latitude": 15.961568,
+    "longitude": 108.152326,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565417+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cea",
+    "name": "Thôn Trường Định - Hòa Liên",
+    "district": "Hải Vân",
+    "latitude": 16.109998,
+    "longitude": 108.087732,
+    "water_level_m": -0.01,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565420+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ceb",
+    "name": "Thôn Quan Nam 1 - Hòa Liên",
+    "district": "Liên Chiểu",
+    "latitude": 16.0957,
+    "longitude": 108.092326,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565423+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cec",
+    "name": "Hồ Thạc Gián (Thanh Khê)",
+    "district": "Thanh Khê",
+    "latitude": 16.0637,
+    "longitude": 108.209231,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565426+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782ced",
+    "name": "Đường Yên Thế - Phường An Khê",
+    "district": "An Khê",
+    "latitude": 16.058889,
+    "longitude": 108.175556,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565428+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cee",
+    "name": "Thôn Đông Lâm - Hòa Phú",
+    "district": "Hòa Vang",
+    "latitude": 15.983073,
+    "longitude": 108.073111,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565431+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cef",
+    "name": "Thôn Hòa Phước - Hòa Phú",
+    "district": "Hòa Vang",
+    "latitude": 15.997475,
+    "longitude": 108.102499,
+    "water_level_m": 0.01,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565434+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cf0",
+    "name": "Đường Núi Thành - Tiểu La",
+    "district": "Hòa Cường",
+    "latitude": 16.046389,
+    "longitude": 108.221111,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565437+00:00"
+  },
+  {
+    "station_id": "67930dbca0749fbf4e782cf1",
+    "name": "Tổ 2 thôn Đông Sơn - Hòa Ninh",
+    "district": "Bà Nà",
+    "latitude": 16.047558,
+    "longitude": 108.069099,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565444+00:00"
+  },
+  {
+    "station_id": "68496199ed7957a54b8e6ad7",
+    "name": "Đường Hải Hồ - Ngô Chi Lan",
+    "district": "Hòa Cường",
+    "latitude": 16.083187,
+    "longitude": 108.217021,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565447+00:00"
+  },
+  {
+    "station_id": "686631b78f8564ee6801259d",
+    "name": "Tháp báo lũ xã Đại Nghĩa",
+    "district": "Đại Lộc",
+    "latitude": 15.895472,
+    "longitude": 108.080861,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565450+00:00"
+  },
+  {
+    "station_id": "686631b78f8564ee6801259e",
+    "name": "Tháp báo lũ thôn Kiệu Châu (Duy Sơn)",
+    "district": "Duy Xuyên",
+    "latitude": 15.825583,
+    "longitude": 108.22375,
+    "water_level_m": 0.01,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565452+00:00"
+  },
+  {
+    "station_id": "686631b78f8564ee6801259f",
+    "name": "Cầu Hương An",
+    "district": "Xuân Phú",
+    "latitude": 15.778409,
+    "longitude": 108.331055,
+    "water_level_m": 0.75,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565455+00:00"
+  },
+  {
+    "station_id": "686631b78f8564ee680125a0",
+    "name": "Tháp báo lũ thôn Đông Bình (Duy Vinh)",
+    "district": "Nam Phước",
+    "latitude": 15.846389,
+    "longitude": 108.337778,
+    "water_level_m": -0.02,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565457+00:00"
+  },
+  {
+    "station_id": "686631b78f8564ee680125a1",
+    "name": "Cầu Hà Tân",
+    "district": "Thượng Đức",
+    "latitude": 15.847026,
+    "longitude": 107.934573,
+    "water_level_m": 7.2,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565460+00:00"
+  },
+  {
+    "station_id": "686631b78f8564ee680125a2",
+    "name": "Cầu Vĩnh Điện",
+    "district": "Điện Bàn",
+    "latitude": 15.901811,
+    "longitude": 108.247585,
+    "water_level_m": 0.01,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565463+00:00"
+  },
+  {
+    "station_id": "686631b78f8564ee680125a3",
+    "name": "Tháp báo lũ xã Cẩm Kim",
+    "district": "Hội An",
+    "latitude": 15.864056,
+    "longitude": 108.322861,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565466+00:00"
+  },
+  {
+    "station_id": "686631b78f8564ee680125a4",
+    "name": "Tháp báo lũ Cẩm Châu, Hội An",
+    "district": "Hội An Đông",
+    "latitude": 15.876222,
+    "longitude": 108.333167,
+    "water_level_m": 0.03,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565468+00:00"
+  },
+  {
+    "station_id": "686631b78f8564ee680125a5",
+    "name": "Hồ chứa nước Thái Xuân",
+    "district": "Tam Mỹ",
+    "latitude": 15.439806,
+    "longitude": 108.586222,
+    "water_level_m": 24.21,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565471+00:00"
+  },
+  {
+    "station_id": "686631b78f8564ee680125a6",
+    "name": "Thượng lưu HCN Hố Do",
+    "district": "Thăng Phú",
+    "latitude": 15.616389,
+    "longitude": 108.348028,
+    "water_level_m": 61.2,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565473+00:00"
+  },
+  {
+    "station_id": "68f73b66d9f2d011eb53189c",
+    "name": "Hạ lưu HCN Hố Do",
+    "district": "Thăng Phú",
+    "latitude": 15.618972,
+    "longitude": 108.349444,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565483+00:00"
+  },
+  {
+    "station_id": "694dfcc7457a461137ebe2ab",
+    "name": "Triêm Đông 2, Điện Bàn",
+    "district": "Điện Bàn",
+    "latitude": 15.882778,
+    "longitude": 108.283611,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565499+00:00"
+  },
+  {
+    "station_id": "694dfcc7457a461137ebe2ac",
+    "name": "Mỹ Cang, Bàn Thạch",
+    "district": "Bàn Thạch",
+    "latitude": 15.603056,
+    "longitude": 108.464722,
+    "water_level_m": 0.0,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565504+00:00"
+  },
+  {
+    "station_id": "69c62b2e8c69caa91a40c25a",
+    "name": "Hồ Suối Thỏ",
+    "district": "Tiên Phước",
+    "latitude": 15.538056,
+    "longitude": 108.339722,
+    "water_level_m": 0.86,
+    "status": "active",
+    "fetched_at": "2026-06-11T02:46:23.565513+00:00"
+  }
+]

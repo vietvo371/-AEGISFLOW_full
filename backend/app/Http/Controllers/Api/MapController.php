@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-
 use App\Helpers\ApiResponse;
+use App\Http\Controllers\Controller;
+use App\Models\FloodZone;
+use App\Models\Incident;
+use App\Models\RescueTeam;
+use App\Models\Sensor;
+use App\Models\Shelter;
+use App\Support\DaNangLandMask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -49,7 +54,7 @@ class MapController extends Controller
         $lat = $request->query('lat');
         $lng = $request->query('lng');
 
-        if (!is_numeric($lat) || !is_numeric($lng)) {
+        if (! is_numeric($lat) || ! is_numeric($lng)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Latitude and longitude must be numbers.',
@@ -70,7 +75,7 @@ class MapController extends Controller
      */
     public function incidents(Request $request)
     {
-        $query = \App\Models\Incident::active()
+        $query = Incident::active()
             ->orderBy('severity', 'desc');
 
         if ($request->filled('district_id')) {
@@ -84,7 +89,7 @@ class MapController extends Controller
         if ($request->filled('danh_muc')) {
             $danhMucVal = $request->danh_muc;
             if (is_numeric($danhMucVal)) {
-                $danhMuc = (int)$danhMucVal;
+                $danhMuc = (int) $danhMucVal;
                 $types = match ($danhMuc) {
                     1 => ['traffic', 'congestion'],
                     2 => ['environment'],
@@ -102,18 +107,21 @@ class MapController extends Controller
         // Bounds filter for map viewport
         if ($request->filled(['min_lon', 'min_lat', 'max_lon', 'max_lat'])) {
             if (DB::connection()->getDriverName() === 'pgsql') {
-                $query->whereRaw("geometry && ST_MakeEnvelope(?, ?, ?, ?, 4326)", [
-                    (float)$request->min_lon,
-                    (float)$request->min_lat,
-                    (float)$request->max_lon,
-                    (float)$request->max_lat
+                $query->whereRaw('geometry && ST_MakeEnvelope(?, ?, ?, ?, 4326)', [
+                    (float) $request->min_lon,
+                    (float) $request->min_lat,
+                    (float) $request->max_lon,
+                    (float) $request->max_lat,
                 ]);
             }
         }
 
-        $incidents = $query->limit(200)->get();
+        $incidents = $query->with(['ward', 'district'])->limit(200)->get();
 
-        $features = $incidents->map(fn ($i) => $i->toGeoJson());
+        $features = $incidents
+            ->map(fn ($i) => $i->toGeoJson())
+            ->filter(fn (array $feature) => DaNangLandMask::featureIsLikelyLand($feature))
+            ->values();
 
         return response()->json([
             'type' => 'FeatureCollection',
@@ -127,7 +135,7 @@ class MapController extends Controller
      */
     public function floodZones(Request $request)
     {
-        $query = \App\Models\FloodZone::active();
+        $query = FloodZone::active();
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -149,7 +157,7 @@ class MapController extends Controller
      */
     public function rescueTeams()
     {
-        $teams = \App\Models\RescueTeam::whereNotNull('current_latitude')
+        $teams = RescueTeam::whereNotNull('current_latitude')
             ->whereNotNull('current_longitude')
             ->get();
 
@@ -182,7 +190,7 @@ class MapController extends Controller
      */
     public function shelters()
     {
-        $shelters = \App\Models\Shelter::open()->get();
+        $shelters = Shelter::open()->get();
 
         $features = [];
         foreach ($shelters as $shelter) {
@@ -229,6 +237,12 @@ class MapController extends Controller
             $query->where('flood_event_id', $request->event_id);
         }
 
+        if ($request->filled(['min_lon', 'min_lat', 'max_lon', 'max_lat'])) {
+            $query
+                ->whereBetween('longitude', [(float) $request->min_lon, (float) $request->max_lon])
+                ->whereBetween('latitude', [(float) $request->min_lat, (float) $request->max_lat]);
+        }
+
         $reports = $query->select([
             'id', 'external_id', 'address', 'street_name', 'ward_name', 'district_name',
             'latitude', 'longitude', 'water_level_cm', 'flood_type',
@@ -237,12 +251,12 @@ class MapController extends Controller
         ])->limit(500)->get();
 
         $features = $reports->map(function ($r) {
-            $wl = (float)($r->water_level_cm ?? 0);
-            $color = match(true) {
+            $wl = (float) ($r->water_level_cm ?? 0);
+            $color = match (true) {
                 $wl >= 75 => '#EF4444',
                 $wl >= 50 => '#F97316',
                 $wl >= 25 => '#3B82F6',
-                default   => '#22C55E',
+                default => '#22C55E',
             };
 
             $images = [];
@@ -252,42 +266,42 @@ class MapController extends Controller
             }
 
             // Build geometry: LineString for street floods, Point for others
-            $isStreet = $r->flood_type === 'street' && !empty($r->polyline);
+            $isStreet = $r->flood_type === 'street' && ! empty($r->polyline);
             if ($isStreet) {
                 $coords = self::decodePolyline($r->polyline);
                 $geometry = count($coords) >= 2
                     ? ['type' => 'LineString', 'coordinates' => $coords]
-                    : ['type' => 'Point', 'coordinates' => [(float)$r->longitude, (float)$r->latitude]];
+                    : ['type' => 'Point', 'coordinates' => [(float) $r->longitude, (float) $r->latitude]];
             } else {
-                $geometry = ['type' => 'Point', 'coordinates' => [(float)$r->longitude, (float)$r->latitude]];
+                $geometry = ['type' => 'Point', 'coordinates' => [(float) $r->longitude, (float) $r->latitude]];
             }
 
             return [
                 'type' => 'Feature',
-                'id'   => $r->id,
+                'id' => $r->id,
                 'properties' => [
-                    'id'                  => $r->id,
-                    'address'             => $r->address,
-                    'street_name'         => $r->street_name,
-                    'ward_name'           => $r->ward_name,
-                    'district_name'       => $r->district_name,
-                    'water_level_cm'      => $r->water_level_cm,
-                    'flood_type'          => $r->flood_type,
+                    'id' => $r->id,
+                    'address' => $r->address,
+                    'street_name' => $r->street_name,
+                    'ward_name' => $r->ward_name,
+                    'district_name' => $r->district_name,
+                    'water_level_cm' => $r->water_level_cm,
+                    'flood_type' => $r->flood_type,
                     'flood_location_type' => $r->flood_location_type,
-                    'is_frequent'         => (bool)$r->is_frequent,
-                    'description'         => $r->description,
-                    'image_urls'          => $images,
-                    'polyline'            => $r->polyline,
-                    'flood_started_at'    => $r->flood_started_at,
-                    'reported_at'         => $r->reported_at,
-                    'color'               => $color,
+                    'is_frequent' => (bool) $r->is_frequent,
+                    'description' => $r->description,
+                    'image_urls' => $images,
+                    'polyline' => $r->polyline,
+                    'flood_started_at' => $r->flood_started_at,
+                    'reported_at' => $r->reported_at,
+                    'color' => $color,
                 ],
                 'geometry' => $geometry,
             ];
-        });
+        })->filter(fn (array $feature) => DaNangLandMask::featureIsLikelyLand($feature))->values();
 
         return response()->json([
-            'type'     => 'FeatureCollection',
+            'type' => 'FeatureCollection',
             'features' => $features,
         ]);
     }
@@ -304,19 +318,21 @@ class MapController extends Controller
         $lng = 0;
 
         while ($index < $len) {
-            $shift = 0; $result = 0;
+            $shift = 0;
+            $result = 0;
             do {
                 $b = ord($encoded[$index++]) - 63;
-                $result |= ($b & 0x1f) << $shift;
+                $result |= ($b & 0x1F) << $shift;
                 $shift += 5;
             } while ($b >= 0x20);
             $dlat = ($result & 1) ? ~($result >> 1) : ($result >> 1);
             $lat += $dlat;
 
-            $shift = 0; $result = 0;
+            $shift = 0;
+            $result = 0;
             do {
                 $b = ord($encoded[$index++]) - 63;
-                $result |= ($b & 0x1f) << $shift;
+                $result |= ($b & 0x1F) << $shift;
                 $shift += 5;
             } while ($b >= 0x20);
             $dlng = ($result & 1) ? ~($result >> 1) : ($result >> 1);
@@ -351,28 +367,28 @@ class MapController extends Controller
         $features = $stations->map(function ($s) {
             return [
                 'type' => 'Feature',
-                'id'   => $s->id,
+                'id' => $s->id,
                 'properties' => [
-                    'id'                 => $s->id,
-                    'name'               => $s->name,
-                    'station_type'       => $s->station_type,
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'station_type' => $s->station_type,
                     'station_type_label' => $s->station_type_label,
-                    'area'               => $s->area,
-                    'address'            => $s->address,
-                    'ward_name'          => $s->ward_name,
-                    'district_name'      => $s->district_name,
-                    'current_depth_m'    => $s->current_depth_m,
-                    'phone'              => $s->phone,
+                    'area' => $s->area,
+                    'address' => $s->address,
+                    'ward_name' => $s->ward_name,
+                    'district_name' => $s->district_name,
+                    'current_depth_m' => $s->current_depth_m,
+                    'phone' => $s->phone,
                 ],
                 'geometry' => [
-                    'type'        => 'Point',
-                    'coordinates' => [(float)$s->longitude, (float)$s->latitude],
+                    'type' => 'Point',
+                    'coordinates' => [(float) $s->longitude, (float) $s->latitude],
                 ],
             ];
-        });
+        })->filter(fn (array $feature) => DaNangLandMask::featureIsLikelyLand($feature))->values();
 
         return response()->json([
-            'type'     => 'FeatureCollection',
+            'type' => 'FeatureCollection',
             'features' => $features,
         ]);
     }
@@ -386,8 +402,8 @@ class MapController extends Controller
         $events = DB::table('flood_events')
             ->orderByDesc('started_at')
             ->select(['id', 'external_id', 'name', 'started_at', 'ended_at',
-                      'severity', 'status', 'total_reports', 'affected_districts',
-                      'max_water_level_cm', 'avg_water_level_cm'])
+                'severity', 'status', 'total_reports', 'affected_districts',
+                'max_water_level_cm', 'avg_water_level_cm'])
             ->get();
 
         return ApiResponse::success($events);
@@ -400,14 +416,14 @@ class MapController extends Controller
     public function all(Request $request)
     {
         return ApiResponse::success([
-            'incidents'       => $this->incidents($request)->getData(),
-            'flood_zones'     => $this->floodZones($request)->getData(),
-            'rescue_teams'    => $this->rescueTeams()->getData(),
-            'shelters'        => $this->shelters()->getData(),
-            'sensors'         => $this->sensors()->getData(),
-            'flood_reports'   => $this->floodReports($request)->getData(),
+            'incidents' => $this->incidents($request)->getData(),
+            'flood_zones' => $this->floodZones($request)->getData(),
+            'rescue_teams' => $this->rescueTeams()->getData(),
+            'shelters' => $this->shelters()->getData(),
+            'sensors' => $this->sensors()->getData(),
+            'flood_reports' => $this->floodReports($request)->getData(),
             'sensor_stations' => $this->sensorStations($request)->getData(),
-            'generated_at'    => now()->toIso8601String(),
+            'generated_at' => now()->toIso8601String(),
         ]);
     }
 
@@ -417,7 +433,7 @@ class MapController extends Controller
      */
     public function sensors()
     {
-        $sensors = \App\Models\Sensor::active()->get();
+        $sensors = Sensor::active()->get();
 
         $features = $sensors->map(function ($s) {
             return [
@@ -435,7 +451,7 @@ class MapController extends Controller
                     'coordinates' => [$s->longitude, $s->latitude],
                 ],
             ];
-        });
+        })->filter(fn (array $feature) => DaNangLandMask::featureIsLikelyLand($feature))->values();
 
         return response()->json([
             'type' => 'FeatureCollection',

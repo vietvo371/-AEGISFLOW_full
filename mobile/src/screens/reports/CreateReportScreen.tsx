@@ -29,10 +29,6 @@ MapboxGL.setAccessToken('');
 
 // Category options matching API
 const CATEGORIES = [
-  { value: 1, label: 'Giao thông', icon: 'car', color: '#EF4444' },
-  { value: 2, label: 'Môi trường', icon: 'leaf', color: '#10B981' },
-  { value: 3, label: 'Cháy nổ', icon: 'fire', color: '#F97316' },
-  { value: 4, label: 'Rác thải', icon: 'delete', color: '#7a5af8' },
   { value: 5, label: 'Ngập lụt', icon: 'water', color: '#3B82F6' },
   { value: 6, label: 'Khác', icon: 'dots-horizontal', color: '#6B7280' },
 ];
@@ -83,7 +79,7 @@ const CreateReportScreen = () => {
   const [formData, setFormData] = useState<CreateReportRequest>({
     tieu_de: isRescue ? 'Cần hỗ trợ cứu hộ' : '',
     mo_ta: '',
-    danh_muc: isRescue ? 5 : 1,
+    danh_muc: 5, // Default to Ngập lụt (value 5)
     vi_do: 10.7769,
     kinh_do: 106.7009,
     dia_chi: '',
@@ -574,7 +570,7 @@ const CreateReportScreen = () => {
     setFormData({
       tieu_de: '',
       mo_ta: '',
-      danh_muc: 1,
+      danh_muc: 5, // Default to Ngập lụt (value 5)
       vi_do: 10.7769,
       kinh_do: 106.7009,
       dia_chi: '',
@@ -630,7 +626,7 @@ const CreateReportScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <PageHeader title={isRescue ? "Yêu cầu Cứu hộ SOS" : "Tạo phản ánh mới"} variant="default" />
 
       {/* Draft Restored Banner */}
@@ -1337,7 +1333,7 @@ const CreateReportScreen = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -64,6 +64,7 @@ import EmergencyProfileScreen from '../screens/emergency/EmergencyProfileScreen'
 import AlertDetailScreen from '../screens/alerts/AlertDetailScreen';
 import RescueRequestScreen from '../screens/rescue/RescueRequestScreen';
 import MyRescueRequestsScreen from '../screens/rescue/MyRescueRequestsScreen';
+import RescueRequestDetailScreen from '../screens/rescue/RescueRequestDetailScreen';
 
 // New screens (v2)
 import WeatherDetailScreen from '../screens/weather/WeatherDetailScreen';
@@ -233,6 +234,7 @@ const MainNavigator = () => {
 
         {/* Incidents — dùng IncidentDetailScreen riêng biệt */}
         <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
+        <Stack.Screen name="ReportDetail" component={ReportDetailScreen} />
         <Stack.Screen name="CreateReport" component={CreateReportScreen} />
         <Stack.Screen name="EditReport" component={EditReportScreen} />
         <Stack.Screen name="MyReports" component={MyReportsScreen} />
@@ -264,6 +266,7 @@ const MainNavigator = () => {
         <Stack.Screen name="AlertDetail" component={AlertDetailScreen} />
         <Stack.Screen name="RescueRequest" component={RescueRequestScreen} />
         <Stack.Screen name="MyRescueRequests" component={MyRescueRequestsScreen} />
+        <Stack.Screen name="RescueRequestDetail" component={RescueRequestDetailScreen} />
       </Stack.Group>
     </Stack.Navigator>
   );

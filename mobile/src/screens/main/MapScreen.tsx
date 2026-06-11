@@ -10,12 +10,13 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { theme, cardStyles } from '../../theme';
 import { useWebSocket } from '../../contexts/WebSocketContext';
-import { OPENMAP_STYLE_URL } from '../../config/mapbox';
+import { OPENMAP_STYLE_URL, ndaDirectionsURL } from '../../config/mapbox';
 import env from '../../config/env';
 import { mapService } from '../../services/mapService';
 import { reportService } from '../../services/reportService';
 import { MapReport, MapBounds } from '../../types/api/map';
 import { incidentService, Incident } from '../../services/incidentService';
+import { useTranslation } from '../../hooks/useTranslation';
 
 MapboxGL.setAccessToken('');
 
@@ -35,52 +36,15 @@ const DA_NANG_CENTER: [number, number] = [108.2122, 16.0680];
 
 const CITIZEN_CATEGORIES = [
   { id: -1, label: 'Tất cả', icon: 'view-grid-outline' },
-  { id: 1, label: 'Giao thông', icon: 'road-variant', color: '#FF9500' },
-  { id: 2, label: 'Môi trường', icon: 'tree-outline', color: '#34C759' },
-  { id: 3, label: 'Hỏa hoạn', icon: 'fire', color: '#FF3B30' },
-  { id: 4, label: 'Rác thải', icon: 'trash-can-outline', color: '#8E6F3E' },
   { id: 5, label: 'Ngập lụt', icon: 'weather-pouring', color: '#007AFF' },
   { id: 6, label: 'Khác', icon: 'alert-circle-outline', color: '#8E8E93' },
 ];
 
 const EMERGENCY_CATEGORIES = [
   { id: -1, label: 'Tất cả', icon: 'view-grid-outline', color: '#7a5af8' },
-  { id: 1, label: 'Ùn tắc', icon: 'car-brake-alert', color: '#F97316' },
-  { id: 2, label: 'Tai nạn', icon: 'alert-octagon', color: '#EF4444' },
   { id: 3, label: 'Camera', icon: 'cctv', color: '#06B6D4' },
   { id: 4, label: 'Tuần tra', icon: 'police-badge-outline', color: '#10B981' },
 ];
-
-const MOCK_CAMERAS = [
-  { id: 9001, type: 'camera', title: 'Camera Đầu Cầu Rồng', location: { lat: 16.0610, lng: 108.2272 }, status: 'online', severity: 'low', description: 'Hệ thống phân tích lưu lượng thông minh.' },
-  { id: 9002, type: 'camera', title: 'Camera Ngã Tư Hùng Vương', location: { lat: 16.0718, lng: 108.2198 }, status: 'online', severity: 'low', description: 'Góc quét rộng bao quát toàn bộ ngã tư.' },
-];
-
-const MOCK_PATROLS = [
-  { id: 8001, type: 'patrol', title: 'Tổ Tuần tra CSGT 01', location: { lat: 16.0650, lng: 108.2200 }, status: 'patrolling', severity: 'medium', description: 'Đang di chuyển khu vực Hải Châu.' },
-  { id: 8002, type: 'patrol', title: 'Xe Cứu Y tế 115 ĐN', location: { lat: 16.0595, lng: 108.2150 }, status: 'standby', severity: 'low', description: 'Đang túc trực tại cơ sở y tế.' },
-];
-
-const MOCK_FLOODED_ROUTES: any = {
-  type: 'FeatureCollection',
-  features: [
-    {
-      type: 'Feature',
-      properties: { name: 'Đường Hàm Nghi', depth: '0.6m', level: 'High' },
-      geometry: { type: 'LineString', coordinates: [[108.2120, 16.0645], [108.2160, 16.0665]] }
-    },
-    {
-      type: 'Feature',
-      properties: { name: 'Đường Nguyễn Văn Linh', depth: '0.4m', level: 'Medium' },
-      geometry: { type: 'LineString', coordinates: [[108.2155, 16.0620], [108.2210, 16.0615]] }
-    },
-    {
-      type: 'Feature',
-      properties: { name: 'Đường Lê Duẩn', depth: '0.2m', level: 'Low' },
-      geometry: { type: 'LineString', coordinates: [[108.2180, 16.0690], [108.2250, 16.0710]] }
-    }
-  ]
-};
 
 const SEVERITY_COLORS: Record<string, string> = {
   critical: '#EF4444', high: '#F97316', medium: '#F59E0B', low: '#3B82F6',
@@ -91,11 +55,23 @@ const SEVERITY_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  open: '#EF4444', investigating: '#F59E0B', resolved: '#10B981', closed: '#6B7280',
+  open: '#EF4444',
+  reported: '#EF4444',
+  verified: '#3B82F6',
+  responding: '#F59E0B',
+  investigating: '#F59E0B',
+  resolved: '#10B981',
+  closed: '#6B7280',
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  open: 'Mở', investigating: 'Đang điều tra', resolved: 'Đã giải quyết', closed: 'Đã đóng',
+  open: 'Mở',
+  reported: 'Mới báo cáo',
+  verified: 'Đã xác minh',
+  responding: 'Đang ứng phó',
+  investigating: 'Đang xử lý',
+  resolved: 'Đã giải quyết',
+  closed: 'Đã đóng',
 };
 
 const getCategoryColor = (id: number) => CITIZEN_CATEGORIES.find(c => c.id === id)?.color || '#8E8E93';
@@ -183,14 +159,119 @@ const toCoordinate = (longitude: any, latitude: any): [number, number] | null =>
   return Number.isFinite(lng) && Number.isFinite(lat) ? [lng, lat] : null;
 };
 
+const getFirstCoordinate = (geometry: any): [number, number] | null => {
+  const coords = geometry?.coordinates;
+  if (!Array.isArray(coords)) return null;
+  if (isValidCoordinate(coords)) return coords;
+  if (geometry?.type === 'LineString') {
+    return coords.find(isValidCoordinate) || null;
+  }
+  return null;
+};
+
+const DANANG_BOUNDS = {
+  minLng: 108.02,
+  maxLng: 108.29,
+  minLat: 15.82,
+  maxLat: 16.16,
+};
+
+const DANANG_LAND_POLYGONS: [number, number][][] = [
+  [
+    [108.020, 15.820],
+    [108.225, 15.820],
+    [108.235, 16.065],
+    [108.205, 16.092],
+    [108.165, 16.120],
+    [108.055, 16.155],
+    [108.020, 16.155],
+  ],
+  [
+    [108.205, 16.070],
+    [108.235, 16.055],
+    [108.285, 16.070],
+    [108.292, 16.122],
+    [108.255, 16.150],
+    [108.215, 16.130],
+    [108.195, 16.098],
+  ],
+  [
+    [108.205, 15.850],
+    [108.275, 15.850],
+    [108.275, 16.070],
+    [108.225, 16.070],
+    [108.205, 15.980],
+  ],
+];
+
+const DANANG_WATER_POLYGONS: [number, number][][] = [
+  [
+    [108.165, 16.082],
+    [108.190, 16.086],
+    [108.216, 16.098],
+    [108.224, 16.109],
+    [108.204, 16.119],
+    [108.174, 16.107],
+    [108.155, 16.091],
+  ],
+  [
+    [108.168, 16.078],
+    [108.190, 16.076],
+    [108.210, 16.080],
+    [108.224, 16.094],
+    [108.216, 16.098],
+    [108.190, 16.086],
+    [108.165, 16.082],
+  ],
+];
+
+const pointInPolygon = (lng: number, lat: number, polygon: [number, number][]): boolean => {
+  let inside = false;
+
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const [lngI, latI] = polygon[i];
+    const [lngJ, latJ] = polygon[j];
+    const intersects = ((latI > lat) !== (latJ > lat))
+      && (lng < ((lngJ - lngI) * (lat - latI)) / ((latJ - latI) || 1e-12) + lngI);
+
+    if (intersects) inside = !inside;
+  }
+
+  return inside;
+};
+
+const isLikelyDaNangLand = (coordinate: any): coordinate is [number, number] => {
+  if (!isValidCoordinate(coordinate)) return false;
+
+  const [lng, lat] = coordinate;
+  if (
+    lng < DANANG_BOUNDS.minLng ||
+    lng > DANANG_BOUNDS.maxLng ||
+    lat < DANANG_BOUNDS.minLat ||
+    lat > DANANG_BOUNDS.maxLat
+  ) {
+    return false;
+  }
+
+  if (DANANG_WATER_POLYGONS.some(polygon => pointInPolygon(lng, lat, polygon))) {
+    return false;
+  }
+
+  return DANANG_LAND_POLYGONS.some(polygon => pointInPolygon(lng, lat, polygon));
+};
+
 // ─── Component ─────────────────────────────────────────────
 const MapScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute();
   const routeParams = route.params as { shelterRoute?: ShelterRouteTarget } | undefined;
   const isEmergency = route.name === 'SituationMap';
   const { isConnected, listen, subscribe, unsubscribe } = useWebSocket();
   const insets = useSafeAreaInsets();
+  const topInset = Platform.OS === 'ios'
+    ? (insets.top > 0 ? insets.top : 47)
+    : (insets.top > 0 ? insets.top : (StatusBar.currentHeight || 24));
 
   const [userLocation, setUserLocation] = useState<number[] | null>(null);
   const [selectedCategory, setSelectedCategory] = useState(-1);
@@ -202,23 +283,31 @@ const MapScreen = () => {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [trafficGeoJSON, setTrafficGeoJSON] = useState<any>(null);
   const [floodZonesGeoJSON, setFloodZonesGeoJSON] = useState<any>(null);
+  const [floodReportsGeoJSON, setFloodReportsGeoJSON] = useState<any>(null);
   const [shelters, setShelters] = useState<any[]>([]);
   const [mapIncidents, setMapIncidents] = useState<Incident[]>([]);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const [selectedShelter, setSelectedShelter] = useState<any>(null);
   const [mapIcons, setMapIcons] = useState<Record<string, any>>({});
   const [showLayers, setShowLayers] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [activeLayers, setActiveLayers] = useState<Set<LayerKey>>(
-    new Set(['alerts', 'shelters', 'flood_zones', 'flood_streets'] as LayerKey[])
+    new Set(['alerts', 'shelters', 'flood_zones', 'flood_streets', 'flood_points'] as LayerKey[])
   );
   const [locating, setLocating] = useState(false);
   const [activeShelterRoute, setActiveShelterRoute] = useState<ShelterRouteTarget | null>(null);
+  const [realRouteGeoJSON, setRealRouteGeoJSON] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const routeOffset = activeShelterRoute ? 58 : 0;
 
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const mapRef = useRef<MapboxGL.MapView>(null);
   const slideAnim = useRef(new Animated.Value(500)).current;
   const backdropAnim = useRef(new Animated.Value(0)).current;
   const layerPanelAnim = useRef(new Animated.Value(300)).current;
+  const mapFetchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ─── Location Permission Request ─────────────────────────────
   const requestLocationPermission = async () => {
@@ -286,17 +375,16 @@ const MapScreen = () => {
   // ─── Icon Generation ─────────────────────────────────────
   useEffect(() => {
     const iconDefs = [
-      { key: 'icon_accident', name: 'alert-octagon', color: '#EF4444' },
-      { key: 'icon_congestion', name: 'car-brake-alert', color: '#F97316' },
-      { key: 'icon_construction', name: 'hard-hat', color: '#EAB308' },
-      { key: 'icon_weather', name: 'weather-lightning-rainy', color: '#3B82F6' },
+      { key: 'icon_flood', name: 'home-flood', color: '#0284C7' },
+      { key: 'icon_heavy_rain', name: 'weather-pouring', color: '#2563EB' },
+      { key: 'icon_landslide', name: 'slope-downhill', color: '#D97706' },
+      { key: 'icon_dam_failure', name: 'waves', color: '#4F46E5' },
       { key: 'icon_camera', name: 'cctv', color: '#06B6D4' },
       { key: 'icon_patrol', name: 'police-badge-outline', color: '#10B981' },
       { key: 'icon_traffic', name: 'road-variant', color: '#F97316' },
       { key: 'icon_environment', name: 'tree-outline', color: '#10B981' },
       { key: 'icon_fire', name: 'fire', color: '#EF4444' },
       { key: 'icon_trash', name: 'trash-can-outline', color: '#8B6F4E' },
-      { key: 'icon_flood', name: 'weather-pouring', color: '#3B82F6' },
       { key: 'icon_shelter', name: 'home-heart', color: '#10B981' },
       { key: 'icon_default', name: 'alert-circle-outline', color: '#7a5af8' },
     ];
@@ -334,28 +422,47 @@ const MapScreen = () => {
       const filters: any = {};
       if (selectedCategory !== -1) filters.danh_muc = selectedCategory;
 
-      const response = await mapService.getMapReports(mapBounds, filters);
-      if (response.success && response.data) {
+      const [reportResult, floodReportResult] = await Promise.allSettled([
+        mapService.getMapReports(mapBounds, filters),
+        selectedCategory === -1 || selectedCategory === 5
+          ? mapService.getFloodReports(mapBounds)
+          : Promise.resolve({ type: 'FeatureCollection', features: [] }),
+      ]);
+
+      if (floodReportResult.status === 'fulfilled') {
+        setFloodReportsGeoJSON(floodReportResult.value);
+      } else {
+        setFloodReportsGeoJSON({ type: 'FeatureCollection', features: [] });
+      }
+
+      const response = reportResult.status === 'fulfilled' ? reportResult.value : null;
+      if (response?.success && response.data) {
         const geojson = response.data as any;
         if (geojson.type === 'FeatureCollection' && geojson.features) {
-          setMapReports(geojson.features.map((f: any) => ({
-            id: f.properties.id,
-            tieu_de: f.properties.tieu_de,
-            danh_muc: f.properties.danh_muc,
-            danh_muc_text: f.properties.danh_muc_text,
-            trang_thai: f.properties.trang_thai,
-            uu_tien: f.properties.uu_tien,
-            marker_color: f.properties.marker_color,
-            kinh_do: f.geometry.coordinates[0],
-            vi_do: f.geometry.coordinates[1],
-            nguoi_dung: f.properties.nguoi_dung,
-          } as MapReport)));
+          setMapReports(geojson.features
+            .filter((f: any) => isLikelyDaNangLand(f.geometry?.coordinates))
+            .map((f: any) => ({
+              id: f.properties.id,
+              tieu_de: f.properties.tieu_de || f.properties.title,
+              danh_muc: f.properties.danh_muc || 5,
+              danh_muc_text: f.properties.danh_muc_text,
+              trang_thai: f.properties.trang_thai,
+              uu_tien: f.properties.uu_tien,
+              marker_color: f.properties.marker_color,
+              kinh_do: f.geometry.coordinates[0],
+              vi_do: f.geometry.coordinates[1],
+              nguoi_dung: f.properties.nguoi_dung,
+            } as MapReport)));
         } else {
           setMapReports([]);
         }
+      } else {
+        setMapReports([]);
       }
     } catch (e) {
-      console.warn('Network error when fetching map data (backend might be offline).');
+      console.warn('Network error when fetching map data:', e);
+      setMapReports([]);
+      setFloodReportsGeoJSON({ type: 'FeatureCollection', features: [] });
     } finally {
       setLoading(false);
     }
@@ -368,10 +475,20 @@ const MapScreen = () => {
         mapService.getFloodZones(),
         mapService.getShelters(),
       ]);
-      if (traffic.status === 'fulfilled' && traffic.value?.type === 'FeatureCollection') setTrafficGeoJSON(traffic.value);
-      if (flood.status === 'fulfilled' && flood.value) setFloodZonesGeoJSON(flood.value);
-      if (shelterRes.status === 'fulfilled' && (shelterRes.value as any)?.success) setShelters((shelterRes.value as any).data);
-    } catch { /* */ }
+      if (traffic.status === 'fulfilled' && traffic.value?.type === 'FeatureCollection') {
+        setTrafficGeoJSON(traffic.value);
+      }
+      
+      if (flood.status === 'fulfilled' && flood.value) {
+        setFloodZonesGeoJSON(flood.value);
+      }
+      
+      if (shelterRes.status === 'fulfilled' && (shelterRes.value as any)?.success) {
+        setShelters((shelterRes.value as any).data || []);
+      }
+    } catch (e) {
+      console.warn('Error fetching map layers:', e);
+    }
   }, []);
 
   useEffect(() => { fetchLayers(); }, []);
@@ -427,7 +544,7 @@ const MapScreen = () => {
   }, [isConnected, mapLoaded]);
 
   // ─── Bottom Sheet Animation ──────────────────────────────
-  const showSheet = selectedReport || selectedIncident;
+  const showSheet = selectedReport || selectedIncident || selectedShelter;
 
   useEffect(() => {
     if (showSheet) {
@@ -445,9 +562,74 @@ const MapScreen = () => {
     ]).start(() => {
       setSelectedReport(null);
       setSelectedIncident(null);
+      setSelectedShelter(null);
       setReportDetail(null);
     });
   };
+
+  // ─── Fetch real route from NDA API ──────────────────────────
+  useEffect(() => {
+    if (!activeShelterRoute) {
+      setRealRouteGeoJSON(null);
+      return;
+    }
+    const dest = toCoordinate(activeShelterRoute.longitude, activeShelterRoute.latitude);
+    if (!dest) { setRealRouteGeoJSON(null); return; }
+
+    const origin: [number, number] = isValidCoordinate(userLocation)
+      ? [userLocation![0], userLocation![1]]
+      : [108.2122, 16.0680];
+
+    const url = `https://router.project-osrm.org/route/v1/driving/${origin[0]},${origin[1]};${dest[0]},${dest[1]}?overview=full&geometries=geojson`;
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        // NDA API trả về geometry.coordinates theo chuẩn GeoJSON
+        const coords = data?.routes?.[0]?.geometry?.coordinates
+          || data?.route?.geometry?.coordinates
+          || data?.paths?.[0]?.points?.coordinates
+          || null;
+
+        if (coords && coords.length >= 2) {
+          setRealRouteGeoJSON({
+            type: 'FeatureCollection',
+            features: [{
+              type: 'Feature',
+              id: `route_${activeShelterRoute.id}`,
+              properties: { name: activeShelterRoute.name },
+              geometry: { type: 'LineString', coordinates: coords },
+            }],
+          });
+        } else {
+          // Fallback: vẽ đường thẳng nếu API không trả kết quả
+          setRealRouteGeoJSON({
+            type: 'FeatureCollection',
+            features: [{
+              type: 'Feature',
+              id: `route_${activeShelterRoute.id}`,
+              properties: { name: activeShelterRoute.name },
+              geometry: { type: 'LineString', coordinates: [origin, dest] },
+            }],
+          });
+        }
+      })
+      .catch(() => {
+        // Fallback khi lỗi mạng
+        const dest2 = toCoordinate(activeShelterRoute.longitude, activeShelterRoute.latitude)!;
+        const origin2: [number, number] = isValidCoordinate(userLocation)
+          ? [userLocation![0], userLocation![1]]
+          : [108.2122, 16.0680];
+        setRealRouteGeoJSON({
+          type: 'FeatureCollection',
+          features: [{
+            type: 'Feature',
+            id: `route_${activeShelterRoute.id}`,
+            properties: {},
+            geometry: { type: 'LineString', coordinates: [origin2, dest2] },
+          }],
+        });
+      });
+  }, [activeShelterRoute, userLocation]);
 
   // ─── Handlers ────────────────────────────────────────────
   const centerUserLocation = async () => {
@@ -486,9 +668,116 @@ const MapScreen = () => {
     }
   };
 
+  const handleSearchTextChange = (text: string) => {
+    setSearchQuery(text);
+    if (!text.trim()) {
+      setSearchResults([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const query = text.toLowerCase();
+    const results: any[] = [];
+
+    // 1. Search in shelters
+    shelters.forEach(s => {
+      if ((s.ten_diem && s.ten_diem.toLowerCase().includes(query)) || 
+          (s.dia_chi && s.dia_chi.toLowerCase().includes(query))) {
+        results.push({
+          id: `shelter_${s.id}`,
+          type: 'shelter',
+          title: s.ten_diem,
+          subtitle: s.dia_chi || 'Điểm trú ẩn sơ tán',
+          coordinates: [parseFloat(s.longitude), parseFloat(s.latitude)],
+          raw: s,
+        });
+      }
+    });
+
+    // 2. Search in mapIncidents
+    mapIncidents.forEach(inc => {
+      const coordinate = toCoordinate(inc.location?.lng, inc.location?.lat);
+      if (!coordinate || !isLikelyDaNangLand(coordinate)) return;
+
+      if ((inc.title && inc.title.toLowerCase().includes(query)) || 
+          (inc.description && inc.description.toLowerCase().includes(query)) ||
+          (inc.location_name && inc.location_name.toLowerCase().includes(query))) {
+        results.push({
+          id: `incident_${inc.id}`,
+          type: 'incident',
+          title: inc.title,
+          subtitle: inc.location_name || 'Sự cố khẩn cấp',
+          coordinates: coordinate,
+          raw: inc,
+        });
+      }
+    });
+
+    // 3. Search in mapReports
+    mapReports.forEach(r => {
+      const report = r as MapReport & { dia_chi?: string };
+      if ((report.tieu_de && report.tieu_de.toLowerCase().includes(query)) || 
+          (report.dia_chi && report.dia_chi.toLowerCase().includes(query))) {
+        results.push({
+          id: `report_${report.id}`,
+          type: 'report',
+          title: report.tieu_de,
+          subtitle: report.dia_chi || 'Báo cáo từ người dân',
+          coordinates: [report.kinh_do, report.vi_do],
+          raw: report,
+        });
+      }
+    });
+
+    // 4. Removed mock streets
+
+    setSearchResults(results.slice(0, 10));
+    setShowSuggestions(true);
+  };
+
+  const handleSelectSuggestion = (item: any) => {
+    setShowSuggestions(false);
+    setSearchQuery(item.title);
+
+    if (cameraRef.current && item.coordinates) {
+      cameraRef.current.setCamera({
+        centerCoordinate: item.coordinates as [number, number],
+        zoomLevel: 15,
+        animationDuration: 1000,
+      });
+    }
+
+    if (item.type === 'report') {
+      handleMarkerSelect(item.raw);
+    } else if (item.type === 'incident') {
+      setSelectedIncident(item.raw);
+      setSelectedReport(null);
+    } else if (item.type === 'shelter') {
+      const s = item.raw;
+      setTimeout(() => {
+        Alert.alert(
+          s.ten_diem || 'Điểm trú ẩn',
+          `Địa chỉ: ${s.dia_chi || 'Không rõ'}\nSức chứa: ${s.hien_tai || 0}/${s.suc_chua || 0} người\nTrạng thái: ${s.tinh_trang === 'full' ? 'Đầy' : s.tinh_trang === 'limited' ? 'Hạn chế' : 'Còn chỗ'}`
+        );
+      }, 500);
+    } else if (item.type === 'street') {
+      Alert.alert(
+        item.title,
+        `Trạng thái: Tuyến đường đang ngập nước\nĐộ sâu: ${item.raw.properties.depth}\nMức độ rủi ro: ${item.raw.properties.level === 'High' ? 'Cao (Nguy hiểm)' : item.raw.properties.level === 'Medium' ? 'Trung bình' : 'Thấp'}`
+      );
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowSuggestions(false);
+  };
+
   const handleMarkerSelect = (report: MapReport) => {
     setSelectedReport(report);
     setSelectedIncident(null);
+    setSelectedShelter(null);
     setReportDetail(null);
     setLoadingDetail(true);
     reportService.getReportDetail(report.id)
@@ -497,11 +786,52 @@ const MapScreen = () => {
       .finally(() => setLoadingDetail(false));
   };
 
+  const handleFloodReportSelect = (feature: any) => {
+    const props = feature?.properties || {};
+    const coordinate = getFirstCoordinate(feature?.geometry);
+    if (!coordinate) return;
+
+    setSelectedReport({
+      id: Number(props.id),
+      tieu_de: props.street_name || props.address || 'Điểm ngập',
+      danh_muc: 5,
+      danh_muc_text: props.flood_type === 'street' ? 'Đường ngập' : 'Điểm ngập',
+      trang_thai: 2,
+      uu_tien: Number(props.water_level_cm) >= 75 ? 4 : Number(props.water_level_cm) >= 50 ? 3 : 2,
+      marker_color: props.color || '#3B82F6',
+      kinh_do: coordinate[0],
+      vi_do: coordinate[1],
+      nguoi_dung: props.source || 'Dữ liệu ngập',
+    } as MapReport);
+    setReportDetail({
+      id: Number(props.id),
+      is_flood_report: true,
+      title: props.street_name || props.address || 'Điểm ngập',
+      mo_ta: props.description || [
+        props.water_level_cm ? `Mực nước: ${props.water_level_cm} cm` : null,
+        props.ward_name,
+        props.district_name,
+      ].filter(Boolean).join(' · '),
+      dia_chi: props.address,
+      hinh_anhs: props.image_urls || [],
+      water_level_cm: props.water_level_cm,
+      district_name: props.district_name,
+      ward_name: props.ward_name,
+      reported_at: props.reported_at,
+      image_urls: props.image_urls,
+      flood_type: props.flood_type,
+    });
+    setSelectedIncident(null);
+    setSelectedShelter(null);
+    setLoadingDetail(false);
+  };
+
   // ─── GeoJSON Features ───────────────────────────────────
   const getFeatures = () => {
     if (!isEmergency) {
       return mapReports
         .filter(r => {
+          if (!isLikelyDaNangLand([r.kinh_do, r.vi_do])) return false;
           if (r.danh_muc === 5) {
             return activeLayers.has('flood_points');
           }
@@ -517,38 +847,26 @@ const MapScreen = () => {
 
     let features: any[] = [];
     let incidents = mapIncidents;
-    if (selectedCategory === 1) incidents = mapIncidents.filter(i => i.type === 'congestion');
-    else if (selectedCategory === 2) incidents = mapIncidents.filter(i => i.type !== 'congestion');
+    if (selectedCategory === 1) incidents = mapIncidents.filter(i => (i.type as string) === 'congestion');
+    else if (selectedCategory === 2) incidents = mapIncidents.filter(i => (i.type as string) !== 'congestion');
 
     if (selectedCategory === -1 || selectedCategory <= 2) {
       if (activeLayers.has('alerts')) {
-        features.push(...incidents.map(inc => ({
-          type: 'Feature', id: inc.id.toString(),
-          geometry: { type: 'Point', coordinates: [inc.location?.lng || 108.2122, inc.location?.lat || 16.0680] },
-          properties: {
-            ...inc, _isIncident: true,
-            _severityColor: SEVERITY_COLORS[inc.severity] || '#10B981',
-            _isCritical: inc.severity === 'critical' ? 1 : 0,
-          },
-        })));
-      }
-    }
-    if (selectedCategory === -1 || selectedCategory === 3) {
-      if (activeLayers.has('alerts')) {
-        features.push(...MOCK_CAMERAS.map(c => ({
-          type: 'Feature', id: c.id.toString(),
-          geometry: { type: 'Point', coordinates: [c.location.lng, c.location.lat] },
-          properties: { ...c, _isIncident: true, _severityColor: '#06B6D4', _isCritical: 0 },
-        })));
-      }
-    }
-    if (selectedCategory === -1 || selectedCategory === 4) {
-      if (activeLayers.has('alerts')) {
-        features.push(...MOCK_PATROLS.map(p => ({
-          type: 'Feature', id: p.id.toString(),
-          geometry: { type: 'Point', coordinates: [p.location.lng, p.location.lat] },
-          properties: { ...p, _isIncident: true, _severityColor: '#10B981', _isCritical: 0 },
-        })));
+        features.push(...incidents.flatMap(inc => {
+          const coordinate = toCoordinate(inc.location?.lng, inc.location?.lat);
+          if (!coordinate || !isLikelyDaNangLand(coordinate)) return [];
+
+          return [{
+            type: 'Feature',
+            id: inc.id.toString(),
+            geometry: { type: 'Point', coordinates: coordinate },
+            properties: {
+              ...inc, _isIncident: true,
+              _severityColor: SEVERITY_COLORS[inc.severity] || '#10B981',
+              _isCritical: inc.severity === 'critical' ? 1 : 0,
+            },
+          }];
+        }));
       }
     }
     return features;
@@ -559,7 +877,10 @@ const MapScreen = () => {
     return shelters
       .flatMap(s => {
         const coordinate = toCoordinate(s.longitude, s.latitude);
-        if (!coordinate) return [];
+        if (!coordinate || !isLikelyDaNangLand(coordinate)) return [];
+
+        const statusRaw = s.status || s.tinh_trang;
+        const color = statusRaw === 'full' ? '#EF4444' : statusRaw === 'limited' ? '#F59E0B' : '#10B981';
 
         return [{
           type: 'Feature' as const,
@@ -569,34 +890,13 @@ const MapScreen = () => {
             ...s,
             _isShelter: true,
             _icon: 'icon_shelter',
-            _color: s.tinh_trang === 'full' ? '#EF4444' : s.tinh_trang === 'limited' ? '#F59E0B' : '#10B981',
+            _color: color,
           },
         }];
       });
   };
 
-  const getShelterRouteGeoJSON = () => {
-    if (!activeShelterRoute) return null;
-
-    const origin = isValidCoordinate(userLocation) ? userLocation : DA_NANG_CENTER;
-    const destination = toCoordinate(activeShelterRoute.longitude, activeShelterRoute.latitude);
-    if (!destination) return null;
-
-    return {
-      type: 'FeatureCollection' as const,
-      features: [
-        {
-          type: 'Feature' as const,
-          id: `route_to_shelter_${activeShelterRoute.id}`,
-          properties: { name: activeShelterRoute.name },
-          geometry: {
-            type: 'LineString' as const,
-            coordinates: [origin, destination],
-          },
-        },
-      ],
-    };
-  };
+  const getShelterRouteGeoJSON = () => realRouteGeoJSON;
 
   const shelterRouteGeoJSON = getShelterRouteGeoJSON();
 
@@ -612,6 +912,11 @@ const MapScreen = () => {
         logoEnabled={false}
         attributionEnabled={false}
         onDidFinishLoadingMap={() => setMapLoaded(true)}
+        onRegionDidChange={() => {
+          if (!mapLoaded) return;
+          if (mapFetchTimer.current) clearTimeout(mapFetchTimer.current);
+          mapFetchTimer.current = setTimeout(fetchMapReports, 450);
+        }}
       >
         <MapboxGL.Camera
           ref={cameraRef}
@@ -655,23 +960,7 @@ const MapScreen = () => {
           </MapboxGL.ShapeSource>
         )}
 
-        {/* Traffic Lines */}
-        {trafficGeoJSON && (
-          <MapboxGL.ShapeSource id="trafficEdgesSource" shape={trafficGeoJSON}>
-            <MapboxGL.LineLayer
-              id="trafficLinesLayer"
-              style={{
-                lineJoin: 'round',
-                lineCap: 'round',
-                lineWidth: ['interpolate', ['linear'], ['zoom'], 10, 2, 15, 6],
-                lineColor: [
-                  'interpolate', ['linear'], ['get', 'current_density'],
-                  0.0, '#10b981', 0.4, '#eab308', 0.6, '#f97316', 0.8, '#ef4444', 1.0, '#881337',
-                ] as any,
-              }}
-            />
-          </MapboxGL.ShapeSource>
-        )}
+        {/* Traffic Lines Layer is removed to focus strictly on flood prevention */}
 
         {/* Flood Zones */}
         {floodZonesGeoJSON && (
@@ -713,29 +1002,38 @@ const MapScreen = () => {
           </MapboxGL.ShapeSource>
         )}
 
-        {/* Flooded Routes */}
-        {(selectedCategory === -1 || selectedCategory === 5) && (
-          <MapboxGL.ShapeSource id="floodedRoutesSource" shape={MOCK_FLOODED_ROUTES}>
+        {/* Real flood reports: historical point floods and flooded streets */}
+        {floodReportsGeoJSON && (
+          <MapboxGL.ShapeSource
+            id="floodReportsSource"
+            shape={floodReportsGeoJSON}
+            onPress={(e) => {
+              const feature = e.features?.[0];
+              if (feature) handleFloodReportSelect(feature);
+            }}
+          >
             <MapboxGL.LineLayer
-              id="floodedRoutesLine"
+              id="floodReportStreets"
+              filter={['==', ['geometry-type'], 'LineString']}
               visible={activeLayers.has('flood_streets')}
               style={{
-                lineColor: ['match', ['get', 'level'], 'High', '#B91C1C', 'Medium', '#B45309', 'Low', '#1D4ED8', '#1D4ED8'] as any,
-                lineWidth: 5,
+                lineColor: ['coalesce', ['get', 'color'], '#3B82F6'] as any,
+                lineWidth: ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 4] as any,
+                lineOpacity: 0.9,
                 lineCap: 'round',
                 lineJoin: 'round',
               }}
             />
-            <MapboxGL.SymbolLayer
-              id="floodedRoutesLabel"
-              visible={activeLayers.has('flood_streets')}
+            <MapboxGL.CircleLayer
+              id="floodReportPoints"
+              filter={['==', ['geometry-type'], 'Point']}
+              visible={activeLayers.has('flood_points')}
               style={{
-                symbolPlacement: 'line',
-                textField: ['format', ['get', 'name'], ' (', ['get', 'depth'], ')'],
-                textSize: 12,
-                textColor: '#1E293B',
-                textHaloColor: '#ffffff',
-                textHaloWidth: 2,
+                circleRadius: ['interpolate', ['linear'], ['zoom'], 10, 5, 14, 10] as any,
+                circleColor: ['coalesce', ['get', 'color'], '#3B82F6'] as any,
+                circleStrokeWidth: 2,
+                circleStrokeColor: '#ffffff',
+                circleOpacity: 0.95,
               }}
             />
           </MapboxGL.ShapeSource>
@@ -749,10 +1047,9 @@ const MapScreen = () => {
             onPress={(e) => {
               const f = e.features[0];
               if (f?.properties) {
-                Alert.alert(
-                  f.properties.ten_diem || 'Điểm trú ẩn',
-                  `Địa chỉ: ${f.properties.dia_chi || 'Không rõ'}\nSức chứa: ${f.properties.hien_tai || 0}/${f.properties.suc_chua || 0} người\nTrạng thái: ${f.properties.tinh_trang === 'full' ? 'Đầy' : f.properties.tinh_trang === 'limited' ? 'Hạn chế' : 'Còn chỗ'}`
-                );
+                setSelectedShelter(f.properties);
+                setSelectedIncident(null);
+                setSelectedReport(null);
               }
             }}
           >
@@ -810,7 +1107,7 @@ const MapScreen = () => {
           )}
           <MapboxGL.CircleLayer
             id="markerCircles"
-            visible={activeLayers.has('alerts')}
+            visible={activeLayers.has('alerts') || activeLayers.has('flood_points')}
             style={{
               circleRadius: ['interpolate', ['linear'], ['zoom'], 10, isEmergency ? 8 : 6, 14, isEmergency ? 14 : 11] as any,
               circleColor: isEmergency
@@ -823,10 +1120,10 @@ const MapScreen = () => {
           />
           <MapboxGL.SymbolLayer
             id="reportsLayer"
-            visible={activeLayers.has('alerts')}
+            visible={activeLayers.has('alerts') || activeLayers.has('flood_points')}
             style={{
               iconImage: isEmergency
-                ? (['match', ['get', 'type'], 'accident', 'icon_accident', 'congestion', 'icon_congestion', 'construction', 'icon_construction', 'weather', 'icon_weather', 'camera', 'icon_camera', 'patrol', 'icon_patrol', 'icon_default'] as any)
+                ? (['match', ['get', 'type'], 'flood', 'icon_flood', 'heavy_rain', 'icon_heavy_rain', 'landslide', 'icon_landslide', 'dam_failure', 'icon_dam_failure', 'camera', 'icon_camera', 'patrol', 'icon_patrol', 'icon_default'] as any)
                 : (['match', ['get', 'danh_muc'], 1, 'icon_traffic', 2, 'icon_environment', 3, 'icon_fire', 4, 'icon_trash', 5, 'icon_flood', 7, 'icon_shelter', 'icon_default'] as any),
               iconSize: isEmergency ? 0.45 : 0.5,
               iconAllowOverlap: true,
@@ -840,25 +1137,83 @@ const MapScreen = () => {
       {loading && (
         <View style={styles.loadingOverlay}>
           <View style={styles.loadingBox}>
-            <Text style={styles.loadingText}>Đang tải...</Text>
+            <Text style={styles.loadingText}>{t('common.loading')}</Text>
           </View>
         </View>
       )}
 
       {/* Header overlay */}
-      <View style={[styles.headerOverlay, { paddingTop: Math.max(insets.top, 10) }]} pointerEvents="box-none">
+      <View style={[styles.headerOverlay, { paddingTop: topInset }]} pointerEvents="box-none">
         <View style={styles.searchRow} pointerEvents="box-none">
           <View style={styles.searchBar}>
             <Icon name="magnify" size={20} color={theme.colors.textSecondary} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Tìm kiếm địa điểm..."
+              placeholder={t('citizen.map.searchPlace', 'Tìm kiếm địa điểm, sự cố...')}
               placeholderTextColor={theme.colors.textTertiary}
+              value={searchQuery}
+              onChangeText={handleSearchTextChange}
             />
+            {searchQuery.length > 0 ? (
+              <TouchableOpacity onPress={handleClearSearch} style={{ marginRight: 8 }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Icon name="close-circle" size={18} color={theme.colors.textTertiary} />
+              </TouchableOpacity>
+            ) : null}
             <TouchableOpacity onPress={fetchMapReports} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Icon name="refresh" size={20} color={isEmergency ? '#EF4444' : theme.colors.primary} />
             </TouchableOpacity>
           </View>
+
+          {showSuggestions && searchResults.length > 0 && (
+            <View style={styles.suggestionsContainer}>
+              <ScrollView 
+                keyboardShouldPersistTaps="handled" 
+                style={styles.suggestionsScroll}
+                contentContainerStyle={styles.suggestionsContent}
+              >
+                {searchResults.map((item) => {
+                  const getIcon = () => {
+                    switch (item.type) {
+                      case 'shelter': return 'home-heart';
+                      case 'incident': return 'alert-decagram';
+                      case 'report': return 'file-document-outline';
+                      case 'street': return 'water-outline';
+                      default: return 'map-marker';
+                    }
+                  };
+                  const getIconColor = () => {
+                    switch (item.type) {
+                      case 'shelter': return '#10B981';
+                      case 'incident': return '#EF4444';
+                      case 'report': return '#3B82F6';
+                      case 'street': return '#0284C7';
+                      default: return theme.colors.textSecondary;
+                    }
+                  };
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.suggestionItem}
+                      onPress={() => handleSelectSuggestion(item)}
+                    >
+                      <View style={[styles.suggestionIconBg, { backgroundColor: getIconColor() + '12' }]}>
+                        <Icon name={getIcon()} size={16} color={getIconColor()} />
+                      </View>
+                      <View style={styles.suggestionTextWrap}>
+                        <Text style={styles.suggestionTitle} numberOfLines={1}>
+                          {item.title}
+                        </Text>
+                        <Text style={styles.suggestionSubtitle} numberOfLines={1}>
+                          {item.subtitle}
+                        </Text>
+                      </View>
+                      <Icon name="chevron-right" size={16} color={theme.colors.border} />
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
         </View>
 
         {activeShelterRoute && (
@@ -890,17 +1245,39 @@ const MapScreen = () => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={styles.filterScrollView}
+          style={[styles.filterScrollView, activeShelterRoute && styles.filterScrollViewWithRoute]}
           contentContainerStyle={styles.filterRow}
         >
           {(isEmergency ? EMERGENCY_CATEGORIES : CITIZEN_CATEGORIES).map(cat => {
+            const getCategoryLabel = (c: any) => {
+              if (c.id === -1) return t('common.all');
+              if (isEmergency) {
+                switch (c.id) {
+                  case 1: return t('incidents.type.congestion', 'Congestion');
+                  case 2: return t('incidents.type.accident', 'Accident');
+                  case 3: return t('mapLayers.cameras', 'Cameras');
+                  case 4: return t('mapLayers.patrols', 'Patrols');
+                  default: return c.label;
+                }
+              } else {
+                switch (c.id) {
+                  case 1: return t('mapLayers.traffic', 'Traffic');
+                  case 2: return t('reports.categories.environment', 'Environment');
+                  case 3: return t('reports.categories.fire', 'Fire');
+                  case 4: return t('reports.categories.waste', 'Waste');
+                  case 5: return t('reports.categories.flood', 'Flood');
+                  case 6: return t('reports.categories.other', 'Other');
+                  default: return c.label;
+                }
+              }
+            };
             const isActive = selectedCategory === cat.id;
             const color = cat.color || theme.colors.primary;
             const count = isEmergency
-              ? (cat.id === -1 ? mapIncidents.length + MOCK_CAMERAS.length + MOCK_PATROLS.length
-                : cat.id === 1 ? mapIncidents.filter(i => i.type === 'congestion').length
-                : cat.id === 2 ? mapIncidents.filter(i => i.type !== 'congestion').length
-                : cat.id === 3 ? MOCK_CAMERAS.length : MOCK_PATROLS.length)
+              ? (cat.id === -1 ? mapIncidents.length
+                : cat.id === 1 ? mapIncidents.filter(i => (i.type as string) === 'congestion').length
+                : cat.id === 2 ? mapIncidents.filter(i => (i.type as string) !== 'congestion').length
+                : 0)
               : (cat.id === -1 ? mapReports.length : mapReports.filter(r => r.danh_muc === cat.id).length);
 
             return (
@@ -910,7 +1287,7 @@ const MapScreen = () => {
                 onPress={() => setSelectedCategory(cat.id)}
               >
                 <Icon name={cat.icon} size={14} color={isActive ? '#fff' : color} />
-                <Text style={[styles.chipText, { color: isActive ? '#fff' : color }]}>{cat.label}</Text>
+                <Text style={[styles.chipText, { color: isActive ? '#fff' : color }]}>{getCategoryLabel(cat)}</Text>
                 {count > 0 && cat.id !== -1 && (
                   <View style={[styles.chipBadge, { backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : color + '20' }]}>
                     <Text style={[styles.chipBadgeText, { color: isActive ? '#fff' : color }]}>{count}</Text>
@@ -930,7 +1307,7 @@ const MapScreen = () => {
       </View>
 
       {/* Layer Controls - Top Right */}
-      <View style={[styles.layerControlsContainer, { top: insets.top + 90, zIndex: 99 }]} pointerEvents="box-none">
+      <View style={[styles.layerControlsContainer, { top: topInset + 90 + routeOffset, zIndex: 99 }]} pointerEvents="box-none">
         {/* Locate Button */}
         <TouchableOpacity style={styles.layerBtn} onPress={centerUserLocation}>
           <Icon name="crosshairs-gps" size={20} color={locating ? theme.colors.primary : theme.colors.textSecondary} />
@@ -949,7 +1326,7 @@ const MapScreen = () => {
         {/* Legend Toggle Button */}
         <TouchableOpacity style={styles.legendBtn} onPress={() => setShowLegend(!showLegend)}>
           <Icon name="map-marker" size={18} color={showLegend ? theme.colors.primary : theme.colors.textSecondary} />
-          <Text style={styles.legendBtnText}>Chú giải</Text>
+          <Text style={styles.legendBtnText}>{t('citizen.map.legend', 'Legend')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -958,7 +1335,7 @@ const MapScreen = () => {
         style={[
           styles.layerPanel,
           {
-            top: insets.top + 90,
+            top: topInset + 90,
             zIndex: 100,
             transform: [{ translateX: layerPanelAnim }]
           }
@@ -967,7 +1344,7 @@ const MapScreen = () => {
       >
         <View style={styles.layerPanelHeader}>
           <Icon name="layers" size={14} color={theme.colors.primary} />
-          <Text style={styles.layerPanelTitle}>Lớp bản đồ</Text>
+          <Text style={styles.layerPanelTitle}>{t('citizen.map.layers', 'Map Layers')}</Text>
           <TouchableOpacity onPress={toggleLayerPanel} style={styles.layerPanelClose}>
             <Icon name="close" size={16} color={theme.colors.textSecondary} />
           </TouchableOpacity>
@@ -982,7 +1359,12 @@ const MapScreen = () => {
             >
               <Icon name={cfg.icon} size={18} color={isActive ? cfg.color : theme.colors.textTertiary} />
               <Text style={[styles.layerItemLabel, { color: isActive ? theme.colors.text : theme.colors.textTertiary }]}>
-                {cfg.label}
+                {cfg.key === 'flood_zones' ? t('citizen.map.floodZones') :
+                 cfg.key === 'flood_streets' ? t('citizen.map.floodStreets') :
+                 cfg.key === 'flood_points' ? t('citizen.map.floodPoints') :
+                 cfg.key === 'alerts' ? t('citizen.map.activeAlerts', 'Alerts') :
+                 cfg.key === 'shelters' ? t('citizen.map.shelters') :
+                 cfg.label}
               </Text>
               <View style={[
                 styles.layerToggle,
@@ -1001,38 +1383,38 @@ const MapScreen = () => {
       {/* Legend Panel */}
       {showLegend && (
         <Animated.View style={styles.legendPanel}>
-          <Text style={styles.legendTitle}>CHÚ GIẢI</Text>
+          <Text style={styles.legendTitle}>{t('citizen.map.legend', 'LEGEND').toUpperCase()}</Text>
           <View style={styles.legendContent}>
             {/* Severity levels */}
             <View style={styles.legendSection}>
-              <Text style={styles.legendSectionTitle}>Mức độ nghiêm trọng</Text>
+              <Text style={styles.legendSectionTitle}>{t('reports.severity', 'Severity')}</Text>
               {[
-                { color: '#EF4444', label: 'Nghiêm trọng' },
-                { color: '#F97316', label: 'Cao' },
-                { color: '#F59E0B', label: 'Trung bình' },
-                { color: '#3B82F6', label: 'Thấp' },
+                { color: '#EF4444', key: 'critical' },
+                { color: '#F97316', key: 'high' },
+                { color: '#F59E0B', key: 'medium' },
+                { color: '#3B82F6', key: 'low' },
               ].map(item => (
                 <View key={item.color} style={styles.legendItem}>
                   <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-                  <Text style={styles.legendItemText}>{item.label}</Text>
+                  <Text style={styles.legendItemText}>{t(`incidents.severity.${item.key}`)}</Text>
                 </View>
               ))}
             </View>
 
             {/* Layer types */}
             <View style={styles.legendSection}>
-              <Text style={styles.legendSectionTitle}>Loại đối tượng</Text>
+              <Text style={styles.legendSectionTitle}>{t('priorityRoute.hotspotType', 'Object Type')}</Text>
               <View style={styles.legendItem}>
                 <View style={[styles.legendSquare, { backgroundColor: '#16A34A' }]} />
-                <Text style={styles.legendItemText}>Trú ẩn</Text>
+                <Text style={styles.legendItemText}>{t('citizen.map.shelters')}</Text>
               </View>
               <View style={styles.legendItem}>
                 <View style={styles.legendLine} />
-                <Text style={styles.legendItemText}>Đường ngập</Text>
+                <Text style={styles.legendItemText}>{t('citizen.map.floodStreets')}</Text>
               </View>
               <View style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: '#3B82F6' }]} />
-                <Text style={styles.legendItemText}>Điểm ngập</Text>
+                <Text style={styles.legendItemText}>{t('citizen.map.floodPoints')}</Text>
               </View>
             </View>
           </View>
@@ -1062,6 +1444,21 @@ const MapScreen = () => {
                 incident={selectedIncident}
                 onClose={handleCloseSheet}
                 onNavigate={(id) => { handleCloseSheet(); navigation.navigate('IncidentDetail', { id }); }}
+              />
+            ) : selectedShelter ? (
+              <ShelterSheet
+                shelter={selectedShelter}
+                onClose={handleCloseSheet}
+                onNavigate={() => { 
+                  handleCloseSheet(); 
+                  setActiveShelterRoute({
+                    id: selectedShelter.id,
+                    name: selectedShelter.name || selectedShelter.ten_diem || 'Điểm trú ẩn',
+                    address: selectedShelter.address || selectedShelter.dia_chi || '',
+                    latitude: Number(selectedShelter.latitude),
+                    longitude: Number(selectedShelter.longitude),
+                  });
+                }}
               />
             ) : null}
           </Animated.View>
@@ -1119,10 +1516,28 @@ const ReportSheet = ({ report, detail, loading, onClose, onNavigate }: {
             </View>
           )}
 
-          <TouchableOpacity style={styles.actionBtn} onPress={() => onNavigate(report.id)}>
-            <Icon name="information-outline" size={18} color={theme.colors.primary} />
-            <Text style={styles.actionBtnText}>Xem chi tiết</Text>
-          </TouchableOpacity>
+          {detail.water_level_cm != null && (
+            <View style={styles.infoRow}>
+              <Icon name="waves" size={16} color={theme.colors.textSecondary} />
+              <Text style={styles.infoText}>Mực nước: {detail.water_level_cm} cm</Text>
+            </View>
+          )}
+
+          {(detail.ward_name || detail.district_name) && (
+            <View style={styles.infoRow}>
+              <Icon name="map-marker-radius" size={16} color={theme.colors.textSecondary} />
+              <Text style={styles.infoText} numberOfLines={1}>
+                {[detail.ward_name, detail.district_name].filter(Boolean).join(', ')}
+              </Text>
+            </View>
+          )}
+
+          {!detail.is_flood_report && (
+            <TouchableOpacity style={styles.actionBtn} onPress={() => onNavigate(report.id)}>
+              <Icon name="information-outline" size={18} color={theme.colors.primary} />
+              <Text style={styles.actionBtnText}>Xem chi tiết</Text>
+            </TouchableOpacity>
+          )}
         </ScrollView>
       ) : null}
     </>
@@ -1133,10 +1548,11 @@ const ReportSheet = ({ report, detail, loading, onClose, onNavigate }: {
 const IncidentSheet = ({ incident, onClose, onNavigate }: {
   incident: Incident; onClose: () => void; onNavigate: (id: number) => void;
 }) => {
+  const { t } = useTranslation();
   const sevColor = getSeverityColor(incident.severity);
-  const sevLabel = SEVERITY_LABELS[incident.severity] || incident.severity || 'Thấp';
+  const sevLabel = t(`incidents.severity.${incident.severity}`) || SEVERITY_LABELS[incident.severity] || incident.severity || 'Thấp';
   const statColor = STATUS_COLORS[incident.status] || '#6B7280';
-  const statLabel = STATUS_LABELS[incident.status] || incident.status || 'Mở';
+  const statLabel = t(`incidents.${incident.status}`) || STATUS_LABELS[incident.status] || incident.status || 'Mở';
   const imageSources = getIncidentImageSources(incident);
 
   const handleCallEmergency = () => {
@@ -1215,6 +1631,64 @@ const IncidentSheet = ({ incident, onClose, onNavigate }: {
   );
 };
 
+// ─── Shelter Bottom Sheet ─────────────────────────────────
+const ShelterSheet = ({ shelter, onClose, onNavigate }: {
+  shelter: any; onClose: () => void; onNavigate: () => void;
+}) => {
+  const name = shelter.name || shelter.ten_diem || 'Điểm trú ẩn';
+  const address = shelter.address || shelter.dia_chi || 'Không rõ';
+  const capacity = shelter.capacity || shelter.suc_chua || 0;
+  const available = shelter.available_beds ?? shelter.hien_tai ?? 0;
+  const statusRaw = shelter.status || shelter.tinh_trang;
+  const isFull = statusRaw === 'full';
+  
+  const statusColor = isFull ? '#EF4444' : '#10B981';
+  const statusText = isFull ? 'Đầy' : 'Còn chỗ';
+
+  return (
+    <>
+      <View style={styles.sheetHeader}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.sheetTitle} numberOfLines={2}>{name}</Text>
+          <Text style={styles.sheetSub} numberOfLines={1}>{address}</Text>
+        </View>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <Icon name="close" size={18} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.badgeRow}>
+        <View style={[styles.badge, { backgroundColor: '#10B98115' }]}>
+          <Icon name="home-heart" size={14} color="#10B981" />
+          <Text style={[styles.badgeText, { color: '#10B981' }]}>Điểm trú ẩn</Text>
+        </View>
+        <View style={[styles.badge, { backgroundColor: statusColor + '15' }]}>
+          <View style={[styles.dot, { backgroundColor: statusColor }]} />
+          <Text style={[styles.badgeText, { color: statusColor }]}>{statusText}</Text>
+        </View>
+      </View>
+
+      <View style={{ marginTop: 12 }}>
+        <View style={styles.infoRow}>
+          <Icon name="account-group" size={18} color={theme.colors.textSecondary} />
+          <Text style={styles.infoText}>Sức chứa: {capacity - available}/{capacity} người</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Icon name="bed-empty" size={18} color={theme.colors.textSecondary} />
+          <Text style={styles.infoText}>Còn trống: {available} chỗ</Text>
+        </View>
+      </View>
+
+      <View style={[styles.sheetActions, { marginTop: 24 }]}>
+        <TouchableOpacity style={styles.primaryBtn} onPress={onNavigate}>
+          <Icon name="directions" size={18} color="#fff" />
+          <Text style={styles.primaryBtnText}>Chỉ đường</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+};
+
 // ─── Styles ────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -1233,12 +1707,13 @@ const styles = StyleSheet.create({
   routeBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginTop: 10,
+    gap: 8,
+    marginTop: 8,
+    marginRight: 56,
     backgroundColor: '#fff',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: 13,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -1246,34 +1721,35 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   routeBannerIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   routeBannerTextWrap: { flex: 1 },
   routeBannerTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: theme.colors.text,
   },
   routeBannerSub: {
     marginTop: 2,
-    fontSize: 11,
+    fontSize: 10,
     color: theme.colors.textSecondary,
   },
   routeBannerClose: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F3F4F6',
   },
 
   filterScrollView: { marginRight: 60 },
+  filterScrollViewWithRoute: { marginTop: 4 },
   filterRow: { paddingTop: 10, paddingBottom: 4, gap: 8, paddingRight: 16 },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -1347,7 +1823,7 @@ const styles = StyleSheet.create({
   aiRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, padding: 8, borderRadius: 6, backgroundColor: '#F59E0B08' },
   aiText: { flex: 1, fontSize: 12, color: '#D1D5DB', lineHeight: 16 },
 
-  sheetActions: { marginTop: 4 },
+  sheetActions: { marginTop: 4, gap: 12 },
   primaryBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     backgroundColor: '#EF4444', paddingVertical: 14, borderRadius: 12,
@@ -1355,7 +1831,7 @@ const styles = StyleSheet.create({
   primaryBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
   actionBtnOutline: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    flex: 1, paddingVertical: 14, borderRadius: 12,
+    paddingVertical: 14, borderRadius: 12,
     borderWidth: 1.5,
   },
   actionBtnOutlineText: { fontSize: 14, fontWeight: '600' },
@@ -1532,6 +2008,61 @@ const styles = StyleSheet.create({
   legendItemText: {
     fontSize: 11,
     color: theme.colors.text,
+  },
+
+  // ─── Search Suggestions Dropdown ──────────────────────────
+  suggestionsContainer: {
+    position: 'absolute',
+    top: 54,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    maxHeight: 280,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    overflow: 'hidden',
+    zIndex: 9999,
+  },
+  suggestionsScroll: {
+    maxHeight: 280,
+  },
+  suggestionsContent: {
+    paddingVertical: 6,
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8fafc',
+  },
+  suggestionIconBg: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  suggestionTextWrap: {
+    flex: 1,
+  },
+  suggestionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 2,
+  },
+  suggestionSubtitle: {
+    fontSize: 11,
+    color: '#64748b',
   },
 });
 

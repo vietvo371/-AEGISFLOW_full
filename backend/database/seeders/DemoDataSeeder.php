@@ -16,11 +16,15 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
+        // Tắt broadcasting khi seed để tránh lỗi Reverb chưa chạy
+        Event::fake();
+
         $this->command->info('🚀 Seeding demo data for pitch video...');
 
         $now = Carbon::now();
@@ -77,7 +81,7 @@ class DemoDataSeeder extends Seeder
                 ])
             );
 
-            if (DB::connection()->getDriverName() === 'pgsql') {
+            if (DB::connection()->getDriverName() === 'pgsql' && $this->hasPostGIS()) {
                 DB::statement(
                     'UPDATE sensors SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
                     [$lng, $lat, $sensor->id]
@@ -193,7 +197,7 @@ class DemoDataSeeder extends Seeder
                 'is_active' => true,
             ]));
 
-            if (DB::connection()->getDriverName() === 'pgsql') {
+            if (DB::connection()->getDriverName() === 'pgsql' && $this->hasPostGIS()) {
                 $polygonPoints = collect(json_decode($coordinates, true));
                 $polygonPoints->push($polygonPoints->first());
 
@@ -306,7 +310,7 @@ class DemoDataSeeder extends Seeder
                 ])
             );
 
-            if (DB::connection()->getDriverName() === 'pgsql') {
+            if (DB::connection()->getDriverName() === 'pgsql' && $this->hasPostGIS()) {
                 DB::statement(
                     'UPDATE incidents SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
                     [$lng, $lat, $incident->id]
@@ -455,7 +459,7 @@ class DemoDataSeeder extends Seeder
                 ])
             );
 
-            if (DB::connection()->getDriverName() === 'pgsql') {
+            if (DB::connection()->getDriverName() === 'pgsql' && $this->hasPostGIS()) {
                 DB::statement(
                     'UPDATE rescue_requests SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
                     [$lng, $lat, $req->id]
@@ -495,9 +499,11 @@ class DemoDataSeeder extends Seeder
         ];
 
         foreach ($alerts as $index => $alertData) {
+            $alertNumber = 'ALT-'.date('Ymd').'-'.str_pad($index + 1, 4, '0', STR_PAD_LEFT);
             Alert::updateOrCreate(
                 ['title' => $alertData['title']],
                 array_merge($alertData, [
+                    'alert_number' => $alertNumber,
                     'issued_by' => User::first()?->id,
                     'source' => 'demo',
                     'effective_from' => $now->copy()->subMinutes(20 - ($index * 5)),
@@ -574,5 +580,15 @@ class DemoDataSeeder extends Seeder
         }
 
         $this->command->info('   ✅ Recommendations: '.count($recommendations).' AI recommendations');
+    }
+
+    private function hasPostGIS(): bool
+    {
+        try {
+            $result = DB::select("SELECT 1 FROM pg_extension WHERE extname = 'postgis'");
+            return count($result) > 0;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

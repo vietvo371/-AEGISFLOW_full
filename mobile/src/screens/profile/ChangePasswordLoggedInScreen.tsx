@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import PageHeader from '../../component/PageHeader';
@@ -110,7 +110,7 @@ const ChangePasswordLoggedInScreen = () => {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.container}>
             <PageHeader title="Đổi mật khẩu" variant="default" />
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -230,7 +230,7 @@ const ChangePasswordLoggedInScreen = () => {
                     {errorMessage}
                 </Text>
             </ModalCustom>
-        </SafeAreaView>
+        </View>
     );
 };
 

@@ -135,6 +135,38 @@ class AuthController extends Controller
     }
 
     /**
+     * Upload avatar
+     * POST /api/auth/avatar
+     */
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $user = $request->user();
+        $path = $request->file('avatar')->store('uploads/avatars', 'public');
+        $url = asset('storage/' . $path);
+
+        $user->update(['avatar' => $url]);
+
+        return ApiResponse::success(['avatar_url' => $url], 'Cập nhật ảnh đại diện thành công');
+    }
+
+    /**
+     * Xóa tài khoản
+     * DELETE /api/auth/account
+     */
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+        $user->tokens()->delete();
+        $user->delete();
+
+        return ApiResponse::success(null, 'Tài khoản đã được xóa');
+    }
+
+    /**
      * Đăng xuất
      * POST /api/auth/logout
      */

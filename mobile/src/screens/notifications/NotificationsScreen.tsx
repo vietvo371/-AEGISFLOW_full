@@ -33,7 +33,7 @@ const NotificationsScreen = () => {
 
   // Convert API notification to unified format
   const convertAPINotification = (n: any): UnifiedNotification => {
-    const reportId = n.data?.id || n.data?.incident_id;
+    const reportId = n.data?.id || n.data?.incident_id || n.data?.report_id;
     return {
       id: `api-${n.id}`,
       type: n.type || 'system',
@@ -174,12 +174,17 @@ const NotificationsScreen = () => {
 
     // Navigate to detail
     const isReportNotification = item.type === 'report_status' || 
-                                  item.type === 'report_status_update';
+                                  item.type === 'report_status_update' ||
+                                  item.type === 'new_nearby_report';
     const isIncidentNotification = item.type === 'incident_created';
     
-    if ((isReportNotification || isIncidentNotification) && item.data?.id) {
+    if (isReportNotification && item.data?.id) {
+      navigation.navigate('ReportDetail' as any, { 
+        id: Number(item.data.id)
+      } as any);
+    } else if (isIncidentNotification && item.data?.id) {
       navigation.navigate('IncidentDetail' as any, { 
-        id: item.data.id
+        id: Number(item.data.id)
       } as any);
     }
   };

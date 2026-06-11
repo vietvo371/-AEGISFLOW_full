@@ -11,6 +11,11 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
     const bottomInset = Platform.OS === 'ios' ? Math.max(insets.bottom, 12) : 12;
     // Assuming Citizen mode has 5 tabs and Emergency mode has 4 tabs
     const isEmergency = state.routes.length === 4;
+    const isSosScreen = !isEmergency && state.routes[state.index]?.name === 'SOS';
+
+    if (isSosScreen) {
+        return null;
+    }
     
     // Emergency Color (Red theme)
     const emergencyActiveColor = '#EF4444'; // Red-500
@@ -88,10 +93,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
 
                             <Text style={[
                                 styles.tabLabel,
-                                { 
-                                    color: isFocused ? primaryColor : theme.colors.textSecondary,
-                                    fontWeight: isFocused ? '600' : '400' 
-                                }
+                                { color: isFocused ? primaryColor : theme.colors.textSecondary },
+                                isFocused ? styles.tabLabelActive : styles.tabLabelInactive,
                             ]}>
                                 {typeof label === 'string' ? label : ''}
                             </Text>
@@ -168,6 +171,12 @@ const styles = StyleSheet.create({
     tabLabel: {
         fontSize: 12,
         marginTop: 2,
+    },
+    tabLabelActive: {
+        fontWeight: '600',
+    },
+    tabLabelInactive: {
+        fontWeight: '400',
     },
     floatingButtonContainer: {
         position: 'absolute',

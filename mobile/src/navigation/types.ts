@@ -49,6 +49,7 @@ export type RootStackParamList = {
 
   // Incidents (shared)
   IncidentDetail: { id: number; isRescue?: boolean };
+  ReportDetail: { id: number };
   CreateReport: { isRescue?: boolean } | undefined;
   EditReport: { id: number };
   MyReports: undefined;

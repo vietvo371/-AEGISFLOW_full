@@ -25,10 +25,6 @@ type EditReportRouteProp = RouteProp<RootStackParamList, 'EditReport'>;
 
 // Category options matching API
 const CATEGORIES = [
-  { value: 1, label: 'Giao thông', icon: 'car', color: '#EF4444' },
-  { value: 2, label: 'Môi trường', icon: 'leaf', color: '#10B981' },
-  { value: 3, label: 'Cháy nổ', icon: 'fire', color: '#F97316' },
-  { value: 4, label: 'Rác thải', icon: 'delete', color: '#7a5af8' },
   { value: 5, label: 'Ngập lụt', icon: 'water', color: '#3B82F6' },
   { value: 6, label: 'Khác', icon: 'dots-horizontal', color: '#6B7280' },
 ];
@@ -69,7 +65,7 @@ const EditReportScreen = () => {
   const [formData, setFormData] = useState<CreateReportRequest>({
     tieu_de: '',
     mo_ta: '',
-    danh_muc: 1,
+    danh_muc: 5, // Default to Ngập lụt (value 5)
     vi_do: 10.7769,
     kinh_do: 106.7009,
     dia_chi: '',
@@ -99,12 +95,12 @@ const EditReportScreen = () => {
           setFormData({
             tieu_de: report.tieu_de,
             mo_ta: report.mo_ta,
-            danh_muc: report.danh_muc_id,
-            vi_do: parseFloat(report.vi_do),
-            kinh_do: parseFloat(report.kinh_do),
-            dia_chi: report.dia_chi,
-            uu_tien: report.uu_tien_id,
-            la_cong_khai: report.la_cong_khai,
+            danh_muc: report.danh_muc_id || 1,
+            vi_do: parseFloat(String(report.vi_do)) || 10.7769,
+            kinh_do: parseFloat(String(report.kinh_do)) || 106.7009,
+            dia_chi: report.dia_chi || '',
+            uu_tien: report.uu_tien_id || 1,
+            la_cong_khai: report.la_cong_khai ?? true,
             the_tags: report.the_tags ? (typeof report.the_tags === 'string' ? (report.the_tags as string).split(',') : (report.the_tags as string[])) : [],
             media_ids: report.hinh_anhs?.map(m => m.id) || report.media?.map(m => m.id) || []
           });
@@ -333,7 +329,7 @@ const EditReportScreen = () => {
     setFormData({
       tieu_de: '',
       mo_ta: '',
-      danh_muc: 1,
+      danh_muc: 5, // Default to Ngập lụt (value 5)
       vi_do: 10.7769,
       kinh_do: 106.7009,
       dia_chi: '',
@@ -386,18 +382,18 @@ const EditReportScreen = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         <PageHeader title="Chỉnh sửa phản ánh" variant="default" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={styles.loadingText}>Đang tải...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <PageHeader title="Chỉnh sửa phản ánh" variant="default" />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -748,7 +744,7 @@ const EditReportScreen = () => {
       >
         <Text style={styles.aiModalText}>{aiAnalysisMessage}</Text>
       </ModalCustom>
-    </SafeAreaView>
+    </View>
   );
 };
 

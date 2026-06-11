@@ -66,13 +66,13 @@
   },
   "onboarding": {
     "welcomeTitle": "Chào mừng đến với AegisFlowAI",
-    "welcomeDescription": "Nền tảng Digital Twin quản lý giao thông đô thị thông minh.",
-    "mapTitle": "Bản đồ Giao thông Thực tế",
-    "mapDescription": "Theo dõi tình hình giao thông, sự cố và mật độ phương tiện theo thời gian thực.",
+    "welcomeDescription": "Nền tảng AI và Bản đồ số hỗ trợ quản lý, cảnh báo ngập lụt sớm.",
+    "mapTitle": "Bản đồ ngập lụt thực tế",
+    "mapDescription": "Theo dõi tình trạng ngập lụt, điểm trú ẩn và các tuyến đường sơ tán theo thời gian thực.",
     "aiTitle": "Dự đoán AI Thông minh",
-    "aiDescription": "Nhận dự đoán ùn tắc và đề xuất xử lý dựa trên phân tích dữ liệu cảm biến.",
+    "aiDescription": "Nhận dự đoán nguy cơ ngập lụt sớm trong 60 phút tới dựa trên dữ liệu cảm biến IoT.",
     "communityTitle": "Cộng đồng An toàn",
-    "communityDescription": "Báo cáo sự cố giao thông, chia sẻ thông tin và cùng xây dựng thành phố thông minh hơn.",
+    "communityDescription": "Báo cáo sự cố ngập lụt, yêu cầu cứu hộ khẩn cấp và cập nhật tin tức hỗ trợ cộng đồng.",
     "getStarted": "Bắt đầu"
   },
   "otp": {
@@ -132,14 +132,17 @@
     "newIncident": "Sự cố mới",
     "allIncidents": "Tất cả sự cố",
     "open": "Đang mở",
+    "reported": "Mới báo cáo",
+    "verified": "Đã xác minh",
+    "responding": "Đang ứng phó",
     "investigating": "Đang xử lý",
     "resolved": "Đã giải quyết",
     "closed": "Đã đóng",
     "type": {
-      "accident": "Tai nạn",
-      "congestion": "Ùn tắc",
-      "construction": "Thi công",
-      "weather": "Thời tiết",
+      "flood": "Ngập lụt",
+      "heavy_rain": "Mưa lớn",
+      "landslide": "Sạt lở đất",
+      "dam_failure": "Sự cố đập",
       "other": "Khác"
     },
     "severity": {
@@ -181,10 +184,6 @@
       "rejected": "Từ chối"
     },
     "categories": {
-      "traffic": "Giao thông",
-      "environment": "Môi trường",
-      "fire": "Cháy nổ",
-      "waste": "Rác thải",
       "flood": "Ngập lụt",
       "other": "Khác"
     },
@@ -404,10 +403,6 @@
       "retry": "Thử lại"
     },
     "category": {
-      "traffic": "Giao thông",
-      "environment": "Môi trường",
-      "fire": "Cháy nổ",
-      "waste": "Rác thải",
       "flood": "Ngập lụt",
       "other": "Khác"
     }
@@ -619,5 +614,40 @@
       "logoutTitle": "Đăng xuất",
       "logoutMessage": "Bạn có chắc muốn đăng xuất?"
     }
+  },
+  "aboutScreen": {
+    "title": "Về ứng dụng",
+    "description": "Ứng dụng báo cáo và quản lý sự cố đô thị thông minh",
+    "version": "Phiên bản {{version}} ({{build}})",
+    "highlightedFeatures": "Tính năng nổi bật",
+    "features": {
+      "report": {
+        "title": "Báo cáo sự cố",
+        "description": "Báo cáo các vấn đề đô thị nhanh chóng"
+      },
+      "tracking": {
+        "title": "Theo dõi tiến độ",
+        "description": "Cập nhật tình trạng xử lý real-time"
+      },
+      "community": {
+        "title": "Cộng đồng",
+        "description": "Kết nối với cư dân thành phố"
+      },
+      "auth": {
+        "title": "Xác thực",
+        "description": "Hệ thống xác thực danh tính an toàn"
+      }
+    },
+    "ourMission": "Sứ mệnh của chúng tôi",
+    "missionText": "Xây dựng một thành phố thông minh, kết nối cư dân với chính quyền để cùng nhau giải quyết các vấn đề đô thị một cách nhanh chóng và hiệu quả.",
+    "contact": "Liên hệ",
+    "contactRoles": {
+      "dev": "Phát triển",
+      "support": "Hỗ trợ",
+      "business": "Kinh doanh"
+    },
+    "followUs": "Theo dõi chúng tôi",
+    "privacyPolicy": "Chính sách bảo mật",
+    "termsOfUse": "Điều khoản sử dụng"
   }
 }

@@ -19,6 +19,10 @@ Broadcast::channel('user.{userId}.notifications', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
 
+Broadcast::channel('user.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});
+
 // ── Kênh riêng tư: Dispatch cho đội cứu hộ ──
 Broadcast::channel('team.{teamId}.dispatch', function ($user, $teamId) {
     // Kiểm tra user có phải thành viên đội này không

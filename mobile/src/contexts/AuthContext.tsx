@@ -155,7 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       const roles = response.user?.roles || [];
-      const hasAllowedRole = roles.includes('citizen') || roles.includes('emergency');
+      const hasAllowedRole = roles.includes('citizen') || roles.includes('emergency') || roles.includes('rescue_team');
 
       if (!hasAllowedRole) {
         // Đăng xuất ngay lập tức nếu API trả về thành công nhưng không đúng quyền
@@ -227,7 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const getPrimaryRole = (): UserRole | null => {
     if (!user?.roles?.length) return null;
-    if (user.roles.includes('emergency')) return 'emergency';
+    if (user.roles.includes('emergency') || user.roles.includes('rescue_team')) return 'emergency';
     if (user.roles.includes('citizen')) return 'citizen';
     return null;
   };

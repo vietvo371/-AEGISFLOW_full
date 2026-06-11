@@ -87,7 +87,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
 
         // Role-based navigation sync with LoadingScreen.tsx
         const roles = result.user?.roles || [];
-        const targetScreen = roles.includes('emergency') ? 'EmergencyTabs' : 'CitizenTabs';
+        const targetScreen = (roles.includes('emergency') || roles.includes('rescue_team')) ? 'EmergencyTabs' : 'CitizenTabs';
         navigation.reset({
           index: 0,
           routes: [{ name: targetScreen }],

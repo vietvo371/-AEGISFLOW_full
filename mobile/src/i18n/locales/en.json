@@ -66,13 +66,13 @@
   },
   "onboarding": {
     "welcomeTitle": "Welcome to AegisFlowAI",
-    "welcomeDescription": "Smart urban traffic management Digital Twin platform.",
-    "mapTitle": "Real-time Traffic Map",
-    "mapDescription": "Monitor traffic conditions, incidents, and vehicle density in real time.",
+    "welcomeDescription": "AI and Digital Map platform supporting early flood warnings and response.",
+    "mapTitle": "Real-time Flood Map",
+    "mapDescription": "Monitor flood conditions, shelter points, and evacuation routes in real time.",
     "aiTitle": "AI-Powered Predictions",
-    "aiDescription": "Receive congestion predictions and recommendations based on sensor data analysis.",
+    "aiDescription": "Receive early flood risk predictions for the next 60 minutes based on IoT sensor data.",
     "communityTitle": "Safe Community",
-    "communityDescription": "Report traffic incidents, share information, and help build a smarter city.",
+    "communityDescription": "Report flood incidents, request emergency rescue, and get supportive updates.",
     "getStarted": "Get Started"
   },
   "otp": {
@@ -132,14 +132,17 @@
     "newIncident": "New Incident",
     "allIncidents": "All Incidents",
     "open": "Open",
+    "reported": "Reported",
+    "verified": "Verified",
+    "responding": "Responding",
     "investigating": "Investigating",
     "resolved": "Resolved",
     "closed": "Closed",
     "type": {
-      "accident": "Accident",
-      "congestion": "Congestion",
-      "construction": "Construction",
-      "weather": "Weather",
+      "flood": "Flooding",
+      "heavy_rain": "Heavy Rain",
+      "landslide": "Landslide",
+      "dam_failure": "Dam Failure",
       "other": "Other"
     },
     "severity": {
@@ -181,10 +184,6 @@
       "rejected": "Rejected"
     },
     "categories": {
-      "traffic": "Traffic",
-      "environment": "Environment",
-      "fire": "Fire",
-      "waste": "Waste",
       "flood": "Flood",
       "other": "Other"
     },
@@ -404,10 +403,6 @@
       "retry": "Retry"
     },
     "category": {
-      "traffic": "Traffic",
-      "environment": "Environment",
-      "fire": "Fire",
-      "waste": "Waste",
       "flood": "Flood",
       "other": "Other"
     }
@@ -619,5 +614,40 @@
       "logoutTitle": "Logout",
       "logoutMessage": "Are you sure you want to logout?"
     }
+  },
+  "aboutScreen": {
+    "title": "About Application",
+    "description": "Smart urban incident reporting and management application",
+    "version": "Version {{version}} ({{build}})",
+    "highlightedFeatures": "Highlighted Features",
+    "features": {
+      "report": {
+        "title": "Incident Reporting",
+        "description": "Report urban problems quickly"
+      },
+      "tracking": {
+        "title": "Progress Tracking",
+        "description": "Update real-time processing status"
+      },
+      "community": {
+        "title": "Community",
+        "description": "Connect with city residents"
+      },
+      "auth": {
+        "title": "Authentication",
+        "description": "Secure identity verification system"
+      }
+    },
+    "ourMission": "Our Mission",
+    "missionText": "Building a smart city, connecting residents with authorities to solve urban issues together quickly and effectively.",
+    "contact": "Contact Us",
+    "contactRoles": {
+      "dev": "Development",
+      "support": "Support",
+      "business": "Business"
+    },
+    "followUs": "Follow Us",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfUse": "Terms of Use"
   }
 }

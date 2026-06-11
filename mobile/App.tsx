@@ -17,6 +17,7 @@ import { NetworkProvider } from './src/contexts/NetworkContext';
 import { OfflineDataProvider } from './src/contexts/OfflineDataContext';
 import { NotificationBanner } from './src/components/NotificationBanner';
 import { theme } from './src/theme/colors';
+import Toast from 'react-native-toast-message';
 import './src/i18n'; // Initialize i18n
 import { navigationRef } from './src/navigation/NavigationService';
 import { AlertProvider } from './src/services/AlertService';
@@ -24,6 +25,7 @@ import AlertServiceConnector from './src/component/AlertServiceConnector';
 import NotificationService from './src/components/NotificationService';
 import { ErrorModalProvider } from './src/utils/ErrorModalManager';
 import DeepLinkHandler from './src/utils/DeepLinkHandler';
+import { NotificationProvider } from './src/contexts/NotificationContext';
 
 // Ignore specific warnings
 LogBox.ignoreLogs([
@@ -129,15 +131,18 @@ const App = () => {
               <OfflineDataProvider>
                 <AuthProvider>
                   <WebSocketProvider>
-                    <StatusBar
-                      barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-                      backgroundColor={theme.colors.background}
-                    />
-                    <NavigationContainer theme={navigationTheme} ref={navigationRef}>
-                      <MainNavigator />
-                    </NavigationContainer>
-                    {/* NotificationBanner phải nằm BÊN TRONG WebSocketProvider để nhận context */}
-                    <NotificationBanner />
+                    <NotificationProvider>
+                      <StatusBar
+                        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+                        backgroundColor={theme.colors.background}
+                      />
+                      <NavigationContainer theme={navigationTheme} ref={navigationRef}>
+                        <MainNavigator />
+                      </NavigationContainer>
+                      {/* NotificationBanner phải nằm BÊN TRONG WebSocketProvider để nhận context */}
+                      <NotificationBanner />
+                      <Toast />
+                    </NotificationProvider>
                   </WebSocketProvider>
                 </AuthProvider>
               </OfflineDataProvider>

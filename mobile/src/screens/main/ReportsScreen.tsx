@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, StatusBar, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -165,7 +164,7 @@ const ReportsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
       <PageHeader
         title=''
@@ -224,7 +223,7 @@ const ReportsScreen = () => {
       >
         <Icon name="plus" size={28} color={theme.colors.white} />
       </TouchableOpacity> */}
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -18,28 +18,43 @@ Metrics are stored in `models/model_metrics.json`.
 
 | Metric | Value |
 | --- | ---: |
-| Algorithm | RandomForestClassifier |
+| Algorithm | Soft-voting ensemble |
+| Version | 2.1.0 |
 | Dataset size | 3,000 samples |
-| Accuracy | 98.83% |
-| Weighted F1 | 98.86% |
-| Macro F1 | 97.50% |
-| AUC-ROC | 99.96% |
+| Accuracy | 97.83% |
+| Balanced accuracy | 88.93% |
+| Weighted F1 | 97.71% |
+| Macro F1 | 90.49% |
+| AUC-ROC | 99.90% |
 | Cross-validation | 5 folds |
-| CV F1 mean/std | 98.86% +/- 0.38% |
+| CV F1 mean/std | 98.00% +/- 0.43% |
 
 ## Features
 
-| Feature | Importance |
-| --- | ---: |
-| `water_level_m` | 36.34% |
-| `rainfall_mm` | 32.02% |
-| `historical_score` | 15.55% |
-| `tide_level` | 8.09% |
-| `hours_rain` | 8.00% |
+The runtime feature vector is:
 
-## Why RandomForest
+- `water_level_m`
+- `rainfall_mm`
+- `hours_rain`
+- `tide_level`
+- `historical_score`
+- `month`
+- `year_index`
+- `month_sin`
+- `month_cos`
+- `seasonal_risk_score`
 
-RandomForest is a good fit for the demo and early pilot because it is fast, interpretable, and robust on smaller tabular datasets. Operators can inspect feature importance and confidence before approving alerts or dispatch recommendations.
+## Seasonal Forecasting
+
+Version 2.1.0 adds historical month/year features. The training data generator now creates stronger rainy-season samples for Da Nang, especially Sep-Dec, and the training pipeline stores a `monthly_risk_profile` in the model artifact. At runtime, `/api/predict-risk` accepts `prediction_time`; if omitted, the AI service uses the current date.
+
+## Why Ensemble
+
+The pipeline evaluates RandomForest, ExtraTrees, XGBoost, a scaled MLP, and a soft-voting ensemble. The current selected model is the ensemble because it stayed competitive with the best individual model while blending tree-based thresholds, boosted trees, and neural-network behavior.
+
+## Data Quality Note
+
+The current dataset is mostly synthetic/proxy-labeled from Da Nang flood thresholds. These metrics validate the training pipeline and demo behavior, but they are not a guarantee of real-world flood accuracy. For production-grade accuracy, the next training phase should add real historical flood observations, sensor time series, rainfall forecasts, tide history, drainage capacity, and verified incident outcomes.
 
 ## Fail-Safe Behavior
 

@@ -31,6 +31,7 @@ import { OPENMAP_STYLE_URL } from '../../config/mapbox';
 import PageHeader from '../../component/PageHeader';
 import NotificationBellButton from '../../component/NotificationBellButton';
 import { incidentService, Incident } from '../../services/incidentService';
+import { useTranslation } from '../../hooks/useTranslation';
 
 MapboxGL.setAccessToken('');
 
@@ -42,14 +43,15 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 const TYPE_ICONS: Record<string, string> = {
-    accident: 'car-emergency',
-    congestion: 'car-multiple',
-    construction: 'hard-hat',
-    weather: 'weather-lightning-rainy',
+    flood: 'home-flood',
+    heavy_rain: 'weather-pouring',
+    landslide: 'slope-downhill',
+    dam_failure: 'waves',
     other: 'alert-circle-outline',
 };
 
 const PriorityRouteScreen = () => {
+    const { t, i18n } = useTranslation();
     const [incidents, setIncidents] = useState<Incident[]>([]);
     const [loading, setLoading] = useState(true);
     const [userLocation, setUserLocation] = useState<number[] | null>(null);
@@ -123,7 +125,7 @@ const PriorityRouteScreen = () => {
                 const durMin = Math.round(route.duration / 60);
                 setRouteInfo({
                     distance: `${distKm} km`,
-                    duration: `${durMin} phút`,
+                    duration: `${durMin} ${i18n.language === 'vi' ? 'phút' : 'min'}`,
                 });
 
                 // Fit camera to route
@@ -162,13 +164,13 @@ const PriorityRouteScreen = () => {
             await new Promise(resolve => setTimeout(() => resolve(true), 1500));
             
             Alert.alert(
-                'Thành công',
-                `Đã phát lệnh ưu tiên lưu thông trên tuyến đường đến sự cố #${selectedIncident.id}. Lực lượng CSGT và đèn tín hiệu đã được nhận tín hiệu cập nhật.`,
-                [{ text: 'Đóng' }]
+                t('common.success'),
+                t('priorityRoute.dispatchSuccessDesc', `Priority traffic control command dispatched for incident #${selectedIncident.id}. Responders and traffic lights have been updated.`, { id: selectedIncident.id }),
+                [{ text: t('common.close') }]
             );
             clearRoute();
         } catch (error) {
-            Alert.alert('Lỗi', 'Không thể gửi lệnh ưu tiên. Vui lòng thử lại.');
+            Alert.alert(t('common.error'), t('priorityRoute.dispatchFailed', 'Failed to dispatch priority command. Please try again.'));
         } finally {
             setSendingPriority(false);
         }
@@ -217,13 +219,12 @@ const PriorityRouteScreen = () => {
             </TouchableOpacity>
         );
     };
-
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
             <PageHeader 
-                title="Tuyến đường ưu tiên" 
-                subtitle={viewMode === 'map' ? "Điều phối giao thông thời gian thực" : "Danh sách điểm nóng cần hỗ trợ"}
+                title={t('priorityRoute.title', 'Priority Route')} 
+                subtitle={viewMode === 'map' ? t('priorityRoute.mapSubtitle', 'Real-time Traffic Dispatch') : t('priorityRoute.listSubtitle', 'Active Hotspots')}
                 variant="default"
                 showBack={true}
                 showNotification={true}
@@ -249,7 +250,7 @@ const PriorityRouteScreen = () => {
                         <MapboxGL.Camera
                             ref={cameraRef}
                             zoomLevel={13}
-                            centerCoordinate={userLocation || [106.7009, 10.7769]}
+                            centerCoordinate={userLocation || [108.2122, 16.0680]}
                             animationMode="flyTo"
                             animationDuration={1000}
                         />
@@ -353,7 +354,7 @@ const PriorityRouteScreen = () => {
                                             <View style={styles.dispatchIconCircle}>
                                                 <Icon name="bullhorn-variant" size={18} color="#6938ef" />
                                             </View>
-                                            <Text style={styles.dispatchBtnText}>PHÁT LỆNH ƯU TIÊN</Text>
+                                            <Text style={styles.dispatchBtnText}>{t('priorityRoute.dispatchButton', 'DISPATCH PRIORITY SIGNAL')}</Text>
                                         </>
                                     )}
                                 </LinearGradient>
@@ -365,7 +366,7 @@ const PriorityRouteScreen = () => {
                         <View style={styles.countChip}>
                             <Icon name="alert-circle" size={16} color="#7a5af8" />
                             <Text style={styles.countText}>
-                                {loading ? '...' : `${incidents.length} điểm cần theo dõi`}
+                                {loading ? '...' : t('priorityRoute.monitoringPointsCount', '{{count}} points to monitor', { count: incidents.length })}
                             </Text>
                         </View>
                     )}
@@ -373,7 +374,7 @@ const PriorityRouteScreen = () => {
             ) : (
                 <View style={styles.listContainer}>
                     <View style={styles.listSubHeader}>
-                         <Text style={styles.listSubTitle}>{incidents.length} sự cố đang hoạt động</Text>
+                         <Text style={styles.listSubTitle}>{t('priorityRoute.activeIncidentsCount', '{{count}} active incidents', { count: incidents.length })}</Text>
                     </View>
 
                     {loading ? (
@@ -397,14 +398,14 @@ const PriorityRouteScreen = () => {
                             ListEmptyComponent={
                                 <View style={styles.emptyContainer}>
                                     <Icon name="shield-check" size={64} color="#CBD5E1" />
-                                    <Text style={styles.emptyText}>Không có sự cố đang mở</Text>
+                                    <Text style={styles.emptyText}>{t('priorityRoute.noOpenIncidents', 'No active open incidents')}</Text>
                                 </View>
                             }
                         />
                     )}
                 </View>
             )}
-        </SafeAreaView>
+        </View>
     );
 };
 

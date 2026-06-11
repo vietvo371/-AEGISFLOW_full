@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Modal } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -14,7 +14,7 @@ import { reportService } from '../../services/reportService';
 
 import { ReportDetail } from '../../types/api/report';
 
-type ReportDetailRouteProp = RouteProp<RootStackParamList, 'IncidentDetail'>;
+type ReportDetailRouteProp = RouteProp<RootStackParamList, 'ReportDetail'>;
 
 const VOTE_STORAGE_KEY = 'user_votes';
 
@@ -198,7 +198,7 @@ const ReportDetailScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <PageHeader title="Chi tiết phản ánh" variant="default" />
 
       <KeyboardAvoidingView
@@ -421,7 +421,7 @@ const ReportDetailScreen = () => {
       >
         <Text style={styles.successText}>Đánh giá của bạn đã được ghi nhận.</Text>
       </ModalCustom>
-    </SafeAreaView>
+    </View>
   );
 };
 

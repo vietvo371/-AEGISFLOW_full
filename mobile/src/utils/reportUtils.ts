@@ -86,7 +86,7 @@ export const formatViewCount = (count: number): string => {
  * @returns Net vote count
  */
 export const getNetVotes = (report: Report): number => {
-    return report.luot_ung_ho - report.luot_khong_ung_ho;
+    return (report.luot_ung_ho || 0) - (report.luot_khong_ung_ho || 0);
 };
 
 /**

@@ -37,10 +37,10 @@ const SEVERITY_CONFIG: Record<string, { labelKey: string; color: string; bg: str
 };
 
 const HomeScreen = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuth();
-  const { unreadCount } = useNotifications();
+  const { unreadCount, registerRefreshCallback } = useNotifications();
 
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -67,6 +67,15 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  useEffect(() => {
+    const unsubscribe = registerRefreshCallback(() => {
+      console.log('🔄 [HomeScreen] Real-time refresh triggered!');
+      fetchData();
+    });
+    return unsubscribe;
+  }, [registerRefreshCallback, fetchData]);
+
   const onRefresh = () => { setRefreshing(true); fetchData(); };
 
   const criticalAlert = activeAlerts.find(a => a.severity === 'critical' || a.severity === 'high');
@@ -75,13 +84,18 @@ const HomeScreen = () => {
     if ('tab' in action) navigation.navigate(action.tab as any);
   };
 
-  const firstName = user?.name?.split(' ').pop() || 'Cư dân';
+  const firstName = user?.name?.split(' ').pop() || t('profile.role.citizen');
   const today = new Date();
-  const dateStr = today.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+  const dateStr = today.toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
 
-  const temp = weather?.current?.temperature || 28;
-  const humidity = weather?.current?.humidity || 82;
-  const rainfall = weather?.current?.rainfall || 15;
+  const temp = weather?.current?.temperature;
+  const humidity = weather?.current?.humidity;
+  const rainfall = weather?.current?.rainfall;
+  const windSpeed = weather?.current?.wind_speed;
+  const displayTemp = temp != null ? `${Math.round(temp)}°` : '--';
+  const displayHumidity = humidity != null ? `${Math.round(humidity)}%` : '--';
+  const displayRainfall = rainfall != null ? `${rainfall}mm` : '--';
+  const displayWindSpeed = windSpeed != null ? `${windSpeed}km/h` : '--';
 
   return (
     <View style={styles.container}>
@@ -126,24 +140,24 @@ const HomeScreen = () => {
           <View style={styles.weatherMain}>
             <Icon name="weather-partly-cloudy" size={48} color="#F59E0B" />
             <View style={{ marginLeft: 12 }}>
-              <Text style={styles.weatherTemp}>{temp}°</Text>
-              <Text style={styles.weatherDesc}>{t('citizen.dashboard.weather')}</Text>
+              <Text style={styles.weatherTemp}>{displayTemp}</Text>
+              <Text style={styles.weatherDesc}>{weather?.forecast || t('citizen.dashboard.weather')}</Text>
             </View>
           </View>
           <View style={styles.weatherMeta}>
             <View style={styles.weatherMetaItem}>
               <Icon name="water-percent" size={14} color="#3B82F6" />
-              <Text style={styles.weatherMetaText}>{humidity}%</Text>
+              <Text style={styles.weatherMetaText}>{displayHumidity}</Text>
               <Text style={styles.weatherMetaLabel}>{t('citizen.dashboard.humidity')}</Text>
             </View>
             <View style={styles.weatherMetaItem}>
               <Icon name="weather-pouring" size={14} color="#3B82F6" />
-              <Text style={styles.weatherMetaText}>{rainfall}mm/h</Text>
+              <Text style={styles.weatherMetaText}>{displayRainfall}</Text>
               <Text style={styles.weatherMetaLabel}>{t('citizen.dashboard.rainfall')}</Text>
             </View>
             <View style={styles.weatherMetaItem}>
               <Icon name="weather-windy" size={14} color="#3B82F6" />
-              <Text style={styles.weatherMetaText}>12km/h</Text>
+              <Text style={styles.weatherMetaText}>{displayWindSpeed}</Text>
               <Text style={styles.weatherMetaLabel}>{t('citizen.dashboard.wind')}</Text>
             </View>
           </View>
@@ -172,7 +186,7 @@ const HomeScreen = () => {
         {/* 3 Metrics Row */}
         <View style={styles.metricsRow}>
           <View style={styles.metricItem}>
-            <Text style={styles.metricValue}>{rainfall}mm</Text>
+            <Text style={styles.metricValue}>{displayRainfall}</Text>
             <Text style={styles.metricLabel}>{t('citizen.dashboard.rainfall').toUpperCase()}</Text>
           </View>
           <View style={styles.metricItem}>
@@ -180,7 +194,7 @@ const HomeScreen = () => {
             <Text style={styles.metricLabel}>{t('flood.waterLevel').toUpperCase()}</Text>
           </View>
           <View style={styles.metricItem}>
-            <Text style={styles.metricValue}>85%</Text>
+            <Text style={styles.metricValue}>{displayHumidity}</Text>
             <Text style={styles.metricLabel}>{t('citizen.dashboard.humidity').toUpperCase()}</Text>
           </View>
         </View>
@@ -210,7 +224,7 @@ const HomeScreen = () => {
               <Icon name="weather-pouring" size={20} color="#3B82F6" />
               <View>
                 <Text style={styles.riskGridLabel}>{t('citizen.dashboard.rainfall')}</Text>
-                <Text style={styles.riskGridValue}>{rainfall}mm/h</Text>
+                <Text style={styles.riskGridValue}>{displayRainfall}</Text>
               </View>
             </View>
             <View style={styles.riskGridItem}>
@@ -262,20 +276,39 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={styles.alertBanner}
             onPress={() => navigation.navigate('AlertDetail' as any, { id: criticalAlert.id })}
-            activeOpacity={0.85}
+            activeOpacity={0.9}
           >
-            <View style={styles.alertBannerIcon}>
-              <Icon name="alert" size={24} color="#fff" />
-            </View>
-            <View style={{ flex: 1 }}>
+            {/* Crimson glowing left border indicator */}
+            <View style={styles.alertBannerIndicator} />
+            
+            <View style={styles.alertBannerBody}>
+              {/* Top Meta Header inside banner */}
+              <View style={styles.alertBannerHeader}>
+                <View style={styles.alertBannerBadge}>
+                  <Icon name="alert-decagram" size={12} color="#f04438" />
+                  <Text style={styles.alertBannerBadgeText}>{t('citizen.alerts.critical', 'KHẨN CẤP').toUpperCase()}</Text>
+                </View>
+                <View style={styles.pulseContainer}>
+                  <View style={styles.pulseDot} />
+                  <Text style={styles.pulseText}>{t('digitalTwin.live', 'THỜI GIAN THỰC')}</Text>
+                </View>
+              </View>
+
+              {/* Title & Desc */}
               <Text style={styles.alertBannerTitle} numberOfLines={2}>
                 {criticalAlert.title || t('citizen.alerts.critical')}
               </Text>
-              <Text style={styles.alertBannerDesc} numberOfLines={1}>
-                {criticalAlert.description || ''}
-              </Text>
+              
+              {criticalAlert.description && (
+                <Text style={styles.alertBannerDesc} numberOfLines={1}>
+                  {criticalAlert.description}
+                </Text>
+              )}
             </View>
-            <Icon name="chevron-right" size={22} color="rgba(255,255,255,0.7)" />
+
+            <View style={styles.alertBannerArrow}>
+              <Icon name="chevron-right" size={20} color="rgba(255,255,255,0.4)" />
+            </View>
           </TouchableOpacity>
         )}
 
@@ -303,24 +336,30 @@ const HomeScreen = () => {
                 key={alert.id}
                 style={styles.alertCard}
                 onPress={() => navigation.navigate('AlertDetail' as any, { id: alert.id })}
-                activeOpacity={0.7}
+                activeOpacity={0.8}
               >
+                {/* Severity vertical indicator bar */}
+                <View style={[styles.alertCardIndicator, { backgroundColor: sev.color }]} />
+
                 <View style={styles.alertCardLeft}>
-                  <View style={[styles.alertIconCircle, { backgroundColor: sev.color + '15' }]}>
-                    <Icon name="waves" size={18} color={sev.color} />
+                  <View style={[styles.alertIconCircle, { backgroundColor: sev.color + '12' }]}>
+                    <Icon name={alert.severity === 'critical' ? 'alert' : 'waves'} size={16} color={sev.color} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.alertCardTitle} numberOfLines={1}>{alert.title}</Text>
                     <View style={styles.alertCardMeta}>
-                      <Icon name="clock-outline" size={12} color={theme.colors.textTertiary} />
+                      <Icon name="clock-outline" size={11} color={theme.colors.textSecondary} />
                       <Text style={styles.alertCardTime}>
                         {alert.created_at ? getTimeAgo(alert.created_at, t) : ''}
                       </Text>
                     </View>
                   </View>
                 </View>
-                <View style={[styles.severityBadge, { backgroundColor: sev.bg }]}>
-                  <Text style={[styles.severityBadgeText, { color: sev.color }]}>{t(`citizen.alerts.${sev.labelKey}`).toUpperCase()}</Text>
+                
+                <View style={[styles.severityBadge, { backgroundColor: sev.color + '12' }]}>
+                  <Text style={[styles.severityBadgeText, { color: sev.color }]}>
+                    {t(`citizen.alerts.${sev.labelKey}`).toUpperCase()}
+                  </Text>
                 </View>
               </TouchableOpacity>
             );
@@ -456,20 +495,86 @@ const styles = StyleSheet.create({
   },
   quickLabel: { fontSize: FONT_SIZE['2xs'], color: theme.colors.text, textAlign: 'center', fontWeight: '500', marginTop: SPACING.xs },
 
-  // Alert Banner
+  // Alert Banner (Obsidian glassmorphic style with neon details)
   alertBanner: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: theme.colors.error, borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg, marginBottom: SPACING.xl, gap: SPACING.md,
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(24, 24, 33, 0.96)', // Dark obsidian black
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
+    paddingLeft: SPACING.lg + 8, // Room for indicator
+    marginBottom: SPACING.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 56, 0.18)', // Subtly glowing crimson outline
+    overflow: 'hidden',
     ...theme.shadows.md,
   },
-  alertBannerIcon: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center', alignItems: 'center',
+  alertBannerIndicator: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 5,
+    backgroundColor: '#f04438', // Neon vibrant red
   },
-  alertBannerTitle: { fontSize: FONT_SIZE.md, fontWeight: '700', color: theme.colors.textWhite },
-  alertBannerDesc: { fontSize: FONT_SIZE.xs, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
+  alertBannerBody: {
+    flex: 1,
+  },
+  alertBannerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  alertBannerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 56, 0.12)', // Light red capsule
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: BORDER_RADIUS.sm,
+    gap: 4,
+  },
+  alertBannerBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#FF3B30', // Crimson red text
+    letterSpacing: 0.5,
+  },
+  pulseContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  pulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#17b26a', // Vibrant green status dot
+  },
+  pulseText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: 'rgba(255, 255, 255, 0.45)',
+    letterSpacing: 0.5,
+  },
+  alertBannerTitle: { 
+    fontSize: FONT_SIZE.md - 1, 
+    fontWeight: '700', 
+    color: theme.colors.textWhite,
+    lineHeight: 22,
+  },
+  alertBannerDesc: { 
+    fontSize: FONT_SIZE.xs, 
+    color: 'rgba(255, 255, 255, 0.65)', 
+    marginTop: 4,
+    lineHeight: 16,
+  },
+  alertBannerArrow: {
+    marginLeft: SPACING.sm,
+    justifyContent: 'center',
+  },
 
   // Section
   sectionHeader: {
@@ -482,17 +587,34 @@ const styles = StyleSheet.create({
 
   // Alert cards
   alertCard: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: theme.colors.white, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, marginBottom: SPACING.md,
-    ...theme.shadows.sm,
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.colors.white,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md + 2,
+    paddingLeft: SPACING.lg + 4, // Leave space for indicator bar
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.04)',
+    overflow: 'hidden',
+    ...theme.shadows.xs,
+  },
+  alertCardIndicator: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
   },
   alertCardLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: SPACING.md },
-  alertIconCircle: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
-  alertCardTitle: { fontSize: FONT_SIZE.sm, fontWeight: '600', color: theme.colors.text, marginBottom: 3 },
-  alertCardMeta: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
-  alertCardTime: { fontSize: FONT_SIZE.xs, color: theme.colors.textTertiary },
-  severityBadge: { paddingHorizontal: SPACING.sm, paddingVertical: 3, borderRadius: BORDER_RADIUS.xs },
-  severityBadgeText: { fontSize: FONT_SIZE['2xs'], fontWeight: '700' },
+  alertIconCircle: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  alertCardTitle: { fontSize: FONT_SIZE.sm, fontWeight: '600', color: '#1F2937', marginBottom: 2 },
+  alertCardMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  alertCardTime: { fontSize: 11, color: theme.colors.textSecondary, fontWeight: '500' },
+  severityBadge: { paddingHorizontal: SPACING.sm, paddingVertical: 4, borderRadius: BORDER_RADIUS.sm, marginLeft: SPACING.sm },
+  severityBadgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.3 },
 
   // Empty
   emptyCard: {

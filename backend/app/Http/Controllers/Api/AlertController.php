@@ -11,6 +11,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AlertResource;
 use App\Models\Alert;
+use App\Support\DaNangLandMask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -204,7 +205,7 @@ class AlertController extends Controller
                 ],
                 'geometry' => $geometry,
             ];
-        });
+        })->filter(fn (array $feature) => DaNangLandMask::featureIsLikelyLand($feature))->values();
 
         return response()->json([
             'type' => 'FeatureCollection',

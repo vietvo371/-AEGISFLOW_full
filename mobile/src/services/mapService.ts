@@ -9,11 +9,11 @@ const normalizeSheltersResponse = (payload: any): any[] => {
         return payload.features.map((feature: any) => {
             const properties = feature.properties || {};
             const coordinates = feature.geometry?.coordinates || [];
-
+            // coordinates format [lng, lat]
             return {
                 ...properties,
-                latitude: Number(coordinates[1]),
                 longitude: Number(coordinates[0]),
+                latitude: Number(coordinates[1]),
             };
         });
     }
@@ -48,6 +48,18 @@ export const mapService = {
 
     getFloodZones: async (): Promise<any> => {
         const response = await api.get('/public/flood-zones/geojson');
+        return response.data;
+    },
+
+    getFloodReports: async (bounds?: MapBounds): Promise<any> => {
+        const params: any = {};
+        if (bounds) {
+            params.min_lon = bounds.min_lon;
+            params.min_lat = bounds.min_lat;
+            params.max_lon = bounds.max_lon;
+            params.max_lat = bounds.max_lat;
+        }
+        const response = await api.get('/map/flood-reports', { params });
         return response.data;
     },
 

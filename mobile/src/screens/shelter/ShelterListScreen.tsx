@@ -122,13 +122,13 @@ const ShelterListScreen: React.FC = () => {
               };
             })
           : [];
-        setShelters(transformedData.length > 0 ? transformedData : MOCK_SHELTERS);
-        setUsingDemoData(transformedData.length === 0);
+        setShelters(transformedData);
+        setUsingDemoData(false);
       }
     } catch (err) {
-      setError('Đang dùng dữ liệu mẫu do chưa kết nối được máy chủ.');
-      setUsingDemoData(true);
-      setShelters(MOCK_SHELTERS);
+      setError('Lỗi kết nối máy chủ.');
+      setUsingDemoData(false);
+      setShelters([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -195,11 +195,11 @@ const ShelterListScreen: React.FC = () => {
 
   const getStatusIcon = (status: string): string => {
     const icons: Record<string, string> = {
-      'available': 'check-circle',
-      'limited': 'alert-circle',
-      'full': 'close-circle',
+      'available': 'check-circle-outline',
+      'limited': 'alert-circle-outline',
+      'full': 'close-circle-outline',
     };
-    return icons[status] || 'check-circle';
+    return icons[status] || 'check-circle-outline';
   };
 
   const getShelterTypeIcon = (type: string): string => {
@@ -267,20 +267,14 @@ const ShelterListScreen: React.FC = () => {
     
     return (
       <Animated.View entering={FadeInDown.duration(400).delay(index * 50)}>
-        <TouchableOpacity 
-          style={styles.shelterCard}
-          activeOpacity={0.7}
-          onPress={() => {
-            // Navigate to shelter detail or show modal
-          }}
-        >
+        <View style={styles.shelterCard}>
           <View style={styles.shelterHeader}>
             <View style={styles.shelterPhotoWrap}>
               <Image source={getShelterImageSource(item)} style={styles.shelterPhoto} resizeMode="cover" />
               <View style={[styles.shelterIcon, { backgroundColor: getStatusColor(item.tinh_trang) }]}>
                 <Icon
                   name={getShelterTypeIcon(item.loai)}
-                  size={14}
+                  size={12}
                   color={theme.colors.white}
                 />
               </View>
@@ -288,32 +282,39 @@ const ShelterListScreen: React.FC = () => {
             <View style={styles.shelterInfo}>
               <Text style={styles.shelterName} numberOfLines={2}>{item.ten_diem}</Text>
               <View style={styles.shelterMeta}>
-                <Icon name="map-marker" size={14} color={theme.colors.textSecondary} />
+                <Icon name="map-marker" size={13} color={theme.colors.textSecondary} />
                 <Text style={styles.shelterAddress} numberOfLines={2}>
                   {item.dia_chi || t('citizen.shelters.unknownAddress')}
                 </Text>
               </View>
             </View>
             <TouchableOpacity
-              style={styles.distanceContainer}
-              activeOpacity={0.75}
+              style={styles.distanceBadge}
+              activeOpacity={0.7}
               onPress={() => openDirections(item)}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Icon name="navigation" size={16} color={theme.colors.primary} />
-              <Text style={styles.distanceText}>{distance}</Text>
+              <Icon name="navigation-variant" size={11} color={theme.colors.primary} />
+              <Text style={styles.distanceBadgeText}>{distance}</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.shelterStats}>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>{t('citizen.shelters.capacity')}</Text>
-              <Text style={styles.statValue}>{item.hien_tai}/{item.suc_chua}</Text>
+          {/* Occupancy Indicator section */}
+          <View style={styles.capacityContainer}>
+            <View style={styles.capacityHeader}>
+              <Text style={styles.capacityLabel}>
+                Sức chứa: <Text style={styles.capacityHighlight}>{item.hien_tai}</Text>/{item.suc_chua} người
+              </Text>
+              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.tinh_trang) + '12' }]}>
+                <View style={[styles.statusIndicatorDot, { backgroundColor: getStatusColor(item.tinh_trang) }]} />
+                <Text style={[styles.statusText, { color: getStatusColor(item.tinh_trang) }]}>
+                  {getStatusText(item.tinh_trang)}
+                </Text>
+              </View>
             </View>
-            <View style={styles.capacityBar}>
+            <View style={styles.progressBarBg}>
               <View 
                 style={[
-                  styles.capacityFill, 
+                  styles.progressBarFill, 
                   { 
                     width: `${Math.min(capacityPercent, 100)}%`,
                     backgroundColor: getStatusColor(item.tinh_trang)
@@ -321,35 +322,31 @@ const ShelterListScreen: React.FC = () => {
                 ]} 
               />
             </View>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.tinh_trang) + '15' }]}>
-              <Icon name={getStatusIcon(item.tinh_trang)} size={14} color={getStatusColor(item.tinh_trang)} />
-              <Text style={[styles.statusText, { color: getStatusColor(item.tinh_trang) }]}>
-                {getStatusText(item.tinh_trang)}
-              </Text>
-            </View>
           </View>
 
           <View style={styles.shelterFooter}>
             <View style={styles.footerItem}>
-              <Icon name="clock-outline" size={14} color={theme.colors.textSecondary} />
+              <Icon name="clock-outline" size={13} color={theme.colors.textSecondary} />
               <Text style={styles.footerText}>
                 {formatOpeningHours(item.thoi_gian_mo, item.thoi_gian_dong)}
               </Text>
             </View>
-            {item.so_dt && (
-              <View style={styles.footerItem}>
-                <Icon name="phone" size={14} color={theme.colors.textSecondary} />
-                <Text style={styles.footerText}>{item.so_dt}</Text>
+            
+            {item.so_dt ? (
+              <View style={styles.phoneButton}>
+                <Icon name="phone" size={13} color="#12B76A" />
+                <Text style={styles.phoneButtonText}>{item.so_dt}</Text>
               </View>
-            )}
-            <View style={[styles.typeBadge, { backgroundColor: theme.colors.primary + '15' }]}>
-              <Icon name={getShelterTypeIcon(item.loai)} size={12} color={theme.colors.primary} />
+            ) : null}
+
+            <View style={[styles.typeBadge, { backgroundColor: theme.colors.primary + '12' }]}>
+              <Icon name={getShelterTypeIcon(item.loai)} size={11} color={theme.colors.primary} />
               <Text style={[styles.typeText, { color: theme.colors.primary }]}>
                 {getShelterTypeText(item.loai)}
               </Text>
             </View>
           </View>
-        </TouchableOpacity>
+        </View>
       </Animated.View>
     );
   };
@@ -371,53 +368,83 @@ const ShelterListScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.white} />
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 6 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-left" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('citizen.shelters.title')}</Text>
-        <TouchableOpacity style={styles.filterButton}>
-          <Icon name="filter-variant" size={24} color={theme.colors.primary} />
-        </TouchableOpacity>
-      </View>
+      
+      {/* Cohesive Header + Search + Stats Block */}
+      <View style={[styles.topPanel, { paddingTop: insets.top + 10 }]}>
+        {/* Header Bar */}
+        <View style={styles.headerBar}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Icon name="arrow-left" size={22} color={theme.colors.text} />
+          </TouchableOpacity>
+          <View style={styles.headerTitleWrap}>
+            <Text style={styles.headerTitle}>{t('citizen.shelters.title')}</Text>
+            <View style={styles.headerSubtitleRow}>
+              <View style={styles.pulseDot} />
+              <Text style={styles.headerSubtitle}>
+                {shelters.filter(s => s.tinh_trang !== 'full').length} điểm đang sẵn sàng
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity style={styles.filterButton}>
+            <Icon name="tune-variant" size={20} color={theme.colors.primary} />
+          </TouchableOpacity>
+        </View>
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Icon name="magnify" size={20} color={theme.colors.textSecondary} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t('citizen.shelters.searchShelter')}
-            placeholderTextColor={theme.colors.textSecondary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Icon name="close-circle" size={18} color={theme.colors.textSecondary} />
-            </TouchableOpacity>
-          )}
+        {/* Search Bar */}
+        <View style={styles.searchBarContainer}>
+          <View style={styles.searchBar}>
+            <Icon name="magnify" size={20} color={theme.colors.textSecondary} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t('citizen.shelters.searchShelter')}
+              placeholderTextColor={theme.colors.textTertiary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Icon name="close-circle" size={18} color={theme.colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-      </View>
 
-      {/* Summary Stats */}
-      <View style={styles.summaryContainer}>
-        <View style={styles.summaryItem}>
-          <Icon name="home-city" size={20} color={theme.colors.primary} />
-          <Text style={styles.summaryText}>{shelters.length} {t('citizen.shelters.locations')}</Text>
-        </View>
-        <View style={styles.summaryItem}>
-          <Icon name="account-group" size={20} color={theme.colors.success} />
-          <Text style={styles.summaryText}>
-            {shelters.reduce((sum, s) => sum + (s.suc_chua - s.hien_tai), 0)} {t('citizen.shelters.bedsAvailable')}
-          </Text>
-        </View>
-        <View style={styles.summaryItem}>
-          <Icon name="map-marker-distance" size={20} color={theme.colors.warning} />
-          <Text style={styles.summaryText}>
-            {getNearestDistance()}
-          </Text>
+        {/* Summary Stats Cards Grid */}
+        <View style={styles.statsWidgetRow}>
+          {/* Total Locations */}
+          <View style={[styles.statWidget, { backgroundColor: '#F4F3FF', borderColor: 'rgba(122, 90, 248, 0.08)' }]}>
+            <View style={styles.statWidgetIconWrap}>
+              <Icon name="home-heart" size={16} color="#7A5AF8" />
+            </View>
+            <View>
+              <Text style={styles.statWidgetValue}>{shelters.length}</Text>
+              <Text style={styles.statWidgetLabel}>{t('citizen.shelters.locations')}</Text>
+            </View>
+          </View>
+
+          {/* Beds Available */}
+          <View style={[styles.statWidget, { backgroundColor: '#ECFDF3', borderColor: 'rgba(23, 178, 106, 0.08)' }]}>
+            <View style={styles.statWidgetIconWrap}>
+              <Icon name="account-multiple-check" size={16} color="#12B76A" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.statWidgetValue}>
+                {shelters.reduce((sum, s) => sum + Math.max(0, s.suc_chua - s.hien_tai), 0)}
+              </Text>
+              <Text style={styles.statWidgetLabel} numberOfLines={1}>chỗ trống</Text>
+            </View>
+          </View>
+
+          {/* Nearest Distance */}
+          <View style={[styles.statWidget, { backgroundColor: '#FEF8E8', borderColor: 'rgba(247, 144, 9, 0.08)' }]}>
+            <View style={styles.statWidgetIconWrap}>
+              <Icon name="map-marker-distance" size={16} color="#F79009" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.statWidgetValue} numberOfLines={1}>{getNearestDistance()}</Text>
+              <Text style={styles.statWidgetLabel} numberOfLines={1}>gần nhất</Text>
+            </View>
+          </View>
         </View>
       </View>
 
@@ -429,24 +456,28 @@ const ShelterListScreen: React.FC = () => {
         </View>
       )}
 
-      {/* Shelter List */}
+      {/* Shelter List with explicit style=flex:1 to prevent vertical overlap bugs */}
       <FlatList
         data={filteredShelters}
         renderItem={renderShelterItem}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 112 }]}
-        scrollIndicatorInsets={{ bottom: insets.bottom + 112 }}
+        style={styles.list}
+        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 120 }]}
+        scrollIndicatorInsets={{ bottom: insets.bottom + 120 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
             colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Icon name="home-off" size={48} color={theme.colors.textSecondary} />
+            <View style={styles.emptyIconWrap}>
+              <Icon name="home-off-outline" size={44} color={theme.colors.textTertiary} />
+            </View>
             <Text style={styles.emptyText}>{t('citizen.shelters.noShelters')}</Text>
             <Text style={styles.emptySubtext}>{t('citizen.shelters.noSheltersMessage')}</Text>
           </View>
@@ -455,84 +486,6 @@ const ShelterListScreen: React.FC = () => {
     </View>
   );
 };
-
-// Mock data for demo
-const MOCK_SHELTERS: Shelter[] = [
-  {
-    id: 1,
-    ten_diem: 'Trường Tiểu học Trần Hưng Đạo',
-    dia_chi: '123 Nguyễn Văn Linh, Hải Châu, Đà Nẵng',
-    latitude: 16.0544,
-    longitude: 108.2022,
-    suc_chua: 200,
-    hien_tai: 45,
-    loai: 'school',
-    tinh_trang: 'available',
-    thoi_gian_mo: '06:00',
-    thoi_gian_dong: '22:00',
-    so_dt: '0236.3822.123',
-    mo_ta: 'Trường tiểu học có sân rộng, đủ điều kiện tiếp nhận người dân sơ tán',
-  },
-  {
-    id: 2,
-    ten_diem: 'Nhà thi đấu thể thao Liên Chiểu',
-    dia_chi: '45 Đường số 5, Liên Chiểu, Đà Nẵng',
-    latitude: 16.0689,
-    longitude: 108.1495,
-    suc_chua: 500,
-    hien_tai: 380,
-    loai: 'community',
-    tinh_trang: 'limited',
-    thoi_gian_mo: '24/24',
-    thoi_gian_dong: '',
-    so_dt: '0236.3844.456',
-    mo_ta: 'Nhà thi đấu đa năng, sức chứa lớn, có khu vực cấp cứu',
-  },
-  {
-    id: 3,
-    ten_diem: 'UBND Quận Hải Châu',
-    dia_chi: '78 Lê Duẩn, Hải Châu, Đà Nẵng',
-    latitude: 16.0718,
-    longitude: 108.2198,
-    suc_chua: 150,
-    hien_tai: 150,
-    loai: 'government',
-    tinh_trang: 'full',
-    thoi_gian_mo: '24/24',
-    thoi_gian_dong: '',
-    so_dt: '0236.3891.789',
-    mo_ta: 'Trụ sở UBND quận, có đội ngũ y tế và hỗ trợ',
-  },
-  {
-    id: 4,
-    ten_diem: 'Chùa Linh Ứng',
-    dia_chi: '60 Ngũ Hành Sơn, Mỹ An, Đà Nẵng',
-    latitude: 16.0015,
-    longitude: 108.2475,
-    suc_chua: 300,
-    hien_tai: 20,
-    loai: 'religious',
-    tinh_trang: 'available',
-    thoi_gian_mo: '05:00',
-    thoi_gian_dong: '21:00',
-    so_dt: '0236.3962.888',
-    mo_ta: 'Cơ sở tôn giáo rộng rãi, có khu nghỉ ngơi và cung cấp đồ ăn',
-  },
-  {
-    id: 5,
-    ten_diem: 'Trường THCS Lê Quý Đôn',
-    dia_chi: '200 Nguyễn Tất Thành, Thanh Khê, Đà Nẵng',
-    latitude: 16.0789,
-    longitude: 108.1987,
-    suc_chua: 180,
-    hien_tai: 60,
-    loai: 'school',
-    tinh_trang: 'available',
-    thoi_gian_mo: '06:00',
-    thoi_gian_dong: '21:00',
-    so_dt: '0236.3712.345',
-  },
-];
 
 const styles = StyleSheet.create({
   container: {
@@ -549,74 +502,121 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.md,
     color: theme.colors.textSecondary,
   },
-  header: {
+  topPanel: {
+    backgroundColor: theme.colors.white,
+    borderBottomLeftRadius: BORDER_RADIUS.xl,
+    borderBottomRightRadius: BORDER_RADIUS.xl,
+    paddingBottom: SPACING.md,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 4,
+    zIndex: 10,
+  },
+  headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SCREEN_PADDING.horizontal,
-    paddingBottom: 10,
-    backgroundColor: theme.colors.white,
+    paddingBottom: SPACING.sm,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: theme.colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerTitleWrap: {
+    flex: 1,
+    marginLeft: SPACING.sm,
+  },
   headerTitle: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
     color: theme.colors.text,
   },
+  headerSubtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  pulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.success,
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    fontWeight: '600',
+  },
   filterButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.primary + '15',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: theme.colors.primary + '12',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  searchContainer: {
+  searchBarContainer: {
     paddingHorizontal: SCREEN_PADDING.horizontal,
-    paddingVertical: SPACING.md,
-    backgroundColor: theme.colors.white,
+    paddingVertical: SPACING.xs,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.backgroundSecondary,
-    borderRadius: BORDER_RADIUS.lg,
+    borderRadius: BORDER_RADIUS.md,
     paddingHorizontal: SPACING.md,
-    height: 44,
+    height: 46,
     gap: SPACING.sm,
   },
   searchInput: {
     flex: 1,
     fontSize: FONT_SIZE.md,
     color: theme.colors.text,
+    padding: 0,
   },
-  summaryContainer: {
+  statsWidgetRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: SPACING.sm,
     paddingHorizontal: SCREEN_PADDING.horizontal,
-    paddingVertical: SPACING.md,
-    backgroundColor: theme.colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    gap: SPACING.xs,
+    marginTop: SPACING.xs,
   },
-  summaryItem: {
+  statWidget: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.xs,
-    flexShrink: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    gap: 6,
   },
-  summaryText: {
-    fontSize: FONT_SIZE.sm,
+  statWidgetIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statWidgetValue: {
+    fontSize: 13,
+    fontWeight: '800',
     color: theme.colors.text,
-    fontWeight: '600',
+  },
+  statWidgetLabel: {
+    fontSize: 9,
+    color: theme.colors.textSecondary,
+    fontWeight: '700',
+    marginTop: -1,
   },
   errorBanner: {
     flexDirection: 'row',
@@ -637,28 +637,34 @@ const styles = StyleSheet.create({
   demoText: {
     color: theme.colors.warning,
   },
+  list: {
+    flex: 1,
+  },
   listContent: {
-    padding: SCREEN_PADDING.horizontal,
+    paddingHorizontal: SCREEN_PADDING.horizontal,
+    paddingTop: SPACING.md,
   },
   shelterCard: {
     backgroundColor: theme.colors.white,
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
     marginBottom: SPACING.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
   },
   shelterHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: SPACING.md,
+    marginBottom: 12,
   },
   shelterPhotoWrap: {
-    width: 62,
-    height: 62,
+    width: 68,
+    height: 68,
     borderRadius: BORDER_RADIUS.md,
     overflow: 'hidden',
     backgroundColor: theme.colors.backgroundSecondary,
@@ -669,11 +675,11 @@ const styles = StyleSheet.create({
   },
   shelterIcon: {
     position: 'absolute',
-    right: 6,
-    bottom: 6,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    right: -2,
+    bottom: -2,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
@@ -684,11 +690,11 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.md,
   },
   shelterName: {
-    fontSize: FONT_SIZE.md,
+    fontSize: 15,
     fontWeight: '700',
     color: theme.colors.text,
     marginBottom: 4,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   shelterMeta: {
     flexDirection: 'row',
@@ -696,73 +702,78 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   shelterAddress: {
-    fontSize: FONT_SIZE.sm,
+    fontSize: 12,
     color: theme.colors.textSecondary,
     flex: 1,
   },
-  distanceContainer: {
+  distanceBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: theme.colors.primary + '10',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
+    gap: 3,
+    backgroundColor: 'rgba(122, 90, 248, 0.08)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: BORDER_RADIUS.sm,
+    alignSelf: 'flex-start',
+    marginLeft: 6,
   },
-  distanceText: {
-    fontSize: FONT_SIZE.sm,
+  distanceBadgeText: {
+    fontSize: 11,
     color: theme.colors.primary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  shelterStats: {
+  capacityContainer: {
+    marginBottom: 12,
+  },
+  capacityHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: SPACING.md,
-    marginBottom: SPACING.md,
+    marginBottom: 6,
   },
-  statItem: {
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: FONT_SIZE.xs,
+  capacityLabel: {
+    fontSize: 12,
     color: theme.colors.textSecondary,
   },
-  statValue: {
-    fontSize: FONT_SIZE.sm,
+  capacityHighlight: {
     fontWeight: '700',
     color: theme.colors.text,
   },
-  capacityBar: {
-    flex: 1,
-    height: 8,
-    backgroundColor: theme.colors.border,
-    borderRadius: 4,
+  progressBarBg: {
+    height: 6,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 3,
     overflow: 'hidden',
   },
-  capacityFill: {
+  progressBarFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3,
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: BORDER_RADIUS.sm,
     gap: 4,
   },
+  statusIndicatorDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
   statusText: {
-    fontSize: FONT_SIZE.xs,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
   },
   shelterFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: SPACING.md,
-    paddingTop: SPACING.md,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    borderTopColor: theme.colors.borderLight,
   },
   footerItem: {
     flexDirection: 'row',
@@ -770,35 +781,61 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   footerText: {
-    fontSize: FONT_SIZE.sm,
+    fontSize: 11,
     color: theme.colors.textSecondary,
+    fontWeight: '500',
   },
   typeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: BORDER_RADIUS.sm,
-    gap: 4,
+    gap: 3,
   },
   typeText: {
-    fontSize: FONT_SIZE.xs,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  phoneButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(23, 178, 106, 0.06)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: BORDER_RADIUS.sm,
+  },
+  phoneButtonText: {
+    fontSize: 11,
+    color: '#12B76A',
     fontWeight: '600',
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingVertical: SPACING['3xl'],
-    gap: SPACING.md,
+    paddingVertical: 48,
+    gap: 12,
+  },
+  emptyIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F8F9FB',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
+    fontSize: 16,
+    fontWeight: '700',
+    color: theme.colors.text,
   },
   emptySubtext: {
-    fontSize: FONT_SIZE.sm,
+    fontSize: 13,
     color: theme.colors.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
 });
 
 export default ShelterListScreen;
+

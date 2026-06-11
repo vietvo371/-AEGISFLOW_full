@@ -12,8 +12,14 @@ import {
 import PageHeader from '../../component/PageHeader';
 import { incidentService, Incident, UpdateIncidentData } from '../../services/incidentService';
 import { RootStackParamList } from '../../navigation/types';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useAuth } from '../../contexts/AuthContext';
 
 type IncidentDetailRouteProp = RouteProp<RootStackParamList, 'IncidentDetail'>;
+
+// ─── Accept Mission helper ───────────────────────────────────────────────────
+// Rescue team accepts a mission: set status -> 'investigating', assigned_to = current user
+const ACCEPT_STATUS = 'investigating' as const;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -26,21 +32,26 @@ const SEVERITY_MAP: Record<string, { label: string; color: string; icon: string 
 
 const STATUS_MAP: Record<string, { label: string; color: string; icon: string }> = {
   open:          { label: 'Mở',           color: '#EF4444', icon: 'record-circle' },
+  reported:      { label: 'Mới báo cáo',   color: '#EF4444', icon: 'record-circle' },
+  verified:      { label: 'Đã xác minh',   color: '#3B82F6', icon: 'check-circle' },
+  responding:    { label: 'Đang ứng phó',   color: '#F59E0B', icon: 'progress-clock' },
   investigating: { label: 'Đang xử lý',   color: '#F59E0B', icon: 'progress-clock' },
   resolved:      { label: 'Đã giải quyết',color: '#10B981', icon: 'check-circle' },
   closed:        { label: 'Đã đóng',      color: '#6B7280', icon: 'close-circle' },
 };
 
 const TYPE_MAP: Record<string, { label: string; icon: string }> = {
-  accident:     { label: 'Tai nạn',    icon: 'car-emergency' },
-  congestion:   { label: 'Ùn tắc',     icon: 'car-brake-alert' },
-  construction: { label: 'Thi công',   icon: 'hard-hat' },
-  weather:      { label: 'Thời tiết',  icon: 'weather-lightning-rainy' },
+  flood:        { label: 'Ngập lụt',   icon: 'home-flood' },
+  heavy_rain:   { label: 'Mưa lớn',    icon: 'weather-pouring' },
+  landslide:    { label: 'Sạt lở đất', icon: 'slope-downhill' },
+  dam_failure:  { label: 'Sự cố đập',  icon: 'waves' },
+  congestion:   { label: 'Ùn tắc',     icon: 'traffic-light' },
+  accident:     { label: 'Tai nạn',    icon: 'car-crash' },
   other:        { label: 'Khác',       icon: 'alert-circle-outline' },
 };
 
-const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleString('vi-VN', {
+const fmtDate = (iso: string, lang = 'vi') =>
+  new Date(iso).toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US', {
     weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
@@ -100,9 +111,11 @@ const parseAIContent = (content: any): string => {
 // ─── Component ──────────────────────────────────────────────────────────────
 
 const IncidentDetailScreen = () => {
+  const { t, currentLanguage } = useTranslation();
+  const { user, isEmergency }  = useAuth();
   const route      = useRoute<IncidentDetailRouteProp>();
   const navigation = useNavigation();
-  const { id }     = route.params;
+  const { id, isRescue } = route.params;
 
   const [incident, setIncident]   = useState<Incident | null>(null);
   const [loading, setLoading]     = useState(true);
@@ -114,7 +127,7 @@ const IncidentDetailScreen = () => {
       const res = await incidentService.getIncident(id);
       if (res.success) setIncident(res.data);
     } catch {
-      Alert.alert('Lỗi', 'Không thể tải thông tin sự cố.');
+      Alert.alert(t('common.error', 'Lỗi'), t('home.error.loading', 'Không thể tải thông tin sự cố.'));
     } finally {
       setLoading(false);
     }
@@ -122,15 +135,16 @@ const IncidentDetailScreen = () => {
 
   useEffect(() => { fetchIncident(); }, [fetchIncident]);
 
+  // ── Admin / Operator: điều phối đơn vị ──
   const handleDispatch = async () => {
     if (!incident) return;
     Alert.alert(
-      'Xác nhận điều phối',
-      `Điều phối đơn vị đến sự cố "${incident.title}"?`,
+      t('emergency.confirmDispatch', 'Xác nhận điều phối'),
+      `${t('emergency.dispatchUnit', 'Điều phối đơn vị')} đến sự cố "${incident.title}"?`,
       [
-        { text: 'Hủy', style: 'cancel' },
+        { text: t('common.cancel', 'Hủy'), style: 'cancel' },
         {
-          text: 'Điều phối',
+          text: t('common.confirm', 'Xác nhận'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -138,9 +152,72 @@ const IncidentDetailScreen = () => {
               const update: UpdateIncidentData = { status: 'investigating' };
               await incidentService.updateIncident(id, update);
               await fetchIncident();
-              Alert.alert('Thành công', 'Đã chuyển trạng thái sang "Đang xử lý".');
+              Alert.alert(t('common.success', 'Thành công'), t('incidents.updateSuccess', 'Cập nhật thành công.'));
             } catch {
-              Alert.alert('Lỗi', 'Không thể điều phối. Thử lại sau.');
+              Alert.alert(t('common.error', 'Lỗi'), t('incidents.updateFailed', 'Cập nhật thất bại.'));
+            } finally {
+              setDispatching(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // ── Rescue Team: nhận nhiệm vụ ──
+  const handleAcceptMission = async () => {
+    if (!incident) return;
+    Alert.alert(
+      t('emergency.acceptMission', 'Nhận nhiệm vụ'),
+      `${t('emergency.confirmAccept', 'Bạn có muốn nhận xử lý sự cố')} "${incident.title}"?`,
+      [
+        { text: t('common.cancel', 'Hủy'), style: 'cancel' },
+        {
+          text: t('emergency.accept', 'Nhận nhiệm vụ'),
+          onPress: async () => {
+            try {
+              setDispatching(true);
+              const update: UpdateIncidentData = {
+                status: ACCEPT_STATUS,
+                assigned_to: user?.id ?? null,
+              };
+              await incidentService.updateIncident(id, update);
+              await fetchIncident();
+              Alert.alert(
+                t('common.success', 'Thành công'),
+                t('emergency.missionAccepted', 'Bạn đã nhận nhiệm vụ! Hãy xử lý sự cố kịp thời.'),
+              );
+            } catch {
+              Alert.alert(t('common.error', 'Lỗi'), t('incidents.updateFailed', 'Cập nhật thất bại.'));
+            } finally {
+              setDispatching(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // ── Rescue Team: cập nhật tiến độ ──
+  const handleRescueProgress = (newStatus: 'resolved' | 'closed') => {
+    const labels: Record<string, string> = {
+      resolved: t('incidents.resolved', 'Đã giải quyết'),
+      closed:   t('incidents.closeIncident', 'Đóng sự cố'),
+    };
+    Alert.alert(
+      t('incidents.updateStatus', 'Cập nhật tiến độ'),
+      `${t('incidents.confirmUpdate', 'Chuyển trạng thái sang')} "${labels[newStatus]}"?`,
+      [
+        { text: t('common.cancel', 'Hủy'), style: 'cancel' },
+        {
+          text: t('common.confirm', 'Xác nhận'),
+          onPress: async () => {
+            try {
+              setDispatching(true);
+              await incidentService.updateIncident(id, { status: newStatus });
+              await fetchIncident();
+            } catch {
+              Alert.alert(t('common.error', 'Lỗi'), t('incidents.updateFailed', 'Cập nhật thất bại.'));
             } finally {
               setDispatching(false);
             }
@@ -153,18 +230,18 @@ const IncidentDetailScreen = () => {
   const handleUpdateStatus = (newStatus: UpdateIncidentData['status']) => {
     if (!newStatus) return;
     Alert.alert(
-      'Cập nhật trạng thái',
-      `Đổi sang "${STATUS_MAP[newStatus]?.label}"?`,
+      t('incidents.updateStatus', 'Cập nhật trạng thái'),
+      `${t('incidents.confirmUpdate', 'Đổi trạng thái')} sang "${t('incidents.' + newStatus, STATUS_MAP[newStatus]?.label)}"?`,
       [
-        { text: 'Hủy', style: 'cancel' },
+        { text: t('common.cancel', 'Hủy'), style: 'cancel' },
         {
-          text: 'Xác nhận',
+          text: t('common.confirm', 'Xác nhận'),
           onPress: async () => {
             try {
               await incidentService.updateIncident(id, { status: newStatus });
               await fetchIncident();
             } catch {
-              Alert.alert('Lỗi', 'Không thể cập nhật trạng thái.');
+              Alert.alert(t('common.error', 'Lỗi'), t('incidents.updateFailed', 'Cập nhật thất bại.'));
             }
           },
         },
@@ -178,7 +255,7 @@ const IncidentDetailScreen = () => {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loadingText}>Đang tải...</Text>
+        <Text style={styles.loadingText}>{t('common.loading', 'Đang tải...')}</Text>
       </View>
     );
   }
@@ -187,9 +264,9 @@ const IncidentDetailScreen = () => {
     return (
       <View style={styles.center}>
         <Icon name="alert-circle-outline" size={48} color={theme.colors.textSecondary} />
-        <Text style={styles.emptyText}>Không tìm thấy sự cố</Text>
+        <Text style={styles.emptyText}>{t('incidents.noIncidents', 'Không tìm thấy sự cố')}</Text>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtnText}>Quay lại</Text>
+          <Text style={styles.backBtnText}>{t('common.back', 'Quay lại')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -203,11 +280,18 @@ const IncidentDetailScreen = () => {
   const isInvestigating = incident.status === 'investigating';
   const isResolved      = ['resolved', 'closed'].includes(incident.status);
 
+  // Rescue team: đã nhận nhiệm vụ = sự cố đang investigating & assignee là mình
+  const isMineAndActive = isInvestigating && (incident.assignee?.id === user?.id || isRescue);
+  // Rescue team chưa nhận: sự cố mở, chưa có assignee
+  const canAccept = isEmergency && (isOpen || (!incident.assignee && isInvestigating));
+  // Rescue team đã nhận: đang xử lý
+  const canUpdateProgress = isEmergency && (isInvestigating || isMineAndActive);
+
   // Timeline steps derived from status
   const timelineEvents = [
     {
       key:   'reported',
-      label: 'Báo cáo',
+      label: t('reports.status.received', 'Báo cáo'),
       time:  incident.created_at,
       color: '#EF4444',
       icon:  'flag',
@@ -215,7 +299,7 @@ const IncidentDetailScreen = () => {
     },
     {
       key:   'investigating',
-      label: 'Đang xử lý',
+      label: t('incidents.investigating', 'Đang xử lý'),
       time:  isInvestigating || isResolved ? incident.updated_at : null,
       color: '#F59E0B',
       icon:  'progress-clock',
@@ -223,7 +307,7 @@ const IncidentDetailScreen = () => {
     },
     {
       key:   'resolved',
-      label: 'Hoàn thành',
+      label: t('incidents.resolved', 'Hoàn thành'),
       time:  incident.resolved_at,
       color: '#10B981',
       icon:  'check-circle',
@@ -232,10 +316,10 @@ const IncidentDetailScreen = () => {
   ];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <PageHeader 
-        title={`Chi tiết #${incident.id}`}
-        subtitle={typeInfo.label}
+        title={`${t('reports.reportDetail', 'Chi tiết')} #${incident.id}`}
+        subtitle={t('incidents.type.' + incident.type, typeInfo.label)}
         variant="default"
         showNotification={true}
       />
@@ -249,17 +333,23 @@ const IncidentDetailScreen = () => {
             {/* Severity */}
             <View style={[styles.badge, { backgroundColor: severity.color + '15' }]}>
               <Icon name={severity.icon} size={12} color={severity.color} />
-              <Text style={[styles.badgeText, { color: severity.color }]}>{severity.label.toUpperCase()}</Text>
+              <Text style={[styles.badgeText, { color: severity.color }]}>
+                {t('incidents.severity.' + incident.severity, severity.label).toUpperCase()}
+              </Text>
             </View>
             {/* Status */}
             <View style={[styles.badge, { backgroundColor: status.color + '15' }]}>
               <Icon name={status.icon} size={12} color={status.color} />
-              <Text style={[styles.badgeText, { color: status.color }]}>{status.label.toUpperCase()}</Text>
+              <Text style={[styles.badgeText, { color: status.color }]}>
+                {t('incidents.' + incident.status, status.label).toUpperCase()}
+              </Text>
             </View>
             {/* Type */}
             <View style={[styles.badge, { backgroundColor: theme.colors.backgroundSecondary }]}>
               <Icon name={typeInfo.icon} size={12} color={theme.colors.textSecondary} />
-              <Text style={[styles.badgeText, { color: theme.colors.textSecondary }]}>{typeInfo.label.toUpperCase()}</Text>
+              <Text style={[styles.badgeText, { color: theme.colors.textSecondary }]}>
+                {t('incidents.type.' + incident.type, typeInfo.label).toUpperCase()}
+              </Text>
             </View>
           </View>
 
@@ -270,7 +360,7 @@ const IncidentDetailScreen = () => {
           <View style={styles.metaRow}>
             <View style={styles.metaItem}>
               <Icon name="clock-outline" size={13} color={theme.colors.textSecondary} />
-              <Text style={styles.metaText}>{fmtDate(incident.created_at)}</Text>
+              <Text style={styles.metaText}>{fmtDate(incident.created_at, currentLanguage)}</Text>
             </View>
           </View>
           {incident.location_name && (
@@ -292,7 +382,7 @@ const IncidentDetailScreen = () => {
         {/* ── Incident Details ── */}
         {incident.description ? (
           <View style={styles.card}>
-            <Text style={styles.cardLabel}>MÔ TẢ SỰ CỐ</Text>
+            <Text style={styles.cardLabel}>{t('reports.description', 'MÔ TẢ SỰ CỐ').toUpperCase()}</Text>
             <Text style={styles.descText}>{incident.description}</Text>
           </View>
         ) : null}
@@ -301,7 +391,7 @@ const IncidentDetailScreen = () => {
         <View style={styles.twoColRow}>
           {/* Reporter */}
           <View style={[styles.card, styles.halfCard, { borderLeftColor: '#7a5af8', borderLeftWidth: 3 }]}>
-            <Text style={styles.cardLabel}>NGƯỜI BÁO CÁO</Text>
+            <Text style={styles.cardLabel}>{t('incidents.reporter', 'NGƯỜI BÁO CÁO').toUpperCase()}</Text>
             {incident.reporter ? (
               <>
                 <View style={styles.personRow}>
@@ -310,18 +400,20 @@ const IncidentDetailScreen = () => {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.personName}>{incident.reporter.name}</Text>
-                    <Text style={styles.personSub}>{incident.source === 'citizen' ? 'Công dân' : 'Vận hành viên'}</Text>
+                    <Text style={styles.personSub}>
+                      {incident.source === 'citizen' ? t('profile.role.citizen', 'Công dân') : t('profile.role.operator', 'Vận hành viên')}
+                    </Text>
                   </View>
                 </View>
               </>
             ) : (
-              <Text style={styles.unassigned}>Không rõ</Text>
+              <Text style={styles.unassigned}>{t('common.noData', 'Không rõ')}</Text>
             )}
           </View>
 
           {/* Assigned */}
           <View style={[styles.card, styles.halfCard, { borderLeftColor: '#3B82F6', borderLeftWidth: 3 }]}>
-            <Text style={styles.cardLabel}>PHÂN CÔNG</Text>
+            <Text style={styles.cardLabel}>{t('incidents.assignment', 'PHÂN CÔNG').toUpperCase()}</Text>
             {incident.assignee ? (
               <View style={styles.personRow}>
                 <View style={[styles.avatar, { backgroundColor: '#3B82F620' }]}>
@@ -329,7 +421,7 @@ const IncidentDetailScreen = () => {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.personName}>{incident.assignee.name}</Text>
-                  <Text style={styles.personSub}>Đơn vị xử lý</Text>
+                  <Text style={styles.personSub}>{t('incidents.source.operator', 'Đơn vị xử lý')}</Text>
                 </View>
               </View>
             ) : (
@@ -337,7 +429,7 @@ const IncidentDetailScreen = () => {
                 <View style={[styles.avatar, { backgroundColor: '#6B728020' }]}>
                   <Icon name="account-question" size={18} color="#6B7280" />
                 </View>
-                <Text style={styles.unassigned}>Chưa phân công</Text>
+                <Text style={styles.unassigned}>{t('incidents.unassigned', 'Chưa phân công')}</Text>
               </View>
             )}
           </View>
@@ -345,106 +437,170 @@ const IncidentDetailScreen = () => {
 
         {/* ── Quick Actions ── */}
         <View style={styles.card}>
-          <Text style={styles.cardLabel}>QUICK ACTIONS</Text>
+          <Text style={styles.cardLabel}>{t('incidents.quickActions', 'QUICK ACTIONS').toUpperCase()}</Text>
 
-          {/* Dispatch - primary action */}
-          {!isResolved && (
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.dispatchBtn]}
-              onPress={handleDispatch}
-              disabled={dispatching}
-            >
-              {dispatching ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <>
-                  <Icon name="phone-in-talk" size={20} color="#fff" />
-                  <Text style={styles.actionBtnText}>Điều phối đơn vị</Text>
-                </>
+          {/* ── RESCUE TEAM actions ── */}
+          {isEmergency ? (
+            <>
+              {/* Nhận nhiệm vụ */}
+              {canAccept && !isResolved && (
+                <TouchableOpacity
+                  style={[styles.actionBtn, styles.acceptBtn]}
+                  onPress={handleAcceptMission}
+                  disabled={dispatching}
+                >
+                  {dispatching ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Icon name="hand-okay" size={20} color="#fff" />
+                      <Text style={styles.actionBtnText}>{t('emergency.acceptMission', 'Nhận nhiệm vụ')}</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
-          )}
 
-          {/* Secondary actions row */}
-          <View style={styles.secondaryActions}>
-            {isOpen && (
-              <TouchableOpacity
-                style={[styles.secondaryBtn, { borderColor: '#F59E0B20', backgroundColor: '#F59E0B08' }]}
-                onPress={() => handleUpdateStatus('investigating')}
-              >
-                <Icon name="progress-clock" size={16} color="#F59E0B" />
-                <Text style={[styles.secondaryBtnText, { color: '#F59E0B' }]}>Bắt đầu xử lý</Text>
-              </TouchableOpacity>
-            )}
-            {(isOpen || isInvestigating) && (
-              <TouchableOpacity
-                style={[styles.secondaryBtn, { borderColor: '#10B98120', backgroundColor: '#10B98108' }]}
-                onPress={() => handleUpdateStatus('resolved')}
-              >
-                <Icon name="check-circle-outline" size={16} color="#10B981" />
-                <Text style={[styles.secondaryBtnText, { color: '#10B981' }]}>Đánh dấu xong</Text>
-              </TouchableOpacity>
-            )}
-            {!isResolved && (
-              <TouchableOpacity
-                style={[styles.secondaryBtn, { borderColor: '#6B728020', backgroundColor: '#6B728008' }]}
-                onPress={() => handleUpdateStatus('closed')}
-              >
-                <Icon name="close-circle-outline" size={16} color="#6B7280" />
-                <Text style={[styles.secondaryBtnText, { color: '#6B7280' }]}>Đóng sự cố</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+              {/* Đã nhận - hiển thị trạng thái */}
+              {!canAccept && isInvestigating && (
+                <View style={styles.missionAcceptedBadge}>
+                  <Icon name="check-decagram" size={18} color="#10B981" />
+                  <Text style={styles.missionAcceptedText}>{t('emergency.missionInProgress', 'Đang thực hiện nhiệm vụ')}</Text>
+                </View>
+              )}
+
+              {/* Cập nhật tiến độ */}
+              {canUpdateProgress && (
+                <View style={[styles.secondaryActions, { marginTop: 8 }]}>
+                  <TouchableOpacity
+                    style={[styles.secondaryBtn, { borderColor: '#10B98130', backgroundColor: '#10B98110', flex: 1 }]}
+                    onPress={() => handleRescueProgress('resolved')}
+                    disabled={dispatching}
+                  >
+                    <Icon name="check-circle-outline" size={16} color="#10B981" />
+                    <Text style={[styles.secondaryBtnText, { color: '#10B981' }]}>{t('incidents.markAsDone', 'Hoàn thành')}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.secondaryBtn, { borderColor: '#6B728030', backgroundColor: '#6B728010', flex: 1 }]}
+                    onPress={() => handleRescueProgress('closed')}
+                    disabled={dispatching}
+                  >
+                    <Icon name="close-circle-outline" size={16} color="#6B7280" />
+                    <Text style={[styles.secondaryBtnText, { color: '#6B7280' }]}>{t('incidents.closeIncident', 'Đóng sự cố')}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Đã giải quyết */}
+              {isResolved && (
+                <View style={styles.missionAcceptedBadge}>
+                  <Icon name="check-circle" size={18} color="#10B981" />
+                  <Text style={styles.missionAcceptedText}>{t('incidents.resolved', 'Sự cố đã được xử lý xong')}</Text>
+                </View>
+              )}
+            </>
+          ) : (
+            <>
+              {/* ── ADMIN / OPERATOR actions ── */}
+              {/* Dispatch - primary action */}
+              {!isResolved && (
+                <TouchableOpacity
+                  style={[styles.actionBtn, styles.dispatchBtn]}
+                  onPress={handleDispatch}
+                  disabled={dispatching}
+                >
+                  {dispatching ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Icon name="phone-in-talk" size={20} color="#fff" />
+                      <Text style={styles.actionBtnText}>{t('emergency.dispatchUnit', 'Điều phối đơn vị')}</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              )}
+
+              {/* Secondary actions row */}
+              <View style={styles.secondaryActions}>
+                {isOpen && (
+                  <TouchableOpacity
+                    style={[styles.secondaryBtn, { borderColor: '#F59E0B20', backgroundColor: '#F59E0B08' }]}
+                    onPress={() => handleUpdateStatus('investigating')}
+                  >
+                    <Icon name="progress-clock" size={16} color="#F59E0B" />
+                    <Text style={[styles.secondaryBtnText, { color: '#F59E0B' }]}>{t('incidents.startProcessing', 'Bắt đầu xử lý')}</Text>
+                  </TouchableOpacity>
+                )}
+                {(isOpen || isInvestigating) && (
+                  <TouchableOpacity
+                    style={[styles.secondaryBtn, { borderColor: '#10B98120', backgroundColor: '#10B98108' }]}
+                    onPress={() => handleUpdateStatus('resolved')}
+                  >
+                    <Icon name="check-circle-outline" size={16} color="#10B981" />
+                    <Text style={[styles.secondaryBtnText, { color: '#10B981' }]}>{t('incidents.markAsDone', 'Đánh dấu xong')}</Text>
+                  </TouchableOpacity>
+                )}
+                {!isResolved && (
+                  <TouchableOpacity
+                    style={[styles.secondaryBtn, { borderColor: '#6B728020', backgroundColor: '#6B728008' }]}
+                    onPress={() => handleUpdateStatus('closed')}
+                  >
+                    <Icon name="close-circle-outline" size={16} color="#6B7280" />
+                    <Text style={[styles.secondaryBtnText, { color: '#6B7280' }]}>{t('incidents.closeIncident', 'Đóng sự cố')}</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </>
+          )}
         </View>
 
         {/* ── AI Insights Row ── */}
-        {( (incident.recommendations && incident.recommendations.length > 0) || (incident.predictions && incident.predictions.length > 0) ) && (
+        {((incident.recommendations && incident.recommendations.length > 0) || (incident.predictions && incident.predictions.length > 0)) && (
           <View style={styles.aiInsightsContainer}>
-             {/* Recommendations Section */}
-             {incident.recommendations && incident.recommendations.length > 0 && (
-                <View style={styles.aiCard}>
-                  <View style={styles.aiCardHeader}>
-                    <View style={[styles.aiIconBox, { backgroundColor: '#EEF2FF' }]}>
-                      <Icon name="brain" size={18} color="#7a5af8" />
-                    </View>
-                    <Text style={[styles.aiCardTitle, { color: '#7a5af8' }]}>Gợi ý xử lý AI</Text>
+            {/* Recommendations Section */}
+            {incident.recommendations && incident.recommendations.length > 0 && (
+              <View style={styles.aiCard}>
+                <View style={styles.aiCardHeader}>
+                  <View style={[styles.aiIconBox, { backgroundColor: '#EEF2FF' }]}>
+                    <Icon name="brain" size={18} color="#7a5af8" />
                   </View>
-                  <View style={styles.aiContentBox}>
-                    {incident.recommendations.map((rec: any, idx: number) => (
-                      <View key={idx} style={styles.recListItem}>
-                        <View style={[styles.bullet, { backgroundColor: '#7a5af8' }]} />
-                        <Text style={styles.aiResultText}>{parseAIContent(rec)}</Text>
-                      </View>
-                    ))}
-                  </View>
+                  <Text style={[styles.aiCardTitle, { color: '#7a5af8' }]}>{t('digitalTwin.recommendation', 'Gợi ý xử lý AI')}</Text>
                 </View>
-             )}
+                <View style={styles.aiContentBox}>
+                  {incident.recommendations.map((rec: any, idx: number) => (
+                    <View key={idx} style={styles.recListItem}>
+                      <View style={[styles.bullet, { backgroundColor: '#7a5af8' }]} />
+                      <Text style={styles.aiResultText}>{parseAIContent(rec)}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
 
-             {/* Predictions Section */}
-             {incident.predictions && incident.predictions.length > 0 && (
-                <View style={[styles.aiCard, { marginTop: SPACING.md }]}>
-                  <View style={styles.aiCardHeader}>
-                    <View style={[styles.aiIconBox, { backgroundColor: '#F5F3FF' }]}>
-                      <Icon name="chart-timeline-variant" size={18} color="#7a5af8" />
-                    </View>
-                    <Text style={[styles.aiCardTitle, { color: '#7a5af8' }]}>Dự báo tác động AI</Text>
+            {/* Predictions Section */}
+            {incident.predictions && incident.predictions.length > 0 && (
+              <View style={[styles.aiCard, { marginTop: SPACING.md }]}>
+                <View style={styles.aiCardHeader}>
+                  <View style={[styles.aiIconBox, { backgroundColor: '#F5F3FF' }]}>
+                    <Icon name="chart-timeline-variant" size={18} color="#7a5af8" />
                   </View>
-                  <View style={styles.aiContentBox}>
-                    {incident.predictions.map((pred: any, idx: number) => (
-                      <View key={idx} style={styles.recListItem}>
-                        <View style={[styles.bullet, { backgroundColor: '#7a5af8' }]} />
-                        <Text style={styles.aiResultText}>{parseAIContent(pred)}</Text>
-                      </View>
-                    ))}
-                  </View>
+                  <Text style={[styles.aiCardTitle, { color: '#7a5af8' }]}>{t('digitalTwin.prediction', 'Dự báo tác động AI')}</Text>
                 </View>
-             )}
+                <View style={styles.aiContentBox}>
+                  {incident.predictions.map((pred: any, idx: number) => (
+                    <View key={idx} style={styles.recListItem}>
+                      <View style={[styles.bullet, { backgroundColor: '#7a5af8' }]} />
+                      <Text style={styles.aiResultText}>{parseAIContent(pred)}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
           </View>
         )}
 
         {/* ── Timeline ── */}
         <View style={styles.card}>
-          <Text style={styles.cardLabel}>TIMELINE</Text>
+          <Text style={styles.cardLabel}>{t('incidents.timeline', 'TIMELINE')}</Text>
           {timelineEvents.map((event, idx) => (
             <View key={event.key} style={styles.timelineRow}>
               {/* Dot + line */}
@@ -467,9 +623,9 @@ const IncidentDetailScreen = () => {
                   {event.label}
                 </Text>
                 {event.time ? (
-                  <Text style={styles.timelineTime}>{fmtDate(event.time)}</Text>
+                  <Text style={styles.timelineTime}>{fmtDate(event.time, currentLanguage)}</Text>
                 ) : (
-                  <Text style={[styles.timelineTime, { fontStyle: 'italic' }]}>Chưa xảy ra</Text>
+                  <Text style={[styles.timelineTime, { fontStyle: 'italic' }]}>{t('incidents.notOccurred', 'Chưa xảy ra')}</Text>
                 )}
               </View>
             </View>
@@ -479,7 +635,7 @@ const IncidentDetailScreen = () => {
         {/* ── Metadata ── */}
         {incident.metadata && Object.keys(incident.metadata).length > 0 && (
           <View style={styles.card}>
-            <Text style={styles.cardLabel}>DỮ LIỆU BỔ SUNG</Text>
+            <Text style={styles.cardLabel}>{t('incidents.additionalData', 'DỮ LIỆU BỔ SUNG')}</Text>
             {Object.entries(incident.metadata).map(([key, value]) => (
               <View key={key} style={styles.metadataRow}>
                 <Text style={styles.metadataKey}>{key}</Text>
@@ -492,7 +648,7 @@ const IncidentDetailScreen = () => {
         {/* bottom padding */}
         <View style={{ height: 32 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -636,7 +792,7 @@ const styles = StyleSheet.create({
   avatar: { width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center' },
   personName: { fontSize: FONT_SIZE.sm, fontWeight: '700', color: theme.colors.text },
   personSub:  { fontSize: FONT_SIZE.xs, color: theme.colors.textSecondary },
-  unassigned: { fontSize: FONT_SIZE.sm, color: theme.colors.textSecondary, fontStyle: 'italic', marginTop: 4 },
+  unassigned: { fontSize: FONT_SIZE.sm, color: theme.colors.textSecondary, fontStyle: 'italic' },
 
   // Actions
   actionBtn: {
@@ -649,6 +805,25 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   dispatchBtn: { backgroundColor: '#F43F5E' },
+  acceptBtn: { backgroundColor: '#10B981' },
+  missionAcceptedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    backgroundColor: '#10B98112',
+    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: '#10B98130',
+    marginBottom: SPACING.sm,
+  },
+  missionAcceptedText: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: '700',
+    color: '#10B981',
+    flex: 1,
+  },
   actionBtnText: { fontSize: FONT_SIZE.md, fontWeight: '700', color: '#fff' },
   secondaryActions: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
   secondaryBtn: {
