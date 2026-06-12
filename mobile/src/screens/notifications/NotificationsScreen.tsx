@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '850',
+    fontWeight: '800',
     color: '#1E293B',
     marginBottom: SPACING.sm,
   },

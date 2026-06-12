@@ -1,7 +1,7 @@
 {
   "model_name": "AegisFlow Flood Nowcasting Xgboost v3",
   "version": "3.0.0",
-  "trained_at": "2026-06-11T09:52:33.791912",
+  "trained_at": "2026-06-12T15:00:52.871884",
   "algorithm": "xgboost",
   "framework": "scikit-learn/xgboost",
   "dataset": "flood_danang_2019_2024_augmented.csv (synthetic + 391 real events)",
