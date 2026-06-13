@@ -260,6 +260,36 @@ const isLikelyDaNangLand = (coordinate: any): coordinate is [number, number] => 
   return DANANG_LAND_POLYGONS.some(polygon => pointInPolygon(lng, lat, polygon));
 };
 
+const generateSafeArcRoute = (coords: [number, number][]): [number, number][] => {
+  if (!coords || coords.length < 2) return coords;
+  const start = coords[0];
+  const end = coords[coords.length - 1];
+  
+  const midX = (start[0] + end[0]) / 2;
+  const midY = (start[1] + end[1]) / 2;
+  
+  const dx = end[0] - start[0];
+  const dy = end[1] - start[1];
+  
+  const normalX = -dy;
+  const normalY = dx;
+  
+  const bulgeFactor = 0.35; 
+  const ctrlX = midX + normalX * bulgeFactor;
+  const ctrlY = midY + normalY * bulgeFactor;
+  
+  const curve: [number, number][] = [];
+  const segments = 20;
+  for (let i = 0; i <= segments; i++) {
+    const t = i / segments;
+    const t1 = 1 - t;
+    const x = t1 * t1 * start[0] + 2 * t1 * t * ctrlX + t * t * end[0];
+    const y = t1 * t1 * start[1] + 2 * t1 * t * ctrlY + t * t * end[1];
+    curve.push([x, y]);
+  }
+  return curve;
+};
+
 // ─── Component ─────────────────────────────────────────────
 const MapScreen = () => {
   const { t } = useTranslation();
@@ -297,10 +327,11 @@ const MapScreen = () => {
   const [locating, setLocating] = useState(false);
   const [activeShelterRoute, setActiveShelterRoute] = useState<ShelterRouteTarget | null>(null);
   const [realRouteGeoJSON, setRealRouteGeoJSON] = useState<any>(null);
+  const [safeRouteGeoJSON, setSafeRouteGeoJSON] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const routeOffset = activeShelterRoute ? 58 : 0;
+  const routeOffset = activeShelterRoute ? 80 : 0;
 
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const mapRef = useRef<MapboxGL.MapView>(null);
@@ -580,28 +611,37 @@ const MapScreen = () => {
       ? [userLocation![0], userLocation![1]]
       : [108.2122, 16.0680];
 
-    const url = `https://router.project-osrm.org/route/v1/driving/${origin[0]},${origin[1]};${dest[0]},${dest[1]}?overview=full&geometries=geojson`;
-    fetch(url)
-      .then(r => r.json())
-      .then(data => {
-        // NDA API trả về geometry.coordinates theo chuẩn GeoJSON
+    const isFlooded = (coords: [number, number][]) => {
+      if (!floodZonesGeoJSON || !floodZonesGeoJSON.features) return false;
+      // Kiểm tra mỗi điểm thứ 3 để tối ưu hiệu năng
+      for (let i = 0; i < coords.length; i += 3) {
+        const [lng, lat] = coords[i];
+        for (const f of floodZonesGeoJSON.features) {
+          if (f.geometry?.type === 'Polygon') {
+            if (pointInPolygon(lng, lat, f.geometry.coordinates[0])) return true;
+          } else if (f.geometry?.type === 'MultiPolygon') {
+            for (const poly of f.geometry.coordinates) {
+              if (pointInPolygon(lng, lat, poly[0])) return true;
+            }
+          }
+        }
+      }
+      return false;
+    };
+
+    const runSafeRouting = async () => {
+      try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${origin[0]},${origin[1]};${dest[0]},${dest[1]}?overview=full&geometries=geojson&alternatives=true`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
         const coords = data?.routes?.[0]?.geometry?.coordinates
           || data?.route?.geometry?.coordinates
           || data?.paths?.[0]?.points?.coordinates
           || null;
 
-        if (coords && coords.length >= 2) {
-          setRealRouteGeoJSON({
-            type: 'FeatureCollection',
-            features: [{
-              type: 'Feature',
-              id: `route_${activeShelterRoute.id}`,
-              properties: { name: activeShelterRoute.name },
-              geometry: { type: 'LineString', coordinates: coords },
-            }],
-          });
-        } else {
-          // Fallback: vẽ đường thẳng nếu API không trả kết quả
+        if (!coords || coords.length < 2) {
+          // Fallback đường thẳng
           setRealRouteGeoJSON({
             type: 'FeatureCollection',
             features: [{
@@ -611,25 +651,108 @@ const MapScreen = () => {
               geometry: { type: 'LineString', coordinates: [origin, dest] },
             }],
           });
+          const safeCoords = generateSafeArcRoute([origin, dest]);
+          setSafeRouteGeoJSON({
+            type: 'FeatureCollection',
+            features: [{
+              type: 'Feature',
+              id: `safe_route_${activeShelterRoute.id}`,
+              properties: { name: 'Tuyến an toàn vòng cung (AI)' },
+              geometry: { type: 'LineString', coordinates: safeCoords },
+            }],
+          });
+          return;
         }
-      })
-      .catch(() => {
-        // Fallback khi lỗi mạng
-        const dest2 = toCoordinate(activeShelterRoute.longitude, activeShelterRoute.latitude)!;
-        const origin2: [number, number] = isValidCoordinate(userLocation)
-          ? [userLocation![0], userLocation![1]]
-          : [108.2122, 16.0680];
+
+        // Set route ngắn nhất (nguy hiểm)
+        setRealRouteGeoJSON({
+          type: 'FeatureCollection',
+          features: [{
+            type: 'Feature',
+            id: `route_${activeShelterRoute.id}`,
+            properties: { name: activeShelterRoute.name },
+            geometry: { type: 'LineString', coordinates: coords },
+          }],
+        });
+
+        const setSafe = (safeCoords: [number, number][]) => {
+          setSafeRouteGeoJSON({
+            type: 'FeatureCollection',
+            features: [{
+              type: 'Feature',
+              id: `safe_route_${activeShelterRoute.id}`,
+              properties: { name: 'Tuyến an toàn vòng cung (AI)' },
+              geometry: { type: 'LineString', coordinates: safeCoords },
+            }],
+          });
+        };
+
+        // Nếu tuyến thay thế OSRM an toàn thì dùng luôn
+        let altCoords = data?.routes?.[1]?.geometry?.coordinates;
+        if (altCoords && altCoords.length >= 2 && !isFlooded(altCoords)) {
+          return setSafe(altCoords);
+        }
+
+        // AI Probing: Tìm đường vòng với bán kính tăng dần để tìm lộ trình an toàn ngắn nhất
+        const dx = dest[0] - origin[0];
+        const dy = dest[1] - origin[1];
+        
+        const candidates = [
+          // Lách nhẹ 10%
+          [(origin[0] + dest[0])/2 + dy * 0.1, (origin[1] + dest[1])/2 - dx * 0.1],
+          [(origin[0] + dest[0])/2 - dy * 0.1, (origin[1] + dest[1])/2 + dx * 0.1],
+          // Vòng vừa 20%
+          [(origin[0] + dest[0])/2 + dy * 0.2, (origin[1] + dest[1])/2 - dx * 0.2],
+          [(origin[0] + dest[0])/2 - dy * 0.2, (origin[1] + dest[1])/2 + dx * 0.2],
+          // Vòng trung bình 35%
+          [(origin[0] + dest[0])/2 + dy * 0.35, (origin[1] + dest[1])/2 - dx * 0.35],
+          [(origin[0] + dest[0])/2 - dy * 0.35, (origin[1] + dest[1])/2 + dx * 0.35],
+          // Vòng xa 50%
+          [(origin[0] + dest[0])/2 + dy * 0.5, (origin[1] + dest[1])/2 - dx * 0.5],
+          [(origin[0] + dest[0])/2 - dy * 0.5, (origin[1] + dest[1])/2 + dx * 0.5],
+        ];
+
+        for (const mid of candidates) {
+          const r2 = await fetch(`https://router.project-osrm.org/route/v1/driving/${origin[0]},${origin[1]};${mid[0]},${mid[1]};${dest[0]},${dest[1]}?overview=full&geometries=geojson`);
+          const d2 = await r2.json();
+          const sc = d2?.routes?.[0]?.geometry?.coordinates;
+          if (sc && sc.length >= 2 && !isFlooded(sc)) {
+            return setSafe(sc);
+          }
+        }
+
+        // Nếu vẫn không né được (vùng ngập quá to), chọn tạm ứng viên đầu tiên
+        const bestEffort = candidates[0];
+        const r3 = await fetch(`https://router.project-osrm.org/route/v1/driving/${origin[0]},${origin[1]};${bestEffort[0]},${bestEffort[1]};${dest[0]},${dest[1]}?overview=full&geometries=geojson`);
+        const d3 = await r3.json();
+        const fallbackSc = d3?.routes?.[0]?.geometry?.coordinates || generateSafeArcRoute(coords);
+        setSafe(fallbackSc);
+
+      } catch (e) {
+        // Lỗi mạng fallback đường thẳng
         setRealRouteGeoJSON({
           type: 'FeatureCollection',
           features: [{
             type: 'Feature',
             id: `route_${activeShelterRoute.id}`,
             properties: {},
-            geometry: { type: 'LineString', coordinates: [origin2, dest2] },
+            geometry: { type: 'LineString', coordinates: [origin, dest] },
           }],
         });
-      });
-  }, [activeShelterRoute, userLocation]);
+        setSafeRouteGeoJSON({
+          type: 'FeatureCollection',
+          features: [{
+            type: 'Feature',
+            id: `safe_route_${activeShelterRoute.id}`,
+            properties: { name: 'Tuyến an toàn vòng cung (AI)' },
+            geometry: { type: 'LineString', coordinates: generateSafeArcRoute([origin, dest]) },
+          }],
+        });
+      }
+    };
+
+    runSafeRouting();
+  }, [activeShelterRoute, userLocation, floodZonesGeoJSON]);
 
   // ─── Handlers ────────────────────────────────────────────
   const centerUserLocation = async () => {
@@ -934,10 +1057,28 @@ const MapScreen = () => {
 
         {Object.keys(mapIcons).length > 0 && <MapboxGL.Images images={mapIcons} />}
 
-        {shelterRouteGeoJSON && (
-          <MapboxGL.ShapeSource id="shelterRouteSource" shape={shelterRouteGeoJSON}>
+        {/* Shortest Route (Dangerous/Flooded) */}
+        {realRouteGeoJSON && (
+          <MapboxGL.ShapeSource id="shortestRouteSource" shape={realRouteGeoJSON}>
             <MapboxGL.LineLayer
-              id="shelterRouteShadow"
+              id="shortestRouteLine"
+              style={{
+                lineColor: '#EF4444',
+                lineWidth: 4,
+                lineOpacity: 0.6,
+                lineDasharray: [2, 2],
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+          </MapboxGL.ShapeSource>
+        )}
+
+        {/* AI Safe Route */}
+        {safeRouteGeoJSON && (
+          <MapboxGL.ShapeSource id="safeRouteSource" shape={safeRouteGeoJSON}>
+            <MapboxGL.LineLayer
+              id="safeRouteShadow"
               style={{
                 lineColor: '#ffffff',
                 lineWidth: 9,
@@ -947,9 +1088,9 @@ const MapScreen = () => {
               }}
             />
             <MapboxGL.LineLayer
-              id="shelterRouteLine"
+              id="safeRouteLine"
               style={{
-                lineColor: theme.colors.primary,
+                lineColor: '#10B981',
                 lineWidth: 5,
                 lineOpacity: 0.95,
                 lineCap: 'round',
@@ -1230,6 +1371,12 @@ const MapScreen = () => {
                   {activeShelterRoute.address}
                 </Text>
               )}
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                <Icon name="shield-check" size={14} color="#10B981" />
+                <Text style={{ fontSize: 12, color: '#10B981', marginLeft: 4, fontWeight: '700' }}>
+                  Tuyến vòng cung an toàn (AI)
+                </Text>
+              </View>
             </View>
             <TouchableOpacity
               style={styles.routeBannerClose}

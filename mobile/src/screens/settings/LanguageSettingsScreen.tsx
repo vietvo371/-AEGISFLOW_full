@@ -19,9 +19,10 @@ interface Language {
 const LANGUAGES: Language[] = [
     { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', flag: '🇻🇳' },
     { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
-    { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
-    { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
-    { code: 'ko', name: 'Korean', nativeName: '한국어', flag: '🇰🇷' },
+    { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', flag: '🇮🇩' },
+    { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', flag: '🇲🇾' },
+    { code: 'th', name: 'Thai', nativeName: 'ไทย', flag: '🇹🇭' },
+    { code: 'tl', name: 'Filipino', nativeName: 'Filipino', flag: '🇵🇭' },
 ];
 
 const LanguageSettingsScreen = () => {

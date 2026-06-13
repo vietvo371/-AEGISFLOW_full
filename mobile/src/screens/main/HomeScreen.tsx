@@ -36,6 +36,13 @@ const SEVERITY_CONFIG: Record<string, { labelKey: string; color: string; bg: str
   low: { labelKey: 'low', color: '#3B82F6', bg: '#EFF6FF' },
 };
 
+const SAFETY_TIPS = [
+  { id: '1', title: 'Trước khi ngập', desc: 'Di dời đồ đạc lên cao, ngắt cầu dao điện.', icon: 'home-alert', color: '#F59E0B', bg: '#FEF3C7' },
+  { id: '2', title: 'Khi đang ngập', desc: 'Tuyệt đối không lội qua vùng nước chảy xiết.', icon: 'waves', color: '#3B82F6', bg: '#EFF6FF' },
+  { id: '3', title: 'Sau khi ngập', desc: 'Kiểm tra rò rỉ điện trước khi đóng cầu dao.', icon: 'flash-alert', color: '#EF4444', bg: '#FEF2F2' },
+  { id: '4', title: 'Túi sơ cứu', desc: 'Sắp xếp sẵn thuốc men, đèn pin, nước sạch.', icon: 'medical-bag', color: '#10B981', bg: '#D1FAE5' },
+];
+
 const HomeScreen = () => {
   const { t, i18n } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
@@ -366,6 +373,48 @@ const HomeScreen = () => {
           })
         )}
 
+        {/* Live Radar Preview Card */}
+        <TouchableOpacity 
+          style={styles.radarCard}
+          onPress={() => navigation.navigate('Map' as any)}
+          activeOpacity={0.9}
+        >
+          <View style={styles.radarContent}>
+            <View style={styles.radarHeader}>
+              <Icon name="radar" size={20} color="#7a5af8" />
+              <Text style={styles.radarTitle}>Bản đồ Radar & Cảnh báo</Text>
+            </View>
+            <Text style={styles.radarDesc}>Xem trạng thái ngập lụt cục bộ, trạm trú ẩn và lộ trình an toàn quanh khu vực của bạn theo thời gian thực.</Text>
+            <View style={styles.radarAction}>
+              <Text style={styles.radarActionText}>Mở bản đồ</Text>
+              <Icon name="arrow-right" size={16} color="#fff" />
+            </View>
+          </View>
+          <View style={styles.radarBgDecoration}>
+            <Icon name="map-marker-radius" size={120} color="rgba(122, 90, 248, 0.05)" />
+          </View>
+        </TouchableOpacity>
+
+        {/* Safety Tips Carousel */}
+        <View style={[styles.sectionHeader, { marginTop: SPACING.md }]}>
+          <Text style={styles.sectionTitle}>Cẩm nang an toàn</Text>
+        </View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tipsScroll}
+        >
+          {SAFETY_TIPS.map(tip => (
+            <View key={tip.id} style={styles.tipCard}>
+              <View style={[styles.tipIconBox, { backgroundColor: tip.bg }]}>
+                <Icon name={tip.icon} size={24} color={tip.color} />
+              </View>
+              <Text style={styles.tipTitle} numberOfLines={1}>{tip.title}</Text>
+              <Text style={styles.tipDesc} numberOfLines={2}>{tip.desc}</Text>
+            </View>
+          ))}
+        </ScrollView>
+
         <View style={{ height: 100 }} />
       </ScrollView>
     </View>
@@ -622,6 +671,33 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.white, borderRadius: BORDER_RADIUS.lg,
   },
   emptyText: { fontSize: FONT_SIZE.sm, color: theme.colors.textSecondary, marginTop: SPACING.sm },
+
+  // Live Radar
+  radarCard: {
+    backgroundColor: '#fff', borderRadius: BORDER_RADIUS.lg,
+    marginTop: SPACING.lg, overflow: 'hidden', borderWidth: 1, borderColor: '#F3F4F6',
+    ...theme.shadows.sm,
+  },
+  radarContent: { padding: SPACING.lg, position: 'relative', zIndex: 2 },
+  radarHeader: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, marginBottom: SPACING.sm },
+  radarTitle: { fontSize: FONT_SIZE.md, fontWeight: '700', color: theme.colors.text },
+  radarDesc: { fontSize: FONT_SIZE.xs, color: theme.colors.textSecondary, lineHeight: 18, marginBottom: SPACING.md, width: '85%' },
+  radarAction: {
+    alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
+    backgroundColor: '#7a5af8', paddingHorizontal: SPACING.md, paddingVertical: SPACING.xs, borderRadius: BORDER_RADIUS.md,
+  },
+  radarActionText: { fontSize: FONT_SIZE.xs, fontWeight: '600', color: '#fff' },
+  radarBgDecoration: { position: 'absolute', right: -20, bottom: -20, zIndex: 1 },
+
+  // Tips
+  tipsScroll: { gap: SPACING.md, paddingBottom: SPACING.sm },
+  tipCard: {
+    width: 140, backgroundColor: theme.colors.white, borderRadius: BORDER_RADIUS.lg, padding: SPACING.md,
+    borderWidth: 1, borderColor: '#F3F4F6',
+  },
+  tipIconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.sm },
+  tipTitle: { fontSize: FONT_SIZE.sm, fontWeight: '700', color: theme.colors.text, marginBottom: 4 },
+  tipDesc: { fontSize: FONT_SIZE['2xs'], color: theme.colors.textSecondary, lineHeight: 14 },
 });
 
 export default HomeScreen;

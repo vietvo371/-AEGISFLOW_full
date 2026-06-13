@@ -203,9 +203,9 @@ const MainNavigator = () => {
       initialRouteName="Loading"
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right',
-        animationDuration: 300,
         contentStyle: { backgroundColor: theme.colors.white },
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
       }}
     >
       <Stack.Screen name="Loading" component={LoadingScreen} />

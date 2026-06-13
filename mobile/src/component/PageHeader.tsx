@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, StatusBar } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -64,7 +64,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   // 1. Home Variant (Dashboard style)
   if (variant === 'home') {
     return (
-      <View style={[styles.homeHeader, { paddingTop: Math.max(insets.top, SPACING.md) }, style]}>
+      <View style={[styles.homeHeader, { paddingTop: Math.max(insets.top, 55) + SPACING.md }, style]}>
         <View style={styles.homeLeft}>
           <Text style={styles.homeGreeting}>{subtitle || 'Xin chào'}</Text>
           <Text style={styles.homeTitle}>{title}</Text>
@@ -82,7 +82,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   // 2. Featured/Gradient Variant (Gradient background for special screens)
   if (variant === 'featured' || variant === 'gradient') {
     return (
-      <View style={[styles.featuredWrapper, { paddingTop: Math.max(insets.top, SPACING.sm) }, style]}>
+      <View style={[styles.featuredWrapper, { paddingTop: Math.max(insets.top, 55) + SPACING.sm }, style]}>
         <View style={styles.featuredContent}>
           {showBack && (
             <TouchableOpacity onPress={handleBack} style={styles.gradientBackButton}>
@@ -107,7 +107,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   // 3. Public Variant (Minimal header for auth screens - Login, Register, etc.)
   if (variant === 'public') {
     return (
-      <View style={[styles.publicHeader, { paddingTop: Math.max(insets.top, SPACING.md) }, style]}>
+      <View style={[styles.publicHeader, { paddingTop: Math.max(insets.top, 55) + SPACING.md }, style]}>
         {showBack && (
           <TouchableOpacity onPress={handleBack} style={styles.publicBackButton}>
             <Icon name="arrow-left" size={ICON_SIZE.md} color={theme.colors.text} />
@@ -126,7 +126,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   const shouldShowBack = showBack !== undefined ? showBack : true;
 
   return (
-    <View style={[styles.defaultHeader, { paddingTop: insets.top, height: hp('7.5%') + insets.top }, style]}>
+    <View style={[styles.defaultHeader, { paddingTop: Math.max(insets.top, 55), height: hp('7.5%') + Math.max(insets.top, 55) }, style]}>
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
       <View style={styles.leftContainer}>
         {shouldShowBack && (
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>

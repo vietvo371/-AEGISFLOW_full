@@ -20,19 +20,39 @@ const { height } = Dimensions.get('window');
 type Language = {
   code: string;
   name: string;
-  flag: any;
+  flag: string;
 };
 
 const LANGUAGES: Language[] = [
   {
     code: 'vi',
     name: 'Tiếng Việt',
-    flag: require('../assets/images/logo_vietnam.jpg'),
+    flag: '🇻🇳',
   },
   {
     code: 'en',
     name: 'English',
-    flag: require('../assets/images/logo_eng.png'),
+    flag: '🇬🇧',
+  },
+  {
+    code: 'id',
+    name: 'Bahasa Indonesia',
+    flag: '🇮🇩',
+  },
+  {
+    code: 'ms',
+    name: 'Bahasa Melayu',
+    flag: '🇲🇾',
+  },
+  {
+    code: 'th',
+    name: 'ไทย (Thai)',
+    flag: '🇹🇭',
+  },
+  {
+    code: 'tl',
+    name: 'Filipino',
+    flag: '🇵🇭',
   },
 ];
 
@@ -79,10 +99,7 @@ const LanguageSelector = ({ visible, onClose, onSelect, currentLanguage }: Props
               onPress={() => handleLanguageSelect(language.code)}
             >
               <View style={styles.languageInfo}>
-                <Image 
-                  source={language.flag}
-                  style={styles.flag}
-                />
+                <Text style={styles.flagEmoji}>{language.flag}</Text>
                 <Text style={styles.languageName}>{language.name}</Text>
               </View>
               {currentLanguage === language.code && (
@@ -136,11 +153,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  flag: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  flagEmoji: {
+    fontSize: 28,
     marginRight: 12,
+    lineHeight: 32,
   },
   languageName: {
     fontSize: wp('4%'),

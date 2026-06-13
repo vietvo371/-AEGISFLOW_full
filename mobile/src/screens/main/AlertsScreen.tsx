@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  RefreshControl, ActivityIndicator, ScrollView, Animated,
+  RefreshControl, ActivityIndicator, ScrollView, Animated, StatusBar,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,7 @@ const SEVERITY_CONFIG = (t: (key: string) => string): Record<string, { label: st
 const AlertsScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -149,10 +150,18 @@ const AlertsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
       {/* Premium Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 55) + 10 }]}>
         <View style={styles.headerTopRow}>
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()} 
+            style={{ marginRight: 12, padding: 4 }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="arrow-left" size={28} color={theme.colors.text} />
+          </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>{t('citizen.alerts.title')}</Text>
             <Text style={styles.headerSubtitle}>{t('citizen.alerts.subtitle')}</Text>
@@ -234,7 +243,7 @@ const AlertsScreen = () => {
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -255,7 +264,6 @@ const styles = StyleSheet.create({
   // Header
   header: {
     backgroundColor: theme.colors.white,
-    paddingTop: SPACING.md,
     paddingBottom: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.borderLight,

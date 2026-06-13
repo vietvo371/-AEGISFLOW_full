@@ -33,6 +33,19 @@ interface ForgotPasswordScreenProps {
   navigation: any;
 }
 
+const getLanguageFlag = (code: string) => {
+  switch (code) {
+    case 'vi': return '🇻🇳';
+    case 'en': return '🇬🇧';
+    case 'id': return '🇮🇩';
+    case 'ms': return '🇲🇾';
+    case 'th': return '🇹🇭';
+    case 'tl':
+    case 'fil': return '🇵🇭';
+    default: return '🌐';
+  }
+};
+
 const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation }) => {
   const { getCurrentLanguage } = useTranslation();
   const [email, setEmail] = useState('');
@@ -117,13 +130,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
             style={styles.headerIconButton}
             onPress={() => setShowLanguageSelector(true)}
           >
-            <Image
-              source={getCurrentLanguage() === 'vi'
-                ? require('../../assets/images/logo_vietnam.jpg')
-                : require('../../assets/images/logo_eng.png')
-              }
-              style={styles.languageFlag}
-            />
+            <Text style={styles.languageFlagEmoji}>{getLanguageFlag(getCurrentLanguage())}</Text>
           </TouchableOpacity>
         </View>
 
@@ -270,10 +277,9 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  languageFlag: {
-    width: ICON_SIZE.md,
-    height: ICON_SIZE.md,
-    borderRadius: ICON_SIZE.md / 2,
+  languageFlagEmoji: {
+    fontSize: 24,
+    lineHeight: 28,
   },
   decorativeCircle1: {
     position: 'absolute',

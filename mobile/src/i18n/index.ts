@@ -6,6 +6,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Import translation files
 import vi from './locales/vi.json';
 import en from './locales/en.json';
+import id from './locales/id.json';
+import ms from './locales/ms.json';
+import th from './locales/th.json';
+import tl from './locales/tl.json';
 
 const LANGUAGE_DETECTOR = {
   type: 'languageDetector' as const,
@@ -45,6 +49,10 @@ i18n
     resources: {
       vi: { translation: vi },
       en: { translation: en },
+      id: { translation: id },
+      ms: { translation: ms },
+      th: { translation: th },
+      tl: { translation: tl },
     },
     fallbackLng: 'vi',
     debug: __DEV__,
