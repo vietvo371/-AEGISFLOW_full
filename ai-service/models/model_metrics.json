@@ -1,9 +1,9 @@
 {
-  "version": "4.0.0",
-  "accuracy": 0.9652247667514843,
-  "weighted_f1": 0.9648869472714455,
-  "macro_f1": 0.9390050836380078,
-  "auc_roc_weighted_ovr": 0.9973882964313044,
+  "version": "4.1.0",
+  "accuracy": 0.988125,
+  "weighted_f1": 0.9881225995834135,
+  "macro_f1": 0.9881225995834134,
+  "auc_roc_weighted_ovr": 0.9998468749999999,
   "features": [
     "water_level_m",
     "rainfall_mm",
@@ -30,5 +30,6 @@
     "low",
     "medium"
   ],
-  "algorithm": "Stacking: RF+ET+GB+LightGBM+XGBoost -> LogisticRegression"
+  "algorithm": "Stacking: RF+ET+GB+LightGBM+XGBoost -> LogisticRegression",
+  "dataset": "flood_danang_clean_balanced.csv (8000 rows, balanced 2000/class)"
 }
