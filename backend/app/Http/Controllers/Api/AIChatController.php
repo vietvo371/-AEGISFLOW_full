@@ -272,4 +272,78 @@ EXTRA,
             'latency_ms' => $aiLatency,
         ]);
     }
+
+    /**
+     * Proxy POST /ai/analyze → AI service /api/ai/analyze
+     * Unified smart analysis: current risk + 1h/3h/6h forecast + spread
+     */
+    public function analyze(Request $request)
+    {
+        $aiUrl = config('services.ai.url', 'http://localhost:5005') . '/api/ai/analyze';
+
+        try {
+            $response = Http::timeout(25)
+                ->post($aiUrl, $request->all());
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            }
+
+            return ApiResponse::error('AI service unavailable', $response->status());
+        } catch (\Throwable $e) {
+            Log::warning('AIChatController::analyze failed: ' . $e->getMessage());
+            return ApiResponse::error('AI service không khả dụng. Vui lòng thử lại sau.', 503);
+        }
+    }
+
+    /**
+     * Proxy POST /ai/forecast → AI service /api/predict/forecast
+     * Multi-step flood risk forecast (1h, 3h, 6h)
+     */
+    public function forecast(Request $request)
+    {
+        $aiUrl = config('services.ai.url', 'http://localhost:5005') . '/api/predict/forecast';
+
+        try {
+            $response = Http::timeout(15)
+                ->post($aiUrl, $request->all());
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            }
+
+            return ApiResponse::error('Forecast service unavailable', $response->status());
+        } catch (\Throwable $e) {
+            return ApiResponse::error('Forecast không khả dụng', 503);
+        }
+    }
+
+    /**
+     * Proxy GET /ai/weather → AI service /api/weather/danang
+     * Real-time Da Nang weather from Open-Meteo (cached 15 min)
+     */
+    public function weather()
+    {
+        $cacheKey = 'ai_weather_danang';
+
+        return Cache::remember($cacheKey, 900, function () {
+            $aiUrl = config('services.ai.url', 'http://localhost:5005') . '/api/weather/danang';
+
+            try {
+                $response = Http::timeout(10)->get($aiUrl);
+
+                if ($response->successful()) {
+                    return response()->json($response->json());
+                }
+            } catch (\Throwable $e) {
+                Log::info('Weather proxy failed: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'source' => 'unavailable',
+                'current' => ['rainfall_mm' => 0, 'wind_speed_kmh' => 0, 'pressure_hpa' => 0],
+                'hourly_forecast' => [],
+            ]);
+        });
+    }
 }

@@ -233,7 +233,7 @@ class Incident extends Model
 
         $markerColor = match ($danhMuc) {
             1 => '#FF9500',
-            2 => '#34C759',
+            2 => '#34C759',¡
             3 => '#FF3B30',
             4 => '#8E6F3E',
             5 => '#007AFF',

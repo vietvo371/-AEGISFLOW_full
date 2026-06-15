@@ -1,6 +1,7 @@
 import math
 import joblib
 import warnings
+import pandas as pd
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional, List
@@ -28,8 +29,9 @@ def _load_model():
     if model_path.exists():
         try:
             data = joblib.load(model_path)
+            model_type = data.get("model_type", "voting")
             _model_cache = {
-                "model": data["model"],
+                "model_type": model_type,
                 "label_encoder": data["label_encoder"],
                 "feature_names": data["feature_names"],
                 "version": data.get("version", "1.0.0"),
@@ -38,8 +40,13 @@ def _load_model():
                 "monthly_risk_profile": data.get("monthly_risk_profile", {}),
                 "base_year": data.get("base_year", 2020),
             }
+            if model_type == "stacking":
+                _model_cache["base_models"] = data["base_models"]
+                _model_cache["meta_model"] = data["meta_model"]
+            else:
+                _model_cache["model"] = data["model"]
             print(f"[AegisFlow AI] Loaded model v{_model_cache['version']} "
-                  f"features={_model_cache['feature_names']}")
+                  f"type={model_type} features={len(_model_cache['feature_names'])}")
             return _model_cache
         except Exception as e:
             print(f"[AegisFlow AI] Warning: Failed to load model: {e}")
@@ -154,7 +161,6 @@ def _ml_predict(
     if model_data is None:
         return None
 
-    model = model_data["model"]
     le = model_data["label_encoder"]
     feature_names = model_data.get("feature_names") or LEGACY_ALL
 
@@ -180,12 +186,25 @@ def _ml_predict(
         )
         if not seasonality_enabled:
             seasonal_risk_score = mean_score
+        seasonal_risk_score_val = seasonal_risk_score
         feature_values.update({
             "month": month,
             "year_index": float(dt.year - int(model_data.get("base_year", 2020))),
             "month_sin": math.sin(2 * math.pi * month / 12) if seasonality_enabled else 0.0,
             "month_cos": math.cos(2 * math.pi * month / 12) if seasonality_enabled else 0.0,
-            "seasonal_risk_score": seasonal_risk_score,
+            "seasonal_risk_score": seasonal_risk_score_val,
+            # v4 interaction features
+            "rain_x_tide": float(rainfall_mm) * float(tide_level),
+            "water_x_saturation": float(water_level_m) * float(soil_saturation),
+            "rain_x_season": float(rainfall_mm) * seasonal_risk_score_val / 100.0,
+            "trend_x_rain6h": float(water_level_trend) * float(rain_6h),
+            "cumulative_stress": (
+                float(water_level_m) * 0.3 +
+                float(rainfall_mm) / 300 * 0.25 +
+                float(soil_saturation) * 0.2 +
+                float(tide_level) / 2 * 0.15 +
+                seasonal_risk_score_val / 100 * 0.1
+            ),
         })
 
     # Build feature vector in the exact order the model was trained with
@@ -196,10 +215,20 @@ def _ml_predict(
         safe_values = {k: feature_values.get(k, 0.0) for k in feature_names}
         features = [[safe_values[name] for name in feature_names]]
 
+    df_features = pd.DataFrame(features, columns=feature_names)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
-        pred_encoded = model.predict(features)[0]
-        probas = model.predict_proba(features)[0]
+        if model_data.get("model_type") == "stacking":
+            base_models = model_data["base_models"]
+            meta_model = model_data["meta_model"]
+            import numpy as np
+            meta_input = np.hstack([m.predict_proba(df_features) for _, m in base_models])
+            pred_encoded = meta_model.predict(meta_input)[0]
+            probas = meta_model.predict_proba(meta_input)[0]
+        else:
+            model = model_data["model"]
+            pred_encoded = model.predict(df_features)[0]
+            probas = model.predict_proba(df_features)[0]
 
     pred_label = le.inverse_transform([pred_encoded])[0]
     confidence = float(probas[pred_encoded])

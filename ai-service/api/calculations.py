@@ -8,6 +8,9 @@ from services.flood_calculator import calculate_flood_risk, extract_timeseries_f
 from services.priority_calculator import calculate_rescue_priority
 from services.shelter_calculator import calculate_shelter_score
 from services.route_optimizer import calculate_optimal_route
+from services.lstm_forecaster import forecast_flood_risk, reload_lstm
+from services.weather_fetcher import get_danang_weather
+from services.graph_flood_predictor import predict_flood_spread, identify_seed_nodes_from_stations
 from services.performance import (
     get_flood_risk_cache, get_prediction_cache, get_route_cache,
     get_performance_monitor
@@ -315,6 +318,12 @@ async def clear_caches():
     priority_cache.clear()
     route_cache.clear()
     return {"status": "cleared"}
+
+
+@router.get("/weather/danang")
+async def weather_danang():
+    """Return current and 24-hour forecast weather for Da Nang (Open-Meteo, cached 15 min)."""
+    return get_danang_weather()
 
 
 @router.post("/retrain")
@@ -625,3 +634,285 @@ async def analyze_recommendation(request: RecommendationAnalysisRequest):
         confidence=round(confidence, 3),
         reasoning=f"Phân tích dựa trên risk_score={risk_score:.1f}, loại={rtype}, khu vực={zone_name}. Thời gian xử lý: {elapsed}ms",
     )
+
+
+# ── LSTM Multi-step Forecasting ───────────────────────────────────────────────
+
+class ForecastRequest(BaseModel):
+    """
+    Request body for multi-step flood risk forecasting.
+
+    readings: list of recent sensor readings (newest first), each containing:
+        - water_level / water_level_m  (float, metres)
+        - rainfall / rainfall_mm       (float, mm/h)
+        - tide_level                   (float, optional)
+        - historical_score             (float, optional)
+        - timestamp / created_at       (ISO string, optional — improves temporal encoding)
+        - trend, rain_6h, soil_saturation (optional — computed if missing)
+
+    At least 1 reading required; 12-24 readings gives best accuracy.
+    The current_risk dict (from /predict-risk) can be included for
+    better XGBoost fallback extrapolation when no LSTM model is available.
+    """
+    readings: List[Dict[str, Any]]
+    current_risk: Optional[Dict[str, Any]] = None
+    zone_id: Optional[str] = None
+    zone_name: Optional[str] = None
+
+
+@router.post("/predict/forecast")
+async def predict_forecast(request: ForecastRequest):
+    """
+    Multi-step flood risk forecast: 1h, 3h, 6h ahead.
+
+    Uses LSTM model if trained (run models/train_lstm_model.py first).
+    Falls back to trend-extrapolated XGBoost predictions automatically.
+
+    Returns:
+      - forecasts: list of {horizon, hours_ahead, risk_score, risk_level, confidence, method}
+      - method: "lstm" | "xgb_extrapolation"
+      - warning: escalation alert if risk is rapidly rising
+      - sequence_length: number of historical steps used
+    """
+    start = time.time()
+
+    if not request.readings:
+        return {
+            "error": "readings list is empty",
+            "forecasts": [],
+            "method": "none",
+        }
+
+    result = forecast_flood_risk(
+        readings=request.readings,
+        current_risk=request.current_risk,
+    )
+
+    elapsed = round((time.time() - start) * 1000, 2)
+    result["processing_time_ms"] = elapsed
+    result["zone_id"]   = request.zone_id
+    result["zone_name"] = request.zone_name
+    result["timestamp"] = datetime.now().isoformat()
+
+    return result
+
+
+@router.post("/lstm/reload")
+async def reload_lstm_model():
+    """Force reload the LSTM model from disk (after retraining)."""
+    data = reload_lstm()
+    if data:
+        return {
+            "status": "ok",
+            "version": data.get("version"),
+            "trained_at": data.get("trained_at"),
+            "level_accuracy": data.get("val_accuracy"),
+        }
+    return {"status": "no_model", "message": "LSTM model not found. Run models/train_lstm_model.py"}
+
+
+# ── Smart AI Analysis — Unified endpoint ──────────────────────────────────────
+
+class SmartAnalysisRequest(BaseModel):
+    """
+    Unified AI analysis request.
+
+    Provide either:
+    - (a) readings: recent sensor time-series + zone_id/seed_nodes for full analysis
+    - (b) water_level_m + rainfall_mm + hours_rain for snapshot analysis
+    """
+    # Snapshot inputs (single reading)
+    water_level_m: Optional[float] = None
+    rainfall_mm: Optional[float] = None
+    hours_rain: Optional[int] = None
+    tide_level: Optional[float] = 0.0
+    historical_score: Optional[float] = 0.0
+
+    # Time-series inputs (for multi-step forecast)
+    readings: Optional[List[Dict[str, Any]]] = None      # newest-first sensor readings
+
+    # Spatial inputs (for flood spread)
+    seed_nodes: Optional[List[str]] = None               # already-flooded graph nodes
+    seed_water_levels: Optional[Dict[str, float]] = None
+    station_readings: Optional[List[Dict[str, Any]]] = None  # raw station data for auto-detection
+
+    # Context
+    zone_id: Optional[str] = None
+    zone_name: Optional[str] = None
+    soil_saturation: Optional[float] = 40.0
+
+    # What to compute
+    include_forecast: Optional[bool] = True
+    include_spread: Optional[bool] = True
+    include_route: Optional[bool] = False
+    start_lat: Optional[float] = None
+    start_lon: Optional[float] = None
+    end_lat: Optional[float] = None
+    end_lon: Optional[float] = None
+
+
+@router.post("/ai/analyze")
+async def smart_ai_analysis(request: SmartAnalysisRequest):
+    """
+    Unified Smart AI Analysis.
+
+    Runs all available AI models in a single request:
+    1. Current flood risk (XGBoost snapshot)
+    2. Multi-step forecast (1h, 3h, 6h) — Temporal XGBoost
+    3. Spatial flood spread — Graph XGBoost
+    4. Evacuation route (optional)
+
+    Returns a structured JSON with all results plus an overall severity summary.
+    """
+    t_start = time.time()
+    result: Dict[str, Any] = {
+        "timestamp": datetime.now().isoformat(),
+        "zone_id": request.zone_id,
+        "zone_name": request.zone_name,
+    }
+
+    # ── 0. Auto-fetch weather if rainfall_mm not provided ─────────────────────
+    weather_data = None
+    if request.rainfall_mm is None:
+        weather_data = get_danang_weather()
+        result["weather"] = weather_data
+
+    # ── 1. Current risk ───────────────────────────────────────────────────────
+    wl    = float(request.water_level_m or 0.0)
+    rain  = float(request.rainfall_mm if request.rainfall_mm is not None
+                  else (weather_data["current"]["rainfall_mm"] if weather_data else 0.0))
+    hrs   = int(request.hours_rain or 0)
+    tide  = float(request.tide_level or 0.0)
+    hist  = float(request.historical_score or 0.0)
+    sat   = float(request.soil_saturation or 40.0)
+
+    # Try to get better values from readings if snapshot not provided
+    readings = request.readings or []
+    if readings and (not request.water_level_m or not request.rainfall_mm):
+        r0 = readings[0]
+        if not request.water_level_m:
+            wl = float(r0.get("water_level") or r0.get("water_level_m") or 0.0)
+        if not request.rainfall_mm:
+            rain = float(r0.get("rainfall") or r0.get("rainfall_mm") or 0.0)
+        if not request.hours_rain:
+            hrs = int(r0.get("hours_rain") or 1)
+        if not request.tide_level:
+            tide = float(r0.get("tide_level") or 0.0)
+
+    # Extract time-series features if readings available
+    wl_trend = rain_6h = 0.0
+    if readings:
+        wl_values = [float(r.get("water_level") or r.get("water_level_m") or wl) for r in readings[:12]]
+        if len(wl_values) >= 2:
+            wl_trend = (wl_values[0] - wl_values[-1]) / max(1, len(wl_values) - 1)
+        rain_6h = sum(float(r.get("rainfall") or r.get("rainfall_mm") or 0) for r in readings[:6])
+
+    current_risk = calculate_flood_risk(
+        water_level_m=wl,
+        rainfall_mm=rain,
+        hours_rain=hrs,
+        tide_level=tide,
+        historical_score=hist,
+        water_level_trend=wl_trend,
+        rain_6h=rain_6h,
+        soil_saturation=sat,
+    )
+    result["current_risk"] = current_risk
+
+    # ── 2. Multi-step forecast ────────────────────────────────────────────────
+    if request.include_forecast:
+        if readings:
+            forecast = forecast_flood_risk(readings, current_risk)
+        else:
+            # Build minimal readings from snapshot for trend extrapolation
+            minimal = [{"water_level_m": wl, "rainfall_mm": rain, "tide_level": tide}]
+            forecast = forecast_flood_risk(minimal, current_risk)
+        result["forecast"] = forecast
+    else:
+        result["forecast"] = None
+
+    # ── 3. Spatial spread ─────────────────────────────────────────────────────
+    if request.include_spread:
+        seeds = request.seed_nodes
+        wl_map = request.seed_water_levels or {}
+
+        # Auto-detect from station readings
+        if not seeds and request.station_readings:
+            seeds, wl_map = identify_seed_nodes_from_stations(request.station_readings)
+
+        if seeds:
+            spread = predict_flood_spread(
+                seed_nodes=seeds,
+                rainfall_mm=rain,
+                tide_level=tide,
+                hours_rain=float(hrs),
+                soil_saturation=sat,
+                seed_water_levels=wl_map,
+            )
+            result["spread"] = spread
+        else:
+            result["spread"] = {"message": "No seed_nodes provided for spread prediction"}
+    else:
+        result["spread"] = None
+
+    # ── 4. Optional evacuation route ──────────────────────────────────────────
+    if request.include_route and all([
+        request.start_lat, request.start_lon,
+        request.end_lat, request.end_lon,
+    ]):
+        flooded = []
+        if result.get("spread") and result["spread"].get("critical_nodes"):
+            flooded = [{"zone_id": n} for n in result["spread"]["critical_nodes"]]
+        route = calculate_optimal_route(
+            start_lat=request.start_lat, start_lon=request.start_lon,
+            end_lat=request.end_lat, end_lon=request.end_lon,
+            flooded_areas=flooded,
+        )
+        result["evacuation_route"] = route
+    else:
+        result["evacuation_route"] = None
+
+    # ── 5. Overall severity summary ───────────────────────────────────────────
+    risk_score = current_risk.get("risk_score", 0)
+    forecast_scores = []
+    if result.get("forecast") and result["forecast"].get("forecasts"):
+        forecast_scores = [f["risk_score"] for f in result["forecast"]["forecasts"]]
+
+    peak_score = max([risk_score] + forecast_scores) if forecast_scores else risk_score
+
+    def _level(s):
+        if s >= 75: return "critical"
+        elif s >= 50: return "high"
+        elif s >= 25: return "medium"
+        return "low"
+
+    # Trend direction
+    trend_label = "stable"
+    if forecast_scores:
+        delta = forecast_scores[-1] - risk_score
+        if delta >= 15: trend_label = "escalating"
+        elif delta <= -15: trend_label = "improving"
+
+    # Spread severity
+    spread_affected = 0
+    spread_critical = 0
+    if result.get("spread") and isinstance(result["spread"].get("node_predictions"), list):
+        preds = result["spread"]["node_predictions"]
+        spread_affected = len([p for p in preds if p["flood_probability"] > 0.3])
+        spread_critical = len([p for p in preds if p["risk_score"] >= 75])
+
+    result["summary"] = {
+        "current_risk_level": current_risk.get("risk_level", "low"),
+        "current_risk_score": round(risk_score, 1),
+        "peak_risk_level": _level(peak_score),
+        "peak_risk_score": round(peak_score, 1),
+        "trend": trend_label,
+        "forecast_warning": (result.get("forecast") or {}).get("warning"),
+        "spread_affected_nodes": spread_affected,
+        "spread_critical_nodes": spread_critical,
+        "requires_immediate_action": peak_score >= 75 or spread_critical >= 3,
+        "confidence": round(float(current_risk.get("confidence", 0.85)), 3),
+    }
+
+    result["processing_time_ms"] = round((time.time() - t_start) * 1000, 2)
+    return result

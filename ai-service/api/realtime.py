@@ -12,6 +12,9 @@ from services.realtime_prediction import (
 from services.flood_calculator import calculate_flood_risk
 from services.flood_spread_bfs import FloodSpreadBFS
 from services.anomaly_detector import get_anomaly_detector
+from services.graph_flood_predictor import (
+    predict_flood_spread, identify_seed_nodes_from_stations, reload_graph_model,
+)
 
 router = APIRouter()
 
@@ -566,3 +569,131 @@ async def predict_from_realstations():
         "scenario": sim.get_scenario(),
         "aggregated_input": agg,
     }
+
+
+# ── Graph-based Spatial Flood Spread Endpoints ───────────────────────────────
+
+class FloodSpreadRequest(BaseModel):
+    seed_nodes: List[str]
+    rainfall_mm: Optional[float] = 50.0
+    tide_level: Optional[float] = 0.5
+    hours_rain: Optional[float] = 6.0
+    soil_saturation: Optional[float] = 40.0
+    seed_water_levels: Optional[Dict[str, float]] = None
+
+
+class StationSpreadRequest(BaseModel):
+    """Predict flood spread from real sensor station readings."""
+    stations: List[Dict[str, Any]]   # list of {lat, lng, water_level, rainfall, ...}
+    rainfall_mm: Optional[float] = None    # override if not in station readings
+    tide_level: Optional[float] = 0.5
+    hours_rain: Optional[float] = 6.0
+    soil_saturation: Optional[float] = 40.0
+    water_level_threshold: Optional[float] = 1.0
+    rainfall_threshold: Optional[float] = 50.0
+
+
+@router.post("/predict/spread")
+async def predict_graph_spread(request: FloodSpreadRequest):
+    """
+    Graph-enhanced flood spread prediction.
+
+    Uses spatial XGBoost model trained on flood graph topology to predict
+    flood probability, arrival time, water depth, and risk score for
+    every node in the Da Nang flood graph.
+
+    Falls back to physics-based BFS if the graph model is not trained yet.
+
+    seed_nodes: list of node IDs that are already flooded
+    (see GET /graph/nodes for available IDs)
+    """
+    result = predict_flood_spread(
+        seed_nodes=request.seed_nodes,
+        rainfall_mm=request.rainfall_mm or 50.0,
+        tide_level=request.tide_level or 0.5,
+        hours_rain=request.hours_rain or 6.0,
+        soil_saturation=request.soil_saturation or 40.0,
+        seed_water_levels=request.seed_water_levels,
+    )
+    result["timestamp"] = datetime.now().isoformat()
+    return result
+
+
+@router.post("/predict/spread/from-stations")
+async def predict_spread_from_stations(request: StationSpreadRequest):
+    """
+    Auto-detect flooded zones from real sensor readings and predict
+    flood spread across the Da Nang graph.
+
+    Useful for feeding live data from muangap.danang.gov.vn directly.
+    """
+    from services.graph_flood_predictor import identify_seed_nodes_from_stations
+
+    seeds, wl_map = identify_seed_nodes_from_stations(
+        station_readings=request.stations,
+        water_level_threshold=request.water_level_threshold or 1.0,
+        rainfall_threshold=request.rainfall_threshold or 50.0,
+    )
+
+    if not seeds:
+        return {
+            "message": "No flooding detected from station readings",
+            "seed_nodes": [],
+            "node_predictions": [],
+            "method": "none",
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    # Use max rain from stations if not overridden
+    rain = request.rainfall_mm
+    if rain is None:
+        rains = [float(s.get("rainfall") or s.get("rainfall_mm") or 0) for s in request.stations]
+        rain = float(max(rains)) if rains else 30.0
+
+    result = predict_flood_spread(
+        seed_nodes=seeds,
+        rainfall_mm=rain,
+        tide_level=request.tide_level or 0.5,
+        hours_rain=request.hours_rain or 6.0,
+        soil_saturation=request.soil_saturation or 40.0,
+        seed_water_levels=wl_map,
+    )
+    result["detected_seed_nodes"] = seeds
+    result["timestamp"] = datetime.now().isoformat()
+    return result
+
+
+@router.get("/graph/nodes")
+async def get_graph_nodes():
+    """List all nodes in the Da Nang flood graph with their properties."""
+    from services.graph_flood_predictor import load_graph, compute_graph_features, _haversine, COAST_LAT, COAST_LNG
+    graph = load_graph()
+    gf = compute_graph_features(graph)
+    nodes = []
+    for nid, n in graph.items():
+        nodes.append({
+            "id": nid,
+            "lat": n["lat"],
+            "lng": n["lng"],
+            "elevation": n["elevation"],
+            "district": n.get("district", ""),
+            "drainage_capacity": n.get("drainage_capacity", 0.5),
+            "neighbors": n.get("neighbors", []),
+            "coast_dist_km": round(gf[nid]["coast_dist_m"] / 1000, 2),
+            "flood_risk_static": "high" if n["elevation"] <= 2 else "medium" if n["elevation"] <= 5 else "low",
+        })
+    return {"nodes": nodes, "count": len(nodes)}
+
+
+@router.post("/graph/model/reload")
+async def reload_graph_model_endpoint():
+    """Force reload the graph flood model from disk."""
+    data = reload_graph_model()
+    if data:
+        return {
+            "status": "ok",
+            "version": data.get("version"),
+            "trained_at": data.get("trained_at"),
+            "metrics": data.get("metrics"),
+        }
+    return {"status": "no_model", "message": "Graph model not found. Run models/train_graph_model.py"}

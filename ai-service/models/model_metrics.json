@@ -1,13 +1,10 @@
 {
-  "model_name": "AegisFlow Flood Nowcasting Xgboost v3",
-  "version": "3.0.0",
-  "trained_at": "2026-06-12T15:00:52.871884",
-  "algorithm": "xgboost",
-  "framework": "scikit-learn/xgboost",
-  "dataset": "flood_danang_2019_2024_augmented.csv (synthetic + 391 real events)",
-  "dataset_samples": 5891,
-  "test_samples": 1179,
-  "dataset_features": [
+  "version": "4.0.0",
+  "accuracy": 0.9652247667514843,
+  "weighted_f1": 0.9648869472714455,
+  "macro_f1": 0.9390050836380078,
+  "auc_roc_weighted_ovr": 0.9973882964313044,
+  "features": [
     "water_level_m",
     "rainfall_mm",
     "hours_rain",
@@ -20,94 +17,18 @@
     "year_index",
     "month_sin",
     "month_cos",
-    "seasonal_risk_score"
+    "seasonal_risk_score",
+    "rain_x_tide",
+    "water_x_saturation",
+    "rain_x_season",
+    "trend_x_rain6h",
+    "cumulative_stress"
   ],
-  "dataset_classes": [
+  "labels": [
     "critical",
     "high",
     "low",
     "medium"
   ],
-  "new_features": [
-    "water_level_trend",
-    "rain_6h",
-    "soil_saturation"
-  ],
-  "prediction_horizons_minutes": [
-    30,
-    60
-  ],
-  "data_quality_note": "v3: Episode-based time-series synthetic data with trend/accumulation features. Model captures rising water trends and soil saturation effects. Class-balanced training with at least 150 critical samples.",
-  "monthly_risk_profile": {
-    "1": 27.5912,
-    "2": 34.1003,
-    "3": 29.6875,
-    "4": 26.1714,
-    "5": 29.3003,
-    "6": 32.4528,
-    "7": 30.1023,
-    "8": 35.7745,
-    "9": 37.2557,
-    "10": 52.1919,
-    "11": 35.784,
-    "12": 28.812
-  },
-  "base_year": 2019,
-  "accuracy": 0.9601357082273113,
-  "balanced_accuracy": 0.9241294790305838,
-  "f1_weighted": 0.9598396577403921,
-  "f1_macro": 0.9304417161590475,
-  "precision_weighted": 0.9597162105013919,
-  "recall_weighted": 0.9601357082273113,
-  "auc_roc": 0.998351195708466,
-  "cv_f1_mean": 0.9654962502573525,
-  "cv_f1_std": 0.0035772143712927934,
-  "per_class": {
-    "critical": {
-      "precision": 0.9405940594059405,
-      "recall": 0.9047619047619048,
-      "f1": 0.9223300970873787
-    },
-    "high": {
-      "precision": 0.9333333333333333,
-      "recall": 0.9430051813471503,
-      "f1": 0.9381443298969072
-    },
-    "low": {
-      "precision": 0.9802631578947368,
-      "recall": 0.9893758300132802,
-      "f1": 0.9847984137475215
-    },
-    "medium": {
-      "precision": 0.8943089430894309,
-      "recall": 0.859375,
-      "f1": 0.8764940239043825
-    }
-  },
-  "confusion_matrix": [
-    [
-      95,
-      10,
-      0,
-      0
-    ],
-    [
-      6,
-      182,
-      0,
-      5
-    ],
-    [
-      0,
-      0,
-      745,
-      8
-    ],
-    [
-      0,
-      3,
-      15,
-      110
-    ]
-  ]
+  "algorithm": "Stacking: RF+ET+GB+LightGBM+XGBoost -> LogisticRegression"
 }

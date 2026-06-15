@@ -174,6 +174,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('ai/chat', [AIChatController::class, 'chat']);
     Route::get('ai/status', [AIChatController::class, 'status']);
 
+    // ── AI Smart Analysis (proxy to AI service) ──────────────
+    Route::post('ai/analyze', [AIChatController::class, 'analyze']);
+    Route::post('ai/forecast', [AIChatController::class, 'forecast']);
+    Route::get('ai/weather', [AIChatController::class, 'weather']);
+
     // ============================================================
     // OPERATOR ROUTES (role: city_admin, rescue_operator, rescue_team)
     // ============================================================
