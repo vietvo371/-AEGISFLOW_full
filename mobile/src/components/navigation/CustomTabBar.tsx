@@ -38,11 +38,31 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                             ? options.title
                             : route.name;
 
-                    const isFocused = state.index === index;
+                    const activeRouteName = state.routes[state.index].name;
 
-                    // IN CITIZEN MODE: Skip the middle tab (index 2) and render a placeholder for the floating button
-                    if (!isEmergency && index === 2) {
-                        return <View key={route.key} style={styles.tabItemPlaceholder} />;
+                    // Map active nested sub-screens to highlight their parent tabs
+                    let isFocused = state.index === index;
+                    if (!isFocused) {
+                        if (route.name === 'Home') {
+                            isFocused = ['Notifications', 'ReportDetail', 'CreateReport', 'EditReport'].includes(activeRouteName);
+                        }
+                    }
+
+                    // Hidden tabs that should not render a button in the tab bar
+                    const HIDDEN_SCREENS = [
+                        'SOS',
+                        'ReportDetail',
+                        'CreateReport',
+                        'Notifications',
+                        'EditReport'
+                    ];
+
+                    if (HIDDEN_SCREENS.includes(route.name)) {
+                        // Special check: index 2 (which is 'SOS') is used for the placeholder in citizen mode
+                        if (!isEmergency && route.name === 'SOS') {
+                            return <View key={route.key} style={styles.tabItemPlaceholder} />;
+                        }
+                        return null;
                     }
 
                     const onPress = () => {
@@ -103,16 +123,16 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                 })}
             </View>
 
-            {/* SOS FAB Button - Màu đỏ giống web */}
+            {/* FAB Button - Nổi lên, tròn, gradient primary, icon "+" để tạo báo cáo */}
             {!isEmergency && (
                 <View style={styles.floatingButtonContainer}>
                     <TouchableOpacity
                         style={styles.floatingButton}
-                        onPress={() => navigation.navigate('SOS')}
+                        onPress={() => navigation.navigate('CreateReport')}
                         activeOpacity={0.8}
                     >
                         <LinearGradient
-                            colors={['#EF4444', '#DC2626']} // Gradient đỏ cho SOS
+                            colors={theme.colors.gradientPrimary} // Gradient tím thương hiệu
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}
                             style={styles.floatingButtonGradient}
@@ -196,7 +216,7 @@ const styles = StyleSheet.create({
         padding: 4,
         ...Platform.select({
             ios: {
-                shadowColor: '#EF4444',
+                shadowColor: theme.colors.primary,
                 shadowOffset: { width: 0, height: 8 },
                 shadowOpacity: 0.4,
                 shadowRadius: 12,

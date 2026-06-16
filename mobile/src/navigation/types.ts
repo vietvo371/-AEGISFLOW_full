@@ -16,6 +16,10 @@ export type CitizenTabParamList = {
   SOS: undefined; // FAB button - đỏ
   Shelters: undefined;
   Profile: undefined;
+  ReportDetail: { id: number };
+  CreateReport: { isRescue?: boolean } | undefined;
+  Notifications: undefined;
+  EditReport: { id: number };
 };
 
 // Emergency role tabs

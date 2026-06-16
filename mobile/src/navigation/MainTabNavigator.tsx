@@ -139,6 +139,34 @@ const CitizenTabs = () => {
           tabBarIcon: ({ color }) => <Icon name="account-circle" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
+      <CitizenTab.Screen
+        name="ReportDetail"
+        component={ReportDetailScreen}
+        options={{
+          title: 'Chi tiết phản ánh',
+        }}
+      />
+      <CitizenTab.Screen
+        name="CreateReport"
+        component={CreateReportScreen}
+        options={{
+          title: 'Tạo phản ánh mới',
+        }}
+      />
+      <CitizenTab.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{
+          title: 'Thông báo',
+        }}
+      />
+      <CitizenTab.Screen
+        name="EditReport"
+        component={EditReportScreen}
+        options={{
+          title: 'Chỉnh sửa phản ánh',
+        }}
+      />
     </CitizenTab.Navigator>
   );
 };
