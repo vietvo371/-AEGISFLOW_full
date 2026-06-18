@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use App\Enums\IncidentSourceEnum;
 use App\Enums\IncidentStatusEnum;
 use App\Enums\SeverityEnum;
 use App\Traits\HasTranslatedEnums;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
@@ -35,14 +34,14 @@ use Illuminate\Support\Facades\DB;
  * @property int|null $reported_by
  * @property int|null $assigned_to
  * @property int|null $verified_by
- * @property \Carbon\Carbon|null $verified_at
- * @property \Carbon\Carbon|null $resolved_at
- * @property \Carbon\Carbon|null $closed_at
+ * @property Carbon|null $verified_at
+ * @property Carbon|null $resolved_at
+ * @property Carbon|null $closed_at
  * @property array|null $metadata
  */
 class Incident extends Model
 {
-    use HasFactory, SoftDeletes, HasTranslatedEnums;
+    use HasFactory, HasTranslatedEnums, SoftDeletes;
 
     protected $fillable = [
         'title',
@@ -66,6 +65,8 @@ class Incident extends Model
         'resolved_at',
         'closed_at',
         'metadata',
+        'latitude',
+        'longitude',
     ];
 
     protected $casts = [
@@ -156,19 +157,19 @@ class Incident extends Model
     {
         try {
             try {
-            try {
-            $result = \Illuminate\Support\Facades\DB::selectOne("
+                try {
+                    $result = DB::selectOne('
                             SELECT ST_X(geometry) as lng, ST_Y(geometry) as lat
                             FROM incidents WHERE id = ?
-                        ", [$this->id]);
-        } catch (\Exception $e) {
-            $result = null;
-        }
-            
-                        return $result ? ['lat' => $result->lat, 'lng' => $result->lng] : null;
-        } catch (\Exception $e) {
-            return null;
-        }
+                        ', [$this->id]);
+                } catch (\Exception $e) {
+                    $result = null;
+                }
+
+                return $result ? ['lat' => $result->lat, 'lng' => $result->lng] : null;
+            } catch (\Exception $e) {
+                return null;
+            }
         } catch (\Exception $e) {
             return null;
         }
@@ -182,12 +183,12 @@ class Incident extends Model
         $geometry = null;
         try {
             try {
-            $geometry = \Illuminate\Support\Facades\DB::selectOne("
+                $geometry = DB::selectOne('
                 SELECT ST_AsGeoJSON(geometry) as geojson FROM incidents WHERE id = ?
-            ", [$this->id]);
-        } catch (\Exception $e) {
-            $geometry = null;
-        }
+            ', [$this->id]);
+            } catch (\Exception $e) {
+                $geometry = null;
+            }
         } catch (\Exception $e) {
             // Ignore
         }
@@ -233,7 +234,7 @@ class Incident extends Model
 
         $markerColor = match ($danhMuc) {
             1 => '#FF9500',
-            2 => '#34C759',¡
+            2 => '#34C759',
             3 => '#FF3B30',
             4 => '#8E6F3E',
             5 => '#007AFF',
@@ -246,10 +247,10 @@ class Incident extends Model
         $geomData = null;
         if ($geometry && $geometry->geojson) {
             $geomData = json_decode($geometry->geojson);
-        } elseif (!empty($this->location) && isset($this->location['lng']) && isset($this->location['lat'])) {
+        } elseif (! empty($this->latitude) && ! empty($this->longitude)) {
             $geomData = [
                 'type' => 'Point',
-                'coordinates' => [(float) $this->location['lng'], (float) $this->location['lat']],
+                'coordinates' => [(float) $this->longitude, (float) $this->latitude],
             ];
         }
 
@@ -265,19 +266,19 @@ class Incident extends Model
                 'severity' => $this->severity,
                 'severity_label' => match ($this->severity) {
                     'critical' => 'Nghiêm trọng',
-                    'high'     => 'Cao',
-                    'medium'   => 'Trung bình',
-                    'low'      => 'Thấp',
-                    default    => $this->severity,
+                    'high' => 'Cao',
+                    'medium' => 'Trung bình',
+                    'low' => 'Thấp',
+                    default => $this->severity,
                 },
                 'status' => $this->status,
                 'status_label' => match ($this->status) {
-                    'reported'   => 'Đã báo cáo',
-                    'verified'   => 'Đã xác minh',
+                    'reported' => 'Đã báo cáo',
+                    'verified' => 'Đã xác minh',
                     'responding' => 'Đang xử lý',
-                    'resolved'   => 'Đã giải quyết',
-                    'closed'     => 'Đã đóng',
-                    default      => $this->status,
+                    'resolved' => 'Đã giải quyết',
+                    'closed' => 'Đã đóng',
+                    default => $this->status,
                 },
                 'source' => $this->source,
                 'address' => $this->address,
@@ -297,7 +298,7 @@ class Incident extends Model
                 'marker_color' => $markerColor,
                 'nguoi_dung' => $reporterName,
             ],
-            'geometry' => $geometry ? json_decode($geometry->geojson) : null,
+            'geometry' => $geomData,
         ];
     }
 

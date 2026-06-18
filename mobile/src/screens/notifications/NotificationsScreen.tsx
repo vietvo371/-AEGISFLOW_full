@@ -173,18 +173,35 @@ const NotificationsScreen = () => {
     }
 
     // Navigate to detail
-    const isReportNotification = item.type === 'report_status' || 
+    const isReportNotification = item.type === 'report_status' ||
                                   item.type === 'report_status_update' ||
                                   item.type === 'new_nearby_report';
-    const isIncidentNotification = item.type === 'incident_created';
-    
-    if (isReportNotification && item.data?.id) {
-      navigation.navigate('ReportDetail' as any, { 
-        id: Number(item.data.id)
+    const isIncidentNotification = item.type === 'incident_created' || item.type === 'IncidentCreated';
+    const isRescueDispatch = item.type === 'rescue_dispatch' || item.type === 'rescue_status_update';
+    const isFloodWarning = item.type === 'flood_warning' || item.type === 'alert' || item.type === 'AlertCreated';
+    const isAIRecommendation = item.type === 'ai_recommendation' || item.type === 'recommendation' || item.type === 'RecommendationApproved';
+
+    if (isRescueDispatch && (item.data?.rescue_id || item.data?.id)) {
+      navigation.navigate('RescueRequestDetail' as any, {
+        id: Number(item.data?.rescue_id ?? item.data?.id)
+      } as any);
+    } else if (isFloodWarning && (item.data?.id || item.data?.alert_id)) {
+      navigation.navigate('AlertDetail' as any, {
+        id: Number(item.data?.id ?? item.data?.alert_id)
+      } as any);
+    } else if (isAIRecommendation && item.data?.id) {
+      navigation.navigate('ReportDetail' as any, {
+        id: Number(item.data.id),
+        sourceType: 'ai_recommendation',
       } as any);
     } else if (isIncidentNotification && item.data?.id) {
-      navigation.navigate('IncidentDetail' as any, { 
+      navigation.navigate('IncidentDetail' as any, {
         id: Number(item.data.id)
+      } as any);
+    } else if (isReportNotification && item.data?.id) {
+      navigation.navigate('ReportDetail' as any, {
+        id: Number(item.data.id),
+        sourceType: 'report',
       } as any);
     }
   };
@@ -197,9 +214,21 @@ const NotificationsScreen = () => {
       case 'points_updated':
         return 'star-circle';
       case 'incident_created':
+      case 'IncidentCreated':
         return 'alert-circle';
       case 'new_nearby_report':
         return 'map-marker-alert';
+      case 'alert':
+      case 'AlertCreated':
+      case 'flood_warning':
+        return 'weather-pouring';
+      case 'RecommendationApproved':
+      case 'ai_recommendation':
+      case 'recommendation':
+        return 'brain';
+      case 'rescue_dispatch':
+      case 'rescue_status_update':
+        return 'lifebuoy';
       default:
         return 'bell-outline';
     }
@@ -213,9 +242,21 @@ const NotificationsScreen = () => {
       case 'points_updated':
         return theme.colors.success;
       case 'incident_created':
+      case 'IncidentCreated':
         return '#F04438';
       case 'new_nearby_report':
         return '#7a5af8';
+      case 'alert':
+      case 'AlertCreated':
+      case 'flood_warning':
+        return '#F04438';
+      case 'RecommendationApproved':
+      case 'ai_recommendation':
+      case 'recommendation':
+        return '#10B981'; // emerald green
+      case 'rescue_dispatch':
+      case 'rescue_status_update':
+        return '#F59E0B'; // amber
       default:
         return theme.colors.textSecondary;
     }
@@ -284,9 +325,14 @@ const NotificationsScreen = () => {
         title="Thông báo"
         variant="default"
         rightComponent={
-          <TouchableOpacity onPress={handleMarkAllRead} style={styles.headerRightTextButton} activeOpacity={0.7}>
-            <Text style={styles.headerRightText}>Đọc tất cả</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <TouchableOpacity onPress={handleMarkAllRead} style={styles.headerRightTextButton} activeOpacity={0.7}>
+              <Text style={styles.headerRightText}>Đọc tất cả</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings' as any)} style={styles.settingsHeaderBtn} activeOpacity={0.7}>
+              <Icon name="cog-outline" size={20} color={theme.colors.primary} />
+            </TouchableOpacity>
+          </View>
         }
         showBack={true}
         showNotification={false}
@@ -577,6 +623,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: theme.colors.primary,
+  },
+  settingsHeaderBtn: {
+    padding: 6,
+    borderRadius: 16,
+    backgroundColor: 'rgba(122, 90, 248, 0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

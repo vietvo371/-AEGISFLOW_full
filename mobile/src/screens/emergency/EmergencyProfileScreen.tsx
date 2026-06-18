@@ -234,6 +234,16 @@ const EmergencyProfileScreen = () => {
                         <Icon name="chevron-right" size={20} color="#cbd5e1" />
                     </TouchableOpacity>
 
+                    <TouchableOpacity style={styles.menuItem} onPress={() => (navigation as any).navigate('NotificationSettings')}>
+                        <View style={styles.menuItemLeft}>
+                            <View style={[styles.menuIcon, { backgroundColor: '#10B98115' }]}>
+                                <Icon name="bell-cog-outline" size={20} color="#10B981" />
+                            </View>
+                            <Text style={styles.menuText}>Cài đặt thông báo</Text>
+                        </View>
+                        <Icon name="chevron-right" size={20} color="#cbd5e1" />
+                    </TouchableOpacity>
+
                     <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={() => (navigation as any).navigate('UserProfile')}>
                         <View style={styles.menuItemLeft}>
                             <View style={[styles.menuIcon, { backgroundColor: '#7a5af815' }]}>

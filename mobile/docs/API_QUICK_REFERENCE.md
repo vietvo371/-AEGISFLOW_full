@@ -47,8 +47,8 @@ await reportService.createReport({
   tieu_de: '...',
   mo_ta: '...',
   danh_muc: 0,
-  vi_do: 10.7769,
-  kinh_do: 106.7009,
+  vi_do: 16.0680,
+  kinh_do: 108.2122,
   dia_chi: '...',
   media_ids: [1, 2]
 });

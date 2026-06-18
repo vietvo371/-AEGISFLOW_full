@@ -62,7 +62,21 @@
     "validEmail": "กรุณากรอกอีเมล์ที่ถูกต้อง",
     "passwordMinLength": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
     "nameMinLength": "ชื่อต้องมีอย่างน้อย 2 ตัวอักษร",
-    "passwordsNotMatch": "รหัสผ่านไม่ตรงกัน"
+    "passwordsNotMatch": "รหัสผ่านไม่ตรงกัน",
+    "welcomeTo": "ยินดีต้อนรับสู่",
+    "loginSubtitle": "เข้าสู่ระบบเพื่อรายงานและติดตามเหตุการณ์ในเมือง",
+    "welcomeToAegisFlow": "ยินดีต้อนรับสู่ AegisFlow AI",
+    "registerSubtitle": "เข้าร่วม AegisFlow AI เพื่อมีส่วนร่วมในการสร้างเมืองอัจฉริยะ",
+    "phoneRequired": "กรุณากรอกหมายเลขโทรศัพท์",
+    "invalidPhone": "หมายเลขโทรศัพท์ไม่ถูกต้อง",
+    "confirmPasswordRequired": "กรุณายืนยันรหัสผ่านของคุณ",
+    "weak": "อ่อนแอ",
+    "medium": "ปานกลาง",
+    "strong": "แข็งแกร่ง",
+    "registering": "การลงทะเบียนบัญชี...",
+    "phone": "หมายเลขโทรศัพท์",
+    "enterPhone": "ป้อนหมายเลขโทรศัพท์",
+    "registrationSuccessDesc": "บัญชีของคุณถูกสร้างขึ้นเรียบร้อยแล้ว"
   },
   "onboarding": {
     "welcomeTitle": "ยินดีต้อนรับสู่ AegisFlowAI",
@@ -411,7 +425,11 @@
       "humidity": "ความชื้น",
       "rainfall": "ปริมาณน้ำฝน",
       "wind": "ความเร็วลม",
-      "reliability": "ความน่าเชื่อถือ"
+      "reliability": "ความน่าเชื่อถือ",
+      "radarTitle": "แผนที่เรดาร์และการแจ้งเตือน",
+      "radarDesc": "ดูสถานะน้ำท่วมในพื้นที่ สถานีพักพิง และเส้นทางที่ปลอดภัยรอบๆ พื้นที่ของคุณแบบเรียลไทม์",
+      "radarAction": "เปิดแผนที่",
+      "safetyTipsTitle": "คู่มือความปลอดภัย"
     },
     "alerts": {
       "title": "การแจ้งเตือน",
@@ -577,7 +595,15 @@
         "stayHome": "อยู่ในบ้าน",
         "avoidFlood": "หลีกเลี่ยงพื้นที่น้ำท่วม",
         "prepareBag": "เตรียมกระเป๋าฉุกเฉิน",
-        "monitorUpdates": "ติดตามการอัพเดต"
+        "monitorUpdates": "ติดตามการอัพเดต",
+        "beforeFlood": "ก่อนน้ำท่วม",
+        "beforeFloodDesc": "ย้ายเฟอร์นิเจอร์ขึ้นที่สูงแล้วปิดเบรกเกอร์",
+        "duringFlood": "ขณะที่น้ำท่วม",
+        "duringFloodDesc": "ห้ามลุยน้ำที่ไหลเร็วโดยเด็ดขาด",
+        "afterFlood": "หลังน้ำท่วม",
+        "afterFloodDesc": "ตรวจสอบไฟฟ้ารั่วก่อนปิดเบรกเกอร์",
+        "firstAidKit": "กระเป๋าปฐมพยาบาล",
+        "firstAidKitDesc": "เตรียมยา ไฟฉาย และน้ำสะอาด"
       }
     },
     "profile": {

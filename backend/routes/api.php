@@ -103,6 +103,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('weather/summary', [WeatherDataController::class, 'summary']);
 
     // ── Rescue Teams ────────────────────────────────────────
+    Route::get('rescue-teams/my', [RescueTeamController::class, 'myTeam']);
     Route::apiResource('rescue-teams', RescueTeamController::class)
         ->only('index', 'show');
     Route::put('rescue-teams/{id}/location', [RescueTeamController::class, 'updateLocation']);

@@ -21,7 +21,7 @@ const VOTE_STORAGE_KEY = 'user_votes';
 const ReportDetailScreen = () => {
   const route = useRoute<ReportDetailRouteProp>();
   const navigation = useNavigation();
-  const { id } = route.params;
+  const { id, title: routeTitle, sourceType } = route.params;
   const [report, setReport] = useState<ReportDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
@@ -33,7 +33,7 @@ const ReportDetailScreen = () => {
   const [userVote, setUserVote] = useState<number | null>(null); // 1: upvoted, -1: downvoted, null: not voted
 
   // Load user vote from AsyncStorage
-  const loadUserVote = async () => {
+  const loadUserVote = useCallback(async () => {
     try {
       const votesJson = await AsyncStorage.getItem(VOTE_STORAGE_KEY);
       if (votesJson) {
@@ -43,7 +43,7 @@ const ReportDetailScreen = () => {
     } catch (error) {
       console.error('Error loading user vote:', error);
     }
-  };
+  }, [id]);
 
   // Save user vote to AsyncStorage
   const saveUserVote = async (vote: number | null) => {
@@ -64,7 +64,13 @@ const ReportDetailScreen = () => {
 
   const fetchReportDetail = useCallback(async () => {
     try {
-      const response = await reportService.getReportDetail(id);
+      let response;
+      if (sourceType === 'ai_recommendation') {
+        response = await reportService.getRecommendationDetail(id);
+      } else {
+        response = await reportService.getReportDetail(id);
+      }
+      
       console.log('Report detail response:', response);
       if (response.success) {
         setReport(response.data);
@@ -74,14 +80,14 @@ const ReportDetailScreen = () => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, sourceType]);
 
   useEffect(() => {
     fetchReportDetail();
     loadUserVote(); // Load user's vote state from AsyncStorage
     // Increment view count
     reportService.incrementView(id).catch(err => console.error('Error incrementing view:', err));
-  }, [fetchReportDetail, id]);
+  }, [fetchReportDetail, id, loadUserVote]);
 
   const handleVote = async (type: 'upvote' | 'downvote') => {
     try {
@@ -150,12 +156,12 @@ const ReportDetailScreen = () => {
 
   const getStatusColor = (status: number) => {
     switch (status) {
-      case 0: return theme.colors.warning;     // Tiếp nhận
-      case 1: return theme.colors.info;        // Đã xác minh
-      case 2: return '#7a5af8';                // Đang xử lý - Purple
-      case 3: return theme.colors.success;     // Hoàn thành
-      case 4: return theme.colors.error;       // Từ chối
-      default: return theme.colors.textSecondary;
+      case 0: return '#F59E0B';                  // Tiếp nhận
+      case 1: return '#3B82F6';                  // Đã xác minh
+      case 2: return '#7a5af8';                  // Đang xử lý
+      case 3: return '#10B981';                  // Hoàn thành
+      case 4: return '#EF4444';                  // Từ chối
+      default: return '#6B7280';
     }
   };
 
@@ -199,7 +205,10 @@ const ReportDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      <PageHeader title="Chi tiết phản ánh" variant="default" />
+      <PageHeader
+        title={routeTitle || (sourceType === 'ai_recommendation' ? 'Chi tiết đề xuất AI' : sourceType === 'incident' ? 'Chi tiết sự cố' : 'Chi tiết phản ánh')}
+        variant="default"
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -249,9 +258,20 @@ const ReportDetailScreen = () => {
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Mô tả chi tiết</Text>
             <Text style={styles.description}>{report.mo_ta}</Text>
+          </View>
 
-            {/* Media Gallery */}
-            {report.hinh_anhs && report.hinh_anhs.length > 0 && (
+          {/* Media Gallery — always visible */}
+          <View style={styles.card}>
+            <View style={styles.mediaSectionHeader}>
+              <Icon name="image-multiple-outline" size={18} color={theme.colors.primary} />
+              <Text style={styles.sectionTitle}>Hình ảnh đính kèm</Text>
+              {report.hinh_anhs && report.hinh_anhs.length > 0 && (
+                <View style={styles.mediaCountBadge}>
+                  <Text style={styles.mediaCountText}>{report.hinh_anhs.length}</Text>
+                </View>
+              )}
+            </View>
+            {report.hinh_anhs && report.hinh_anhs.length > 0 ? (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.mediaScroll}>
                 {report.hinh_anhs.map((item) => (
                   <TouchableOpacity key={item.id} activeOpacity={0.9}>
@@ -263,105 +283,116 @@ const ReportDetailScreen = () => {
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-            )}
-          </View>
-
-          {/* Actions Card */}
-          <View style={styles.card}>
-            <View style={styles.actionsRow}>
-              <VoteButtons
-                reportId={report.id}
-                initialUpvotes={report.luot_ung_ho}
-                initialDownvotes={report.luot_khong_ung_ho || 0}
-                userVoted={userVote}
-                onVote={handleVote}
-              />
-
-              {/* Show Rate button if resolved */}
-              {report.trang_thai === 3 && (
-                <TouchableOpacity
-                  style={styles.rateButton}
-                  onPress={() => setShowRatingModal(true)}
-                >
-                  <Icon name="star" size={18} color={theme.colors.warning} />
-                  <Text style={styles.rateButtonText}>Đánh giá</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-
-          {/* Comments Section */}
-          <View style={styles.commentsSection}>
-            <Text style={styles.sectionTitle}>Bình luận ({report.binh_luans?.length || 0})</Text>
-            {report.binh_luans && report.binh_luans.length > 0 ? (
-              report.binh_luans.map((comment) => (
-                <View key={comment.id} style={styles.commentItem}>
-                  <View style={styles.commentHeader}>
-                    <View style={styles.userInfo}>
-                      <View style={styles.avatarPlaceholder}>
-                        <Text style={styles.avatarText}>
-                          {((comment as any).user?.ho_ten || (comment as any).nguoi_dung?.ho_ten || 'U').charAt(0)}
-                        </Text>
-                      </View>
-                      <View>
-                        <Text style={styles.commentUser}>
-                          {(comment as any).user?.ho_ten || (comment as any).nguoi_dung?.ho_ten || 'Người dùng'}
-                        </Text>
-                        <Text style={styles.commentTime}>
-                          {new Date(comment.created_at || comment.ngay_tao || '').toLocaleDateString('vi-VN')}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                  <Text style={styles.commentContent}>{comment.noi_dung}</Text>
-                </View>
-              ))
             ) : (
-              <View style={styles.emptyComments}>
-                <Text style={styles.emptyCommentsText}>Chưa có bình luận nào. Hãy là người đầu tiên!</Text>
+              <View style={styles.mediaEmpty}>
+                <Icon name="image-off-outline" size={32} color={theme.colors.textSecondary} />
+                <Text style={styles.mediaEmptyText}>Chưa có hình ảnh đính kèm</Text>
               </View>
             )}
           </View>
+
+          {/* Actions Card - Hide for AI Recommendations */}
+          {sourceType !== 'ai_recommendation' && (
+            <View style={styles.card}>
+              <View style={styles.actionsRow}>
+                <VoteButtons
+                  reportId={report.id}
+                  initialUpvotes={report.luot_ung_ho}
+                  initialDownvotes={report.luot_khong_ung_ho || 0}
+                  userVoted={userVote}
+                  onVote={handleVote}
+                />
+
+                {/* Show Rate button if resolved */}
+                {report.trang_thai === 3 && (
+                  <TouchableOpacity
+                    style={styles.rateButton}
+                    onPress={() => setShowRatingModal(true)}
+                  >
+                    <Icon name="star" size={18} color={theme.colors.warning} />
+                    <Text style={styles.rateButtonText}>Đánh giá</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Comments Section - Hide for AI Recommendations */}
+          {sourceType !== 'ai_recommendation' && (
+            <View style={styles.commentsSection}>
+              <Text style={styles.sectionTitle}>Bình luận ({report.binh_luans?.length || 0})</Text>
+              {report.binh_luans && report.binh_luans.length > 0 ? (
+                report.binh_luans.map((comment) => (
+                  <View key={comment.id} style={styles.commentItem}>
+                    <View style={styles.commentHeader}>
+                      <View style={styles.userInfo}>
+                        <View style={styles.avatarPlaceholder}>
+                          <Text style={styles.avatarText}>
+                            {((comment as any).user?.ho_ten || (comment as any).nguoi_dung?.ho_ten || 'U').charAt(0)}
+                          </Text>
+                        </View>
+                        <View>
+                          <Text style={styles.commentUser}>
+                            {(comment as any).user?.ho_ten || (comment as any).nguoi_dung?.ho_ten || 'Người dùng'}
+                          </Text>
+                          <Text style={styles.commentTime}>
+                            {new Date(comment.created_at || comment.ngay_tao || '').toLocaleDateString('vi-VN')}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                    <Text style={styles.commentContent}>{comment.noi_dung}</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.emptyComments}>
+                  <Text style={styles.emptyCommentsText}>Chưa có bình luận nào. Hãy là người đầu tiên!</Text>
+                </View>
+              )}
+            </View>
+          )}
         </ScrollView>
 
-        {/* Comment Input */}
-        <View style={styles.inputContainer}>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Viết bình luận của bạn..."
-              value={commentText}
-              onChangeText={setCommentText}
-              multiline
-              maxLength={500}
-              placeholderTextColor={theme.colors.textSecondary}
-            />
-            {commentText.length > 0 && (
-              <Text style={styles.charCounter}>
-                {commentText.length}/500
-              </Text>
-            )}
-          </View>
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              !commentText.trim() && styles.sendButtonDisabled
-            ]}
-            onPress={handleSendComment}
-            disabled={!commentText.trim() || submitting}
-            activeOpacity={0.7}
-          >
-            {submitting ? (
-              <ActivityIndicator size="small" color={theme.colors.white} />
-            ) : (
-              <Icon
-                name="send"
-                size={22}
-                color={commentText.trim() ? theme.colors.white : theme.colors.textSecondary}
+        {/* Comment Input - Hide for AI Recommendations */}
+        {sourceType !== 'ai_recommendation' && (
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Viết bình luận của bạn..."
+                value={commentText}
+                onChangeText={setCommentText}
+                multiline
+                maxLength={500}
+                placeholderTextColor={theme.colors.textSecondary}
               />
-            )}
-          </TouchableOpacity>
-        </View>
+              {commentText.length > 0 && (
+                <Text style={styles.charCounter}>
+                  {commentText.length}/500
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity
+              style={[
+                styles.sendButton,
+                !commentText.trim() && styles.sendButtonDisabled
+              ]}
+              onPress={handleSendComment}
+              disabled={!commentText.trim() || submitting}
+              activeOpacity={0.7}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color={theme.colors.white} />
+              ) : (
+                <Icon
+                  name="send"
+                  size={22}
+                  color={commentText.trim() ? theme.colors.white : theme.colors.textSecondary}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
       </KeyboardAvoidingView>
 
       {/* Rating Modal */}
@@ -475,7 +506,6 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: FONT_SIZE.xs,
     fontWeight: '700',
-    textTransform: 'uppercase',
   },
   priorityBadge: {
     paddingHorizontal: 8,
@@ -533,7 +563,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.md,
     color: theme.colors.text,
     lineHeight: 24,
-    marginBottom: SPACING.md,
   },
   mediaScroll: {
     marginTop: SPACING.sm,
@@ -544,6 +573,40 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.lg,
     marginRight: SPACING.md,
     backgroundColor: theme.colors.backgroundSecondary,
+  },
+  mediaSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    marginBottom: SPACING.sm,
+  },
+  mediaCountBadge: {
+    backgroundColor: theme.colors.primary + '15',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: BORDER_RADIUS.full,
+    marginLeft: 'auto',
+  },
+  mediaCountText: {
+    fontSize: FONT_SIZE.xs,
+    fontWeight: '700',
+    color: theme.colors.primary,
+  },
+  mediaEmpty: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    backgroundColor: theme.colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    borderStyle: 'dashed',
+  },
+  mediaEmptyText: {
+    fontSize: FONT_SIZE.sm,
+    color: theme.colors.textSecondary,
   },
   actionsRow: {
     flexDirection: 'row',

@@ -62,7 +62,21 @@
     "validEmail": "Silakan masukkan email yang valid",
     "passwordMinLength": "Kata sandi minimal harus 6 karakter",
     "nameMinLength": "Nama harus terdiri dari minimal 2 karakter",
-    "passwordsNotMatch": "Kata sandi tidak cocok"
+    "passwordsNotMatch": "Kata sandi tidak cocok",
+    "welcomeTo": "Selamat Datang di",
+    "loginSubtitle": "Masuk untuk melaporkan dan melacak insiden perkotaan",
+    "welcomeToAegisFlow": "Selamat datang di AegisFlow AI",
+    "registerSubtitle": "Bergabunglah dengan AegisFlow AI untuk berkontribusi dalam membangun kota pintar",
+    "phoneRequired": "Silakan masukkan nomor telepon",
+    "invalidPhone": "Nomor telepon tidak valid",
+    "confirmPasswordRequired": "Harap konfirmasi kata sandi Anda",
+    "weak": "Lemah",
+    "medium": "Sedang",
+    "strong": "Kuat",
+    "registering": "Mendaftarkan akun...",
+    "phone": "Nomor telepon",
+    "enterPhone": "Masukkan nomor telepon",
+    "registrationSuccessDesc": "Akun Anda telah berhasil dibuat"
   },
   "onboarding": {
     "welcomeTitle": "Selamat datang di AegisFlowAI",
@@ -411,7 +425,11 @@
       "humidity": "Kelembaban",
       "rainfall": "Curah hujan",
       "wind": "Kecepatan Angin",
-      "reliability": "Keandalan"
+      "reliability": "Keandalan",
+      "radarTitle": "Peta & Peringatan Radar",
+      "radarDesc": "Lihat status banjir lokal, stasiun perlindungan, dan rute aman di sekitar wilayah Anda secara real time.",
+      "radarAction": "Buka peta",
+      "safetyTipsTitle": "Buku pegangan keselamatan"
     },
     "alerts": {
       "title": "Peringatan",
@@ -577,7 +595,15 @@
         "stayHome": "Tetap di dalam rumah",
         "avoidFlood": "Hindari daerah banjir",
         "prepareBag": "Siapkan tas darurat",
-        "monitorUpdates": "Pantau pembaruan"
+        "monitorUpdates": "Pantau pembaruan",
+        "beforeFlood": "Sebelum banjir",
+        "beforeFloodDesc": "Pindahkan furnitur ke tempat yang tinggi dan matikan pemutus arus.",
+        "duringFlood": "Selagi banjir",
+        "duringFloodDesc": "Sama sekali tidak mengarungi air yang berarus deras.",
+        "afterFlood": "Setelah banjir",
+        "afterFloodDesc": "Periksa kebocoran listrik sebelum menutup pemutus arus.",
+        "firstAidKit": "Tas P3K",
+        "firstAidKitDesc": "Siapkan obat-obatan, senter, dan air bersih."
       }
     },
     "profile": {

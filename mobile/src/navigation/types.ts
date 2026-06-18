@@ -16,7 +16,7 @@ export type CitizenTabParamList = {
   SOS: undefined; // FAB button - đỏ
   Shelters: undefined;
   Profile: undefined;
-  ReportDetail: { id: number };
+  ReportDetail: { id: number; title?: string; sourceType?: 'report' | 'incident' | 'ai_recommendation' };
   CreateReport: { isRescue?: boolean } | undefined;
   Notifications: undefined;
   EditReport: { id: number };
@@ -53,7 +53,7 @@ export type RootStackParamList = {
 
   // Incidents (shared)
   IncidentDetail: { id: number; isRescue?: boolean };
-  ReportDetail: { id: number };
+  ReportDetail: { id: number; title?: string; sourceType?: 'report' | 'incident' | 'ai_recommendation' };
   CreateReport: { isRescue?: boolean } | undefined;
   EditReport: { id: number };
   MyReports: undefined;

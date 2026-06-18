@@ -1,0 +1,40 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Frontend (Next.js)",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": ["--cwd", "/Users/vannhan/-AEGISFLOW_full/frontend", "dev"],
+      "port": 3000,
+      "autoPort": false
+    },
+    {
+      "name": "Backend (Laravel API)",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["/Users/vannhan/-AEGISFLOW_full/backend/artisan", "serve", "--port=8000"],
+      "port": 8000,
+      "autoPort": false
+    },
+    {
+      "name": "AI Service (FastAPI)",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["/Users/vannhan/-AEGISFLOW_full/ai-service/start.sh"],
+      "port": 5005,
+      "autoPort": false
+    },
+    {
+      "name": "WebSocket (Laravel Reverb)",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["/Users/vannhan/-AEGISFLOW_full/backend/artisan", "reverb:start", "--port=8080"],
+      "port": 8080,
+      "autoPort": false
+    },
+    {
+      "name": "Queue Worker (Laravel)",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["/Users/vannhan/-AEGISFLOW_full/backend/artisan", "queue:work", "--tries=3", "--sleep=1"],
+      "port": 0,
+      "autoPort": false
+    }
+  ]
+}

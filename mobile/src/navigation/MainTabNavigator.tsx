@@ -143,7 +143,7 @@ const CitizenTabs = () => {
         name="ReportDetail"
         component={ReportDetailScreen}
         options={{
-          title: 'Chi tiết phản ánh',
+          title: 'Chi tiết',
         }}
       />
       <CitizenTab.Screen
@@ -165,6 +165,13 @@ const CitizenTabs = () => {
         component={EditReportScreen}
         options={{
           title: 'Chỉnh sửa phản ánh',
+        }}
+      />
+      <CitizenTab.Screen
+        name="MyReports"
+        component={MyReportsScreen}
+        options={{
+          title: 'Báo cáo của tôi',
         }}
       />
     </CitizenTab.Navigator>
@@ -218,6 +225,13 @@ const EmergencyTabs = () => {
           tabBarIcon: ({ color }) => <Icon name="account-circle" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
+      <EmergencyTab.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{
+          title: 'Thông báo',
+        }}
+      />
     </EmergencyTab.Navigator>
   );
 };
@@ -262,10 +276,6 @@ const MainNavigator = () => {
 
         {/* Incidents — dùng IncidentDetailScreen riêng biệt */}
         <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} />
-        <Stack.Screen name="ReportDetail" component={ReportDetailScreen} />
-        <Stack.Screen name="CreateReport" component={CreateReportScreen} />
-        <Stack.Screen name="EditReport" component={EditReportScreen} />
-        <Stack.Screen name="MyReports" component={MyReportsScreen} />
 
         {/* Map */}
         <Stack.Screen name="MapReports" component={MapReportsScreen} />
@@ -274,7 +284,6 @@ const MainNavigator = () => {
         <Stack.Screen name="MapRoutes" component={MapRoutesScreen} />
 
         {/* Notifications */}
-        <Stack.Screen name="Notifications" component={NotificationsScreen} />
         <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
 
         {/* Profile & Settings */}

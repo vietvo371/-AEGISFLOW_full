@@ -66,8 +66,8 @@ const EditReportScreen = () => {
     tieu_de: '',
     mo_ta: '',
     danh_muc: 5, // Default to Ngập lụt (value 5)
-    vi_do: 10.7769,
-    kinh_do: 106.7009,
+    vi_do: 16.0680,
+    kinh_do: 108.2122,
     dia_chi: '',
     uu_tien: 1,
     la_cong_khai: true,
@@ -96,8 +96,8 @@ const EditReportScreen = () => {
             tieu_de: report.tieu_de,
             mo_ta: report.mo_ta,
             danh_muc: report.danh_muc_id || 1,
-            vi_do: parseFloat(String(report.vi_do)) || 10.7769,
-            kinh_do: parseFloat(String(report.kinh_do)) || 106.7009,
+            vi_do: parseFloat(String(report.vi_do)) || 16.0680,
+            kinh_do: parseFloat(String(report.kinh_do)) || 108.2122,
             dia_chi: report.dia_chi || '',
             uu_tien: report.uu_tien_id || 1,
             la_cong_khai: report.la_cong_khai ?? true,
@@ -330,8 +330,8 @@ const EditReportScreen = () => {
       tieu_de: '',
       mo_ta: '',
       danh_muc: 5, // Default to Ngập lụt (value 5)
-      vi_do: 10.7769,
-      kinh_do: 106.7009,
+      vi_do: 16.0680,
+      kinh_do: 108.2122,
       dia_chi: '',
       uu_tien: 1,
       la_cong_khai: true,
@@ -351,6 +351,12 @@ const EditReportScreen = () => {
   const handleMapPress = async (feature: any) => {
     const coords = feature.geometry.coordinates;
     setTempLocation(coords);
+
+    // Programmatically move camera to selected coordinates while preserving user's zoom level
+    cameraRef.current?.setCamera({
+      centerCoordinate: coords,
+      animationDuration: 600,
+    });
 
     try {
       setLoadingAddress(true);
@@ -654,58 +660,60 @@ const EditReportScreen = () => {
         transparent={true}
         onRequestClose={() => setShowMapModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <SafeAreaView style={styles.mapModalContainer} edges={['bottom']}>
-            <View style={styles.mapHeader}>
-              <TouchableOpacity onPress={() => setShowMapModal(false)} style={styles.closeButton}>
-                <Icon name="close" size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-              <Text style={styles.mapTitle}>Chọn vị trí</Text>
-              <TouchableOpacity onPress={confirmLocation} style={styles.confirmButton}>
-                <Text style={styles.confirmButtonText}>Xác nhận</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.mapContainer}>
-              <MapboxGL.MapView
-                ref={mapRef}
-                style={styles.map}
-                styleURL={OPENMAP_STYLE_URL}
-                logoEnabled={false}
-                attributionEnabled={false}
-                onPress={handleMapPress}
-              >
-                <MapboxGL.Camera
-                  ref={cameraRef}
-                  zoomLevel={15}
-                  centerCoordinate={tempLocation || [106.7009, 10.7769]}
-                  animationMode="flyTo"
-                  animationDuration={1000}
-                />
-                {tempLocation && (
-                  <MapboxGL.PointAnnotation
-                    id="selectedLocation"
-                    coordinate={tempLocation}
-                  >
-                    <View style={styles.markerContainer}>
-                      <Icon name="map-marker" size={40} color={theme.colors.primary} />
-                    </View>
-                  </MapboxGL.PointAnnotation>
-                )}
-              </MapboxGL.MapView>
-
-              <View style={styles.addressOverlay}>
-                {loadingAddress ? (
-                  <ActivityIndicator size="small" color={theme.colors.primary} />
-                ) : (
-                  <Text style={styles.addressText} numberOfLines={2}>
-                    {tempAddress || 'Chạm vào bản đồ để chọn vị trí'}
-                  </Text>
-                )}
+        {showMapModal && (
+          <View style={styles.modalOverlay}>
+            <SafeAreaView style={styles.mapModalContainer} edges={['bottom']}>
+              <View style={styles.mapHeader}>
+                <TouchableOpacity onPress={() => setShowMapModal(false)} style={styles.closeButton}>
+                  <Icon name="close" size={24} color={theme.colors.text} />
+                </TouchableOpacity>
+                <Text style={styles.mapTitle}>Chọn vị trí</Text>
+                <TouchableOpacity onPress={confirmLocation} style={styles.confirmButton}>
+                  <Text style={styles.confirmButtonText}>Xác nhận</Text>
+                </TouchableOpacity>
               </View>
-            </View>
-          </SafeAreaView>
-        </View>
+
+              <View style={styles.mapContainer}>
+                <MapboxGL.MapView
+                  ref={mapRef}
+                  style={styles.map}
+                  styleURL={OPENMAP_STYLE_URL}
+                  logoEnabled={false}
+                  attributionEnabled={false}
+                  onPress={handleMapPress}
+                >
+                  <MapboxGL.Camera
+                    ref={cameraRef}
+                    defaultSettings={{
+                      zoomLevel: 15,
+                      centerCoordinate: tempLocation || [108.2122, 16.0680],
+                    }}
+                  />
+                  {tempLocation && (
+                    <MapboxGL.PointAnnotation
+                      id="selectedLocation"
+                      coordinate={tempLocation}
+                    >
+                      <View style={styles.markerContainer}>
+                        <Icon name="map-marker" size={40} color={theme.colors.primary} />
+                      </View>
+                    </MapboxGL.PointAnnotation>
+                  )}
+                </MapboxGL.MapView>
+
+                <View style={styles.addressOverlay}>
+                  {loadingAddress ? (
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                  ) : (
+                    <Text style={styles.addressText} numberOfLines={2}>
+                      {tempAddress || 'Chạm vào bản đồ để chọn vị trí'}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </SafeAreaView>
+          </View>
+        )}
       </Modal>
 
       {/* Success Modal */}

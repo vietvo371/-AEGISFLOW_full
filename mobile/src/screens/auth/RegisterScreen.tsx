@@ -145,10 +145,12 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       // Reset form before navigating
       resetForm();
 
-      AlertService.success('Đăng ký thành công', 'Tài khoản của bạn đã được tạo thành công',
+      AlertService.success(
+        t('auth.registrationSuccessful', 'Đăng ký thành công'),
+        t('auth.registrationSuccessDesc', 'Tài khoản của bạn đã được tạo thành công'),
         [
           {
-            text: 'Xác nhận',
+            text: t('common.confirm', 'Xác nhận'),
             onPress: () => {
               navigation.navigate('Login', { email: formData.email });
             }
@@ -209,7 +211,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
           currentStep === 2 ? 'full_name' : 'password';
 
         setErrors({
-          [currentStepFirstField]: 'Đăng ký thất bại. Vui lòng thử lại.'
+          [currentStepFirstField]: t('auth.registrationFailed', 'Đăng ký thất bại') + '. ' + t('common.retry', 'Vui lòng thử lại.')
         });
       }
     } finally {
@@ -231,9 +233,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
       case 'phone':
         if (!value) {
-          error = getCurrentLanguage() === 'vi' ? 'Vui lòng nhập số điện thoại' : 'Phone number is required';
+          error = t('auth.phoneRequired', 'Vui lòng nhập số điện thoại');
         } else if (!/^[0-9+().\-\s]{7,15}$/.test(value)) {
-          error = getCurrentLanguage() === 'vi' ? 'Số điện thoại không hợp lệ' : 'Invalid phone number';
+          error = t('auth.invalidPhone', 'Số điện thoại không hợp lệ');
         }
         break;
 
@@ -255,9 +257,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
       case 're_password':
         if (!value) {
-          error = getCurrentLanguage() === 'vi' ? 'Vui lòng xác nhận mật khẩu' : 'Please confirm your password';
+          error = t('auth.confirmPasswordRequired', 'Vui lòng xác nhận mật khẩu');
         } else if (value !== formData.password) {
-          error = t('auth.passwordsNotMatch') || 'Mật khẩu không khớp';
+          error = t('auth.passwordsNotMatch', 'Mật khẩu không khớp');
         }
         break;
     }
@@ -286,9 +288,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   };
 
   const getPasswordStrengthText = (strength: number) => {
-    if (strength <= 2) return { text: getCurrentLanguage() === 'vi' ? 'Yếu' : 'Weak', color: theme.colors.error };
-    if (strength <= 4) return { text: getCurrentLanguage() === 'vi' ? 'Trung bình' : 'Medium', color: theme.colors.warning };
-    return { text: getCurrentLanguage() === 'vi' ? 'Mạnh' : 'Strong', color: theme.colors.success };
+    if (strength <= 2) return { text: t('auth.weak', 'Yếu'), color: theme.colors.error };
+    if (strength <= 4) return { text: t('auth.medium', 'Trung bình'), color: theme.colors.warning };
+    return { text: t('auth.strong', 'Mạnh'), color: theme.colors.success };
   };
 
   const renderStep1 = () => (
@@ -307,8 +309,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       />
 
       <InputCustom
-        label={getCurrentLanguage() === 'vi' ? 'Số điện thoại' : 'Phone Number'}
-        placeholder={getCurrentLanguage() === 'vi' ? 'Nhập số điện thoại' : 'Enter phone number'}
+        label={t('auth.phone', 'Số điện thoại')}
+        placeholder={t('auth.enterPhone', 'Nhập số điện thoại')}
         value={formData.phone}
         onChangeText={value => updateFormData('phone', value)}
         keyboardType="phone-pad"
@@ -418,9 +420,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
           {t('auth.createAccount') || 'Đăng ký tài khoản'}
         </Text>
         <Text style={styles.formSubtitle}>
-          {getCurrentLanguage() === 'vi'
-            ? 'Tham gia AegisFlow AI để góp phần xây dựng thành phố thông minh'
-            : 'Join AegisFlow AI to help build a smarter city'}
+          {t('auth.registerSubtitle', 'Tham gia AegisFlow AI để góp phần xây dựng thành phố thông minh')}
         </Text>
         {renderStepIndicator()}
       </View>
@@ -431,13 +431,13 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
       <View style={styles.buttonContainer}>
         <ButtonCustom
-          title={currentStep === 1 ? (getCurrentLanguage() === 'vi' ? 'Hủy' : 'Cancel') : (getCurrentLanguage() === 'vi' ? 'Quay lại' : 'Back')}
+          title={currentStep === 1 ? t('common.cancel', 'Hủy') : t('common.back', 'Quay lại')}
           onPress={handleBack}
           style={styles.backButton}
           variant="outline"
         />
         <ButtonCustom
-          title={currentStep === totalSteps ? (t('auth.register') || 'Đăng ký') : (getCurrentLanguage() === 'vi' ? 'Tiếp theo' : 'Next')}
+          title={currentStep === totalSteps ? t('auth.register', 'Đăng ký') : t('common.next', 'Tiếp theo')}
           onPress={handleNext}
           style={styles.nextButton}
           icon={currentStep === totalSteps ? "account-plus" : "chevron-right"}
@@ -487,7 +487,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               style={styles.welcomeText}
               entering={FadeInDown.duration(800).delay(200).springify()}
             >
-              {getCurrentLanguage() === 'vi' ? 'Chào mừng đến với AegisFlow AI' : 'Welcome to AegisFlow AI'}
+              {t('auth.welcomeToAegisFlow', 'Chào mừng đến với AegisFlow AI')}
             </Animated.Text>
 
             <Animated.Text
@@ -529,7 +529,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <LoadingOverlay visible={loading} message={getCurrentLanguage() === 'vi' ? 'Đang đăng ký tài khoản...' : 'Registering account...'} />
+      <LoadingOverlay visible={loading} message={t('auth.registering', 'Đang đăng ký tài khoản...')} />
 
     </SafeAreaView>
   );

@@ -92,9 +92,26 @@ const PriorityRouteScreen = () => {
     useEffect(() => {
         Geolocation.getCurrentPosition(
             position => {
-                setUserLocation([position.coords.longitude, position.coords.latitude]);
+                const { longitude, latitude } = position.coords;
+
+                // Check if coordinates are within Da Nang bounds
+                const isWithinDaNang = (
+                  longitude >= 108.02 &&
+                  longitude <= 108.29 &&
+                  latitude >= 15.82 &&
+                  latitude <= 16.16
+                );
+
+                if (longitude && latitude && isWithinDaNang) {
+                    setUserLocation([longitude, latitude]);
+                } else {
+                    setUserLocation([108.2122, 16.0680]); // Fallback to Da Nang center
+                }
             },
-            error => console.error('Location error:', error),
+            error => {
+                console.error('Location error:', error);
+                setUserLocation([108.2122, 16.0680]); // Fallback to Da Nang center
+            },
             { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
         );
     }, []);

@@ -16,8 +16,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
-    // Cấu hình Firebase
-    // FirebaseApp.configure()
+    // Cấu hình Firebase (cần GoogleService-Info.plist trong project)
+    FirebaseApp.configure()
     
     let delegate = ReactNativeDelegate()
     let factory = RCTReactNativeFactory(delegate: delegate)

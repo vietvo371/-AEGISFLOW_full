@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Report } from '../../types/api/report';
-import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, ICON_SIZE } from '../../theme';
+import { theme, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../theme';
 
 interface ReportCardProps {
     report: Report;
@@ -11,18 +11,7 @@ interface ReportCardProps {
     renderAction?: () => React.ReactNode;
 }
 
-const ReportCard: React.FC<ReportCardProps> = ({ report, onPress, showActions = false, renderAction }) => {
-    const getCategoryColor = (category: number) => {
-        const colors: { [key: number]: string } = {
-            1: '#EF4444',   // Giao thông
-            2: '#10B981',   // Môi trường
-            3: '#F97316',   // Cháy nổ
-            4: '#7a5af8',   // Rác thải
-            5: '#3B82F6',   // Ngập lụt
-            6: '#6B7280',   // Khác
-        };
-        return colors[category] || theme.colors.textSecondary;
-    };
+const ReportCard: React.FC<ReportCardProps> = ({ report, onPress, showActions: _showActions = false, renderAction }) => {
 
     const getPriorityColor = (priorityLevel: number) => {
         // Based on cap_do: 0=low, 1=medium, 2=high, 3=urgent
@@ -36,12 +25,12 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, onPress, showActions = 
 
     const getStatusColor = (status: number) => {
         switch (status) {
-            case 0: return theme.colors.warning;       // Tiếp nhận
-            case 1: return theme.colors.info;          // Đã xác minh
-            case 2: return '#7a5af8';                  // Đang xử lý - Purple
-            case 3: return theme.colors.success;       // Hoàn thành
-            case 4: return theme.colors.error;         // Từ chối
-            default: return theme.colors.textSecondary;
+            case 0: return '#F59E0B';                  // Tiếp nhận
+            case 1: return '#3B82F6';                  // Đã xác minh
+            case 2: return '#7a5af8';                  // Đang xử lý
+            case 3: return '#10B981';                  // Hoàn thành
+            case 4: return '#EF4444';                  // Từ chối
+            default: return '#6B7280';
         }
     };
 
@@ -113,7 +102,6 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, onPress, showActions = 
 
     // Get category name and color from nested object or ID
     const categoryName = report.danh_muc?.ten_danh_muc || 'Khác';
-    const categoryColor = report.danh_muc?.mau_sac || getCategoryColor(report.danh_muc_id);
 
     // Get priority from nested object
     const priorityText = report.uu_tien?.ten_muc;
@@ -203,8 +191,8 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, onPress, showActions = 
                             <Text style={styles.priorityText}>{priorityText}</Text>
                         </View>
                     )}
-                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(report.trang_thai) }]}>
-                        <Text style={styles.statusText}>{getStatusText(report.trang_thai)}</Text>
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(report.trang_thai) + '15' }]}>
+                        <Text style={[styles.statusText, { color: getStatusColor(report.trang_thai) }]}>{getStatusText(report.trang_thai)}</Text>
                     </View>
                 </View>
             </View>

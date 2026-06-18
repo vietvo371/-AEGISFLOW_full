@@ -77,6 +77,7 @@ export function navigateFromPushData(data: Record<string, string>): boolean {
 
   switch (type) {
     case 'alert':
+    case 'AlertCreated':
       // Navigate đến Alert detail hoặc Alerts list
       if (id) {
         navigationRef.navigate('AlertDetail', { id } as any);
@@ -87,6 +88,7 @@ export function navigateFromPushData(data: Record<string, string>): boolean {
 
     case 'incident':
     case 'incident_created':
+    case 'IncidentCreated':
       // Navigate đến Incident detail
       if (id) {
         navigationRef.navigate('IncidentDetail', { id } as any);
@@ -97,11 +99,32 @@ export function navigateFromPushData(data: Record<string, string>): boolean {
 
     case 'rescue':
     case 'rescue_status_update':
+    case 'rescue_dispatch':
       // Navigate đến Rescue detail hoặc Emergency tabs
       if (id) {
         navigationRef.navigate('IncidentDetail', { id, isRescue: true } as any);
       } else {
         navigationRef.navigate('EmergencyTabs' as any);
+      }
+      return true;
+
+    case 'RecommendationApproved':
+    case 'ai_recommendation':
+    case 'recommendation':
+    case 'alert_created':
+    case 'evacuation_alert_created':
+    case 'rescue_request_created':
+    case 'reroute_alert_created':
+    case 'priority_route_alert_created':
+    case 'supply_alert_created':
+    case 'signal_alert_created':
+      if (id) {
+        navigationRef.navigate('ReportDetail', {
+          id,
+          sourceType: 'ai_recommendation'
+        } as any);
+      } else {
+        navigationRef.navigate('CitizenTabs' as any);
       }
       return true;
 

@@ -2,13 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\User;
-use App\Models\UserDevice;
 use App\Models\Alert;
 use App\Models\Incident;
-use App\Models\RescueRequest;
 use App\Models\Prediction;
-use Illuminate\Support\Collection;
+use App\Models\RescueRequest;
+use App\Models\UserDevice;
 use Spatie\Permission\Exceptions\RoleDoesNotExist;
 
 /**
@@ -33,11 +31,11 @@ class NotificationBroadcastService
             $tokens = UserDevice::whereHas('user', function ($query) use ($role) {
                 $query->role($role);
             })
-            ->active()
-            ->notificationsEnabled()
-            ->pluck('fcm_token')
-            ->filter()
-            ->toArray();
+                ->active()
+                ->notificationsEnabled()
+                ->pluck('fcm_token')
+                ->filter()
+                ->toArray();
         } catch (RoleDoesNotExist) {
             return 0;
         }
@@ -47,6 +45,7 @@ class NotificationBroadcastService
         }
 
         $result = $this->fcm->sendToTokens($tokens, $title, $body, $data);
+
         return $result['success'];
     }
 
@@ -62,17 +61,18 @@ class NotificationBroadcastService
         $tokens = UserDevice::whereHas('user', function ($query) use ($districtIds) {
             $query->whereIn('district_id', $districtIds);
         })
-        ->active()
-        ->notificationsEnabled()
-        ->pluck('fcm_token')
-        ->filter()
-        ->toArray();
+            ->active()
+            ->notificationsEnabled()
+            ->pluck('fcm_token')
+            ->filter()
+            ->toArray();
 
         if (empty($tokens)) {
             return 0;
         }
 
         $result = $this->fcm->sendToTokens($tokens, $title, $body, $data);
+
         return $result['success'];
     }
 
@@ -95,6 +95,7 @@ class NotificationBroadcastService
         }
 
         $result = $this->fcm->sendToTokens($tokens, $title, $body, $data);
+
         return $result['success'];
     }
 
@@ -108,16 +109,21 @@ class NotificationBroadcastService
         $body = $alert->description ?? 'Có cảnh báo mới từ hệ thống';
 
         $data = [
-            'type' => 'alert',
-            'alert_id' => (string) $alert->id,
-            'severity' => $alert->severity,
+            'type'       => 'alert',
+            'id'         => (string) $alert->id,   // Mobile dùng 'id' để navigate
+            'alert_id'   => (string) $alert->id,
+            'severity'   => $alert->severity,
             'alert_type' => $alert->alert_type ?? 'unknown',
         ];
 
         // Gửi cho users trong affected districts
         $affectedDistricts = $alert->affected_districts ?? [];
         if (! empty($affectedDistricts)) {
-            return $this->sendToDistricts($affectedDistricts, $title, $body, $data);
+            $sent = $this->sendToDistricts($affectedDistricts, $title, $body, $data);
+            if ($sent > 0) {
+                return $sent;
+            }
+            // Fallback nếu không có user nào trong district (vd: district_id chưa được set)
         }
 
         // Fallback: gửi cho tất cả citizens
@@ -159,10 +165,10 @@ class NotificationBroadcastService
      */
     public function sendRescueRequestNotification(RescueRequest $request): int
     {
-        $title = "Yêu cầu cứu hộ mới";
-        $body = $request->description 
-            ? substr($request->description, 0, 100) 
-            : "Có yêu cầu cứu hộ tại vị trí của bạn";
+        $title = 'Yêu cầu cứu hộ mới';
+        $body = $request->description
+            ? substr($request->description, 0, 100)
+            : 'Có yêu cầu cứu hộ tại vị trí của bạn';
 
         $data = [
             'type' => 'rescue',
@@ -186,7 +192,7 @@ class NotificationBroadcastService
     ): int {
         $zoneName = $prediction->floodZone?->name ?? 'Khu vực ngập';
         $riskLabel = $this->getRiskLabel($riskLevel);
-        
+
         $title = "{$riskLabel}: Nguy cơ ngập tại {$zoneName}";
         $body = $this->buildFloodWarningBody($prediction, $riskLevel);
 
@@ -241,8 +247,8 @@ class NotificationBroadcastService
     protected function buildFloodWarningBody(Prediction $prediction, string $riskLevel): string
     {
         $zoneName = $prediction->floodZone?->name ?? 'khu vực';
-        $waterLevel = $prediction->predicted_water_level 
-            ? number_format($prediction->predicted_water_level, 1) . 'm' 
+        $waterLevel = $prediction->predicted_water_level
+            ? number_format($prediction->predicted_water_level, 1).'m'
             : 'mực nước dự báo không xác định';
 
         return match ($riskLevel) {

@@ -306,6 +306,8 @@ class DemoDataSeeder extends Seeder
             $incident = Incident::updateOrCreate(
                 ['title' => $incData['title']],
                 array_merge($incData, [
+                    'latitude'   => $lat,
+                    'longitude'  => $lng,
                     'created_at' => $now->copy()->subMinutes(45 + ($index * 15)),
                 ])
             );
@@ -586,6 +588,7 @@ class DemoDataSeeder extends Seeder
     {
         try {
             $result = DB::select("SELECT 1 FROM pg_extension WHERE extname = 'postgis'");
+
             return count($result) > 0;
         } catch (\Exception $e) {
             return false;

@@ -36,15 +36,15 @@ const SEVERITY_CONFIG: Record<string, { labelKey: string; color: string; bg: str
   low: { labelKey: 'low', color: '#3B82F6', bg: '#EFF6FF' },
 };
 
-const SAFETY_TIPS = [
-  { id: '1', title: 'Trước khi ngập', desc: 'Di dời đồ đạc lên cao, ngắt cầu dao điện.', icon: 'home-alert', color: '#F59E0B', bg: '#FEF3C7' },
-  { id: '2', title: 'Khi đang ngập', desc: 'Tuyệt đối không lội qua vùng nước chảy xiết.', icon: 'waves', color: '#3B82F6', bg: '#EFF6FF' },
-  { id: '3', title: 'Sau khi ngập', desc: 'Kiểm tra rò rỉ điện trước khi đóng cầu dao.', icon: 'flash-alert', color: '#EF4444', bg: '#FEF2F2' },
-  { id: '4', title: 'Túi sơ cứu', desc: 'Sắp xếp sẵn thuốc men, đèn pin, nước sạch.', icon: 'medical-bag', color: '#10B981', bg: '#D1FAE5' },
-];
-
 const HomeScreen = () => {
   const { t, i18n } = useTranslation();
+
+  const SAFETY_TIPS = [
+    { id: '1', title: t('citizen.weather.tips.beforeFlood', 'Trước khi ngập'), desc: t('citizen.weather.tips.beforeFloodDesc', 'Di dời đồ đạc lên cao, ngắt cầu dao điện.'), icon: 'home-alert', color: '#F59E0B', bg: '#FEF3C7' },
+    { id: '2', title: t('citizen.weather.tips.duringFlood', 'Khi đang ngập'), desc: t('citizen.weather.tips.duringFloodDesc', 'Tuyệt đối không lội qua vùng nước chảy xiết.'), icon: 'waves', color: '#3B82F6', bg: '#EFF6FF' },
+    { id: '3', title: t('citizen.weather.tips.afterFlood', 'Sau khi ngập'), desc: t('citizen.weather.tips.afterFloodDesc', 'Kiểm tra rò rỉ điện trước khi đóng cầu dao.'), icon: 'flash-alert', color: '#EF4444', bg: '#FEF2F2' },
+    { id: '4', title: t('citizen.weather.tips.firstAidKit', 'Túi sơ cứu'), desc: t('citizen.weather.tips.firstAidKitDesc', 'Sắp xếp sẵn thuốc men, đèn pin, nước sạch.'), icon: 'medical-bag', color: '#10B981', bg: '#D1FAE5' },
+  ];
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuth();
   const { unreadCount, registerRefreshCallback } = useNotifications();
@@ -382,11 +382,11 @@ const HomeScreen = () => {
           <View style={styles.radarContent}>
             <View style={styles.radarHeader}>
               <Icon name="radar" size={20} color="#7a5af8" />
-              <Text style={styles.radarTitle}>Bản đồ Radar & Cảnh báo</Text>
+              <Text style={styles.radarTitle}>{t('citizen.dashboard.radarTitle', 'Bản đồ Radar & Cảnh báo')}</Text>
             </View>
-            <Text style={styles.radarDesc}>Xem trạng thái ngập lụt cục bộ, trạm trú ẩn và lộ trình an toàn quanh khu vực của bạn theo thời gian thực.</Text>
+            <Text style={styles.radarDesc}>{t('citizen.dashboard.radarDesc', 'Xem trạng thái ngập lụt cục bộ, trạm trú ẩn và lộ trình an toàn quanh khu vực của bạn theo thời gian thực.')}</Text>
             <View style={styles.radarAction}>
-              <Text style={styles.radarActionText}>Mở bản đồ</Text>
+              <Text style={styles.radarActionText}>{t('citizen.dashboard.radarAction', 'Mở bản đồ')}</Text>
               <Icon name="arrow-right" size={16} color="#fff" />
             </View>
           </View>
@@ -397,7 +397,7 @@ const HomeScreen = () => {
 
         {/* Safety Tips Carousel */}
         <View style={[styles.sectionHeader, { marginTop: SPACING.md }]}>
-          <Text style={styles.sectionTitle}>Cẩm nang an toàn</Text>
+          <Text style={styles.sectionTitle}>{t('citizen.dashboard.safetyTipsTitle', 'Cẩm nang an toàn')}</Text>
         </View>
         <ScrollView 
           horizontal 

@@ -98,11 +98,20 @@ export const rescueService = {
     return response.data;
   },
 
-  getRequests: async (): Promise<any[]> => {
-    const response = await api.get<ApiResponse<any>>('/rescue-requests');
+  getRequests: async (params?: { assigned_team_id?: number; status?: string }): Promise<any[]> => {
+    const response = await api.get<ApiResponse<any>>('/rescue-requests', { params });
     const payload = response.data.data;
     const items = Array.isArray(payload?.data) ? payload.data : payload;
     return Array.isArray(items) ? items.map(normalizeRequest) : [];
+  },
+
+  getMyTeam: async (): Promise<{ id: number; name: string } | null> => {
+    try {
+      const response = await api.get<ApiResponse<any>>('/rescue-teams/my');
+      return response.data.data ?? null;
+    } catch {
+      return null;
+    }
   },
 
   getRequest: async (id: number): Promise<any> => {

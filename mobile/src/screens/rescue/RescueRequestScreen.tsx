@@ -1,19 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity,
-  Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Image,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Image, Animated
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Geolocation from 'react-native-geolocation-service';
-import { theme } from '../../theme';
+import { theme, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { rescueService, CreateRescueRequestData } from '../../services/rescueService';
 import { mapService } from '../../services/mapService';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { mediaService } from '../../services/mediaService';
+import PageHeader from '../../component/PageHeader';
+import InputCustom from '../../component/InputCustom';
 
 const FALLBACK_LOCATION = {
   latitude: 16.0699,
@@ -47,11 +49,31 @@ const RescueRequestScreen = () => {
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
 
+  // Animation for submit button pulse
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
   const URGENCY_OPTIONS = [
-    { value: 'low', label: t('citizen.rescue.form.urgency_low') || t('incidents.severity.low'), color: '#3B82F6', icon: 'information' },
-    { value: 'medium', label: t('incidents.severity.medium'), color: '#EAB308', icon: 'alert-circle' },
-    { value: 'high', label: t('incidents.severity.high'), color: '#F97316', icon: 'alert' },
-    { value: 'critical', label: t('incidents.severity.critical'), color: '#EF4444', icon: 'alert-octagon' },
+    { value: 'low', label: t('citizen.rescue.form.normal') || 'Bình thường', color: '#10B981', icon: 'information', bgColor: '#ECFDF5' },
+    { value: 'medium', label: t('citizen.rescue.form.medium') || 'Trung bình', color: '#3B82F6', icon: 'alert-circle', bgColor: '#EFF6FF' },
+    { value: 'high', label: t('citizen.rescue.form.high') || 'Cao', color: '#F59E0B', icon: 'alert', bgColor: '#FFFBEB' },
+    { value: 'critical', label: t('citizen.rescue.form.critical') || 'Khẩn cấp', color: '#EF4444', icon: 'alert-octagon', bgColor: '#FEF2F2' },
   ] as const;
 
   const CATEGORY_OPTIONS = [
@@ -65,10 +87,10 @@ const RescueRequestScreen = () => {
   ] as const;
 
   const VULNERABLE_OPTIONS = [
-    { value: 'children', label: t('citizen.sos.form.children') },
-    { value: 'elderly', label: t('citizen.sos.form.elderly') },
-    { value: 'disabled', label: t('citizen.sos.form.disabled') },
-    { value: 'pregnant', label: t('citizen.sos.form.pregnant') },
+    { value: 'children', label: t('citizen.sos.form.children'), icon: 'baby-carriage' },
+    { value: 'elderly', label: t('citizen.sos.form.elderly'), icon: 'human-cane' },
+    { value: 'disabled', label: t('citizen.sos.form.disabled'), icon: 'wheelchair-accessibility' },
+    { value: 'pregnant', label: t('citizen.sos.form.pregnant'), icon: 'human-pregnant' },
   ];
 
   const [form, setForm] = useState<Partial<CreateRescueRequestData>>({
@@ -82,7 +104,10 @@ const RescueRequestScreen = () => {
     latitude: FALLBACK_LOCATION.latitude,
     longitude: FALLBACK_LOCATION.longitude,
     address: FALLBACK_LOCATION.address,
+    water_level_m: undefined,
   });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const applyFallbackLocation = useCallback(() => {
     setForm(prev => ({
@@ -99,7 +124,15 @@ const RescueRequestScreen = () => {
     Geolocation.getCurrentPosition(
       async (pos: any) => {
         const { latitude, longitude } = pos.coords;
-        if (!latitude || !longitude) {
+        
+        const isWithinDaNang = (
+          longitude >= 108.02 &&
+          longitude <= 108.29 &&
+          latitude >= 15.82 &&
+          latitude <= 16.16
+        );
+
+        if (!latitude || !longitude || !isWithinDaNang) {
           applyFallbackLocation();
           return;
         }
@@ -117,7 +150,12 @@ const RescueRequestScreen = () => {
     refreshLocation();
   }, [refreshLocation]);
 
-  const setField = (key: string, value: any) => setForm(prev => ({ ...prev, [key]: value }));
+  const setField = (key: string, value: any) => {
+    setForm(prev => ({ ...prev, [key]: value }));
+    if (errors[key]) {
+      setErrors(prev => ({ ...prev, [key]: '' }));
+    }
+  };
 
   const toggleVulnerable = (val: string) => {
     const current = form.vulnerable_groups || [];
@@ -205,17 +243,22 @@ const RescueRequestScreen = () => {
     setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
+  const validateForm = () => {
+    let newErrors: Record<string, string> = {};
+    if (!form.caller_name?.trim()) newErrors.caller_name = t('auth.nameRequired');
+    if (!form.address?.trim()) newErrors.address = t('citizen.sos.form.address') + ' ' + t('citizen.sos.form.required');
+    if (!form.caller_phone?.trim()) newErrors.caller_phone = 'Vui lòng nhập số điện thoại';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
-    if (!form.caller_name?.trim()) {
-      Alert.alert(t('common.error'), t('auth.nameRequired'));
+    if (!validateForm()) {
+      // Scroll to top or show alert if needed
       return;
     }
     if (!form.latitude || !form.longitude) {
       Alert.alert(t('common.error'), t('citizen.sos.form.getLocation') + ' - GPS');
-      return;
-    }
-    if (!form.address?.trim()) {
-      Alert.alert(t('common.error'), t('citizen.sos.form.address') + ' ' + t('citizen.sos.form.required'));
       return;
     }
 
@@ -252,30 +295,15 @@ const RescueRequestScreen = () => {
   };
 
   const selectedUrgency = URGENCY_OPTIONS.find(item => item.value === form.urgency) ?? URGENCY_OPTIONS[2];
+  const selectedCategory = CATEGORY_OPTIONS.find(c => c.value === form.category);
 
   return (
     <View style={styles.container}>
-      {/* Header Container with padding top matching status bar insets */}
-      <View style={[styles.headerContainer, { paddingTop: insets.top }]}>
-        <View style={styles.topBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
-            <Icon name="chevron-left" size={30} color={theme.colors.primary} />
-          </TouchableOpacity>
-          <Text style={styles.topBarTitle}>{t('citizen.sos.title')}</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('MyRescueRequests')}
-            style={styles.historyBtn}
-            activeOpacity={0.7}
-          >
-            <Icon name="history" size={22} color={theme.colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <PageHeader title={t('citizen.sos.title')} variant="default" rightIcon="history" onRightPress={() => navigation.navigate('MyRescueRequests')} />
 
       <KeyboardAvoidingView
         style={styles.keyboardArea}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 44 : 0}
       >
         <ScrollView
           style={styles.scrollView}
@@ -283,9 +311,12 @@ const RescueRequestScreen = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          {/* Emergency Banner */}
           <View style={styles.emergencyBanner}>
-            <View style={styles.emergencyIcon}>
-              <Icon name="phone-alert" size={20} color="#FF3B30" />
+            <View style={styles.emergencyIconWrapper}>
+              <View style={styles.emergencyIconCore}>
+                <Icon name="phone-alert" size={24} color="#FFF" />
+              </View>
             </View>
             <View style={styles.emergencyCopy}>
               <Text style={styles.emergencyTitle}>{t('citizen.rescue.title')}</Text>
@@ -293,235 +324,249 @@ const RescueRequestScreen = () => {
             </View>
           </View>
 
-          {/* Contact Info Section */}
-          <Text style={styles.sectionHeader}>THÔNG TIN LIÊN HỆ</Text>
-          <View style={styles.listGroup}>
-            <View style={styles.inputRow}>
-              <Icon name="account-outline" size={22} color="#8E8E93" style={styles.rowIcon} />
-              <Text style={styles.rowLabel}>
-                Họ và tên <Text style={styles.requiredStar}>*</Text>
-              </Text>
-              <TextInput
-                style={styles.rowValueInput}
+          {/* Contact Info Card */}
+          <View style={styles.card}>
+            <View style={styles.sectionTitleRow}>
+              <View style={styles.sectionTitleWithIcon}>
+                <Icon name="account-circle-outline" size={20} color={theme.colors.primary} />
+                <Text style={styles.sectionTitle}>Thông tin liên hệ</Text>
+              </View>
+            </View>
+            
+            <View style={styles.inputGroup}>
+              <InputCustom
+                label="Họ và tên"
                 placeholder={t('auth.enterFullName')}
-                placeholderTextColor="#C7C7CC"
-                value={form.caller_name}
+                value={form.caller_name || ''}
                 onChangeText={v => setField('caller_name', v)}
+                error={errors.caller_name}
+                leftIcon="account"
               />
             </View>
-            <View style={styles.listDivider} />
-            <View style={styles.inputRow}>
-              <Icon name="phone-outline" size={22} color="#8E8E93" style={styles.rowIcon} />
-              <Text style={styles.rowLabel}>Điện thoại</Text>
-              <TextInput
-                style={styles.rowValueInput}
+            
+            <View style={styles.inputGroup}>
+              <InputCustom
+                label="Số điện thoại"
                 placeholder={t('citizen.rescue.form.phone')}
-                placeholderTextColor="#C7C7CC"
-                value={form.caller_phone}
+                value={form.caller_phone || ''}
                 onChangeText={v => setField('caller_phone', v)}
                 keyboardType="phone-pad"
+                error={errors.caller_phone}
+                leftIcon="phone"
               />
             </View>
           </View>
 
-          {/* Location Section */}
-          <Text style={styles.sectionHeader}>VỊ TRÍ CỦA BẠN</Text>
-          <View style={styles.listGroup}>
-            <View style={styles.inputRow}>
-              <Icon name="crosshairs-gps" size={22} color="#8E8E93" style={styles.rowIcon} />
-              <Text style={styles.rowLabel}>Tọa độ GPS</Text>
-              <View style={styles.locationValueWrap}>
-                {loadingLocation ? (
-                  <ActivityIndicator size="small" color={theme.colors.primary} style={styles.gpsStatusIndicator} />
-                ) : (
-                  <Text style={styles.locationCoordinatesText} numberOfLines={1}>
-                    {form.latitude && form.longitude
-                      ? `${form.latitude.toFixed(5)}, ${form.longitude.toFixed(5)}`
-                      : 'Chưa có tọa độ'}
-                  </Text>
-                )}
-                <TouchableOpacity onPress={refreshLocation} style={styles.refreshLocationBtn} activeOpacity={0.6}>
-                  <Icon name="refresh" size={14} color={theme.colors.primary} />
-                  <Text style={styles.refreshLocationText}>GPS</Text>
-                </TouchableOpacity>
+          {/* Location Card */}
+          <View style={styles.card}>
+            <View style={styles.sectionTitleRow}>
+              <View style={styles.sectionTitleWithIcon}>
+                <Icon name="map-marker-radius" size={20} color={theme.colors.primary} />
+                <Text style={styles.sectionTitle}>Vị trí của bạn</Text>
               </View>
+              <TouchableOpacity onPress={refreshLocation} style={styles.refreshBtn}>
+                {loadingLocation ? (
+                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                ) : (
+                  <Icon name="crosshairs-gps" size={18} color={theme.colors.primary} />
+                )}
+                <Text style={styles.refreshBtnText}>Định vị lại</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.listDivider} />
-            <View style={styles.addressInputRow}>
-              <Icon name="map-marker-outline" size={22} color="#8E8E93" style={styles.rowIconTop} />
-              <Text style={styles.rowLabelTop}>
-                Địa chỉ <Text style={styles.requiredStar}>*</Text>
-              </Text>
-              <TextInput
-                style={styles.addressTextInput}
+
+            <View style={styles.inputGroup}>
+              <InputCustom
+                label="Địa chỉ chi tiết"
                 placeholder={t('citizen.sos.form.addressPlaceholder')}
-                placeholderTextColor="#C7C7CC"
-                value={form.address}
+                value={form.address || ''}
                 onChangeText={v => setField('address', v)}
+                error={errors.address}
                 multiline
                 numberOfLines={2}
+                leftIcon="map-marker"
               />
             </View>
           </View>
 
-          {/* Urgency Level & Category Section */}
-          <Text style={styles.sectionHeader}>MỨC ĐỘ KHẨN CẤP & LOẠI HỖ TRỢ</Text>
-          <View style={styles.listGroup}>
-            <View style={styles.segmentedControlRow}>
-              <View style={styles.segmentedControl}>
-                {URGENCY_OPTIONS.map(opt => {
-                  const selected = form.urgency === opt.value;
-                  let activeTextStyle = null;
-                  if (selected) {
-                    if (opt.value === 'low') activeTextStyle = styles.segmentTextLow;
-                    else if (opt.value === 'medium') activeTextStyle = styles.segmentTextMedium;
-                    else if (opt.value === 'high') activeTextStyle = styles.segmentTextHigh;
-                    else if (opt.value === 'critical') activeTextStyle = styles.segmentTextCritical;
-                  }
-                  return (
-                    <TouchableOpacity
-                      key={opt.value}
-                      style={[styles.segmentTab, selected && styles.segmentTabSelected]}
-                      onPress={() => setField('urgency', opt.value)}
-                      activeOpacity={0.9}
-                    >
-                      <Text style={[styles.segmentText, activeTextStyle]}>
-                        {opt.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+          {/* Urgency & Category Card */}
+          <View style={styles.card}>
+            <View style={styles.sectionTitleRow}>
+              <View style={styles.sectionTitleWithIcon}>
+                <Icon name="alert-decagram" size={20} color={theme.colors.primary} />
+                <Text style={styles.sectionTitle}>Mức độ & Loại hỗ trợ</Text>
               </View>
             </View>
-            <View style={styles.listDivider} />
+            
+            <Text style={styles.fieldLabel}>Mức độ khẩn cấp</Text>
+            <View style={styles.urgencyGrid}>
+              {URGENCY_OPTIONS.map(opt => {
+                const selected = form.urgency === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    style={[
+                      styles.urgencyChip,
+                      selected && {
+                        backgroundColor: opt.bgColor,
+                        borderColor: opt.color,
+                      }
+                    ]}
+                    onPress={() => setField('urgency', opt.value)}
+                    activeOpacity={0.7}
+                  >
+                    <Icon name={opt.icon} size={18} color={selected ? opt.color : theme.colors.textSecondary} />
+                    <Text style={[
+                      styles.urgencyText,
+                      selected && { color: opt.color, fontWeight: '700' }
+                    ]}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <Text style={[styles.fieldLabel, { marginTop: 16 }]}>Loại hỗ trợ cần thiết</Text>
             <TouchableOpacity
-              style={styles.pickerRow}
+              style={styles.categorySelectButton}
               onPress={() => setShowCategoryPicker(true)}
-              activeOpacity={0.6}
+              activeOpacity={0.7}
             >
-              <Icon name="tag-outline" size={22} color="#8E8E93" style={styles.rowIcon} />
-              <Text style={styles.rowLabel}>Loại hỗ trợ</Text>
-              <View style={styles.pickerValueWrap}>
-                <Text style={styles.pickerValueText}>
-                  {CATEGORY_OPTIONS.find(c => c.value === form.category)?.label || ''}
-                </Text>
-                <Icon name="chevron-right" size={20} color="#C7C7CC" />
+              <View style={[styles.categorySelectIcon, { backgroundColor: theme.colors.backgroundSecondary }]}>
+                <Icon
+                  name={selectedCategory?.icon || 'shape'}
+                  size={24}
+                  color={theme.colors.primary}
+                />
               </View>
+              <View style={styles.categorySelectContent}>
+                <Text style={styles.categorySelectLabel}>
+                  {selectedCategory?.label || 'Chọn loại hỗ trợ'}
+                </Text>
+              </View>
+              <Icon name="chevron-down" size={24} color={theme.colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
-          {/* Counter and Water Level Inline Block */}
-          <Text style={styles.sectionHeader}>CHI TIẾT YÊU CẦU</Text>
-          <View style={styles.listGroup}>
-            <View style={styles.inlineRow}>
-              <Text style={styles.rowLabelFull}>{t('citizen.rescue.form.peopleCount')}</Text>
-              <View style={styles.stepperContainer}>
-                <TouchableOpacity
-                  style={styles.stepperBtn}
-                  onPress={() => setField('people_count', Math.max(1, (form.people_count || 1) - 1))}
-                  activeOpacity={0.7}
-                >
-                  <Icon name="minus" size={16} color={theme.colors.primary} />
-                </TouchableOpacity>
-                <View style={styles.stepperDivider} />
-                <Text style={styles.stepperValue}>{form.people_count}</Text>
-                <View style={styles.stepperDivider} />
-                <TouchableOpacity
-                  style={styles.stepperBtn}
-                  onPress={() => setField('people_count', (form.people_count || 1) + 1)}
-                  activeOpacity={0.7}
-                >
-                  <Icon name="plus" size={16} color={theme.colors.primary} />
-                </TouchableOpacity>
+          {/* Details Card */}
+          <View style={styles.card}>
+            <View style={styles.sectionTitleRow}>
+              <View style={styles.sectionTitleWithIcon}>
+                <Icon name="clipboard-list-outline" size={20} color={theme.colors.primary} />
+                <Text style={styles.sectionTitle}>Chi tiết cứu hộ</Text>
               </View>
             </View>
-            <View style={styles.listDivider} />
-            <View style={styles.inlineRow}>
-              <Text style={styles.rowLabelFull}>{t('citizen.rescue.form.waterLevel').replace('(cm)', '(m)')}</Text>
-              <View style={styles.waterInputWrap}>
-                <TextInput
-                  style={styles.waterTextInput}
-                  placeholder="0.5"
-                  placeholderTextColor="#C7C7CC"
-                  value={form.water_level_m?.toString() || ''}
-                  onChangeText={v => setField('water_level_m', v ? parseFloat(v) : undefined)}
-                  keyboardType="numeric"
-                />
-                <Text style={styles.waterUnitText}>m</Text>
-              </View>
-            </View>
-          </View>
 
-          {/* Vulnerable Groups Section */}
-          <Text style={styles.sectionHeader}>{t('citizen.sos.form.vulnerableGroups').toUpperCase()}</Text>
-          <View style={styles.listGroup}>
-            {VULNERABLE_OPTIONS.map((opt, idx) => {
-              const selected = form.vulnerable_groups?.includes(opt.value);
-              return (
-                <View key={opt.value}>
+            <View style={styles.detailsRow}>
+              <View style={styles.detailItem}>
+                <Text style={styles.fieldLabel}>Số người</Text>
+                <View style={styles.stepperContainer}>
                   <TouchableOpacity
-                    style={styles.listRow}
-                    onPress={() => toggleVulnerable(opt.value)}
-                    activeOpacity={0.6}
+                    style={styles.stepperBtn}
+                    onPress={() => setField('people_count', Math.max(1, (form.people_count || 1) - 1))}
                   >
-                    <Text style={[styles.listRowLabel, selected && styles.listRowLabelSelected]}>
-                      {opt.label}
-                    </Text>
-                    {selected && (
-                      <Icon name="check" size={20} color={theme.colors.primary} />
-                    )}
+                    <Icon name="minus" size={18} color={theme.colors.primary} />
                   </TouchableOpacity>
-                  {idx < VULNERABLE_OPTIONS.length - 1 && <View style={styles.listDivider} />}
-                </View>
-              );
-            })}
-          </View>
-
-          {/* Photos Upload Section */}
-          <Text style={styles.sectionHeader}>HÌNH ẢNH HIỆN TRƯỜNG</Text>
-          <View style={styles.photosCard}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photosScroll}>
-              {photos.map((url, index) => (
-                <View key={url + index} style={styles.photoContainer}>
-                  <Image source={{ uri: url }} style={styles.photoPreview} />
+                  <Text style={styles.stepperValue}>{form.people_count}</Text>
                   <TouchableOpacity
-                    style={styles.removePhotoBtn}
-                    onPress={() => handleRemovePhoto(index)}
+                    style={styles.stepperBtn}
+                    onPress={() => setField('people_count', (form.people_count || 1) + 1)}
+                  >
+                    <Icon name="plus" size={18} color={theme.colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.detailItem}>
+                <Text style={styles.fieldLabel}>Mực nước (m)</Text>
+                <View style={styles.waterInputWrap}>
+                  <InputCustom
+                    placeholder="VD: 0.5"
+                    value={form.water_level_m?.toString() || ''}
+                    onChangeText={v => setField('water_level_m', v ? parseFloat(v) : undefined)}
+                    keyboardType="numeric"
+                    containerStyle={{ marginBottom: 0 }}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <Text style={[styles.fieldLabel, { marginTop: 16, marginBottom: 8 }]}>Nhóm đối tượng dễ tổn thương</Text>
+            <View style={styles.vulnerableGrid}>
+              {VULNERABLE_OPTIONS.map(opt => {
+                const selected = form.vulnerable_groups?.includes(opt.value);
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    style={[
+                      styles.vulnerableChip,
+                      selected && styles.vulnerableChipSelected
+                    ]}
+                    onPress={() => toggleVulnerable(opt.value)}
                     activeOpacity={0.7}
                   >
-                    <Icon name="close-circle" size={20} color="#FF3B30" />
+                    <Icon name={opt.icon} size={18} color={selected ? theme.colors.white : theme.colors.textSecondary} />
+                    <Text style={[
+                      styles.vulnerableText,
+                      selected && styles.vulnerableTextSelected
+                    ]}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Media & Description Card */}
+          <View style={styles.card}>
+            <View style={styles.sectionTitleRow}>
+              <View style={styles.sectionTitleWithIcon}>
+                <Icon name="image-multiple" size={20} color={theme.colors.primary} />
+                <Text style={styles.sectionTitle}>Hình ảnh & Mô tả (Tùy chọn)</Text>
+              </View>
+            </View>
+
+            <View style={styles.mediaGrid}>
+              {photos.map((url, index) => (
+                <View key={url + index} style={styles.mediaCard}>
+                  <Image source={{ uri: url }} style={styles.mediaPhoto} resizeMode="cover" />
+                  <TouchableOpacity
+                    style={styles.mediaRemoveButton}
+                    onPress={() => handleRemovePhoto(index)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Icon name="close-circle" size={24} color={theme.colors.white} />
                   </TouchableOpacity>
                 </View>
               ))}
+
               {photos.length < 5 && (
                 <TouchableOpacity
-                  style={styles.addPhotoBtn}
+                  style={styles.uploadCard}
+                  activeOpacity={0.7}
                   onPress={handleSelectMedia}
                   disabled={uploading}
-                  activeOpacity={0.7}
                 >
                   {uploading ? (
-                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                    <ActivityIndicator size="large" color={theme.colors.primary} />
                   ) : (
                     <>
-                      <Icon name="camera-plus-outline" size={24} color={theme.colors.primary} />
-                      <Text style={styles.addPhotoText}>{photos.length}/5</Text>
+                      <View style={styles.uploadIconBox}>
+                        <Icon name="camera-plus-outline" size={32} color={theme.colors.primary} />
+                      </View>
+                      <Text style={styles.uploadCardText}>Thêm ảnh</Text>
                     </>
                   )}
                 </TouchableOpacity>
               )}
-            </ScrollView>
-          </View>
+            </View>
 
-          {/* Description Section */}
-          <Text style={styles.sectionHeader}>{t('citizen.sos.form.description').toUpperCase()}</Text>
-          <View style={styles.listGroup}>
-            <View style={styles.descriptionRow}>
-              <TextInput
-                style={styles.descriptionTextInput}
+            <View style={{ marginTop: 16 }}>
+              <InputCustom
+                label="Mô tả thêm"
                 placeholder={t('citizen.sos.form.descriptionPlaceholder')}
-                placeholderTextColor="#C7C7CC"
-                value={form.description}
+                value={form.description || ''}
                 onChangeText={v => setField('description', v)}
                 multiline
                 numberOfLines={3}
@@ -536,31 +581,34 @@ const RescueRequestScreen = () => {
         <View style={styles.submitSummary}>
           <View style={[styles.submitSeverityDot, { backgroundColor: selectedUrgency.color }]} />
           <Text style={styles.submitSummaryText}>
-            {selectedUrgency.label} · {form.people_count || 1} người
+            {selectedUrgency.label} · {form.people_count || 1} người · {selectedCategory?.label}
           </Text>
         </View>
+        
         <TouchableOpacity
           style={[styles.submitBtn, submitting && styles.submitBtnDisabled]}
           onPress={handleSubmit}
           disabled={submitting}
-          activeOpacity={0.8}
+          activeOpacity={0.9}
         >
-          {submitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Icon name="send" size={18} color="#fff" style={styles.submitIcon} />
-              <Text style={styles.submitBtnText}>{t('citizen.sos.form.submit')}</Text>
-            </>
-          )}
+          <Animated.View style={[styles.submitBtnGradient, { transform: [{ scale: submitting ? 1 : pulseAnim }] }]}>
+            {submitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Icon name="alert-octagon" size={24} color="#fff" style={styles.submitIcon} />
+                <Text style={styles.submitBtnText}>GỬI YÊU CẦU CỨU HỘ</Text>
+              </>
+            )}
+          </Animated.View>
         </TouchableOpacity>
       </View>
 
-      {/* Category Picker Bottom Sheet Modal */}
+      {/* Category Picker Modal */}
       <Modal
         visible={showCategoryPicker}
         transparent={true}
-        animationType="slide"
+        animationType="fade"
         onRequestClose={() => setShowCategoryPicker(false)}
       >
         <View style={styles.modalOverlay}>
@@ -575,40 +623,33 @@ const RescueRequestScreen = () => {
               <TouchableOpacity
                 onPress={() => setShowCategoryPicker(false)}
                 style={styles.modalDoneBtn}
-                activeOpacity={0.7}
               >
-                <Text style={styles.modalDoneBtnText}>Xong</Text>
+                <Icon name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalList} showsVerticalScrollIndicator={false}>
-              <View style={styles.modalListGroup}>
-                {CATEGORY_OPTIONS.map((opt, idx) => {
-                  const selected = form.category === opt.value;
-                  return (
-                    <View key={opt.value}>
-                      <TouchableOpacity
-                        style={styles.modalRow}
-                        onPress={() => {
-                          setField('category', opt.value);
-                          setShowCategoryPicker(false);
-                        }}
-                        activeOpacity={0.6}
-                      >
-                        <View style={styles.modalRowLeft}>
-                          <Icon name={opt.icon} size={22} color={selected ? theme.colors.primary : '#8E8E93'} style={styles.modalRowIcon} />
-                          <Text style={[styles.modalRowLabel, selected && styles.modalRowLabelSelected]}>
-                            {opt.label}
-                          </Text>
-                        </View>
-                        {selected && (
-                          <Icon name="check" size={20} color={theme.colors.primary} />
-                        )}
-                      </TouchableOpacity>
-                      {idx < CATEGORY_OPTIONS.length - 1 && <View style={styles.modalDivider} />}
+              {CATEGORY_OPTIONS.map((opt) => {
+                const selected = form.category === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    style={[styles.modalRow, selected && styles.modalRowSelected]}
+                    onPress={() => {
+                      setField('category', opt.value);
+                      setShowCategoryPicker(false);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.modalIconContainer, selected && styles.modalIconContainerSelected]}>
+                      <Icon name={opt.icon} size={24} color={selected ? theme.colors.primary : theme.colors.textSecondary} />
                     </View>
-                  );
-                })}
-              </View>
+                    <Text style={[styles.modalRowLabel, selected && styles.modalRowLabelSelected]}>
+                      {opt.label}
+                    </Text>
+                    {selected && <Icon name="check-circle" size={24} color={theme.colors.primary} />}
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
         </View>
@@ -620,38 +661,7 @@ const RescueRequestScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7', // iOS Grouped Background Light
-  },
-  headerContainer: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#C6C6C8', // iOS hairline separator
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    height: 44,
-    backgroundColor: '#FFFFFF',
-  },
-  backBtn: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  topBarTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#111827',
-    textAlign: 'center',
-  },
-  historyBtn: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
   keyboardArea: {
     flex: 1,
@@ -660,359 +670,307 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingVertical: 16,
+    padding: 16,
   },
   emergencyBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF5F5',
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 0.5,
-    borderColor: '#FFD2D2',
-    marginHorizontal: 16,
-    marginBottom: 16,
+    backgroundColor: '#FEF2F2',
+    padding: 16,
+    borderRadius: BORDER_RADIUS.xl,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    marginBottom: 20,
+    ...Platform.select({
+      ios: { shadowColor: '#EF4444', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8 },
+      android: { elevation: 3 },
+    }),
   },
-  emergencyIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFE5E5',
+  emergencyIconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FEE2E2',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 16,
+  },
+  emergencyIconCore: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emergencyCopy: {
     flex: 1,
   },
   emergencyTitle: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#D32F2F',
-    marginBottom: 2,
+    color: '#B91C1C',
+    marginBottom: 4,
   },
   emergencyText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#C62828',
-    lineHeight: 16,
+    fontSize: 13,
+    color: '#991B1B',
+    lineHeight: 18,
   },
-  sectionHeader: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6E6E73', // iOS Section Header gray
-    marginLeft: 26,
-    marginTop: 18,
-    marginBottom: 6,
-    letterSpacing: 0.4,
+  card: {
+    backgroundColor: theme.colors.white,
+    borderRadius: BORDER_RADIUS.xl,
+    padding: 20,
+    marginBottom: 16,
+    ...theme.shadows.md,
   },
-  listGroup: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    marginHorizontal: 16,
-    overflow: 'hidden',
-    borderWidth: 0.5,
-    borderColor: '#E5E5EA',
-  },
-  listDivider: {
-    height: 0.5,
-    backgroundColor: '#C6C6C8',
-    marginLeft: 16,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    minHeight: 48,
-  },
-  rowIcon: {
-    marginRight: 10,
-  },
-  rowLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#111827',
-    width: 105,
-  },
-  rowValueInput: {
-    flex: 1,
-    fontSize: 15,
-    color: '#111827',
-    paddingVertical: 8,
-    textAlign: 'left',
-  },
-  requiredStar: {
-    color: '#FF3B30', // iOS System Red
-    fontWeight: 'bold',
-  },
-  locationValueWrap: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    gap: 8,
-  },
-  locationCoordinatesText: {
-    fontSize: 15,
-    color: '#8E8E93',
-    fontWeight: '400',
-    flex: 1,
-    textAlign: 'left',
-  },
-  refreshLocationBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    backgroundColor: '#7a5af812',
-  },
-  refreshLocationText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  addressInputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    minHeight: 60,
-  },
-  rowIconTop: {
-    marginRight: 10,
-    marginTop: 2,
-  },
-  rowLabelTop: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#111827',
-    width: 105,
-    marginTop: 2,
-  },
-  addressTextInput: {
-    flex: 1,
-    fontSize: 15,
-    color: '#111827',
-    minHeight: 40,
-    textAlignVertical: 'top',
-    paddingVertical: 0,
-  },
-  segmentedControlRow: {
-    padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  segmentedControl: {
-    flexDirection: 'row',
-    backgroundColor: '#E3E3E6',
-    borderRadius: 8,
-    padding: 2,
-    height: 36,
-    width: '100%',
-  },
-  segmentTab: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 6,
-  },
-  segmentTabSelected: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 1.5,
-    elevation: 1,
-  },
-  segmentText: {
-    fontSize: 12,
-    color: '#636366',
-    fontWeight: '500',
-    letterSpacing: -0.1,
-  },
-  pickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    height: 48,
-  },
-  pickerValueWrap: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    gap: 4,
-  },
-  pickerValueText: {
-    fontSize: 15,
-    color: theme.colors.primary,
-    fontWeight: '500',
-  },
-  inlineRow: {
+  sectionTitleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    height: 48,
+    marginBottom: 16,
   },
-  rowLabelFull: {
-    fontSize: 15,
+  sectionTitleWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+  refreshBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.backgroundSecondary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: BORDER_RADIUS.full,
+    gap: 4,
+  },
+  refreshBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.text,
+    marginBottom: 8,
+  },
+  urgencyGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  urgencyChip: {
+    flex: 1,
+    minWidth: '47%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    backgroundColor: theme.colors.background,
+    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 1.5,
+    borderColor: theme.colors.border,
+    gap: 6,
+  },
+  urgencyText: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
     fontWeight: '500',
-    color: '#111827',
+  },
+  categorySelectButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: theme.colors.background,
+    borderRadius: BORDER_RADIUS.xl,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  categorySelectIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: BORDER_RADIUS.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  categorySelectContent: {
+    flex: 1,
+  },
+  categorySelectLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  detailItem: {
     flex: 1,
   },
   stepperContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 0.5,
-    borderColor: '#C6C6C8',
-    borderRadius: 8,
-    backgroundColor: '#F2F2F7',
-    height: 32,
-    overflow: 'hidden',
+    justifyContent: 'space-between',
+    backgroundColor: theme.colors.background,
+    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    height: 48,
+    paddingHorizontal: 8,
   },
   stepperBtn: {
-    width: 36,
+    width: 32,
     height: 32,
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: theme.colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...theme.shadows.sm,
+  },
+  stepperValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+  waterInputWrap: {
+    flex: 1,
+  },
+  vulnerableGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  vulnerableChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    gap: 6,
+  },
+  vulnerableChipSelected: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  vulnerableText: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    fontWeight: '500',
+  },
+  vulnerableTextSelected: {
+    color: theme.colors.white,
+  },
+  mediaGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  mediaCard: {
+    width: 76,
+    height: 76,
+    borderRadius: BORDER_RADIUS.lg,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  mediaPhoto: {
+    width: '100%',
+    height: '100%',
+  },
+  mediaRemoveButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 12,
+  },
+  uploadCard: {
+    width: 76,
+    height: 76,
+    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: theme.colors.backgroundSecondary,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  stepperDivider: {
-    width: 0.5,
-    height: 20,
-    backgroundColor: '#C6C6C8',
+  uploadIconBox: {
+    marginBottom: 4,
   },
-  stepperValue: {
-    width: 32,
-    textAlign: 'center',
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  waterInputWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  waterTextInput: {
-    fontSize: 15,
-    color: '#111827',
-    fontWeight: '600',
-    textAlign: 'right',
-    width: 60,
-    paddingVertical: 6,
-  },
-  waterUnitText: {
-    fontSize: 15,
-    color: '#8E8E93',
+  uploadCardText: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
     fontWeight: '500',
-  },
-  listRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 13,
-    paddingHorizontal: 16,
-    minHeight: 44,
-  },
-  listRowLabel: {
-    fontSize: 15,
-    color: '#111827',
-    fontWeight: '400',
-  },
-  listRowLabelSelected: {
-    fontWeight: '500',
-    color: theme.colors.primary,
-  },
-  descriptionRow: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  descriptionTextInput: {
-    fontSize: 15,
-    color: '#111827',
-    minHeight: 80,
-    textAlignVertical: 'top',
-    paddingVertical: 4,
   },
   submitPanel: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
-    borderTopWidth: 0.5,
-    borderTopColor: '#C6C6C8',
-    paddingTop: 10,
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 10,
+    backgroundColor: theme.colors.white,
+    paddingTop: 12,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    ...theme.shadows.lg,
   },
   submitSummary: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    alignSelf: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   submitSeverityDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 6,
+    marginRight: 8,
   },
   submitSummaryText: {
-    fontSize: 12,
-    color: '#8E8E93',
+    fontSize: 13,
+    color: theme.colors.textSecondary,
     fontWeight: '600',
   },
   submitBtn: {
+    borderRadius: BORDER_RADIUS.xl,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  submitBtnGradient: {
+    backgroundColor: '#EF4444',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#FF3B30', // Apple System Red
-    height: 50,
-    borderRadius: 12,
+    paddingVertical: 16,
+    gap: 8,
   },
   submitBtnDisabled: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   submitIcon: {
-    marginRight: 2,
+    marginRight: 4,
   },
   submitBtnText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '800',
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
-  gpsStatusIndicator: {
-    marginRight: 6,
-  },
-  gpsStatusIcon: {
-    marginRight: 6,
-  },
-  segmentTextLow: {
-    color: '#3B82F6',
-    fontWeight: '600',
-  },
-  segmentTextMedium: {
-    color: '#EAB308',
-    fontWeight: '600',
-  },
-  segmentTextHigh: {
-    color: '#F97316',
-    fontWeight: '600',
-  },
-  segmentTextCritical: {
-    color: '#EF4444',
-    fontWeight: '600',
-  },
-  // Modal styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
@@ -1022,135 +980,65 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modalContent: {
-    backgroundColor: '#F2F2F7',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    maxHeight: '60%',
+    backgroundColor: theme.colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '70%',
+    padding: 20,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    height: 50,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#C6C6C8',
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    marginBottom: 16,
   },
   modalTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#111827',
-    flex: 1,
-    textAlign: 'center',
-    marginLeft: 44, // Offset standard to align title in center
+    fontSize: 18,
+    fontWeight: '700',
+    color: theme.colors.text,
   },
   modalDoneBtn: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalDoneBtnText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.primary,
+    padding: 4,
   },
   modalList: {
-    paddingVertical: 16,
-  },
-  modalListGroup: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    marginHorizontal: 16,
-    overflow: 'hidden',
-    borderWidth: 0.5,
-    borderColor: '#E5E5EA',
-    marginBottom: 20,
+    marginTop: 8,
   },
   modalRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 13,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    minHeight: 44,
-  },
-  modalRowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  modalRowIcon: {
-    marginRight: 12,
-  },
-  modalRowLabel: {
-    fontSize: 15,
-    color: '#111827',
-    fontWeight: '400',
-  },
-  modalRowLabelSelected: {
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  modalDivider: {
-    height: 0.5,
-    backgroundColor: '#C6C6C8',
-    marginLeft: 50, // Offset to align below label
-  },
-  // Photos styles
-  photosCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    marginHorizontal: 16,
-    padding: 12,
-    borderWidth: 0.5,
-    borderColor: '#E5E5EA',
-  },
-  photosScroll: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  photoContainer: {
-    position: 'relative',
-    width: 72,
-    height: 72,
-    marginRight: 10,
-  },
-  photoPreview: {
-    width: 72,
-    height: 72,
-    borderRadius: 8,
-  },
-  removePhotoBtn: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    elevation: 2,
-  },
-  addPhotoBtn: {
-    width: 72,
-    height: 72,
-    borderRadius: 8,
+    backgroundColor: theme.colors.background,
+    borderRadius: BORDER_RADIUS.xl,
+    marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#C6C6C8',
-    borderStyle: 'dashed',
+    borderColor: 'transparent',
+  },
+  modalRowSelected: {
+    backgroundColor: `${theme.colors.primary}10`,
+    borderColor: theme.colors.primary,
+  },
+  modalIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: theme.colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F2F2F7',
+    marginRight: 12,
   },
-  addPhotoText: {
-    fontSize: 11,
-    color: '#8E8E93',
+  modalIconContainerSelected: {
+    backgroundColor: theme.colors.white,
+  },
+  modalRowLabel: {
+    flex: 1,
+    fontSize: 16,
+    color: theme.colors.text,
     fontWeight: '500',
-    marginTop: 2,
+  },
+  modalRowLabelSelected: {
+    fontWeight: '700',
+    color: theme.colors.primary,
   },
 });
 

@@ -15,26 +15,26 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const getOnboardingData = (t: any) => [
   {
     id: 1,
-    title: 'Chào mừng đến AegisFlow AI',
-    description: 'Hệ thống báo cáo và xử lý sự cố đô thị thông minh, kết nối người dân và chính quyền',
+    title: t('onboarding.welcomeTitle', 'Chào mừng đến với AegisFlowAI'),
+    description: t('onboarding.welcomeDescription', 'Nền tảng AI và Bản đồ số hỗ trợ quản lý, cảnh báo ngập lụt sớm.'),
     image: require('../../assets/images/started/welcom.jpg'),
   },
   {
     id: 2,
-    title: 'Báo cáo sự cố dễ dàng',
-    description: 'Chụp ảnh, định vị và mô tả sự cố chỉ trong vài giây. Hệ thống sẽ tự động phân loại và chuyển đến cơ quan có thẩm quyền',
+    title: t('onboarding.mapTitle', 'Bản đồ ngập lụt thực tế'),
+    description: t('onboarding.mapDescription', 'Theo dõi tình trạng ngập lụt, điểm trú ẩn và các tuyến đường sơ tán theo thời gian thực.'),
     image: require('../../assets/images/started/map.jpg'),
   },
   {
     id: 3,
-    title: 'AI hỗ trợ thông minh',
-    description: 'Trí tuệ nhân tạo phân tích và dự đoán sự cố, giúp tối ưu hóa quy trình xử lý và phòng ngừa',
+    title: t('onboarding.aiTitle', 'Dự đoán AI Thông minh'),
+    description: t('onboarding.aiDescription', 'Nhận dự đoán nguy cơ ngập lụt sớm trong 60 phút tới dựa trên dữ liệu cảm biến IoT.'),
     image: require('../../assets/images/started/AiGreen.jpg'),
   },
   {
     id: 4,
-    title: 'Cộng đồng kết nối',
-    description: 'Theo dõi tiến độ xử lý, đánh giá chất lượng dịch vụ và xây dựng thành phố thông minh cùng nhau',
+    title: t('onboarding.communityTitle', 'Cộng đồng An toàn'),
+    description: t('onboarding.communityDescription', 'Báo cáo sự cố ngập lụt, yêu cầu cứu hộ khẩn cấp và cập nhật tin tức hỗ trợ cộng đồng.'),
     image: require('../../assets/images/started/community.jpg'),
   },
 ];

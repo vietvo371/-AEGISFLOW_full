@@ -173,7 +173,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
               style={styles.welcomeText}
               entering={FadeInDown.duration(800).delay(200).springify()}
             >
-              {getCurrentLanguage() === 'vi' ? 'Chào mừng đến với' : 'Welcome to'}
+              {t('auth.welcomeTo', 'Chào mừng đến với')}
             </Animated.Text>
 
             <Animated.Image
@@ -192,9 +192,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
             <View style={styles.formHeader}>
               <Text style={styles.formTitle}>{t('auth.login') || 'Đăng nhập'}</Text>
               <Text style={styles.formSubtitle}>
-                {getCurrentLanguage() === 'vi' 
-                  ? 'Đăng nhập để báo cáo và theo dõi sự cố đô thị' 
-                  : 'Sign in to report and track urban incidents'}
+                {t('auth.loginSubtitle', 'Đăng nhập để báo cáo và theo dõi sự cố đô thị')}
               </Text>
             </View>
 

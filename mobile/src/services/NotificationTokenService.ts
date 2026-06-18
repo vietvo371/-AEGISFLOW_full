@@ -109,7 +109,7 @@ class NotificationTokenService {
       // Lấy FCM token
       const fcmToken = await PushNotificationHelper.getToken();
       if (!fcmToken) {
-        console.error('Không thể lấy FCM token');
+        console.warn('Không thể lấy FCM token');
         return { success: false };
       }
 

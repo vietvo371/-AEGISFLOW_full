@@ -62,7 +62,21 @@
     "validEmail": "Mangyaring magpasok ng wastong email",
     "passwordMinLength": "Dapat na hindi bababa sa 6 na character ang password",
     "nameMinLength": "Dapat na hindi bababa sa 2 character ang pangalan",
-    "passwordsNotMatch": "Hindi tugma ang mga password"
+    "passwordsNotMatch": "Hindi tugma ang mga password",
+    "welcomeTo": "Maligayang pagdating sa",
+    "loginSubtitle": "Mag-log in upang mag-ulat at subaybayan ang mga insidente sa lunsod",
+    "welcomeToAegisFlow": "Maligayang pagdating sa AegisFlow AI",
+    "registerSubtitle": "Sumali sa AegisFlow AI upang mag-ambag sa pagbuo ng mga matatalinong lungsod",
+    "phoneRequired": "Mangyaring ipasok ang numero ng telepono",
+    "invalidPhone": "Di-wastong numero ng telepono",
+    "confirmPasswordRequired": "Pakikumpirma ang iyong password",
+    "weak": "Mahina",
+    "medium": "Katamtaman",
+    "strong": "Malakas",
+    "registering": "Nagrerehistro ng account...",
+    "phone": "Numero ng telepono",
+    "enterPhone": "Ipasok ang numero ng telepono",
+    "registrationSuccessDesc": "Ang iyong account ay matagumpay na nalikha"
   },
   "onboarding": {
     "welcomeTitle": "Maligayang pagdating sa AegisFlowAI",
@@ -411,7 +425,11 @@
       "humidity": "Halumigmig",
       "rainfall": "Patak ng ulan",
       "wind": "Bilis ng hangin",
-      "reliability": "pagiging maaasahan"
+      "reliability": "pagiging maaasahan",
+      "radarTitle": "Mga Mapa at Alerto ng Radar",
+      "radarDesc": "Tingnan ang lokal na katayuan ng baha, mga istasyon ng kanlungan at ligtas na mga ruta sa paligid ng iyong lugar sa real time.",
+      "radarAction": "Buksan ang mapa",
+      "safetyTipsTitle": "Handbook sa kaligtasan"
     },
     "alerts": {
       "title": "Mga alerto",
@@ -577,7 +595,15 @@
         "stayHome": "Manatili sa loob ng bahay",
         "avoidFlood": "Iwasan ang mga lugar na binaha",
         "prepareBag": "Maghanda ng emergency bag",
-        "monitorUpdates": "Subaybayan ang mga update"
+        "monitorUpdates": "Subaybayan ang mga update",
+        "beforeFlood": "Bago bumaha",
+        "beforeFloodDesc": "Itaas ang muwebles at patayin ang circuit breaker.",
+        "duringFlood": "Habang binabaha",
+        "duringFloodDesc": "Ganap na huwag tumawid sa mabilis na pag-agos ng tubig.",
+        "afterFlood": "Pagkatapos ng pagbaha",
+        "afterFloodDesc": "Suriin ang mga pagtagas ng kuryente bago isara ang circuit breaker.",
+        "firstAidKit": "Bag ng pangunang lunas",
+        "firstAidKitDesc": "Ayusin ang gamot, flashlight, at malinis na tubig."
       }
     },
     "profile": {

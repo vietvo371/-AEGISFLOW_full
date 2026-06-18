@@ -148,7 +148,7 @@ class CallAIPrediction implements ShouldQueue
         $headers = ['X-API-Key' => config('services.ai.key', ''), 'Content-Type' => 'application/json'];
 
         // ── Primary: batch flood prediction (existing endpoint) ───────────────
-        $batchUrl = $baseUrl . config('services.ai.endpoints.predict_flood');
+        $batchUrl = $baseUrl.config('services.ai.endpoints.predict_flood');
         $batchResponse = null;
         try {
             $resp = Http::timeout($timeout)->withHeaders($headers)->post($batchUrl, [
@@ -172,28 +172,28 @@ class CallAIPrediction implements ShouldQueue
             $readings = collect($primaryInput['recent_readings'] ?? [])
                 ->map(fn ($r) => [
                     'water_level_m' => (float) ($r['value'] ?? 0),
-                    'rainfall_mm'   => (float) ($primaryInput['weather']['rainfall_mm'] ?? 0),
-                    'timestamp'     => $r['recorded_at'] ?? null,
+                    'rainfall_mm' => (float) ($primaryInput['weather']['rainfall_mm'] ?? 0),
+                    'timestamp' => $r['recorded_at'] ?? null,
                 ])
                 ->values()
                 ->all();
 
             $analyzePayload = [
-                'water_level_m'    => (float) ($primaryInput['current_water_level_m'] ?? 0),
-                'rainfall_mm'      => $primaryInput['weather']['rainfall_mm'] ?? null,
-                'hours_rain'       => 6,
-                'tide_level'       => 0.5,
+                'water_level_m' => (float) ($primaryInput['current_water_level_m'] ?? 0),
+                'rainfall_mm' => $primaryInput['weather']['rainfall_mm'] ?? null,
+                'hours_rain' => 6,
+                'tide_level' => 0.5,
                 'historical_score' => 50.0,
-                'readings'         => $readings,
-                'zone_id'          => (string) ($primaryInput['zone_id'] ?? ''),
-                'zone_name'        => $primaryInput['zone_name'] ?? '',
-                'soil_saturation'  => 40.0,
+                'readings' => $readings,
+                'zone_id' => (string) ($primaryInput['zone_id'] ?? ''),
+                'zone_name' => $primaryInput['zone_name'] ?? '',
+                'soil_saturation' => 40.0,
                 'include_forecast' => true,
-                'include_spread'   => false,   // skip spread for speed in scheduled runs
+                'include_spread' => false,   // skip spread for speed in scheduled runs
             ];
 
             $smartResp = Http::timeout(20)->withHeaders($headers)
-                ->post($baseUrl . '/api/ai/analyze', $analyzePayload);
+                ->post($baseUrl.'/api/ai/analyze', $analyzePayload);
 
             if ($smartResp->successful()) {
                 $smartAnalysis = $smartResp->json();
@@ -207,6 +207,7 @@ class CallAIPrediction implements ShouldQueue
             if ($smartAnalysis) {
                 $batchResponse['smart_analysis'] = $smartAnalysis;
             }
+
             return $batchResponse;
         }
 
@@ -215,6 +216,7 @@ class CallAIPrediction implements ShouldQueue
         if ($smartAnalysis) {
             $fallback['smart_analysis'] = $smartAnalysis;
         }
+
         return $fallback;
     }
 
@@ -281,46 +283,46 @@ class CallAIPrediction implements ShouldQueue
             $result = $resultsByZone[$zoneId] ?? [];
 
             $storedInputData = [
-                'zone'                 => $zoneInput,
+                'zone' => $zoneInput,
                 'contributing_factors' => $result['contributing_factors'] ?? [],
-                'timeseries_features'  => $result['timeseries_features']  ?? [],
-                'risk_factors'         => $result['risk_factors']          ?? [],
-                'risk_level'           => $result['risk_level']            ?? null,
-                'model_version'        => $result['model_version']         ?? null,
-                'prediction_method'    => $result['prediction_method']     ?? null,
+                'timeseries_features' => $result['timeseries_features'] ?? [],
+                'risk_factors' => $result['risk_factors'] ?? [],
+                'risk_level' => $result['risk_level'] ?? null,
+                'model_version' => $result['model_version'] ?? null,
+                'prediction_method' => $result['prediction_method'] ?? null,
                 // Smart AI analysis chỉ lưu cho zone đầu tiên (primary)
-                'forecast'   => ($zoneInput === $inputData[0]) ? ($smartAnalysis['forecast'] ?? null) : null,
-                'weather'    => ($zoneInput === $inputData[0]) ? ($smartAnalysis['weather']  ?? null) : null,
-                'ai_summary' => ($zoneInput === $inputData[0]) ? ($smartAnalysis['summary']  ?? null) : null,
+                'forecast' => ($zoneInput === $inputData[0]) ? ($smartAnalysis['forecast'] ?? null) : null,
+                'weather' => ($zoneInput === $inputData[0]) ? ($smartAnalysis['weather'] ?? null) : null,
+                'ai_summary' => ($zoneInput === $inputData[0]) ? ($smartAnalysis['summary'] ?? null) : null,
             ];
 
             $prediction = Prediction::create([
-                'model_id'           => $model?->id,
-                'model_version'      => $result['model_version'] ?? $model?->version,
-                'prediction_type'    => $result['type'] ?? 'flood_probability',
-                'flood_zone_id'      => $zoneId,
-                'district_id'        => FloodZone::find($zoneId)?->district_id,
-                'incident_id'        => $this->incidentId,
-                'prediction_for'     => now()->addMinutes($this->horizonMinutes),
-                'horizon_minutes'    => $this->horizonMinutes,
-                'predicted_value'    => $result['predicted_value'] ?? null,
-                'confidence'         => $result['confidence'] ?? null,
-                'probability'        => $this->normalizeProbability($result),
-                'severity'           => $this->normalizeSeverity($result),
-                'input_data'         => $storedInputData,
+                'model_id' => $model?->id,
+                'model_version' => $result['model_version'] ?? $model?->version,
+                'prediction_type' => $result['type'] ?? 'flood_probability',
+                'flood_zone_id' => $zoneId,
+                'district_id' => FloodZone::find($zoneId)?->district_id,
+                'incident_id' => $this->incidentId,
+                'prediction_for' => now()->addMinutes($this->horizonMinutes),
+                'horizon_minutes' => $this->horizonMinutes,
+                'predicted_value' => $result['predicted_value'] ?? null,
+                'confidence' => $result['confidence'] ?? null,
+                'probability' => $this->normalizeProbability($result),
+                'severity' => $this->normalizeSeverity($result),
+                'input_data' => $storedInputData,
                 'processing_time_ms' => $processingTimeMs,
-                'status'             => 'generated',
+                'status' => 'generated',
             ]);
 
             PredictionDetail::create([
-                'prediction_id'   => $prediction->id,
-                'entity_type'     => 'flood_zone',
-                'entity_id'       => $zoneId,
+                'prediction_id' => $prediction->id,
+                'entity_type' => 'flood_zone',
+                'entity_id' => $zoneId,
                 'predicted_value' => $result['predicted_value'] ?? null,
-                'confidence'      => $result['confidence'] ?? null,
-                'probability'     => $this->normalizeProbability($result),
-                'severity'        => $this->normalizeSeverity($result),
-                'risk_factors'    => $result['risk_factors'] ?? [],
+                'confidence' => $result['confidence'] ?? null,
+                'probability' => $this->normalizeProbability($result),
+                'severity' => $this->normalizeSeverity($result),
+                'risk_factors' => $result['risk_factors'] ?? [],
             ]);
 
             $created[] = $prediction;

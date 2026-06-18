@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Platform, Animated } from 'react-native';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, Text, StyleSheet, Platform, Animated, Modal, TouchableWithoutFeedback } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -9,17 +9,34 @@ import { theme, SPACING, BORDER_RADIUS, TAB_BAR } from '../../theme';
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
     const insets = useSafeAreaInsets();
     const bottomInset = Platform.OS === 'ios' ? Math.max(insets.bottom, 12) : 12;
-    // Assuming Citizen mode has 5 tabs and Emergency mode has 4 tabs
-    const isEmergency = state.routes.length === 4;
-    const isSosScreen = !isEmergency && state.routes[state.index]?.name === 'SOS';
+    const [actionSheetVisible, setActionSheetVisible] = useState(false);
+    
+    // Check if we are in Emergency mode by looking for emergency-specific routes
+    const isEmergency = state.routes.some(route =>
+        ['SituationMap', 'Incidents', 'PriorityRoute'].includes(route.name)
+    );
+    const activeRouteName = state.routes[state.index]?.name;
+    const shouldHideTabBar = [
+        'SOS',
+        'CreateReport',
+        'MyReports',
+        'EditReport',
+        'ReportDetail',
+        'Notifications'
+    ].includes(activeRouteName);
 
-    if (isSosScreen) {
+    if (shouldHideTabBar) {
         return null;
     }
     
     // Emergency Color (Red theme)
     const emergencyActiveColor = '#EF4444'; // Red-500
     const emergencyBgColor = 'rgba(239, 68, 68, 0.1)'; // Light Red transparent
+
+    const handleActionSelect = (route: string) => {
+        setActionSheetVisible(false);
+        navigation.navigate(route);
+    };
 
     return (
         <View style={styles.container}>
@@ -38,13 +55,13 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                             ? options.title
                             : route.name;
 
-                    const activeRouteName = state.routes[state.index].name;
-
                     // Map active nested sub-screens to highlight their parent tabs
                     let isFocused = state.index === index;
                     if (!isFocused) {
                         if (route.name === 'Home') {
                             isFocused = ['Notifications', 'ReportDetail', 'CreateReport', 'EditReport'].includes(activeRouteName);
+                        } else if (route.name === 'Profile') {
+                            isFocused = ['MyReports'].includes(activeRouteName);
                         }
                     }
 
@@ -54,7 +71,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                         'ReportDetail',
                         'CreateReport',
                         'Notifications',
-                        'EditReport'
+                        'EditReport',
+                        'MyReports'
                     ];
 
                     if (HIDDEN_SCREENS.includes(route.name)) {
@@ -97,7 +115,6 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                             style={styles.tabItem}
                             activeOpacity={0.7}
                         >
-                            {/* Animated Pill Container for Emergency (or Citizen can use it too, let's make it look pro for both!) */}
                             <Animated.View style={[
                                 styles.iconContainer,
                                 isFocused && {
@@ -123,16 +140,16 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                 })}
             </View>
 
-            {/* FAB Button - Nổi lên, tròn, gradient primary, icon "+" để tạo báo cáo */}
+            {/* FAB Button - Opens Action Sheet */}
             {!isEmergency && (
                 <View style={styles.floatingButtonContainer}>
                     <TouchableOpacity
                         style={styles.floatingButton}
-                        onPress={() => navigation.navigate('CreateReport')}
+                        onPress={() => setActionSheetVisible(true)}
                         activeOpacity={0.8}
                     >
                         <LinearGradient
-                            colors={theme.colors.gradientPrimary} // Gradient tím thương hiệu
+                            colors={theme.colors.gradientPrimary}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}
                             style={styles.floatingButtonGradient}
@@ -142,13 +159,62 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                     </TouchableOpacity>
                 </View>
             )}
+
+            {/* Action Sheet Modal */}
+            <Modal
+                visible={actionSheetVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setActionSheetVisible(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setActionSheetVisible(false)}>
+                    <View style={styles.modalOverlay}>
+                        <TouchableWithoutFeedback>
+                            <View style={[styles.actionSheet, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+                                <View style={styles.dragIndicator} />
+                                <Text style={styles.actionSheetTitle}>Bạn muốn báo cáo điều gì?</Text>
+                                
+                                <TouchableOpacity 
+                                    style={[styles.actionButton, styles.sosButton]} 
+                                    onPress={() => handleActionSelect('SOS')}
+                                    activeOpacity={0.8}
+                                >
+                                    <View style={styles.sosIconContainer}>
+                                        <Icon name="phone-alert" size={28} color={theme.colors.white} />
+                                    </View>
+                                    <View style={styles.actionTextContainer}>
+                                        <Text style={styles.sosTitle}>Yêu cầu cứu hộ (SOS)</Text>
+                                        <Text style={styles.actionDescription}>Nguy hiểm đến tính mạng, cần cứu hộ khẩn cấp</Text>
+                                    </View>
+                                    <Icon name="chevron-right" size={24} color="#EF4444" />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity 
+                                    style={styles.actionButton} 
+                                    onPress={() => handleActionSelect('CreateReport')}
+                                    activeOpacity={0.8}
+                                >
+                                    <View style={styles.reportIconContainer}>
+                                        <Icon name="image-search" size={28} color={theme.colors.primary} />
+                                    </View>
+                                    <View style={styles.actionTextContainer}>
+                                        <Text style={styles.reportTitle}>Phản ánh ngập lụt / sự cố</Text>
+                                        <Text style={styles.actionDescription}>Cung cấp hình ảnh hiện trường để hệ thống AI ghi nhận</Text>
+                                    </View>
+                                    <Icon name="chevron-right" size={24} color={theme.colors.textSecondary} />
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        position: 'relative', // Must be relative so bottom tabs reserve screen space
+        position: 'relative',
         backgroundColor: 'transparent',
     },
     tabBar: {
@@ -232,6 +298,96 @@ const styles = StyleSheet.create({
         borderRadius: 34,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        justifyContent: 'flex-end',
+    },
+    actionSheet: {
+        backgroundColor: theme.colors.white,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        paddingHorizontal: 20,
+        paddingTop: 12,
+    },
+    dragIndicator: {
+        width: 40,
+        height: 5,
+        backgroundColor: '#E5E5EA',
+        borderRadius: 3,
+        alignSelf: 'center',
+        marginBottom: 20,
+    },
+    actionSheetTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: theme.colors.text,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F9FAFB',
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    sosButton: {
+        backgroundColor: '#FEF2F2',
+        borderColor: '#FCA5A5',
+    },
+    sosIconContainer: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        backgroundColor: '#EF4444',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#EF4444',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+            },
+            android: {
+                elevation: 6,
+            },
+        }),
+    },
+    reportIconContainer: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        backgroundColor: '#EEF2FF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    actionTextContainer: {
+        flex: 1,
+    },
+    sosTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#B91C1C',
+        marginBottom: 4,
+    },
+    reportTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: theme.colors.text,
+        marginBottom: 4,
+    },
+    actionDescription: {
+        fontSize: 13,
+        color: theme.colors.textSecondary,
+        lineHeight: 18,
     },
 });
 

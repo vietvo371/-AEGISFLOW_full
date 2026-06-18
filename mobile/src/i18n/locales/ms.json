@@ -62,7 +62,21 @@
     "validEmail": "Sila masukkan e-mel yang sah",
     "passwordMinLength": "Kata laluan mestilah sekurang-kurangnya 6 aksara",
     "nameMinLength": "Nama mestilah sekurang-kurangnya 2 aksara",
-    "passwordsNotMatch": "Kata laluan tidak sepadan"
+    "passwordsNotMatch": "Kata laluan tidak sepadan",
+    "welcomeTo": "Selamat datang ke",
+    "loginSubtitle": "Log masuk untuk melaporkan dan menjejaki insiden bandar",
+    "welcomeToAegisFlow": "Selamat datang ke AegisFlow AI",
+    "registerSubtitle": "Sertai AegisFlow AI untuk menyumbang kepada membina bandar pintar",
+    "phoneRequired": "Sila masukkan nombor telefon",
+    "invalidPhone": "Nombor telefon tidak sah",
+    "confirmPasswordRequired": "Sila sahkan kata laluan anda",
+    "weak": "Lemah",
+    "medium": "Sederhana",
+    "strong": "kuat",
+    "registering": "Mendaftar akaun...",
+    "phone": "Nombor telefon",
+    "enterPhone": "Masukkan nombor telefon",
+    "registrationSuccessDesc": "Akaun anda telah berjaya dibuat"
   },
   "onboarding": {
     "welcomeTitle": "Selamat datang ke AegisFlowAI",
@@ -411,7 +425,11 @@
       "humidity": "Kelembapan",
       "rainfall": "Hujan",
       "wind": "Kelajuan Angin",
-      "reliability": "Kebolehpercayaan"
+      "reliability": "Kebolehpercayaan",
+      "radarTitle": "Peta & Makluman Radar",
+      "radarDesc": "Lihat status banjir tempatan, stesen perlindungan dan laluan selamat di sekitar kawasan anda dalam masa nyata.",
+      "radarAction": "Buka peta",
+      "safetyTipsTitle": "Buku panduan keselamatan"
     },
     "alerts": {
       "title": "Makluman",
@@ -577,7 +595,15 @@
         "stayHome": "Kekal dalam rumah",
         "avoidFlood": "Elakkan kawasan banjir",
         "prepareBag": "Sediakan beg kecemasan",
-        "monitorUpdates": "Pantau kemas kini"
+        "monitorUpdates": "Pantau kemas kini",
+        "beforeFlood": "Sebelum banjir",
+        "beforeFloodDesc": "Gerakkan perabot ke atas dan matikan pemutus litar.",
+        "duringFlood": "Semasa banjir",
+        "duringFloodDesc": "Sama sekali tidak mengharungi air yang mengalir deras.",
+        "afterFlood": "Selepas banjir",
+        "afterFloodDesc": "Periksa kebocoran elektrik sebelum menutup pemutus litar.",
+        "firstAidKit": "Beg pertolongan cemas",
+        "firstAidKitDesc": "Susun ubat, lampu suluh, dan air bersih."
       }
     },
     "profile": {

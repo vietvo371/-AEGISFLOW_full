@@ -70,10 +70,11 @@ const ProfileScreen = () => {
   const MENU_GROUP_1 = [
     { id: 'myReports', icon: 'file-document-multiple-outline', label: t('citizen.profile.myReports', 'Phản ánh của tôi'), screen: 'MyReports', badge: reportCount > 0 ? reportCount : undefined },
     { id: 'myRescue', icon: 'lifebuoy', label: t('citizen.profile.myRescue', 'Yêu cầu cứu hộ'), screen: 'MyRescueRequests' },
-    { id: 'notifications', icon: 'bell-outline', label: t('citizen.profile.notifications', 'Thông báo'), screen: 'NotificationSettings', badge: unreadCount > 0 ? unreadCount : undefined },
+    { id: 'notifications', icon: 'bell-outline', label: t('citizen.profile.notifications', 'Thông báo'), screen: 'Notifications', badge: unreadCount > 0 ? unreadCount : undefined },
   ];
 
   const MENU_GROUP_2 = [
+    { id: 'notificationSettings', icon: 'bell-cog-outline', label: t('citizen.profile.notificationSettings', 'Cài đặt thông báo'), screen: 'NotificationSettings' },
     { id: 'security', icon: 'lock-outline', label: t('citizen.profile.changePassword', 'Đổi mật khẩu'), screen: 'ChangePasswordLoggedIn' },
     { id: 'about', icon: 'information-outline', label: t('citizen.profile.about', 'Giới thiệu'), screen: 'About' },
   ];

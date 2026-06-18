@@ -31,6 +31,8 @@ import { NotificationProvider } from './src/contexts/NotificationContext';
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
   'ViewPropTypes will be removed',
+  'Không thể lấy FCM token',
+  '[FCM] Failed to get token',
 ]);
 
 // Xử lý thông báo khi app đang mở

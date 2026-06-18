@@ -54,6 +54,7 @@
     "rememberPassword": "Remember your password?",
     "signingIn": "Signing in...",
     "registrationSuccessful": "Registration Successful",
+    "registrationSuccessDesc": "Your account has been created successfully",
     "registrationFailed": "Registration Failed",
     "dataProtected": "Your data is securely protected",
     "passwordRequired": "Password is required",
@@ -62,7 +63,20 @@
     "validEmail": "Please enter a valid email",
     "passwordMinLength": "Password must be at least 6 characters",
     "nameMinLength": "Name must be at least 2 characters",
-    "passwordsNotMatch": "Passwords do not match"
+    "passwordsNotMatch": "Passwords do not match",
+    "welcomeTo": "Welcome to",
+    "loginSubtitle": "Sign in to report and track urban incidents",
+    "welcomeToAegisFlow": "Welcome to AegisFlow AI",
+    "registerSubtitle": "Join AegisFlow AI to help build a smarter city",
+    "phoneRequired": "Phone number is required",
+    "invalidPhone": "Invalid phone number",
+    "confirmPasswordRequired": "Please confirm your password",
+    "weak": "Weak",
+    "medium": "Medium",
+    "strong": "Strong",
+    "registering": "Registering account...",
+    "phone": "Phone Number",
+    "enterPhone": "Enter phone number"
   },
   "onboarding": {
     "welcomeTitle": "Welcome to AegisFlowAI",
@@ -100,21 +114,6 @@
     "changingPassword": "Changing password...",
     "passwordChanged": "Password changed successfully!",
     "passwordChangeFailed": "Failed to change password"
-  },
-  "home": {
-    "title": "Home",
-    "greeting": "Hello",
-    "recentIncidents": "Recent Incidents",
-    "viewAll": "View All",
-    "totalReports": "Total Reports",
-    "activeIncidents": "Active Incidents",
-    "resolvedToday": "Resolved Today",
-    "aiPredictions": "AI Predictions",
-    "trafficStatus": "Traffic Status",
-    "normal": "Normal",
-    "moderate": "Moderate",
-    "heavy": "Heavy",
-    "congested": "Congested"
   },
   "map": {
     "title": "Map",
@@ -426,7 +425,11 @@
       "humidity": "Humidity",
       "rainfall": "Rainfall",
       "wind": "Wind Speed",
-      "reliability": "Reliability"
+      "reliability": "Reliability",
+      "radarTitle": "Radar Map & Warnings",
+      "radarDesc": "View local flood conditions, shelters, and safe routes in real time.",
+      "radarAction": "Open Map",
+      "safetyTipsTitle": "Safety Tips"
     },
     "alerts": {
       "title": "Alerts",
@@ -592,7 +595,15 @@
         "stayHome": "Stay indoors",
         "avoidFlood": "Avoid flooded areas",
         "prepareBag": "Prepare emergency bag",
-        "monitorUpdates": "Monitor updates"
+        "monitorUpdates": "Monitor updates",
+        "beforeFlood": "Before Flooding",
+        "beforeFloodDesc": "Move furniture to high areas, turn off electricity.",
+        "duringFlood": "During Flooding",
+        "duringFloodDesc": "Never wade through fast-flowing water.",
+        "afterFlood": "After Flooding",
+        "afterFloodDesc": "Check for electric leaks before turning on electricity.",
+        "firstAidKit": "First Aid Kit",
+        "firstAidKitDesc": "Keep medicines, flashlight, clean water ready."
       }
     },
     "profile": {

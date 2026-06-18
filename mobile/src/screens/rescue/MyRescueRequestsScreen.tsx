@@ -19,7 +19,7 @@ const STATUS_CONFIG: Record<string, { color: string; label: string; icon: string
 };
 
 const URGENCY_COLOR: Record<string, string> = {
-  critical: '#EF4444', high: '#F97316', medium: '#EAB308', low: '#3B82F6',
+  critical: '#EF4444', high: '#F59E0B', medium: '#3B82F6', low: '#10B981',
 };
 
 const MyRescueRequestsScreen = () => {

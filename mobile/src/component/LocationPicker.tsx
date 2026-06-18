@@ -31,8 +31,8 @@ interface LocationPickerProps {
 }
 
 const DEFAULT_LOCATION = {
-  latitude: 10.8231,
-  longitude: 106.6297, // Ho Chi Minh City
+  latitude: 16.0680,
+  longitude: 108.2122, // Da Nang City
 };
 
 const LocationPicker: React.FC<LocationPickerProps> = ({
@@ -94,6 +94,24 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           };
+
+          // Check if coordinates are within Da Nang bounds
+          const isWithinDaNang = (
+            location.longitude >= 108.02 &&
+            location.longitude <= 108.29 &&
+            location.latitude >= 15.82 &&
+            location.latitude <= 16.16
+          );
+
+          if (!isWithinDaNang) {
+            Alert.alert(
+              'Ngoài phạm vi hỗ trợ',
+              'Vị trí của bạn nằm ngoài khu vực Đà Nẵng. AegisFlow chỉ hỗ trợ tại Đà Nẵng.',
+              [{ text: 'Đóng' }]
+            );
+            return;
+          }
+
           setCurrentLocation(location);
           setSelectedLocation(location);
           onChange(location);

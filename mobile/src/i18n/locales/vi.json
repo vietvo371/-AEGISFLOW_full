@@ -54,6 +54,7 @@
     "rememberPassword": "Nhớ mật khẩu?",
     "signingIn": "Đang đăng nhập...",
     "registrationSuccessful": "Đăng ký thành công",
+    "registrationSuccessDesc": "Tài khoản của bạn đã được tạo thành công",
     "registrationFailed": "Đăng ký thất bại",
     "dataProtected": "Dữ liệu của bạn được bảo vệ an toàn",
     "passwordRequired": "Mật khẩu là bắt buộc",
@@ -62,7 +63,20 @@
     "validEmail": "Vui lòng nhập email hợp lệ",
     "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
     "nameMinLength": "Tên phải có ít nhất 2 ký tự",
-    "passwordsNotMatch": "Mật khẩu không khớp"
+    "passwordsNotMatch": "Mật khẩu không khớp",
+    "welcomeTo": "Chào mừng đến với",
+    "loginSubtitle": "Đăng nhập để báo cáo và theo dõi sự cố đô thị",
+    "welcomeToAegisFlow": "Chào mừng đến với AegisFlow AI",
+    "registerSubtitle": "Tham gia AegisFlow AI để góp phần xây dựng thành phố thông minh",
+    "phoneRequired": "Vui lòng nhập số điện thoại",
+    "invalidPhone": "Số điện thoại không hợp lệ",
+    "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu",
+    "weak": "Yếu",
+    "medium": "Trung bình",
+    "strong": "Mạnh",
+    "registering": "Đang đăng ký tài khoản...",
+    "phone": "Số điện thoại",
+    "enterPhone": "Nhập số điện thoại"
   },
   "onboarding": {
     "welcomeTitle": "Chào mừng đến với AegisFlowAI",
@@ -101,21 +115,6 @@
     "passwordChanged": "Mật khẩu đã được thay đổi!",
     "passwordChangeFailed": "Không thể thay đổi mật khẩu"
   },
-  "home": {
-    "title": "Trang chủ",
-    "greeting": "Xin chào",
-    "recentIncidents": "Sự cố gần đây",
-    "viewAll": "Xem tất cả",
-    "totalReports": "Tổng phản ánh",
-    "activeIncidents": "Sự cố đang mở",
-    "resolvedToday": "Giải quyết hôm nay",
-    "aiPredictions": "Dự đoán AI",
-    "trafficStatus": "Tình hình giao thông",
-    "normal": "Bình thường",
-    "moderate": "Trung bình",
-    "heavy": "Đông đúc",
-    "congested": "Ùn tắc"
-  },
   "map": {
     "title": "Bản đồ",
     "trafficMap": "Bản đồ giao thông",
@@ -149,7 +148,7 @@
       "low": "Thấp",
       "medium": "Trung bình",
       "high": "Cao",
-      "critical": "Nghiêm trọng"
+      "critical": "Khẩn cấp"
     },
     "source": {
       "operator": "Vận hành viên",
@@ -426,7 +425,11 @@
       "humidity": "Độ ẩm",
       "rainfall": "Lượng mưa",
       "wind": "Tốc độ gió",
-      "reliability": "Độ tin cậy"
+      "reliability": "Độ tin cậy",
+      "radarTitle": "Bản đồ Radar & Cảnh báo",
+      "radarDesc": "Xem trạng thái ngập lụt cục bộ, trạm trú ẩn và lộ trình an toàn quanh khu vực của bạn theo thời gian thực.",
+      "radarAction": "Mở bản đồ",
+      "safetyTipsTitle": "Cẩm nang an toàn"
     },
     "alerts": {
       "title": "Cảnh báo",
@@ -543,7 +546,7 @@
         "normal": "Bình thường",
         "medium": "Trung bình",
         "high": "Cao",
-        "critical": "Nguy cấp",
+        "critical": "Khẩn cấp",
         "category": "Loại hỗ trợ",
         "rescue": "Cứu hộ",
         "evacuation": "Sơ tán",
@@ -592,7 +595,15 @@
         "stayHome": "Hạn chế ra ngoài",
         "avoidFlood": "Tránh khu vực ngập",
         "prepareBag": "Chuẩn bị túi khẩn cấp",
-        "monitorUpdates": "Theo dõi thông tin cập nhật"
+        "monitorUpdates": "Theo dõi thông tin cập nhật",
+        "beforeFlood": "Trước khi ngập",
+        "beforeFloodDesc": "Di dời đồ đạc lên cao, ngắt cầu dao điện.",
+        "duringFlood": "Khi đang ngập",
+        "duringFloodDesc": "Tuyệt đối không lội qua vùng nước chảy xiết.",
+        "afterFlood": "Sau khi ngập",
+        "afterFloodDesc": "Kiểm tra rò rỉ điện trước khi đóng cầu dao.",
+        "firstAidKit": "Túi sơ cứu",
+        "firstAidKitDesc": "Sắp xếp sẵn thuốc men, đèn pin, nước sạch."
       }
     },
     "profile": {

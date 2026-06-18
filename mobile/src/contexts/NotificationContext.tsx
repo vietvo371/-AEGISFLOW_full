@@ -7,7 +7,7 @@ import { AlertService } from '../services/AlertService';
 
 export interface Notification {
   id: string;
-  type: 'report_status' | 'points_updated' | 'new_nearby_report' | 'incident_created';
+  type: 'report_status' | 'report_status_update' | 'points_updated' | 'new_nearby_report' | 'incident_created' | 'alert' | 'flood_warning';
   title: string;
   message: string;
   data?: any;
@@ -323,14 +323,23 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       const handleAlertCreated = (data: any) => {
         console.log('🚨 [Flood Channel] AlertCreated broadcast received:', data);
 
+        const severityMap: Record<string, string> = {
+          critical: '🔴 Nguy hiểm',
+          high: '🟠 Cao',
+          medium: '🟡 Trung bình',
+          low: '🔵 Thấp',
+        };
+        const severityLabel = severityMap[data.severity] || '⚠️ Cảnh báo';
+
         const notification: Notification = {
           id: `alert-${data.id || Date.now()}`,
-          type: 'incident_created',
-          title: `Cảnh báo từ AI: ${data.title}`.trim(),
+          type: 'alert',
+          title: `${severityLabel}: ${data.title}`.trim(),
           message: data.description || 'Có cảnh báo ngập lụt mới trong khu vực.',
           data: {
             ...data,
-            severity: data.severity,
+            id: data.id,
+            alert_id: data.id,
           },
           timestamp: new Date(),
           read: false,
@@ -340,7 +349,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         fetchUnreadCount();
         triggerRefresh();
 
-        // High severity alerts show modal popup, lower severity shows top slide down banner
+        // High severity alerts show modal popup
         const isCritical = data.severity === 'critical' || data.severity === 'high';
         if (isCritical) {
           AlertService.alert(
@@ -349,6 +358,14 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
             [{ text: 'Đóng', style: 'cancel' }],
             'error'
           );
+        } else {
+          // Medium/low severity: show Toast banner
+          Toast.show({
+            type: 'info',
+            text1: notification.title,
+            text2: notification.message,
+            visibilityTime: 4000,
+          });
         }
       };
 

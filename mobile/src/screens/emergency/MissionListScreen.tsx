@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from '../../hooks/useTranslation';
 import PageHeader from '../../component/PageHeader';
 import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, SCREEN_PADDING } from '../../theme';
 import { rescueService, RescueRequest } from '../../services/rescueService';
@@ -38,21 +39,23 @@ const CAT_ICON: Record<string, string> = {
 };
 
 const TABS = [
-    { key: 'all',         label: 'Tất cả',    icon: 'apps',                 color: '#6366F1' },
-    { key: 'pending',     label: 'Chờ xử lý', icon: 'clock-alert-outline',  color: '#EF4444' },
-    { key: 'in_progress', label: 'Đang làm',  icon: 'run-fast',             color: '#2563EB' },
-    { key: 'completed',   label: 'Xong',      icon: 'check-circle-outline', color: '#10B981' },
+    { key: 'all',         label: 'Tất cả',       icon: 'apps',                 color: '#6366F1' },
+    { key: 'assigned',    label: 'Được phân công', icon: 'clock-alert-outline',  color: '#EF4444' },
+    { key: 'in_progress', label: 'Đang làm',      icon: 'run-fast',             color: '#2563EB' },
+    { key: 'completed',   label: 'Xong',          icon: 'check-circle-outline', color: '#10B981' },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const MissionListScreen = () => {
     const navigation  = useNavigation();
+    const { t }       = useTranslation();
     const [all, setAll]               = useState<RescueRequest[]>([]);
     const [loading, setLoading]       = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [activeTab, setActiveTab]   = useState('all');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
+    const [myTeamId, setMyTeamId]     = useState<number | null>(null);
     const tabAnimMap = useRef<Record<string, Animated.Value>>({}).current;
 
     TABS.forEach(t => {
@@ -63,7 +66,7 @@ const MissionListScreen = () => {
     const filtered = all
         .filter(r => activeTab === 'all' || r.status === activeTab)
         .sort((a, b) => {
-            const sp: Record<string, number> = { pending: 0, assigned: 1, in_progress: 2, completed: 3, cancelled: 4 };
+            const sp: Record<string, number> = { assigned: 0, in_progress: 1, completed: 2, cancelled: 3, pending: 4 };
             const up: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
             const ds = (sp[a.status] ?? 5) - (sp[b.status] ?? 5);
             if (ds !== 0) return ds;
@@ -75,10 +78,12 @@ const MissionListScreen = () => {
     const countOf = (k: string) => k === 'all' ? all.length : all.filter(r => r.status === k).length;
 
     // ─── Fetch ─────────────────────────────────────────────────────────────────
-    const fetchMissions = useCallback(async (isRefresh = false) => {
+    const fetchMissions = useCallback(async (isRefresh = false, teamId?: number) => {
         try {
             isRefresh ? setRefreshing(true) : setLoading(true);
-            const data = await rescueService.getRequests();
+            const resolvedTeamId = teamId ?? myTeamId;
+            const params = resolvedTeamId ? { assigned_team_id: resolvedTeamId } : undefined;
+            const data = await rescueService.getRequests(params);
             setAll(data || []);
         } catch {
             console.error('Fetch missions failed');
@@ -86,9 +91,16 @@ const MissionListScreen = () => {
             setLoading(false);
             setRefreshing(false);
         }
-    }, []);
+    }, [myTeamId]);
 
-    useEffect(() => { fetchMissions(); }, [fetchMissions]);
+    useEffect(() => {
+        const init = async () => {
+            const team = await rescueService.getMyTeam();
+            if (team) setMyTeamId(team.id);
+            await fetchMissions(false, team?.id ?? undefined);
+        };
+        init();
+    }, []);
 
     // ─── Tab switch ────────────────────────────────────────────────────────────
     const switchTab = (key: string) => {
@@ -131,7 +143,7 @@ const MissionListScreen = () => {
         const uCfg        = URGENCY_CFG[urgency]                      || URGENCY_CFG.medium;
         const catIcon     = CAT_ICON[item.category]                   || CAT_ICON.other;
         const isUpdating  = updatingId === item.id;
-        const isPending   = item.status === 'pending' || item.status === 'assigned';
+        const isPending   = item.status === 'assigned';
         const isRunning   = item.status === 'in_progress';
         const isDone      = item.status === 'completed' || item.status === 'cancelled';
 
@@ -183,7 +195,7 @@ const MissionListScreen = () => {
                             <Text style={styles.peopleText}>
                                 {item.people_count} người cần hỗ trợ
                                 {item.vulnerable_groups?.length > 0
-                                    ? ` · ${item.vulnerable_groups.join(', ')}`
+                                    ? ` · ${item.vulnerable_groups.map(g => t(`citizen.sos.form.${g}`, g)).join(', ')}`
                                     : ''}
                             </Text>
                         </View>
@@ -197,7 +209,9 @@ const MissionListScreen = () => {
                         <Icon name="map-marker-outline" size={14} color="#94A3B8" />
                         <Text style={styles.locationText} numberOfLines={1}>{location}</Text>
                         <View style={[styles.urgencyBadge, { backgroundColor: uCfg.color }]}>
-                            <Text style={styles.urgencyText}>{urgency.toUpperCase()}</Text>
+                            <Text style={styles.urgencyText}>
+                                {t(`incidents.severity.${urgency}`, urgency).toUpperCase()}
+                            </Text>
                         </View>
                     </View>
 
@@ -289,7 +303,7 @@ const MissionListScreen = () => {
     }
 
     // ─── Main ─────────────────────────────────────────────────────────────────
-    const pendingCount = countOf('pending');
+    const pendingCount = countOf('assigned');
 
     return (
         <View style={styles.container}>
@@ -310,7 +324,7 @@ const MissionListScreen = () => {
                     </Text>
                     <TouchableOpacity
                         style={styles.summaryAction}
-                        onPress={() => switchTab('pending')}
+                        onPress={() => switchTab('assigned')}
                     >
                         <Text style={styles.summaryActionText}>Xem ngay</Text>
                         <Icon name="chevron-right" size={16} color="#fff" />
@@ -390,7 +404,7 @@ const MissionListScreen = () => {
                         </View>
                         <Text style={styles.emptyTitle}>
                             {activeTab === 'all' ? 'Sẵn sàng ứng phó' :
-                             activeTab === 'pending' ? 'Không có yêu cầu chờ' :
+                             activeTab === 'assigned' ? 'Không có nhiệm vụ được phân công' :
                              activeTab === 'in_progress' ? 'Không có nhiệm vụ đang làm' :
                              'Chưa có nhiệm vụ hoàn thành'}
                         </Text>

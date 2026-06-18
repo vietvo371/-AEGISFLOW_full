@@ -9,6 +9,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapboxGL from '@rnmapbox/maps';
 import Geolocation from 'react-native-geolocation-service';
 import PageHeader from '../../component/PageHeader';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
     theme, SPACING, FONT_SIZE, BORDER_RADIUS, SCREEN_PADDING,
 } from '../../theme';
@@ -88,9 +89,10 @@ const RescueRequestDetailScreen = () => {
     const route      = useRoute<RouteProps>();
     const navigation = useNavigation();
     const { isEmergency } = useAuth();
+    const { t }      = useTranslation();
     const { id }     = route.params;
 
-    const [activeTab, setActiveTab]     = useState<'route' | 'info' | 'action'>('route');
+    const [activeTab, setActiveTab]     = useState<'route' | 'info' | 'action'>(isEmergency ? 'route' : 'info');
     const [request, setRequest]         = useState<RescueRequestItem | null>(null);
     const [loading, setLoading]         = useState(true);
     const [updating, setUpdating]       = useState(false);
@@ -119,10 +121,24 @@ const RescueRequestDetailScreen = () => {
 
     // ─── Geolocation ──────────────────────────────────────────────────────────
     useEffect(() => {
+        if (!isEmergency) return;
         Geolocation.getCurrentPosition(
             pos => {
                 const { longitude, latitude } = pos.coords;
-                setUserLocation(longitude && latitude ? [longitude, latitude] : FALLBACK_USER_LOCATION);
+                
+                // Check if coordinates are within Da Nang bounds
+                const isWithinDaNang = (
+                  longitude >= 108.02 &&
+                  longitude <= 108.29 &&
+                  latitude >= 15.82 &&
+                  latitude <= 16.16
+                );
+
+                setUserLocation(
+                  longitude && latitude && isWithinDaNang
+                    ? [longitude, latitude]
+                    : FALLBACK_USER_LOCATION
+                );
             },
             err => {
                 console.log('Location error:', err);
@@ -130,7 +146,7 @@ const RescueRequestDetailScreen = () => {
             },
             { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
         );
-    }, []);
+    }, [isEmergency]);
 
     // ─── Route (OSRM) ─────────────────────────────────────────────────────────
     const fetchRoute = useCallback(async (req: RescueRequestItem, userLoc: [number, number]) => {
@@ -195,13 +211,13 @@ const RescueRequestDetailScreen = () => {
     }, []);
 
     useEffect(() => {
-        if (request && userLocation) fetchRoute(request, userLocation);
-    }, [request, userLocation, fetchRoute]);
+        if (isEmergency && request && userLocation) fetchRoute(request, userLocation);
+    }, [request, userLocation, fetchRoute, isEmergency]);
 
     // ─── Tab indicator animation ───────────────────────────────────────────────
     const switchTab = (tab: 'route' | 'info' | 'action') => {
         if (tab === 'action' && !isEmergency) return;
-        const availableTabs = isEmergency ? TABS : TABS.filter(t => t.key !== 'action');
+        const availableTabs = isEmergency ? TABS : TABS.filter(t => t.key === 'info');
         const idx = availableTabs.findIndex(t => t.key === tab);
         Animated.spring(indicatorX, {
             toValue: Math.max(idx, 0),
@@ -290,7 +306,7 @@ const RescueRequestDetailScreen = () => {
     const hasCoords = !!(request.latitude && request.longitude);
     const isActive  = ['pending', 'assigned', 'in_progress'].includes(request.status);
     const isMission = request.status === 'in_progress';
-    const visibleTabs = isEmergency ? TABS : TABS.filter(tab => tab.key !== 'action');
+    const visibleTabs = isEmergency ? TABS : TABS.filter(tab => tab.key === 'info');
     const mapCenter: [number, number] = hasCoords
         ? [request.longitude!, request.latitude!]
         : [108.2022, 16.0544];
@@ -425,7 +441,7 @@ const RescueRequestDetailScreen = () => {
                         <Text style={[styles.badgeText, { color: statusConf.color }]}>{statusConf.label.toUpperCase()}</Text>
                     </View>
                     <View style={[styles.badge, { backgroundColor: urgencyColor + '18' }]}>
-                        <Text style={[styles.badgeText, { color: urgencyColor }]}>{urgency.toUpperCase()}</Text>
+                        <Text style={[styles.badgeText, { color: urgencyColor }]}>{t(`incidents.severity.${urgency}`, urgency).toUpperCase()}</Text>
                     </View>
                 </View>
                 <Text style={styles.heroName}>{request.caller_name}</Text>
@@ -507,7 +523,7 @@ const RescueRequestDetailScreen = () => {
                     <View style={styles.tagRow}>
                         {request.vulnerable_groups.map((g, i) => (
                             <View key={i} style={styles.tag}>
-                                <Text style={styles.tagText}>{g}</Text>
+                                <Text style={styles.tagText}>{t(`citizen.sos.form.${g}`, g)}</Text>
                             </View>
                         ))}
                     </View>
@@ -634,34 +650,36 @@ const RescueRequestDetailScreen = () => {
                 <Icon name={statusConf.icon} size={14} color="#fff" />
                 <Text style={styles.statusStripText}>{statusConf.label.toUpperCase()}</Text>
                 <View style={[styles.urgencyPill, { backgroundColor: '#ffffff30' }]}>
-                    <Text style={styles.urgencyPillText}>{urgency.toUpperCase()}</Text>
+                    <Text style={styles.urgencyPillText}>{t(`incidents.severity.${urgency}`, urgency).toUpperCase()}</Text>
                 </View>
             </View>
 
             {/* Tab bar */}
-            <View style={styles.tabBar}>
-                {visibleTabs.map((tab) => {
-                    const isActive = activeTab === tab.key;
-                    return (
-                        <TouchableOpacity
-                            key={tab.key}
-                            style={styles.tabItem}
-                            onPress={() => switchTab(tab.key as any)}
-                            activeOpacity={0.7}
-                        >
-                            <Icon
-                                name={tab.icon}
-                                size={18}
-                                color={isActive ? theme.colors.primary : theme.colors.textSecondary}
-                            />
-                            <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
-                                {tab.label}
-                            </Text>
-                            {isActive && <View style={styles.tabIndicator} />}
-                        </TouchableOpacity>
-                    );
-                })}
-            </View>
+            {isEmergency && (
+                <View style={styles.tabBar}>
+                    {visibleTabs.map((tab) => {
+                        const isActive = activeTab === tab.key;
+                        return (
+                            <TouchableOpacity
+                                key={tab.key}
+                                style={styles.tabItem}
+                                onPress={() => switchTab(tab.key as any)}
+                                activeOpacity={0.7}
+                            >
+                                <Icon
+                                    name={tab.icon}
+                                    size={18}
+                                    color={isActive ? theme.colors.primary : theme.colors.textSecondary}
+                                />
+                                <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
+                                    {tab.label}
+                                </Text>
+                                {isActive && <View style={styles.tabIndicator} />}
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
+            )}
 
             {/* Tab content */}
             {activeTab === 'route'  && renderRouteTab()}
