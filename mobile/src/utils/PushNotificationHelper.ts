@@ -66,6 +66,13 @@ class PushNotificationHelper {
    */
   static async getToken(): Promise<string | null> {
     try {
+      if (Platform.OS === 'ios') {
+        const isRegistered = messaging().isDeviceRegisteredForRemoteMessages;
+        if (!isRegistered) {
+          await messaging().registerDeviceForRemoteMessages();
+        }
+      }
+      
       const token = await messaging().getToken();
       return token || null;
     } catch (error) {
