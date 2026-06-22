@@ -482,10 +482,10 @@ const styles = StyleSheet.create({
   weatherMain: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md },
   weatherTemp: { fontSize: FONT_SIZE['4xl'], fontWeight: '800', color: theme.colors.text },
   weatherDesc: { fontSize: FONT_SIZE.xs, color: theme.colors.textSecondary, marginTop: 2 },
-  weatherMeta: { flexDirection: 'row', gap: SPACING.lg },
-  weatherMetaItem: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
+  weatherMeta: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: SPACING.sm },
+  weatherMetaItem: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, minWidth: '30%' },
   weatherMetaText: { fontSize: FONT_SIZE.xs, color: theme.colors.textSecondary },
-  weatherMetaLabel: { fontSize: 8, color: theme.colors.textTertiary },
+  weatherMetaLabel: { fontSize: 8, color: theme.colors.textTertiary, flexShrink: 1 },
 
   // AI Prediction Card
   predictionCard: {

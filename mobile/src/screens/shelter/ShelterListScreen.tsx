@@ -106,7 +106,7 @@ const ShelterListScreen: React.FC = () => {
 
               return {
                 id: item.id,
-                ten_diem: item.name || item.ten_diem || 'Điểm sơ tán',
+                ten_diem: item.name || item.ten_diem || t('citizen.shelters.defaultName'),
                 dia_chi: item.address || item.dia_chi || '',
                 latitude: toFiniteNumber(item.latitude ?? item.lat ?? item.location?.lat, DA_NANG_LOCATION.lat),
                 longitude: toFiniteNumber(item.longitude ?? item.lng ?? item.location?.lng, DA_NANG_LOCATION.lng),
@@ -126,7 +126,7 @@ const ShelterListScreen: React.FC = () => {
         setUsingDemoData(false);
       }
     } catch (err) {
-      setError('Lỗi kết nối máy chủ.');
+      setError(t('citizen.shelters.connectionError'));
       setUsingDemoData(false);
       setShelters([]);
     } finally {
@@ -302,7 +302,7 @@ const ShelterListScreen: React.FC = () => {
           <View style={styles.capacityContainer}>
             <View style={styles.capacityHeader}>
               <Text style={styles.capacityLabel}>
-                Sức chứa: <Text style={styles.capacityHighlight}>{item.hien_tai}</Text>/{item.suc_chua} người
+                {t('citizen.shelters.capacity')}: <Text style={styles.capacityHighlight}>{item.hien_tai}</Text>/{item.suc_chua} {t('citizen.shelters.people')}
               </Text>
               <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.tinh_trang) + '12' }]}>
                 <View style={[styles.statusIndicatorDot, { backgroundColor: getStatusColor(item.tinh_trang) }]} />
@@ -381,7 +381,7 @@ const ShelterListScreen: React.FC = () => {
             <View style={styles.headerSubtitleRow}>
               <View style={styles.pulseDot} />
               <Text style={styles.headerSubtitle}>
-                {shelters.filter(s => s.tinh_trang !== 'full').length} điểm đang sẵn sàng
+                {t('citizen.shelters.readyCount', { count: shelters.filter(s => s.tinh_trang !== 'full').length })}
               </Text>
             </View>
           </View>
@@ -431,7 +431,7 @@ const ShelterListScreen: React.FC = () => {
               <Text style={styles.statWidgetValue}>
                 {shelters.reduce((sum, s) => sum + Math.max(0, s.suc_chua - s.hien_tai), 0)}
               </Text>
-              <Text style={styles.statWidgetLabel} numberOfLines={1}>chỗ trống</Text>
+              <Text style={styles.statWidgetLabel} numberOfLines={1}>{t('citizen.shelters.bedsAvailable')}</Text>
             </View>
           </View>
 
@@ -442,7 +442,7 @@ const ShelterListScreen: React.FC = () => {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.statWidgetValue} numberOfLines={1}>{getNearestDistance()}</Text>
-              <Text style={styles.statWidgetLabel} numberOfLines={1}>gần nhất</Text>
+              <Text style={styles.statWidgetLabel} numberOfLines={1}>{t('citizen.shelters.nearest')}</Text>
             </View>
           </View>
         </View>

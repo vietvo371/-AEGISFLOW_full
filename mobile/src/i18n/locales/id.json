@@ -310,6 +310,7 @@
     "alerts": "Peringatan",
     "situation": "Situasi",
     "incidents": "Insiden",
+    "missions": "Misi",
     "routes": "Rute"
   },
   "language": {
@@ -484,6 +485,11 @@
       "noSheltersMessage": "Coba cari di area lain.",
       "locations": "lokasi",
       "bedsAvailable": "tempat tidur tersedia",
+      "people": "orang",
+      "nearest": "Terdekat",
+      "defaultName": "Titik Evakuasi",
+      "connectionError": "Kesalahan koneksi server.",
+      "readyCount": "{{count}} lokasi siap",
       "unknownAddress": "Alamat tidak tersedia",
       "school": "Sekolah",
       "community": "Masyarakat",
@@ -496,6 +502,11 @@
       "subtitle": "Kirim permintaan penyelamatan darurat",
       "warningTitle": "Peringatan Darurat",
       "warningMessage": "Hanya gunakan dalam situasi yang mengancam jiwa.",
+      "sheetQuestion": "Apa yang ingin Anda laporkan?",
+      "sheetSosTitle": "Minta Penyelamatan (SOS)",
+      "sheetSosDesc": "Mengancam jiwa, perlu penyelamatan segera",
+      "sheetReportTitle": "Laporkan banjir / insiden",
+      "sheetReportDesc": "Berikan foto di lokasi untuk sistem AI",
       "form": {
         "title": "Judul",
         "titlePlaceholder": "Masukkan judul insiden",

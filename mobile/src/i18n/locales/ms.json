@@ -310,6 +310,7 @@
     "alerts": "Makluman",
     "situation": "Situasi",
     "incidents": "Kejadian",
+    "missions": "Misi",
     "routes": "Laluan"
   },
   "language": {
@@ -484,6 +485,11 @@
       "noSheltersMessage": "Cuba cari di kawasan lain.",
       "locations": "lokasi",
       "bedsAvailable": "katil disediakan",
+      "people": "orang",
+      "nearest": "Terdekat",
+      "defaultName": "Pusat Pemindahan",
+      "connectionError": "Ralat sambungan pelayan.",
+      "readyCount": "{{count}} lokasi sedia",
       "unknownAddress": "Alamat tidak tersedia",
       "school": "Sekolah",
       "community": "Komuniti",
@@ -496,6 +502,11 @@
       "subtitle": "Hantar permintaan menyelamat kecemasan",
       "warningTitle": "Amaran Kecemasan",
       "warningMessage": "Hanya gunakan dalam situasi yang mengancam nyawa.",
+      "sheetQuestion": "Apa yang anda mahu laporkan?",
+      "sheetSosTitle": "Minta Penyelamatan (SOS)",
+      "sheetSosDesc": "Mengancam nyawa, perlu penyelamatan segera",
+      "sheetReportTitle": "Laporkan banjir / insiden",
+      "sheetReportDesc": "Sediakan gambar di lokasi untuk sistem AI",
       "form": {
         "title": "Tajuk",
         "titlePlaceholder": "Masukkan tajuk insiden",

@@ -93,6 +93,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(verifiedUser);
             // Save updated user data just in case
             await AsyncStorage.setItem('@user_data', JSON.stringify(verifiedUser));
+
+            // Re-register FCM token mỗi lần app khởi động (token có thể bị xóa khỏi DB)
+            try {
+              await NotificationTokenService.registerTokenAfterLogin();
+            } catch (fcmError) {
+              console.log('FCM re-register on startup (non-blocking):', fcmError);
+            }
           } else {
             // Invalid data structure, clear session
             await authService.logout();

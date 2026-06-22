@@ -5,8 +5,10 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme, SPACING, BORDER_RADIUS, TAB_BAR } from '../../theme';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
+    const { t } = useTranslation();
     const insets = useSafeAreaInsets();
     const bottomInset = Platform.OS === 'ios' ? Math.max(insets.bottom, 12) : 12;
     const [actionSheetVisible, setActionSheetVisible] = useState(false);
@@ -172,7 +174,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                         <TouchableWithoutFeedback>
                             <View style={[styles.actionSheet, { paddingBottom: Math.max(insets.bottom, 20) }]}>
                                 <View style={styles.dragIndicator} />
-                                <Text style={styles.actionSheetTitle}>Bạn muốn báo cáo điều gì?</Text>
+                                <Text style={styles.actionSheetTitle}>{t('citizen.sos.sheetQuestion')}</Text>
                                 
                                 <TouchableOpacity 
                                     style={[styles.actionButton, styles.sosButton]} 
@@ -183,8 +185,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                                         <Icon name="phone-alert" size={28} color={theme.colors.white} />
                                     </View>
                                     <View style={styles.actionTextContainer}>
-                                        <Text style={styles.sosTitle}>Yêu cầu cứu hộ (SOS)</Text>
-                                        <Text style={styles.actionDescription}>Nguy hiểm đến tính mạng, cần cứu hộ khẩn cấp</Text>
+                                        <Text style={styles.sosTitle}>{t('citizen.sos.sheetSosTitle')}</Text>
+                                        <Text style={styles.actionDescription}>{t('citizen.sos.sheetSosDesc')}</Text>
                                     </View>
                                     <Icon name="chevron-right" size={24} color="#EF4444" />
                                 </TouchableOpacity>
@@ -198,8 +200,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                                         <Icon name="image-search" size={28} color={theme.colors.primary} />
                                     </View>
                                     <View style={styles.actionTextContainer}>
-                                        <Text style={styles.reportTitle}>Phản ánh ngập lụt / sự cố</Text>
-                                        <Text style={styles.actionDescription}>Cung cấp hình ảnh hiện trường để hệ thống AI ghi nhận</Text>
+                                        <Text style={styles.reportTitle}>{t('citizen.sos.sheetReportTitle')}</Text>
+                                        <Text style={styles.actionDescription}>{t('citizen.sos.sheetReportDesc')}</Text>
                                     </View>
                                     <Icon name="chevron-right" size={24} color={theme.colors.textSecondary} />
                                 </TouchableOpacity>

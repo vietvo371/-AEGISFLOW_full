@@ -310,6 +310,7 @@
     "alerts": "Mga alerto",
     "situation": "Sitwasyon",
     "incidents": "Mga pangyayari",
+    "missions": "Misyon",
     "routes": "Mga Ruta"
   },
   "language": {
@@ -484,6 +485,11 @@
       "noSheltersMessage": "Subukang maghanap sa ibang lugar.",
       "locations": "mga lokasyon",
       "bedsAvailable": "magagamit ang mga kama",
+      "people": "tao",
+      "nearest": "Pinakamalapit",
+      "defaultName": "Lugar ng Paglikas",
+      "connectionError": "Error sa koneksyon ng server.",
+      "readyCount": "{{count}} lokasyon na handa",
       "unknownAddress": "Hindi available ang address",
       "school": "Paaralan",
       "community": "Komunidad",
@@ -496,6 +502,11 @@
       "subtitle": "Magpadala ng emergency rescue request",
       "warningTitle": "Babala sa Emergency",
       "warningMessage": "Gamitin lamang sa mga sitwasyong nagbabanta sa buhay.",
+      "sheetQuestion": "Ano ang gusto mong iulat?",
+      "sheetSosTitle": "Humiling ng Pagsagip (SOS)",
+      "sheetSosDesc": "Nanganganib ang buhay, kailangan ng agarang pagsagip",
+      "sheetReportTitle": "Iulat ang pagbaha / insidente",
+      "sheetReportDesc": "Magbigay ng mga larawan sa lugar para sa AI system",
       "form": {
         "title": "Pamagat",
         "titlePlaceholder": "Ilagay ang pamagat ng insidente",

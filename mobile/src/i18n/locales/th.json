@@ -310,6 +310,7 @@
     "alerts": "การแจ้งเตือน",
     "situation": "สถานการณ์",
     "incidents": "เหตุการณ์",
+    "missions": "ภารกิจ",
     "routes": "เส้นทาง"
   },
   "language": {
@@ -484,6 +485,11 @@
       "noSheltersMessage": "ลองค้นหาในพื้นที่อื่น",
       "locations": "สถานที่",
       "bedsAvailable": "มีเตียงให้เลือก",
+      "people": "คน",
+      "nearest": "ใกล้ที่สุด",
+      "defaultName": "จุดอพยพ",
+      "connectionError": "การเชื่อมต่อเซิร์ฟเวอร์ผิดพลาด",
+      "readyCount": "{{count}} จุดพร้อมใช้งาน",
       "unknownAddress": "ที่อยู่ไม่พร้อมใช้งาน",
       "school": "โรงเรียน",
       "community": "ชุมชน",
@@ -496,6 +502,11 @@
       "subtitle": "ส่งคำขอช่วยเหลือฉุกเฉิน",
       "warningTitle": "คำเตือนฉุกเฉิน",
       "warningMessage": "ใช้เฉพาะในสถานการณ์ที่คุกคามถึงชีวิตเท่านั้น",
+      "sheetQuestion": "คุณต้องการรายงานอะไร?",
+      "sheetSosTitle": "ขอความช่วยเหลือ (SOS)",
+      "sheetSosDesc": "อันตรายถึงชีวิต ต้องการความช่วยเหลือด่วน",
+      "sheetReportTitle": "รายงานน้ำท่วม / เหตุการณ์",
+      "sheetReportDesc": "ให้ภาพถ่ายในพื้นที่สำหรับระบบ AI",
       "form": {
         "title": "ชื่อ",
         "titlePlaceholder": "ป้อนชื่อเหตุการณ์",

@@ -256,6 +256,7 @@
     "alerts": "Thông báo",
     "situation": "Tình huống",
     "incidents": "Sự cố",
+    "missions": "Nhiệm vụ",
     "routes": "Tuyến đường"
   },
   "language": {
@@ -484,6 +485,11 @@
       "noSheltersMessage": "Thử tìm kiếm ở khu vực khác.",
       "locations": "điểm",
       "bedsAvailable": "chỗ trống",
+      "people": "người",
+      "nearest": "gần nhất",
+      "defaultName": "Điểm sơ tán",
+      "connectionError": "Lỗi kết nối máy chủ.",
+      "readyCount": "{{count}} điểm đang sẵn sàng",
       "unknownAddress": "Địa chỉ không xác định",
       "school": "Trường học",
       "community": "Cộng đồng",
@@ -496,6 +502,11 @@
       "subtitle": "Gửi yêu cầu cứu hộ khẩn cấp",
       "warningTitle": "Cảnh báo khẩn cấp",
       "warningMessage": "Chỉ sử dụng trong trường hợp nguy cơ tính mạng.",
+      "sheetQuestion": "Bạn muốn báo cáo điều gì?",
+      "sheetSosTitle": "Yêu cầu cứu hộ (SOS)",
+      "sheetSosDesc": "Nguy hiểm đến tính mạng, cần cứu hộ khẩn cấp",
+      "sheetReportTitle": "Phản ánh ngập lụt / sự cố",
+      "sheetReportDesc": "Cung cấp hình ảnh hiện trường để hệ thống AI ghi nhận",
       "form": {
         "title": "Tiêu đề",
         "titlePlaceholder": "Nhập tiêu đề sự cố",

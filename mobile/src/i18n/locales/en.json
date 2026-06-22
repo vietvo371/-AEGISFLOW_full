@@ -256,6 +256,7 @@
     "alerts": "Alerts",
     "situation": "Situation",
     "incidents": "Incidents",
+    "missions": "Missions",
     "routes": "Routes"
   },
   "language": {
@@ -484,6 +485,11 @@
       "noSheltersMessage": "Try searching in another area.",
       "locations": "locations",
       "bedsAvailable": "beds available",
+      "people": "people",
+      "nearest": "Nearest",
+      "defaultName": "Evacuation Point",
+      "connectionError": "Server connection error.",
+      "readyCount": "{{count}} locations ready",
       "unknownAddress": "Address not available",
       "school": "School",
       "community": "Community",
@@ -496,6 +502,11 @@
       "subtitle": "Send emergency rescue request",
       "warningTitle": "Emergency Warning",
       "warningMessage": "Only use in life-threatening situations.",
+      "sheetQuestion": "What do you want to report?",
+      "sheetSosTitle": "Request Rescue (SOS)",
+      "sheetSosDesc": "Life-threatening, urgent rescue needed",
+      "sheetReportTitle": "Report flooding / incident",
+      "sheetReportDesc": "Provide on-site photos for the AI system",
       "form": {
         "title": "Title",
         "titlePlaceholder": "Enter incident title",

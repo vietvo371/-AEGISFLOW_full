@@ -7,6 +7,7 @@ import { theme, TAB_BAR } from '../theme';
 import { RootStackParamList, CitizenTabParamList, EmergencyTabParamList } from './types';
 import CustomTabBar from '../components/navigation/CustomTabBar';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 // Auth flow
 import LoadingScreen from '../screens/auth/LoadingScreen';
@@ -89,6 +90,7 @@ const EmergencyTab = createBottomTabNavigator<EmergencyTabParamList>();
 // Layout giống web: Home | Map | SOS (đỏ FAB) | Shelters | Profile
 // ============================================================================
 const CitizenTabs = () => {
+  const { t } = useTranslation();
   const tabScreenOptions = {
     headerShown: false,
     tabBarActiveTintColor: theme.colors.primary,
@@ -104,7 +106,7 @@ const CitizenTabs = () => {
         name="Home"
         component={HomeScreen}
         options={{
-          title: 'Trang chủ',
+          title: t('tabs.home'),
           tabBarIcon: ({ color }) => <Icon name="home-variant" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
@@ -112,7 +114,7 @@ const CitizenTabs = () => {
         name="Map"
         component={MapScreen}
         options={{
-          title: 'Bản đồ',
+          title: t('tabs.map'),
           tabBarIcon: ({ color }) => <Icon name="map-marker-outline" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
@@ -127,7 +129,7 @@ const CitizenTabs = () => {
         name="Shelters"
         component={ShelterListScreen}
         options={{
-          title: 'Trú ẩn',
+          title: t('tabs.shelters'),
           tabBarIcon: ({ color }) => <Icon name="home-heart" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
@@ -135,7 +137,7 @@ const CitizenTabs = () => {
         name="Profile"
         component={ProfileScreen}
         options={{
-          title: 'Hồ sơ',
+          title: t('tabs.profile'),
           tabBarIcon: ({ color }) => <Icon name="account-circle" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
@@ -182,6 +184,7 @@ const CitizenTabs = () => {
 // EMERGENCY TABS — Situation / Incidents / Route / Profile
 // ============================================================================
 const EmergencyTabs = () => {
+  const { t } = useTranslation();
   const tabScreenOptions = {
     headerShown: false,
     tabBarActiveTintColor: '#EF4444', // Red for emergency
@@ -197,7 +200,7 @@ const EmergencyTabs = () => {
         name="SituationMap"
         component={MapScreen}
         options={{
-          title: 'Tình huống',
+          title: t('tabs.situation'),
           tabBarIcon: ({ color }) => <Icon name="map-marker-alert" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
@@ -205,7 +208,7 @@ const EmergencyTabs = () => {
         name="Incidents"
         component={MissionListScreen}
         options={{
-          title: 'Nhiệm vụ',
+          title: t('tabs.missions'),
           tabBarIcon: ({ color }) => <Icon name="clipboard-list-outline" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
@@ -213,7 +216,7 @@ const EmergencyTabs = () => {
         name="PriorityRoute"
         component={PriorityRouteScreen}
         options={{
-          title: 'Tuyến đường',
+          title: t('tabs.routes'),
           tabBarIcon: ({ color }) => <Icon name="navigation-variant-outline" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
@@ -221,7 +224,7 @@ const EmergencyTabs = () => {
         name="Profile"
         component={EmergencyProfileScreen}
         options={{
-          title: 'Cá nhân',
+          title: t('tabs.profile'),
           tabBarIcon: ({ color }) => <Icon name="account-circle" size={TAB_BAR.iconSize} color={color} />,
         }}
       />
