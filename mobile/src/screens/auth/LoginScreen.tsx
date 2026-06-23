@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AlertService } from '../../services/AlertService';
+import { AlertService } from '../../services/AlertService.tsx';
 import Animated, { FadeInDown, FadeInUp, SlideInDown } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
@@ -31,6 +31,8 @@ import LoadingOverlay from '../../component/LoadingOverlay';
 import LanguageSelector from '../../component/LanguageSelector';
 import { useTranslation } from '../../hooks/useTranslation';
 import DeepLinkHandler from '../../utils/DeepLinkHandler';
+
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 interface LoginScreenProps {
   navigation: any;
@@ -53,6 +55,9 @@ const getLanguageFlag = (code: string) => {
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
   const { validateLogin, signIn, isEmergency } = useAuth();
   const { t, getCurrentLanguage, changeLanguage } = useTranslation();
+  const { colors, isDark, theme: appTheme } = useAppTheme();
+  const styles = getStyles(colors, isDark, appTheme);
+  
   const [email, setEmail] = useState(route?.params?.email || '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -233,7 +238,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
                   <Icon
                     name={rememberMe ? "checkbox-marked" : "checkbox-blank-outline"}
                     size={24}
-                    color={rememberMe ? theme.colors.primary : theme.colors.textSecondary}
+                    color={rememberMe ? colors.primary : colors.textSecondary}
                   />
                   <Text style={styles.rememberMeText}>
                     {t('auth.rememberPassword') ? t('auth.rememberPassword').replace('?', '') : 'Nhớ mật khẩu'}
@@ -278,7 +283,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
 
             {/* Security Badge */}
             <View style={styles.securityBadge}>
-              <Icon name="shield-check" size={ICON_SIZE.xs} color={theme.colors.primary} />
+              <Icon name="shield-check" size={ICON_SIZE.xs} color={colors.primary} />
               <Text style={styles.securityText}>
                 {t('auth.dataProtected') || 'Dữ liệu được bảo mật và mã hóa'}
               </Text>
@@ -292,10 +297,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.background,
   },
   backgroundContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -312,12 +317,12 @@ const styles = StyleSheet.create({
     width: wp('10%'),
     height: wp('10%'),
     borderRadius: wp('5%'),
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -338,7 +343,7 @@ const styles = StyleSheet.create({
     width: wp('37.5%'),
     height: wp('37.5%'),
     borderRadius: wp('18.75%'),
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: colors.primary + '15',
   },
   decorativeCircle2: {
     position: 'absolute',
@@ -347,7 +352,7 @@ const styles = StyleSheet.create({
     width: wp('25%'),
     height: wp('25%'),
     borderRadius: wp('12.5%'),
-    backgroundColor: theme.colors.secondary + '15',
+    backgroundColor: colors.secondary + '15',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -374,7 +379,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.3,
         shadowRadius: 16,
@@ -386,7 +391,7 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: FONT_SIZE.md,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
     marginBottom: SPACING.xs,
   },
@@ -398,14 +403,14 @@ const styles = StyleSheet.create({
   appTitle: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE['4xl'],
-    color: theme.colors.primary,
+    color: colors.primary,
     marginBottom: SPACING.xs,
     fontWeight: theme.typography.fontWeight.bold,
     textAlign: 'center',
   },
   appSubtitle: {
     fontSize: FONT_SIZE.md,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: SPACING.md,
     paddingHorizontal: SPACING.lg,
@@ -414,14 +419,14 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE['4xl'],
-    color: theme.colors.primary,
+    color: colors.primary,
     marginBottom: SPACING.sm,
     fontWeight: theme.typography.fontWeight.bold,
   },
   subtitle: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE.md,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: FONT_SIZE.md * 1.5,
     paddingHorizontal: SPACING.lg,
@@ -429,11 +434,13 @@ const styles = StyleSheet.create({
 
   // Form Styles
   formContainer: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: BORDER_RADIUS['2xl'],
     padding: SPACING.xl,
     marginBottom: SPACING.xl,
     ...theme.shadows.xl,
+    borderWidth: isDark ? 1 : 0,
+    borderColor: colors.border,
   },
   formHeader: {
     alignItems: 'center',
@@ -443,12 +450,12 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE['2xl'],
     fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.primary,
+    color: colors.primary,
     marginBottom: SPACING.xs,
   },
   formSubtitle: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   form: {
@@ -458,7 +465,7 @@ const styles = StyleSheet.create({
   // Input Type Indicator
   inputTypeIndicator: {
     flexDirection: 'row',
-    backgroundColor: theme.colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: BORDER_RADIUS.lg,
     padding: wp('1%'),
     marginBottom: SPACING.lg,
@@ -473,16 +480,16 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   inputTypeTabActive: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     ...theme.shadows.sm,
   },
   inputTypeText: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
   },
   inputTypeTextActive: {
-    color: theme.colors.primary,
+    color: colors.primary,
     fontWeight: theme.typography.fontWeight.semibold,
   },
 
@@ -495,7 +502,7 @@ const styles = StyleSheet.create({
   countryPicker: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     borderRadius: BORDER_RADIUS.sm,
@@ -507,7 +514,7 @@ const styles = StyleSheet.create({
   },
   countryCode: {
     fontSize: FONT_SIZE.md,
-    color: theme.colors.text,
+    color: colors.text,
     marginRight: SPACING.sm,
   },
   phoneInputWrapper: {
@@ -535,12 +542,12 @@ const styles = StyleSheet.create({
   },
   rememberMeText: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
   },
   forgotPasswordText: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.primary,
+    color: colors.primary,
     fontFamily: theme.typography.fontFamily,
     fontWeight: theme.typography.fontWeight.semibold,
   },
@@ -554,12 +561,12 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: theme.colors.border,
+    backgroundColor: colors.border,
   },
   dividerText: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     marginHorizontal: SPACING.lg,
   },
 
@@ -576,9 +583,9 @@ const styles = StyleSheet.create({
     borderRadius: wp('7%'),
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     ...theme.shadows.sm,
   },
   googleButton: {},
@@ -597,11 +604,11 @@ const styles = StyleSheet.create({
   registerText: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE.md,
-    color: theme.colors.text,
+    color: colors.text,
     textAlign: 'center',
   },
   registerLinkText: {
-    color: theme.colors.primary,
+    color: colors.primary,
     fontFamily: theme.typography.fontFamily,
     fontWeight: theme.typography.fontWeight.semibold,
     textDecorationLine: 'underline',
@@ -617,23 +624,23 @@ const styles = StyleSheet.create({
   },
   helpText: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
   },
   securityBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: colors.primary + '10',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
     borderRadius: BORDER_RADIUS.full,
     borderWidth: 1,
-    borderColor: theme.colors.primary + '20',
+    borderColor: colors.primary + '20',
   },
   securityText: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     textAlign: 'center',
     flex: 1,

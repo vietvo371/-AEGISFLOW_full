@@ -22,12 +22,15 @@ import { theme } from '../../theme/colors';
 import { authService } from '../../services/authService';
 import api from '../../utils/Api';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
 const EmailVerificationScreen = () => {
   const navigation = useNavigation();
   const { t } = useTranslation();
+  const { colors, isDark, theme: appTheme } = useAppTheme();
+  const styles = getStyles(colors, isDark, appTheme);
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
@@ -44,13 +47,13 @@ const EmailVerificationScreen = () => {
     const fetchProfileAndStatus = async () => {
       try {
         setCheckingStatus(true);
-        const response = await api.get('/client/profile');
-        if (response.data?.status && response.data?.data) {
+        const response = await api.get('/auth/me');
+        if (response.data?.success && response.data?.data) {
           const profileData = response.data.data;
           setEmail(profileData.email || '');
 
           // Check if email is already verified
-          const isEmailVerified = profileData.is_active_mail === 1;
+          const isEmailVerified = !!profileData.email_verified_at;
 
           setIsAlreadyVerified(isEmailVerified);
         }
@@ -164,17 +167,27 @@ const EmailVerificationScreen = () => {
 
     setVerifying(true);
     try {
-      // Use authService.verifyEmail with just the code
-      await authService.verifyEmail(otpString);
+      const response = await api.post('/auth/verify-email', {
+        email: email,
+        otp: otpString,
+      });
 
-      Alert.alert(t('common.success'), t('emailVerification.emailVerifiedSuccess'), [
-        {
-          text: 'OK',
-          onPress: () => {
-            (navigation as any).goBack();
+      if (response.data.status) {
+        Alert.alert(t('common.success'), t('emailVerification.emailVerifiedSuccess'), [
+          {
+            text: 'OK',
+            onPress: () => {
+              (navigation as any).goBack();
+            }
           }
-        }
-      ]);
+        ]);
+      } else {
+        Alert.alert(t('common.error'), response.data.message || t('emailVerification.otpIncorrect'));
+        // Reset OTP on error
+        setOtp(['', '', '', '', '', '']);
+        setCode('');
+        setCurrentInputIndex(0);
+      }
 
     } catch (error: any) {
       console.log('Verify email error:', error);
@@ -203,7 +216,7 @@ const EmailVerificationScreen = () => {
   const renderAlreadyVerified = () => (
     <View style={styles.verifiedContainer}>
       <View style={styles.verifiedIconContainer}>
-        <Icon name="check-circle" size={64} color={theme.colors.success || '#34C759'} />
+        <Icon name="check-circle" size={64} color={colors.success || '#34C759'} />
       </View>
       <Text style={styles.verifiedTitle}>{t('emailVerification.emailAlreadyVerified')}</Text>
       <Text style={styles.verifiedSubtitle}>
@@ -211,7 +224,7 @@ const EmailVerificationScreen = () => {
       </Text>
       {email && (
         <View style={styles.verifiedEmailContainer}>
-          <Icon name="email-check" size={24} color={theme.colors.success || '#34C759'} />
+          <Icon name="email-check" size={24} color={colors.success || '#34C759'} />
           <Text style={styles.verifiedEmailText}>{email}</Text>
         </View>
       )}
@@ -229,7 +242,7 @@ const EmailVerificationScreen = () => {
   const renderCheckingStatus = () => (
     <View style={styles.checkingContainer}>
       <View style={styles.checkingIconContainer}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
       <Text style={styles.checkingTitle}>{t('emailVerification.checkingStatus')}</Text>
       <Text style={styles.checkingSubtitle}>
@@ -255,7 +268,7 @@ const EmailVerificationScreen = () => {
             onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
-            <Icon name="arrow-left" size={24} color={theme.colors.text} />
+            <Icon name="arrow-left" size={24} color={colors.text} />
           </TouchableOpacity>
 
           <View style={styles.headerContent}>
@@ -284,7 +297,7 @@ const EmailVerificationScreen = () => {
             // Send Code Button State
             <View style={styles.sendCodeContainer}>
               <View style={styles.emailIconContainer}>
-                <Icon name="email" size={48} color={theme.colors.primary} />
+                <Icon name="email" size={48} color={colors.primary} />
               </View>
               <Text style={styles.sendCodeTitle}>{t('emailVerification.verifyEmail')}</Text>
               <Text style={styles.sendCodeSubtitle}>
@@ -292,7 +305,7 @@ const EmailVerificationScreen = () => {
               </Text>
               {email && (
                 <View style={styles.emailDisplayContainer}>
-                  <Icon name="email-check" size={20} color={theme.colors.primary} />
+                  <Icon name="email-check" size={20} color={colors.primary} />
                   <Text style={styles.emailDisplayText}>{email}</Text>
                 </View>
               )}
@@ -314,7 +327,7 @@ const EmailVerificationScreen = () => {
             <View style={styles.otpSection}>
               <View style={styles.otpHeader}>
                 <View style={styles.otpIconContainer}>
-                  <Icon name="email-outline" size={32} color={theme.colors.primary} />
+                  <Icon name="email-outline" size={32} color={colors.primary} />
                 </View>
                 <Text style={styles.otpTitle}>{t('emailVerification.enterVerificationCode')}</Text>
                 <Text style={styles.otpSubtitle}>
@@ -349,7 +362,7 @@ const EmailVerificationScreen = () => {
                           entering={FadeInDown.duration(200)}
                           style={styles.otpInputCheck}
                         >
-                          <Icon name="check" size={12} color={theme.colors.primary} />
+                          <Icon name="check" size={12} color={colors.primary} />
                         </Animated.View>
                       )}
                     </Animated.View>
@@ -412,7 +425,7 @@ const EmailVerificationScreen = () => {
                 onPress={handleDelete}
                 activeOpacity={0.7}
               >
-                <Icon name="backspace-outline" size={24} color="#666" />
+                <Icon name="backspace-outline" size={24} color={colors.text} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.numberButton, styles.zeroButton]}
@@ -441,10 +454,10 @@ const EmailVerificationScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.background,
   },
   backgroundContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -456,7 +469,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: colors.primary + '10',
   },
   decorativeCircle2: {
     position: 'absolute',
@@ -465,7 +478,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: theme.colors.secondary + '10',
+    backgroundColor: colors.secondary + '10',
   },
   mainContent: {
     flex: 1,
@@ -484,12 +497,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -504,33 +517,35 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: wp('6%'),
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     marginBottom: hp('0.5%'),
     fontWeight: '600',
   },
   headerSubtitle: {
     fontSize: wp('4%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
     lineHeight: wp('5%'),
   },
 
   // Card Styles
   card: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: wp('4%'),
     padding: wp('6%'),
     marginBottom: hp('2%'),
+    borderWidth: isDark ? 1 : 0,
+    borderColor: colors.border,
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0 : 0.1,
         shadowRadius: 8,
       },
       android: {
-        elevation: 4,
+        elevation: isDark ? 0 : 4,
       },
     }),
   },
@@ -544,14 +559,14 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: colors.primary + '15',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: hp('3%'),
   },
   sendCodeTitle: {
     fontSize: wp('5%'),
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
     marginBottom: hp('1%'),
@@ -559,7 +574,7 @@ const styles = StyleSheet.create({
   },
   sendCodeSubtitle: {
     fontSize: wp('4%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
     textAlign: 'center',
     lineHeight: wp('5%'),
@@ -568,7 +583,7 @@ const styles = StyleSheet.create({
   emailDisplayContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: colors.primary + '10',
     paddingHorizontal: wp('4%'),
     paddingVertical: hp('1%'),
     borderRadius: wp('3%'),
@@ -576,13 +591,13 @@ const styles = StyleSheet.create({
   },
   emailDisplayText: {
     fontSize: wp('4%'),
-    color: theme.colors.primary,
+    color: colors.primary,
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
     marginLeft: wp('2%'),
   },
   sendCodeButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     paddingVertical: hp('1.5%'),
     paddingHorizontal: wp('8%'),
     borderRadius: wp('3%'),
@@ -590,7 +605,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
@@ -602,12 +617,12 @@ const styles = StyleSheet.create({
   },
   sendCodeButtonText: {
     fontSize: wp('4%'),
-    color: theme.colors.white,
+    color: '#FFFFFF',
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
   },
   disabledButton: {
-    backgroundColor: theme.colors.textLight,
+    backgroundColor: colors.disabled,
     opacity: 0.6,
   },
 
@@ -620,14 +635,14 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: (theme.colors.success || '#34C759') + '15',
+    backgroundColor: (colors.success || '#34C759') + '15',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: hp('3%'),
   },
   verifiedTitle: {
     fontSize: wp('5%'),
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
     marginBottom: hp('1%'),
@@ -635,7 +650,7 @@ const styles = StyleSheet.create({
   },
   verifiedSubtitle: {
     fontSize: wp('4%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
     textAlign: 'center',
     lineHeight: wp('5%'),
@@ -644,7 +659,7 @@ const styles = StyleSheet.create({
   verifiedEmailContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: (theme.colors.success || '#34C759') + '10',
+    backgroundColor: (colors.success || '#34C759') + '10',
     paddingHorizontal: wp('4%'),
     paddingVertical: hp('1.5%'),
     borderRadius: wp('3%'),
@@ -652,13 +667,13 @@ const styles = StyleSheet.create({
   },
   verifiedEmailText: {
     fontSize: wp('4%'),
-    color: theme.colors.success || '#34C759',
+    color: colors.success || '#34C759',
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
     marginLeft: wp('2%'),
   },
   backToProfileButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     paddingVertical: hp('1.5%'),
     paddingHorizontal: wp('8%'),
     borderRadius: wp('3%'),
@@ -666,7 +681,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
@@ -678,7 +693,7 @@ const styles = StyleSheet.create({
   },
   backToProfileButtonText: {
     fontSize: wp('4%'),
-    color: theme.colors.white,
+    color: '#FFFFFF',
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
   },
@@ -692,21 +707,21 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: colors.primary + '15',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: hp('2%'),
   },
   checkingTitle: {
     fontSize: wp('5%'),
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
     marginBottom: hp('1%'),
   },
   checkingSubtitle: {
     fontSize: wp('4%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
     textAlign: 'center',
     lineHeight: wp('5%'),
@@ -724,21 +739,21 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: colors.primary + '15',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: hp('2%'),
   },
   otpTitle: {
     fontSize: wp('5%'),
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
     marginBottom: hp('0.5%'),
   },
   otpSubtitle: {
     fontSize: wp('4%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
     textAlign: 'center',
   },
@@ -755,19 +770,19 @@ const styles = StyleSheet.create({
     height: wp('12%'),
     borderRadius: wp('3%'),
     borderWidth: 2,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.background,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
   },
   otpInputWrapperActive: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.white,
+    borderColor: colors.primary,
+    backgroundColor: colors.card,
     transform: [{ scale: 1.05 }],
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 6,
@@ -778,12 +793,12 @@ const styles = StyleSheet.create({
     }),
   },
   otpInputWrapperFilled: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primary + '15',
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '15',
     transform: [{ scale: 1.02 }],
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 3,
@@ -796,11 +811,11 @@ const styles = StyleSheet.create({
   otpInputText: {
     fontSize: wp('6%'),
     fontFamily: theme.typography.fontFamily,
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontWeight: '600',
   },
   otpInputTextFilled: {
-    color: theme.colors.primary,
+    color: colors.primary,
   },
   otpInputCheck: {
     position: 'absolute',
@@ -809,12 +824,12 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -834,20 +849,20 @@ const styles = StyleSheet.create({
   progressBar: {
     flex: 1,
     height: 4,
-    backgroundColor: theme.colors.border,
+    backgroundColor: colors.border,
     borderRadius: 2,
     marginRight: wp('3%'),
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: 2,
   },
   progressText: {
     fontFamily: theme.typography.fontFamily,
     fontSize: wp('3.5%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
   },
 
   // Resend Section Styles
@@ -857,11 +872,11 @@ const styles = StyleSheet.create({
   timerText: {
     fontFamily: theme.typography.fontFamily,
     fontSize: wp('4%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
   },
   timer: {
     fontFamily: theme.typography.fontFamily,
-    color: theme.colors.primary,
+    color: colors.primary,
     fontWeight: '600',
   },
   resendButton: {
@@ -870,24 +885,26 @@ const styles = StyleSheet.create({
   resendButtonText: {
     fontFamily: theme.typography.fontFamily,
     fontSize: wp('4%'),
-    color: theme.colors.primary,
+    color: colors.primary,
     fontWeight: '600',
   },
 
   // Custom Keyboard Styles
   keyboardContainer: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     paddingVertical: hp('2%'),
     paddingHorizontal: wp('4%'),
+    borderTopWidth: isDark ? 1 : 0,
+    borderTopColor: colors.border,
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0 : 0.1,
         shadowRadius: 8,
       },
       android: {
-        elevation: 8,
+        elevation: isDark ? 0 : 8,
       },
     }),
   },
@@ -901,38 +918,38 @@ const styles = StyleSheet.create({
     aspectRatio: 1.2,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: wp('3%'),
     marginBottom: hp('1%'),
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0 : 0.1,
         shadowRadius: 4,
       },
       android: {
-        elevation: 2,
+        elevation: isDark ? 0 : 2,
       },
     }),
   },
   numberText: {
     fontSize: wp('6%'),
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
   },
   deleteButton: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 0,
   },
   zeroButton: {
     // Số 0 ở giữa
   },
   verifyButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     borderWidth: 0,
   },
 });

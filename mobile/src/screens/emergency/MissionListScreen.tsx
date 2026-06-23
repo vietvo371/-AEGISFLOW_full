@@ -8,25 +8,27 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from '../../hooks/useTranslation';
 import PageHeader from '../../component/PageHeader';
-import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, SCREEN_PADDING } from '../../theme';
+import { theme as staticTheme, SPACING, FONT_SIZE, BORDER_RADIUS, SCREEN_PADDING } from '../../theme';
 import { rescueService, RescueRequest } from '../../services/rescueService';
+import { useAppTheme } from '../../contexts/ThemeContext';
+import { useNotifications } from '../../hooks/useNotifications';
 
 // ─── Configs ──────────────────────────────────────────────────────────────────
 
-const STATUS_CFG: Record<string, { label: string; color: string; bg: string; icon: string }> = {
-    pending:     { label: 'Chờ xử lý',     color: '#EF4444', bg: '#FEF2F2', icon: 'clock-alert-outline' },
-    assigned:    { label: 'Đã phân công',   color: '#F59E0B', bg: '#FFFBEB', icon: 'account-check-outline' },
-    in_progress: { label: 'Đang thực hiện', color: '#2563EB', bg: '#EFF6FF', icon: 'run-fast' },
-    completed:   { label: 'Hoàn thành',     color: '#10B981', bg: '#ECFDF5', icon: 'check-circle-outline' },
-    cancelled:   { label: 'Đã hủy',         color: '#9CA3AF', bg: '#F9FAFB', icon: 'close-circle-outline' },
-};
+const getStatusCfg = (colors: any) => ({
+    pending:     { label: 'Chờ xử lý',     color: colors.error, bg: colors.errorLight || '#FEF2F2', icon: 'clock-alert-outline' },
+    assigned:    { label: 'Đã phân công',   color: colors.warning, bg: colors.warningLight || '#FFFBEB', icon: 'account-check-outline' },
+    in_progress: { label: 'Đang thực hiện', color: colors.primary, bg: colors.infoLight || '#EFF6FF', icon: 'run-fast' },
+    completed:   { label: 'Hoàn thành',     color: colors.success, bg: colors.successLight || '#ECFDF5', icon: 'check-circle-outline' },
+    cancelled:   { label: 'Đã hủy',         color: colors.textSecondary, bg: colors.disabledBackground || '#F9FAFB', icon: 'close-circle-outline' },
+});
 
-const URGENCY_CFG: Record<string, { color: string }> = {
-    critical: { color: '#EF4444' },
-    high:     { color: '#F97316' },
-    medium:   { color: '#F59E0B' },
-    low:      { color: '#10B981' },
-};
+const getUrgencyCfg = (colors: any) => ({
+    critical: { color: colors.error },
+    high:     { color: colors.warning },
+    medium:   { color: colors.warning },
+    low:      { color: colors.success },
+});
 
 const CAT_ICON: Record<string, string> = {
     medical:    'medical-bag',
@@ -38,11 +40,11 @@ const CAT_ICON: Record<string, string> = {
     other:      'help-circle-outline',
 };
 
-const TABS = [
-    { key: 'all',         label: 'Tất cả',       icon: 'apps',                 color: '#6366F1' },
-    { key: 'assigned',    label: 'Được phân công', icon: 'clock-alert-outline',  color: '#EF4444' },
-    { key: 'in_progress', label: 'Đang làm',      icon: 'run-fast',             color: '#2563EB' },
-    { key: 'completed',   label: 'Xong',          icon: 'check-circle-outline', color: '#10B981' },
+const getTabs = (colors: any) => [
+    { key: 'all',         label: 'Tất cả',       icon: 'apps',                 color: colors.primary },
+    { key: 'assigned',    label: 'Được phân công', icon: 'clock-alert-outline',  color: colors.error },
+    { key: 'in_progress', label: 'Đang làm',      icon: 'run-fast',             color: colors.primary },
+    { key: 'completed',   label: 'Xong',          icon: 'check-circle-outline', color: colors.success },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -50,6 +52,14 @@ const TABS = [
 const MissionListScreen = () => {
     const navigation  = useNavigation();
     const { t }       = useTranslation();
+    const { colors, isDark, theme } = useAppTheme();
+    const { registerRefreshCallback } = useNotifications();
+    const styles = getStyles(colors, isDark, theme);
+
+    const STATUS_CFG: Record<string, any> = getStatusCfg(colors);
+    const URGENCY_CFG: Record<string, any> = getUrgencyCfg(colors);
+    const tabs = getTabs(colors);
+
     const [all, setAll]               = useState<RescueRequest[]>([]);
     const [loading, setLoading]       = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -58,7 +68,7 @@ const MissionListScreen = () => {
     const [myTeamId, setMyTeamId]     = useState<number | null>(null);
     const tabAnimMap = useRef<Record<string, Animated.Value>>({}).current;
 
-    TABS.forEach(t => {
+    tabs.forEach(t => {
         if (!tabAnimMap[t.key]) tabAnimMap[t.key] = new Animated.Value(t.key === 'all' ? 1 : 0);
     });
 
@@ -102,9 +112,18 @@ const MissionListScreen = () => {
         init();
     }, []);
 
+    // ─── Real-time Refresh ─────────────────────────────────────────────────────
+    useEffect(() => {
+        const unsubscribe = registerRefreshCallback(() => {
+            console.log('🔄 MissionListScreen received refresh trigger');
+            fetchMissions(true);
+        });
+        return unsubscribe;
+    }, [registerRefreshCallback, fetchMissions]);
+
     // ─── Tab switch ────────────────────────────────────────────────────────────
     const switchTab = (key: string) => {
-        TABS.forEach(t => {
+        tabs.forEach(t => {
             Animated.spring(tabAnimMap[t.key], {
                 toValue: t.key === key ? 1 : 0,
                 useNativeDriver: true,
@@ -191,7 +210,7 @@ const MissionListScreen = () => {
                     {/* ─ Row 3: people ─ */}
                     {item.people_count > 0 && (
                         <View style={styles.row3}>
-                            <Icon name="account-group-outline" size={14} color="#64748B" />
+                            <Icon name="account-group-outline" size={14} color={colors.textSecondary} />
                             <Text style={styles.peopleText}>
                                 {item.people_count} người cần hỗ trợ
                                 {item.vulnerable_groups?.length > 0
@@ -206,7 +225,7 @@ const MissionListScreen = () => {
 
                     {/* ─ Row 4: location + urgency ─ */}
                     <View style={styles.row4}>
-                        <Icon name="map-marker-outline" size={14} color="#94A3B8" />
+                        <Icon name="map-marker-outline" size={14} color={colors.textTertiary} />
                         <Text style={styles.locationText} numberOfLines={1}>{location}</Text>
                         <View style={[styles.urgencyBadge, { backgroundColor: uCfg.color }]}>
                             <Text style={styles.urgencyText}>
@@ -220,14 +239,14 @@ const MissionListScreen = () => {
                         <View style={styles.actionRow}>
                             {isPending && (
                                 <TouchableOpacity
-                                    style={[styles.btnAction, { backgroundColor: '#2563EB' }]}
+                                    style={[styles.btnAction, { backgroundColor: colors.primary }]}
                                     onPress={() => quickAction(item, 'in_progress', 'Nhận và bắt đầu xử lý yêu cầu này?')}
                                     disabled={isUpdating}
                                 >
                                     {isUpdating
-                                        ? <ActivityIndicator size="small" color="#fff" />
+                                        ? <ActivityIndicator size="small" color={colors.textWhite} />
                                         : (<>
-                                            <Icon name="hand-wave-outline" size={16} color="#fff" />
+                                            <Icon name="hand-wave-outline" size={16} color={colors.textWhite} />
                                             <Text style={styles.btnActionTextPrimary}>Nhận nhiệm vụ</Text>
                                         </>)}
                                 </TouchableOpacity>
@@ -238,7 +257,7 @@ const MissionListScreen = () => {
                                     style={[styles.btnAction, styles.btnNav]}
                                     onPress={() => (navigation as any).navigate('RescueRequestDetail', { id: item.id })}
                                 >
-                                    <Icon name="navigation-variant-outline" size={16} color="#2563EB" />
+                                    <Icon name="navigation-variant-outline" size={16} color={colors.primary} />
                                     <Text style={styles.btnNavText}>Chỉ đường</Text>
                                 </TouchableOpacity>
                             )}
@@ -250,9 +269,9 @@ const MissionListScreen = () => {
                                     disabled={isUpdating}
                                 >
                                     {isUpdating
-                                        ? <ActivityIndicator size="small" color="#10B981" />
+                                        ? <ActivityIndicator size="small" color={colors.success} />
                                         : (<>
-                                            <Icon name="check-circle-outline" size={16} color="#10B981" />
+                                            <Icon name="check-circle-outline" size={16} color={colors.success} />
                                             <Text style={styles.btnCompleteText}>Hoàn thành</Text>
                                         </>)}
                                 </TouchableOpacity>
@@ -264,7 +283,7 @@ const MissionListScreen = () => {
                                     onPress={() => quickAction(item, 'cancelled', 'Từ chối yêu cầu này?')}
                                     disabled={isUpdating}
                                 >
-                                    <Icon name="close-circle-outline" size={16} color="#94A3B8" />
+                                    <Icon name="close-circle-outline" size={16} color={colors.textSecondary} />
                                     <Text style={styles.btnRejectText}>Từ chối</Text>
                                 </TouchableOpacity>
                             )}
@@ -295,7 +314,7 @@ const MissionListScreen = () => {
             <View style={styles.container}>
                 <PageHeader title="Nhiệm vụ cứu hộ" subtitle="Đang tải..." variant="default" />
                 <View style={styles.center}>
-                    <ActivityIndicator size="large" color="#2563EB" />
+                    <ActivityIndicator size="large" color={colors.primary} />
                     <Text style={styles.loadingText}>Đang tải danh sách...</Text>
                 </View>
             </View>
@@ -315,9 +334,9 @@ const MissionListScreen = () => {
 
             {/* ── Summary banner (nếu có yêu cầu chờ) ── */}
             {pendingCount > 0 && (
-                <View style={[styles.summaryBanner, { backgroundColor: '#EF4444' }]}>
+                <View style={[styles.summaryBanner, { backgroundColor: colors.error }]}>
                     <View style={styles.summaryIconWrap}>
-                        <Icon name="bell-alert" size={20} color="#fff" />
+                        <Icon name="bell-alert" size={20} color={colors.textWhite} />
                     </View>
                     <Text style={styles.summaryText}>
                         {pendingCount} yêu cầu đang chờ xử lý
@@ -327,7 +346,7 @@ const MissionListScreen = () => {
                         onPress={() => switchTab('assigned')}
                     >
                         <Text style={styles.summaryActionText}>Xem ngay</Text>
-                        <Icon name="chevron-right" size={16} color="#fff" />
+                        <Icon name="chevron-right" size={16} color={colors.textWhite} />
                     </TouchableOpacity>
                 </View>
             )}
@@ -339,7 +358,7 @@ const MissionListScreen = () => {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.tabRow}
                 >
-                    {TABS.map(tab => {
+                    {tabs.map(tab => {
                         const isActive = activeTab === tab.key;
                         const count    = countOf(tab.key);
                         const scale    = tabAnimMap[tab.key].interpolate({ inputRange: [0, 1], outputRange: [0.95, 1] });
@@ -352,7 +371,7 @@ const MissionListScreen = () => {
                                 >
                                     {isActive ? (
                                         <View style={[styles.tabPillActive, { backgroundColor: tab.color }]}>
-                                            <Icon name={tab.icon} size={14} color="#fff" />
+                                            <Icon name={tab.icon} size={14} color={colors.textWhite} />
                                             <Text style={styles.tabPillActiveText}>{tab.label}</Text>
                                             {count > 0 && (
                                                 <View style={styles.tabBadgeActive}>
@@ -362,7 +381,7 @@ const MissionListScreen = () => {
                                         </View>
                                     ) : (
                                         <View style={styles.tabPill}>
-                                            <Icon name={tab.icon} size={14} color="#94A3B8" />
+                                            <Icon name={tab.icon} size={14} color={colors.textSecondary} />
                                             <Text style={styles.tabPillText}>{tab.label}</Text>
                                             {count > 0 && (
                                                 <View style={styles.tabBadge}>
@@ -388,18 +407,18 @@ const MissionListScreen = () => {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={() => fetchMissions(true)}
-                        tintColor="#2563EB"
-                        colors={['#2563EB']}
+                        tintColor={colors.primary}
+                        colors={[colors.primary]}
                     />
                 }
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
                     <View style={styles.empty}>
-                        <View style={[styles.emptyIcon, { backgroundColor: TABS.find(t => t.key === activeTab)?.color + '15' }]}>
+                        <View style={[styles.emptyIcon, { backgroundColor: tabs.find(t => t.key === activeTab)?.color + '15' }]}>
                             <Icon
-                                name={TABS.find(t => t.key === activeTab)?.icon || 'apps'}
+                                name={tabs.find(t => t.key === activeTab)?.icon || 'apps'}
                                 size={44}
-                                color={TABS.find(t => t.key === activeTab)?.color || '#6366F1'}
+                                color={tabs.find(t => t.key === activeTab)?.color || colors.primary}
                             />
                         </View>
                         <Text style={styles.emptyTitle}>
@@ -418,10 +437,10 @@ const MissionListScreen = () => {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F1F5F9' },
+const getStyles = (colors: any, isDark: boolean, theme: any) => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.backgroundSecondary },
     center:    { flex: 1, justifyContent: 'center', alignItems: 'center', gap: SPACING.md },
-    loadingText: { fontSize: FONT_SIZE.sm, color: '#94A3B8', fontWeight: '500' },
+    loadingText: { fontSize: FONT_SIZE.sm, color: colors.textSecondary, fontWeight: '500' },
 
     // ── Summary banner ────────────────────────────────────────────────────────
     summaryBanner: {
@@ -436,12 +455,12 @@ const styles = StyleSheet.create({
     },
     summaryIconWrap: {
         width: 36, height: 36, borderRadius: 18,
-        backgroundColor: '#ffffff25',
+        backgroundColor: 'rgba(255, 255, 255, 0.25)',
         justifyContent: 'center', alignItems: 'center',
     },
-    summaryText: { flex: 1, fontSize: 14, color: '#fff', fontWeight: '700' },
+    summaryText: { flex: 1, fontSize: 14, color: colors.textWhite, fontWeight: '700' },
     summaryAction: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-    summaryActionText: { fontSize: 13, color: '#fff', fontWeight: '700', opacity: 0.9 },
+    summaryActionText: { fontSize: 13, color: colors.textWhite, fontWeight: '700', opacity: 0.9 },
 
     // ── Tab pills ─────────────────────────────────────────────────────────────
     tabRow: {
@@ -454,27 +473,27 @@ const styles = StyleSheet.create({
         flexDirection: 'row', alignItems: 'center', gap: 6,
         paddingHorizontal: 14, paddingVertical: 10,
         borderRadius: BORDER_RADIUS.full,
-        backgroundColor: '#fff',
-        borderWidth: 1, borderColor: '#E2E8F0',
+        backgroundColor: colors.card,
+        borderWidth: 1, borderColor: colors.border,
     },
-    tabPillText: { fontSize: 13, fontWeight: '600', color: '#64748B' },
+    tabPillText: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
     tabBadge: {
-        backgroundColor: '#F1F5F9', paddingHorizontal: 6, paddingVertical: 2,
+        backgroundColor: colors.backgroundSecondary, paddingHorizontal: 6, paddingVertical: 2,
         borderRadius: BORDER_RADIUS.full, minWidth: 20, alignItems: 'center',
     },
-    tabBadgeText: { fontSize: 10, fontWeight: '800', color: '#64748B' },
+    tabBadgeText: { fontSize: 10, fontWeight: '800', color: colors.textSecondary },
 
     tabPillActive: {
         flexDirection: 'row', alignItems: 'center', gap: 6,
         paddingHorizontal: 16, paddingVertical: 10,
         borderRadius: BORDER_RADIUS.full,
     },
-    tabPillActiveText: { fontSize: 13, fontWeight: '700', color: '#fff' },
+    tabPillActiveText: { fontSize: 13, fontWeight: '700', color: colors.textWhite },
     tabBadgeActive: {
-        backgroundColor: '#ffffff35', paddingHorizontal: 6, paddingVertical: 2,
+        backgroundColor: 'rgba(255, 255, 255, 0.35)', paddingHorizontal: 6, paddingVertical: 2,
         borderRadius: BORDER_RADIUS.full, minWidth: 20, alignItems: 'center',
     },
-    tabBadgeActiveText: { fontSize: 10, fontWeight: '800', color: '#fff' },
+    tabBadgeActiveText: { fontSize: 10, fontWeight: '800', color: colors.textWhite },
 
     // ── List ─────────────────────────────────────────────────────────────────
     listContent: {
@@ -486,15 +505,17 @@ const styles = StyleSheet.create({
 
     // ── Card ─────────────────────────────────────────────────────────────────
     card: {
-        backgroundColor: '#fff',
+        backgroundColor: colors.card,
         borderRadius: 20,
         flexDirection: 'row',
         overflow: 'hidden',
-        shadowColor: '#0F172A',
+        shadowColor: isDark ? '#000000' : '#0F172A',
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.08,
+        shadowOpacity: isDark ? 0.3 : 0.08,
         shadowRadius: 12,
         elevation: 4,
+        borderWidth: isDark ? 1 : 0,
+        borderColor: colors.border,
     },
     cardDim: { opacity: 0.65 },
 
@@ -511,7 +532,7 @@ const styles = StyleSheet.create({
     },
     statusDot: { width: 6, height: 6, borderRadius: 3 },
     statusLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.2 },
-    timeText: { fontSize: 12, color: '#94A3B8', fontWeight: '600' },
+    timeText: { fontSize: 12, color: colors.textSecondary, fontWeight: '600' },
 
     // Row 2: avatar + name + desc
     row2: { flexDirection: 'row', gap: 14, marginBottom: 10, alignItems: 'flex-start' },
@@ -521,26 +542,26 @@ const styles = StyleSheet.create({
     },
     nameBlock: { flex: 1 },
     callerName: {
-        fontSize: 16, fontWeight: '800', color: '#0F172A', letterSpacing: -0.2, lineHeight: 22,
+        fontSize: 16, fontWeight: '800', color: colors.text, letterSpacing: -0.2, lineHeight: 22,
     },
     descText: {
-        fontSize: 13, color: '#64748B', lineHeight: 20, marginTop: 4,
+        fontSize: 13, color: colors.textSecondary, lineHeight: 20, marginTop: 4,
     },
 
     // Row 3: people
     row3: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
-    peopleText: { fontSize: 13, color: '#64748B', fontWeight: '500' },
+    peopleText: { fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
 
     // Divider
-    divider: { height: 1, backgroundColor: '#F1F5F9', marginBottom: 12 },
+    divider: { height: 1, backgroundColor: colors.border, marginBottom: 12 },
 
     // Row 4: location + urgency
     row4: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14 },
-    locationText: { fontSize: 13, color: '#64748B', flex: 1, fontWeight: '500' },
+    locationText: { fontSize: 13, color: colors.textSecondary, flex: 1, fontWeight: '500' },
     urgencyBadge: {
         paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6,
     },
-    urgencyText: { fontSize: 10, fontWeight: '900', color: '#fff', letterSpacing: 0.5 },
+    urgencyText: { fontSize: 10, fontWeight: '900', color: colors.textWhite, letterSpacing: 0.5 },
 
     // Action row
     actionRow: { flexDirection: 'row', gap: 10 },
@@ -549,25 +570,25 @@ const styles = StyleSheet.create({
         flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
         gap: 6, paddingVertical: 12, borderRadius: 12,
     },
-    btnActionTextPrimary: { fontSize: 14, fontWeight: '700', color: '#fff' },
+    btnActionTextPrimary: { fontSize: 14, fontWeight: '700', color: colors.textWhite },
 
-    btnNav: { backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE' },
-    btnNavText: { fontSize: 14, fontWeight: '700', color: '#2563EB' },
+    btnNav: { backgroundColor: colors.infoLight, borderWidth: 1, borderColor: colors.primaryLight },
+    btnNavText: { fontSize: 14, fontWeight: '700', color: colors.primary },
 
-    btnComplete: { backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0' },
-    btnCompleteText: { fontSize: 14, fontWeight: '700', color: '#10B981' },
+    btnComplete: { backgroundColor: colors.successLight, borderWidth: 1, borderColor: colors.success + '40' },
+    btnCompleteText: { fontSize: 14, fontWeight: '700', color: colors.success },
 
     btnReject: {
-        paddingHorizontal: 16, backgroundColor: '#F8FAFC',
-        borderWidth: 1, borderColor: '#E2E8F0', flex: 0,
+        paddingHorizontal: 16, backgroundColor: colors.backgroundSecondary,
+        borderWidth: 1, borderColor: colors.border, flex: 0,
     },
-    btnRejectText: { fontSize: 13, fontWeight: '600', color: '#64748B' },
+    btnRejectText: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
 
     // Done state
     doneRow: {
         flexDirection: 'row', alignItems: 'center', gap: 8,
         paddingVertical: 8, paddingHorizontal: 12,
-        backgroundColor: '#F8FAFC', borderRadius: 10,
+        backgroundColor: colors.backgroundSecondary, borderRadius: 10,
     },
     doneText: { fontSize: 13, fontWeight: '600' },
 
@@ -578,10 +599,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.lg,
     },
     emptyTitle: {
-        fontSize: 18, fontWeight: '800', color: '#1E293B',
+        fontSize: 18, fontWeight: '800', color: colors.text,
         marginBottom: 8, textAlign: 'center',
     },
-    emptyText: { fontSize: 14, color: '#64748B', textAlign: 'center' },
+    emptyText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center' },
 });
 
 export default MissionListScreen;

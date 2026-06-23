@@ -19,6 +19,7 @@ import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, SCREEN_PADDING } from '../../
 import { mapService } from '../../services/mapService';
 import { Shelter } from '../../types/api/map';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useAppTheme } from '../../contexts/ThemeContext';
 import env from '../../config/env';
 import Geolocation from 'react-native-geolocation-service';
 
@@ -62,6 +63,7 @@ const toFiniteNumber = (value: any, fallback: number): number => {
 
 const ShelterListScreen: React.FC = () => {
   const { t } = useTranslation();
+  const { colors, isDark } = useAppTheme();
   const navigation = useNavigation();
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [loading, setLoading] = useState(true);
@@ -264,26 +266,22 @@ const ShelterListScreen: React.FC = () => {
   const renderShelterItem = ({ item, index }: { item: Shelter; index: number }) => {
     const distance = calculateDistance(item.latitude, item.longitude);
     const capacityPercent = item.suc_chua > 0 ? (item.hien_tai / item.suc_chua) * 100 : 0;
-    
+
     return (
       <Animated.View entering={FadeInDown.duration(400).delay(index * 50)}>
-        <View style={styles.shelterCard}>
+        <View style={[styles.shelterCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
           <View style={styles.shelterHeader}>
-            <View style={styles.shelterPhotoWrap}>
+            <View style={[styles.shelterPhotoWrap, { backgroundColor: colors.backgroundSecondary }]}>
               <Image source={getShelterImageSource(item)} style={styles.shelterPhoto} resizeMode="cover" />
-              <View style={[styles.shelterIcon, { backgroundColor: getStatusColor(item.tinh_trang) }]}>
-                <Icon
-                  name={getShelterTypeIcon(item.loai)}
-                  size={12}
-                  color={theme.colors.white}
-                />
+              <View style={[styles.shelterIcon, { backgroundColor: getStatusColor(item.tinh_trang), borderColor: colors.card }]}>
+                <Icon name={getShelterTypeIcon(item.loai)} size={12} color="#fff" />
               </View>
             </View>
             <View style={styles.shelterInfo}>
-              <Text style={styles.shelterName} numberOfLines={2}>{item.ten_diem}</Text>
+              <Text style={[styles.shelterName, { color: colors.text }]} numberOfLines={2}>{item.ten_diem}</Text>
               <View style={styles.shelterMeta}>
-                <Icon name="map-marker" size={13} color={theme.colors.textSecondary} />
-                <Text style={styles.shelterAddress} numberOfLines={2}>
+                <Icon name="map-marker" size={13} color={colors.textSecondary} />
+                <Text style={[styles.shelterAddress, { color: colors.textSecondary }]} numberOfLines={2}>
                   {item.dia_chi || t('citizen.shelters.unknownAddress')}
                 </Text>
               </View>
@@ -293,45 +291,45 @@ const ShelterListScreen: React.FC = () => {
               activeOpacity={0.7}
               onPress={() => openDirections(item)}
             >
-              <Icon name="navigation-variant" size={11} color={theme.colors.primary} />
-              <Text style={styles.distanceBadgeText}>{distance}</Text>
+              <Icon name="navigation-variant" size={11} color={colors.primary} />
+              <Text style={[styles.distanceBadgeText, { color: colors.primary }]}>{distance}</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Occupancy Indicator section */}
+          {/* Occupancy */}
           <View style={styles.capacityContainer}>
             <View style={styles.capacityHeader}>
-              <Text style={styles.capacityLabel}>
-                {t('citizen.shelters.capacity')}: <Text style={styles.capacityHighlight}>{item.hien_tai}</Text>/{item.suc_chua} {t('citizen.shelters.people')}
+              <Text style={[styles.capacityLabel, { color: colors.textSecondary }]}>
+                {t('citizen.shelters.capacity')}: <Text style={[styles.capacityHighlight, { color: colors.text }]}>{item.hien_tai}</Text>/{item.suc_chua} {t('citizen.shelters.people')}
               </Text>
-              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.tinh_trang) + '12' }]}>
+              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.tinh_trang) + '18' }]}>
                 <View style={[styles.statusIndicatorDot, { backgroundColor: getStatusColor(item.tinh_trang) }]} />
                 <Text style={[styles.statusText, { color: getStatusColor(item.tinh_trang) }]}>
                   {getStatusText(item.tinh_trang)}
                 </Text>
               </View>
             </View>
-            <View style={styles.progressBarBg}>
-              <View 
+            <View style={[styles.progressBarBg, { backgroundColor: isDark ? colors.border : '#f3f4f6' }]}>
+              <View
                 style={[
-                  styles.progressBarFill, 
-                  { 
+                  styles.progressBarFill,
+                  {
                     width: `${Math.min(capacityPercent, 100)}%`,
-                    backgroundColor: getStatusColor(item.tinh_trang)
-                  }
-                ]} 
+                    backgroundColor: getStatusColor(item.tinh_trang),
+                  },
+                ]}
               />
             </View>
           </View>
 
-          <View style={styles.shelterFooter}>
+          <View style={[styles.shelterFooter, { borderTopColor: colors.borderLight }]}>
             <View style={styles.footerItem}>
-              <Icon name="clock-outline" size={13} color={theme.colors.textSecondary} />
-              <Text style={styles.footerText}>
+              <Icon name="clock-outline" size={13} color={colors.textSecondary} />
+              <Text style={[styles.footerText, { color: colors.textSecondary }]}>
                 {formatOpeningHours(item.thoi_gian_mo, item.thoi_gian_dong)}
               </Text>
             </View>
-            
+
             {item.so_dt ? (
               <View style={styles.phoneButton}>
                 <Icon name="phone" size={13} color="#12B76A" />
@@ -339,9 +337,9 @@ const ShelterListScreen: React.FC = () => {
               </View>
             ) : null}
 
-            <View style={[styles.typeBadge, { backgroundColor: theme.colors.primary + '12' }]}>
-              <Icon name={getShelterTypeIcon(item.loai)} size={11} color={theme.colors.primary} />
-              <Text style={[styles.typeText, { color: theme.colors.primary }]}>
+            <View style={[styles.typeBadge, { backgroundColor: colors.primary + '15' }]}>
+              <Icon name={getShelterTypeIcon(item.loai)} size={11} color={colors.primary} />
+              <Text style={[styles.typeText, { color: colors.primary }]}>
                 {getShelterTypeText(item.loai)}
               </Text>
             </View>
@@ -355,55 +353,55 @@ const ShelterListScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={theme.colors.white} />
+      <View style={[styles.container, { backgroundColor: isDark ? colors.background : colors.backgroundSecondary }]}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={isDark ? colors.background : colors.white} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={styles.loadingText}>{t('common.loading')}</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>{t('common.loading')}</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.white} />
-      
-      {/* Cohesive Header + Search + Stats Block */}
-      <View style={[styles.topPanel, { paddingTop: insets.top + 10 }]}>
+    <View style={[styles.container, { backgroundColor: isDark ? colors.background : colors.backgroundSecondary }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={isDark ? colors.background : colors.white} />
+
+      {/* Header + Search + Stats */}
+      <View style={[styles.topPanel, { backgroundColor: isDark ? colors.card : colors.white, paddingTop: insets.top + 10 }]}>
         {/* Header Bar */}
         <View style={styles.headerBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Icon name="arrow-left" size={22} color={theme.colors.text} />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backButton, { backgroundColor: colors.backgroundSecondary }]}>
+            <Icon name="arrow-left" size={22} color={colors.text} />
           </TouchableOpacity>
           <View style={styles.headerTitleWrap}>
-            <Text style={styles.headerTitle}>{t('citizen.shelters.title')}</Text>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>{t('citizen.shelters.title')}</Text>
             <View style={styles.headerSubtitleRow}>
               <View style={styles.pulseDot} />
-              <Text style={styles.headerSubtitle}>
+              <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
                 {t('citizen.shelters.readyCount', { count: shelters.filter(s => s.tinh_trang !== 'full').length })}
               </Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.filterButton}>
-            <Icon name="tune-variant" size={20} color={theme.colors.primary} />
+          <TouchableOpacity style={[styles.filterButton, { backgroundColor: colors.primary + '15' }]}>
+            <Icon name="tune-variant" size={20} color={colors.primary} />
           </TouchableOpacity>
         </View>
 
         {/* Search Bar */}
         <View style={styles.searchBarContainer}>
-          <View style={styles.searchBar}>
-            <Icon name="magnify" size={20} color={theme.colors.textSecondary} />
+          <View style={[styles.searchBar, { backgroundColor: isDark ? colors.backgroundSecondary : colors.backgroundSecondary }]}>
+            <Icon name="magnify" size={20} color={colors.textSecondary} />
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.text }]}
               placeholder={t('citizen.shelters.searchShelter')}
-              placeholderTextColor={theme.colors.textTertiary}
+              placeholderTextColor={colors.textTertiary}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Icon name="close-circle" size={18} color={theme.colors.textSecondary} />
+                <Icon name="close-circle" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
             )}
           </View>
@@ -469,17 +467,17 @@ const ShelterListScreen: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[theme.colors.primary]}
-            tintColor={theme.colors.primary}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <View style={styles.emptyIconWrap}>
-              <Icon name="home-off-outline" size={44} color={theme.colors.textTertiary} />
+              <Icon name="home-off-outline" size={44} color={colors.textTertiary} />
             </View>
-            <Text style={styles.emptyText}>{t('citizen.shelters.noShelters')}</Text>
-            <Text style={styles.emptySubtext}>{t('citizen.shelters.noSheltersMessage')}</Text>
+            <Text style={[styles.emptyText, { color: colors.text }]}>{t('citizen.shelters.noShelters')}</Text>
+            <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>{t('citizen.shelters.noSheltersMessage')}</Text>
           </View>
         }
       />

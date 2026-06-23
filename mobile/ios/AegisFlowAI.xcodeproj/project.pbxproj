@@ -315,7 +315,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vannhan.aegisflowai;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dzfullstack.aegisflowai;
 				PRODUCT_NAME = AegisFlowAI;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -345,7 +345,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vannhan.aegisflowai;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dzfullstack.aegisflowai;
 				PRODUCT_NAME = AegisFlowAI;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

@@ -18,12 +18,13 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import Animated, { FadeInDown, FadeInUp, SlideInDown } from 'react-native-reanimated';
-import { theme } from '../../theme/colors';
+import { theme as staticTheme } from '../../theme/colors';
 import InputCustom from '../../component/InputCustom';
 import ButtonCustom from '../../component/ButtonCustom';
 import LoadingOverlay from '../../component/LoadingOverlay';
 import api from '../../utils/Api';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -40,6 +41,8 @@ interface ChangePasswordScreenProps {
 
 const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
+  const { colors, isDark, theme: appTheme } = useAppTheme();
+  const styles = getStyles(colors, isDark, appTheme);
   const { identifier, type, token } = route.params;
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -138,9 +141,9 @@ const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ navigation,
   };
 
   const getPasswordStrengthText = (strength: number) => {
-    if (strength <= 2) return { text: t('auth.weak'), color: theme.colors.error };
-    if (strength <= 4) return { text: t('auth.medium'), color: theme.colors.warning };
-    return { text: t('auth.strong'), color: theme.colors.success };
+    if (strength <= 2) return { text: t('auth.weak'), color: colors.error };
+    if (strength <= 4) return { text: t('auth.medium'), color: colors.warning };
+    return { text: t('auth.strong'), color: colors.success };
   };
 
   return (
@@ -164,7 +167,7 @@ const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ navigation,
             onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
-            <Icon name="arrow-left" size={24} color={theme.colors.text} />
+            <Icon name="arrow-left" size={24} color={colors.text} />
           </TouchableOpacity>
 
           <View style={styles.headerContent}>
@@ -182,7 +185,7 @@ const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ navigation,
         >
           <View style={styles.cardHeader}>
             <View style={styles.cardIconContainer}>
-              <Icon name="lock-reset" size={32} color={theme.colors.primary} />
+              <Icon name="lock-reset" size={32} color={colors.primary} />
             </View>
             <Text style={styles.cardTitle}>{t('changePassword.resetPassword')}</Text>
             <Text style={styles.cardSubtitle}>
@@ -263,10 +266,10 @@ const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ navigation,
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.background,
   },
   backgroundContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -278,7 +281,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: colors.primary + '10',
   },
   decorativeCircle2: {
     position: 'absolute',
@@ -287,7 +290,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: theme.colors.secondary + '10',
+    backgroundColor: colors.secondary + '10',
   },
   scrollView: {
     flex: 1,
@@ -309,12 +312,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -329,33 +332,35 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: wp('6%'),
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     marginBottom: hp('0.5%'),
     fontWeight: '600',
   },
   headerSubtitle: {
     fontSize: wp('4%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
     lineHeight: wp('5%'),
   },
 
   // Card Styles
   card: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: wp('4%'),
     padding: wp('6%'),
     marginBottom: hp('2%'),
+    borderWidth: isDark ? 1 : 0,
+    borderColor: colors.border,
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0 : 0.1,
         shadowRadius: 8,
       },
       android: {
-        elevation: 4,
+        elevation: isDark ? 0 : 4,
       },
     }),
   },
@@ -367,21 +372,21 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: colors.primary + '15',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: hp('2%'),
   },
   cardTitle: {
     fontSize: wp('5%'),
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
     marginBottom: hp('0.5%'),
   },
   cardSubtitle: {
     fontSize: wp('4%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
     textAlign: 'center',
   },
@@ -391,37 +396,36 @@ const styles = StyleSheet.create({
     marginBottom: hp('2%'),
   },
   input: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
   },
 
   // Password Strength
   passwordStrengthContainer: {
-    marginTop: -theme.spacing.md,
-    marginBottom: theme.spacing.lg,
+    marginTop: -staticTheme.spacing.md,
+    marginBottom: staticTheme.spacing.lg,
   },
   passwordStrengthBar: {
     height: 4,
-    backgroundColor: theme.colors.border,
+    backgroundColor: colors.border,
     borderRadius: 2,
     overflow: 'hidden',
-    marginBottom: theme.spacing.xs,
+    marginBottom: staticTheme.spacing.xs,
   },
   passwordStrengthFill: {
     height: '100%',
     borderRadius: 2,
   },
   passwordStrengthText: {
-    fontSize: theme.typography.fontSize.xs,
+    fontSize: staticTheme.typography.fontSize.xs,
     fontFamily: theme.typography.fontFamily,
     textAlign: 'right',
   },
 
   // Change Password Button
   changePasswordButton: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
     height: 56,
   },
-
 });
 
 export default ChangePasswordScreen;

@@ -21,7 +21,10 @@
     "search": "ค้นหา",
     "filter": "กรอง",
     "all": "ทั้งหมด",
-    "noData": "ไม่มีข้อมูล"
+    "noData": "ไม่มีข้อมูล",
+    "user": "User",
+    "info": "Info",
+    "normal": "Normal"
   },
   "auth": {
     "login": "เข้าสู่ระบบ",
@@ -102,7 +105,10 @@
     "verificationFailed": "การยืนยันล้มเหลว",
     "verificationSuccessful": "การยืนยันสำเร็จ!",
     "invalidOtp": "รหัส OTP ไม่ถูกต้อง",
-    "otpResent": "รหัส OTP ถูกส่งอีกครั้ง"
+    "otpResent": "รหัส OTP ถูกส่งอีกครั้ง",
+    "failedResend": "Failed to resend OTP code",
+    "verifyingAccount": "Verifying account...",
+    "verifyingReset": "Verifying password reset..."
   },
   "changePassword": {
     "title": "เปลี่ยนรหัสผ่าน",
@@ -196,7 +202,9 @@
       "heavy_rain": "ฝนตกหนัก",
       "landslide": "ดินถล่ม",
       "dam_failure": "เขื่อนแตก",
-      "other": "อื่น"
+      "other": "อื่น",
+      "accident": "Accident",
+      "congestion": "Congestion"
     },
     "severity": {
       "low": "ต่ำ",
@@ -213,7 +221,22 @@
     "confirmUpdate": "ยืนยันการอัปเดต",
     "updateSuccess": "อัปเดตสำเร็จ",
     "updateFailed": "การอัปเดตล้มเหลว",
-    "noIncidents": "ไม่มีเหตุการณ์ใดๆ"
+    "noIncidents": "ไม่มีเหตุการณ์ใดๆ",
+    "subtitle": "Real-time monitoring from AI Digital Twin",
+    "noIncidentsDesc": "No incidents reported yet",
+    "openCountBanner": "{{count}} open incidents — immediate action required",
+    "allTypes": "All Types",
+    "additionalData": "ADDITIONAL DATA",
+    "assignment": "ASSIGNMENT",
+    "closeIncident": "Close Incident",
+    "markAsDone": "Mark as Done",
+    "notOccurred": "Not yet occurred",
+    "quickActions": "QUICK ACTIONS",
+    "reporter": "REPORTER",
+    "startProcessing": "Start Processing",
+    "timeline": "TIMELINE",
+    "unassigned": "Unassigned",
+    "unknownLocation": "Unknown location"
   },
   "reports": {
     "title": "รายงาน",
@@ -238,7 +261,10 @@
     },
     "categories": {
       "flood": "น้ำท่วม",
-      "other": "อื่น"
+      "other": "อื่น",
+      "environment": "Environment",
+      "fire": "Fire",
+      "waste": "Waste"
     },
     "priorities": {
       "normal": "ปกติ",
@@ -255,7 +281,11 @@
     "vote": "โหวต",
     "comment": "ความคิดเห็น",
     "rate": "ประเมิน",
-    "views": "มุมมอง"
+    "views": "มุมมอง",
+    "severity": "Severity",
+    "editReport": "แก้ไขรายงาน",
+    "myReportsDesc": "รายงานของคุณจะแสดงที่นี่",
+    "defaultRescueTitle": "คำขอความช่วยเหลือฉุกเฉิน"
   },
   "emergency": {
     "title": "การตอบสนองฉุกเฉิน",
@@ -269,7 +299,14 @@
     "startNavigation": "เริ่มการนำทาง",
     "incidentList": "รายการเหตุการณ์",
     "mapView": "แผนที่",
-    "listView": "รายการ"
+    "listView": "รายการ",
+    "accept": "Accept",
+    "acceptMission": "Accept Mission",
+    "confirmAccept": "Do you want to handle incident",
+    "confirmDispatch": "Confirm Dispatch",
+    "dispatchUnit": "Dispatch Unit",
+    "missionAccepted": "Mission accepted! Please respond to the incident promptly.",
+    "missionInProgress": "Mission in progress"
   },
   "profile": {
     "title": "ประวัติโดยย่อ",
@@ -288,7 +325,9 @@
       "emergency": "หน่วยกู้ภัยฉุกเฉิน",
       "operator": "เจ้าหน้าที่จราจร",
       "admin": "ผู้ดูแลระบบ"
-    }
+    },
+    "saveChanges": "บันทึกการเปลี่ยนแปลง",
+    "emailDisabledHelp": "อีเมลที่เชื่อมโยงกับบัญชีของคุณไม่สามารถเปลี่ยนแปลงได้"
   },
   "notifications": {
     "title": "การแจ้งเตือน",
@@ -317,7 +356,10 @@
     "title": "เลือกภาษา",
     "vietnamese": "เตียงเวียต",
     "english": "ภาษาอังกฤษ",
-    "selectLanguage": "เลือกภาษา"
+    "selectLanguage": "เลือกภาษา",
+    "selectLanguagePrompt": "Select Language",
+    "changeLanguageDesc": "Change the app display language",
+    "incompleteTranslationNote": "Some content may not be fully translated."
   },
   "errors": {
     "networkError": "เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย",
@@ -377,7 +419,10 @@
     "depth": "ความลึก",
     "rising": "เพิ่มขึ้น",
     "falling": "ล้ม",
-    "stable": "มั่นคง"
+    "stable": "มั่นคง",
+    "safetyTips": {
+      "drainage": "Clear drainage ditches around your home"
+    }
   },
   "sensor": {
     "title": "เซนเซอร์",
@@ -460,7 +505,8 @@
       "shelters": "ที่พักพิง",
       "myLocation": "ตำแหน่งของฉัน",
       "refresh": "รีเฟรช",
-      "callEmergency": "โทรฉุกเฉิน"
+      "callEmergency": "โทรฉุกเฉิน",
+      "activeAlerts": "Active Alerts"
     },
     "shelters": {
       "title": "ที่พักพิง",
@@ -634,7 +680,16 @@
       "changePassword": "เปลี่ยนรหัสผ่าน",
       "about": "เกี่ยวกับ",
       "logoutTitle": "ออกจากระบบ",
-      "logoutMessage": "คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?"
+      "logoutMessage": "คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?",
+      "manageProfile": "Personal Info",
+      "notificationSettings": "Notification Settings",
+      "helpCenter": "Help Center",
+      "theme": "Theme",
+      "selectTheme": "Select Display Mode",
+      "themeDevelopment": "Dark mode is under development.",
+      "groupAccount": "Account",
+      "groupPreferences": "Preferences & Activity",
+      "groupSupport": "Support & Info"
     }
   },
   "aboutScreen": {
@@ -671,5 +726,91 @@
     "followUs": "ติดตามเรา",
     "privacyPolicy": "นโยบายความเป็นส่วนตัว",
     "termsOfUse": "เงื่อนไขการใช้งาน"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "darkUnderDev": "มืด (อยู่ระหว่างการพัฒนา)",
+    "system": "System"
+  },
+  "priorityRoute": {
+    "title": "Priority Route",
+    "mapSubtitle": "Real-time Traffic Dispatch",
+    "listSubtitle": "Active Hotspots",
+    "dispatchButton": "DISPATCH PRIORITY SIGNAL",
+    "dispatchFailed": "Failed to dispatch priority command. Please try again.",
+    "dispatchSuccessDesc": "Priority traffic control command dispatched for incident #{{id}}.",
+    "monitoringPointsCount": "{{count}} monitoring points",
+    "activeIncidentsCount": "{{count}} active incidents",
+    "noOpenIncidents": "No active open incidents",
+    "hotspotType": "Object Type"
+  },
+  "emailVerification": {
+    "title": "Email Verification",
+    "subtitle": "Verify your email address",
+    "subtitleCodeSent": "Verification code sent to email",
+    "verifyEmail": "Verify Email",
+    "sendCodeDescription": "Tap below to send a verification code to your registered email",
+    "sendVerificationCode": "Send Verification Code",
+    "enterVerificationCode": "Enter Verification Code",
+    "codeSentDescription": "Code has been sent to your email",
+    "resendCodeAfter": "Resend after",
+    "resendCode": "Resend Code",
+    "emailAlreadyVerified": "Email Already Verified",
+    "emailVerifiedDescription": "Your email address has been successfully verified.",
+    "emailVerifiedSuccess": "Email verified successfully!",
+    "enterFullOtp": "Please enter the complete OTP code",
+    "otpIncorrect": "OTP code is incorrect",
+    "backToProfile": "Back to Profile",
+    "checkingStatus": "Checking...",
+    "checkingDescription": "Checking email verification status",
+    "getEmailError": "Failed to retrieve email information",
+    "sendOtpSuccess": "Verification code sent",
+    "sendOtpError": "Failed to send verification code",
+    "sendOtpFailed": "Send verification code failed"
+  },
+  "phoneVerification": {
+    "title": "Phone Verification",
+    "subtitle": "Verify your phone number",
+    "subtitleCodeSent": "Verification code sent to phone",
+    "verifyPhone": "Verify Phone Number",
+    "sendCodeDescription": "Tap below to send a verification code to your phone number",
+    "sendVerificationCode": "Send Verification Code",
+    "enterVerificationCode": "Enter Verification Code",
+    "codeSentDescription": "Code has been sent to your phone number",
+    "resendCodeAfter": "Resend after",
+    "resendCode": "Resend Code",
+    "phoneAlreadyVerified": "Phone Already Verified",
+    "phoneVerifiedDescription": "Your phone number has been successfully verified.",
+    "phoneVerifiedSuccess": "Phone number verified successfully!",
+    "enterFullOtp": "Please enter the complete OTP code",
+    "otpIncorrect": "OTP code is incorrect",
+    "backToProfile": "Back to Profile",
+    "checkingStatus": "Checking...",
+    "checkingDescription": "Checking phone verification status",
+    "getPhoneError": "Failed to retrieve phone information",
+    "sendOtpSuccess": "Verification code sent",
+    "sendOtpError": "Failed to send verification code",
+    "sendOtpFailed": "Send verification code failed"
+  },
+  "notificationSettingsScreen": {
+    "title": "การตั้งค่าการแจ้งเตือน",
+    "description": "ปรับแต่งวิธีที่คุณรับการแจ้งเตือนแบบเรียลไทม์จาก AegisFlow เพื่อติดตามสถานการณ์สภาพอากาศและน้ำท่วมล่าสุด",
+    "sectionFloodAlerts": "การแจ้งเตือนน้ำท่วม",
+    "sectionCommunity": "รายงานชุมชน",
+    "sectionRescue": "สนับสนุนการกู้ภัย",
+    "alerts": "แจ้งเตือนภัยพิบัติ",
+    "alertsDesc": "รับการแจ้งเตือนเมื่อมีการพัฒนาของน้ำท่วมใหม่ในพื้นที่",
+    "critical": "แจ้งเตือนฉุกเฉิน",
+    "criticalDesc": "รับการแจ้งเตือนวิกฤตจากศูนย์บัญชาการเสมอแม้ในโหมดเงียบ",
+    "reportStatus": "สถานะรายงาน",
+    "reportStatusDesc": "รับการแจ้งเตือนเมื่อรายงานของคุณได้รับการอนุมัติหรือดำเนินการ",
+    "comments": "ความคิดเห็นและข้อเสนอแนะ",
+    "commentsDesc": "การแจ้งเตือนเมื่อมีความคิดเห็นใหม่ในรายงานน้ำท่วม",
+    "rescueUpdate": "ร้องขอกู้ภัย SOS",
+    "rescueUpdateDesc": "อัปเดตเกี่ยวกับเส้นทางการกู้ภัยจากทีมตอบสนองอย่างรวดเร็ว",
+    "teamAssigned": "ข้อมูลทีมกู้ภัย",
+    "teamAssignedDesc": "การแจ้งเตือนเมื่อมีการส่งทีมตอบสนองอย่างรวดเร็วเพื่อช่วยเหลือ",
+    "footerNote": "AegisFlow รักษาความปลอดภัยในการสื่อสารและความเป็นส่วนตัวของคุณ"
   }
 }

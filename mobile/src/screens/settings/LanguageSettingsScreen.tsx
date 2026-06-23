@@ -3,9 +3,10 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import PageHeader from '../../component/PageHeader';
-import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING } from '../../theme';
+import { SPACING, FONT_SIZE, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING } from '../../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 const LANGUAGE_KEY = '@app_language';
 
@@ -28,6 +29,8 @@ const LANGUAGES: Language[] = [
 const LanguageSettingsScreen = () => {
     const navigation = useNavigation();
     const { t, i18n } = useTranslation();
+    const { colors, isDark } = useAppTheme();
+    const styles = getStyles(colors, isDark);
     const [selectedLanguage, setSelectedLanguage] = useState('vi');
 
     useEffect(() => {
@@ -84,7 +87,7 @@ const LanguageSettingsScreen = () => {
                                     </View>
                                 </View>
                                 {selectedLanguage === language.code && (
-                                    <Icon name="check-circle" size={ICON_SIZE.md} color={theme.colors.primary} />
+                                    <Icon name="check-circle" size={ICON_SIZE.md} color={colors.primary} />
                                 )}
                             </TouchableOpacity>
                         ))}
@@ -92,7 +95,7 @@ const LanguageSettingsScreen = () => {
                 </View>
 
                 <View style={styles.noteSection}>
-                    <Icon name="information-outline" size={ICON_SIZE.md} color={theme.colors.info} />
+                    <Icon name="information-outline" size={ICON_SIZE.md} color={colors.info} />
                     <Text style={styles.noteText}>
                         {t('language.incompleteTranslationNote', 'Một số nội dung có thể chưa được dịch hoàn toàn. Chúng tôi đang nỗ lực cải thiện.')}
                     </Text>
@@ -102,28 +105,28 @@ const LanguageSettingsScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: theme.colors.background,
+        backgroundColor: colors.backgroundSecondary,
     },
     content: {
         flex: 1,
     },
     section: {
-        backgroundColor: theme.colors.white,
+        backgroundColor: colors.card,
         padding: SCREEN_PADDING.horizontal,
         marginBottom: SPACING.md,
     },
     sectionTitle: {
         fontSize: FONT_SIZE.lg,
         fontWeight: '600',
-        color: theme.colors.text,
+        color: colors.text,
         marginBottom: SPACING.xs,
     },
     sectionDescription: {
         fontSize: FONT_SIZE.sm,
-        color: theme.colors.textSecondary,
+        color: colors.textSecondary,
         marginBottom: SPACING.lg,
     },
     languageList: {
@@ -134,14 +137,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: SPACING.md,
-        backgroundColor: theme.colors.backgroundSecondary,
+        backgroundColor: colors.background,
         borderRadius: BORDER_RADIUS.md,
         borderWidth: 2,
         borderColor: 'transparent',
     },
     languageItemSelected: {
-        borderColor: theme.colors.primary,
-        backgroundColor: theme.colors.primary + '10',
+        borderColor: colors.primary,
+        backgroundColor: colors.primary + '10',
     },
     languageInfo: {
         flexDirection: 'row',
@@ -157,16 +160,16 @@ const styles = StyleSheet.create({
     languageName: {
         fontSize: FONT_SIZE.md,
         fontWeight: '600',
-        color: theme.colors.text,
+        color: colors.text,
     },
     languageSubname: {
         fontSize: FONT_SIZE.sm,
-        color: theme.colors.textSecondary,
+        color: colors.textSecondary,
     },
     noteSection: {
         flexDirection: 'row',
         gap: SPACING.sm,
-        backgroundColor: theme.colors.info + '10',
+        backgroundColor: colors.infoLight,
         padding: SPACING.md,
         marginHorizontal: SCREEN_PADDING.horizontal,
         borderRadius: BORDER_RADIUS.md,
@@ -175,9 +178,8 @@ const styles = StyleSheet.create({
     noteText: {
         flex: 1,
         fontSize: FONT_SIZE.sm,
-        color: theme.colors.textSecondary,
+        color: colors.textSecondary,
         lineHeight: 20,
     },
 });
-
 export default LanguageSettingsScreen;

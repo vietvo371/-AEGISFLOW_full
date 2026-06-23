@@ -83,7 +83,7 @@ const SEVERITY_ORDER: Record<string, number> = {
 const EmergencyIncidentsScreen = () => {
     const navigation = useNavigation();
     const { listen } = useWebSocket();
-    const { t, i18n } = useTranslation();
+    const { t, currentLanguage } = useTranslation();
     const { isEmergency } = useAuth();
     const [incidents, setIncidents] = useState<Incident[]>([]);
     const [loading, setLoading] = useState(true);
@@ -298,7 +298,7 @@ const EmergencyIncidentsScreen = () => {
                                 <Text style={styles.cardMetaId}>#{item.id}</Text>
                                 <View style={styles.dot} />
                                 <Text style={styles.cardMetaTime}>
-                                    {new Date(item.created_at).toLocaleTimeString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                                    {new Date(item.created_at).toLocaleTimeString(currentLanguage === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                                 </Text>
                                 <View style={styles.dot} />
                                 <Text style={styles.cardMetaLocation} numberOfLines={1}>{item.location_name || t('incidents.unknownLocation', 'Unknown location')}</Text>

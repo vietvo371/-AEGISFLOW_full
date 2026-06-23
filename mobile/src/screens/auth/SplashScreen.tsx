@@ -3,7 +3,7 @@ import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackScreen } from '../../navigation/types';
 import { theme } from '../../theme/colors';
-import { componentStyles } from '../../theme/components';
+import { containerStyles } from '../../theme/components';
 
 const SplashScreen: StackScreen<'Loading'> = () => {
   const navigation = useNavigation();
@@ -29,16 +29,16 @@ const SplashScreen: StackScreen<'Loading'> = () => {
 
     animateLogo();
 
-    // Navigate to Onboarding after 2 seconds
+    // Navigate to Login after 2 seconds
     const timer = setTimeout(() => {
-      navigation.navigate('Onboarding');
+      (navigation as any).navigate('Login');
     }, 2000);
 
     return () => clearTimeout(timer);
   }, [navigation, logoScale, logoOpacity]);
 
   return (
-    <View style={[componentStyles.container, styles.container]}>
+    <View style={[containerStyles.container, styles.container]}>
       <Animated.Image
         source={require('../../assets/images/logo.png')}
         style={[

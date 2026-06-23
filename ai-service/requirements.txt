@@ -13,3 +13,5 @@ scikit-learn==1.6.0
 
 # ML Training dependencies
 xgboost>=2.0.0
+# Required to unpickle the v4.1 stacking model (lgbm base learner) at runtime
+lightgbm>=4.0.0

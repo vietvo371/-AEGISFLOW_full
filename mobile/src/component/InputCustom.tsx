@@ -12,7 +12,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { theme } from '../theme/colors';
+import { useAppTheme } from '../contexts/ThemeContext';
 
 interface InputCustomProps {
   label?: string;
@@ -58,11 +58,13 @@ const InputCustom: React.FC<InputCustomProps> = ({
   onPress,
   maxLength,
 }) => {
+  const { colors, isDark } = useAppTheme();
+  const styles = getStyles(colors, isDark);
   const [isFocused, setIsFocused] = useState(false);
   const animatedValue = useRef(new Animated.Value(value ? 1 : 0)).current;
   const inputRef = useRef<TextInput>(null);
 
-  // 🔥 FIX: Animation khi value thay đổi (tự động điền)
+  // Animation khi value thay đổi (tự động điền)
   useEffect(() => {
     Animated.timing(animatedValue, {
       toValue: value || isFocused ? 1 : 0,
@@ -81,7 +83,7 @@ const InputCustom: React.FC<InputCustomProps> = ({
 
   const labelStyle = {
     position: 'absolute',
-    left: leftIcon ? 20 : theme.spacing.md,
+    left: leftIcon ? 20 : 12,
     top: animatedValue.interpolate({
       inputRange: [0, 1],
       outputRange: [14, -8],
@@ -92,9 +94,9 @@ const InputCustom: React.FC<InputCustomProps> = ({
     }),
     color: animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [theme.colors.textLight, theme.colors.primary],
+      outputRange: [colors.textSecondary, colors.primary],
     }),
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     paddingHorizontal: 4,
     zIndex: 1,
   } as any;
@@ -120,6 +122,7 @@ const InputCustom: React.FC<InputCustomProps> = ({
       multiline={multiline}
       numberOfLines={numberOfLines}
       maxLength={maxLength}
+      placeholderTextColor={colors.textTertiary}
     />
   );
 
@@ -143,7 +146,7 @@ const InputCustom: React.FC<InputCustomProps> = ({
             <Icon
               name={leftIcon}
               size={20}
-              color={error ? theme.colors.error : theme.colors.textLight}
+              color={error ? colors.error : colors.textSecondary}
               style={styles.leftIcon}
             />
           )}
@@ -176,7 +179,7 @@ const InputCustom: React.FC<InputCustomProps> = ({
               <Icon
                 name={rightIcon}
                 size={20}
-                color={error ? theme.colors.error : theme.colors.textLight}
+                color={error ? colors.error : colors.textSecondary}
               />
             </TouchableOpacity>
           )}
@@ -189,52 +192,52 @@ const InputCustom: React.FC<InputCustomProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     width: '100%',
   },
   required: {
-    color: theme.colors.error,
+    color: colors.error,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.md,
+    backgroundColor: colors.card,
+    borderRadius: 12, // md BORDER_RADIUS is typically 12
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     overflow: 'visible',
     minHeight: 56,
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: isDark ? 0 : 0.05,
         shadowRadius: 4,
       },
       android: {
-        elevation: 2,
+        elevation: isDark ? 0 : 2,
       },
     }),
   },
   inputContainerFocused: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.white,
+    borderColor: colors.primary,
+    backgroundColor: colors.card,
     ...Platform.select({
       ios: {
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0 : 0.1,
       },
       android: {
-        elevation: 4,
+        elevation: isDark ? 0 : 4,
       },
     }),
   },
   inputContainerError: {
-    borderColor: theme.colors.error,
+    borderColor: colors.error,
   },
   inputContainerDisabled: {
-    backgroundColor: theme.colors.background,
-    borderColor: theme.colors.border,
+    backgroundColor: colors.backgroundSecondary,
+    borderColor: colors.border,
   },
   inputWrapper: {
     flex: 1,
@@ -242,32 +245,30 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 48,
-    paddingHorizontal: theme.spacing.md,
-    fontSize: theme.typography.fontSize.md,
-    fontFamily: theme.typography.fontFamily,
-    color: theme.colors.text,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    color: colors.text,
     paddingTop: 12,
   },
   inputError: {
-    color: theme.colors.error,
+    color: colors.error,
   },
   inputDisabled: {
-    color: theme.colors.disabled,
+    color: colors.textSecondary,
   },
   leftIcon: {
-    marginLeft: theme.spacing.md,
+    marginLeft: 12,
   },
   rightIcon: {
-    marginRight: theme.spacing.md,
+    marginRight: 12,
   },
   pressableInput: {
     flex: 1,
   },
   errorText: {
-    marginTop: theme.spacing.xs,
-    fontSize: theme.typography.fontSize.sm,
-    fontFamily: theme.typography.fontFamily,
-    color: theme.colors.error,
+    marginTop: 4,
+    fontSize: 14,
+    color: colors.error,
   },
 });
 

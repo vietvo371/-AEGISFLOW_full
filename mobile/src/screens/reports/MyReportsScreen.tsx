@@ -1,29 +1,40 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  RefreshControl, ActivityIndicator, StatusBar,
+  RefreshControl, ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { theme } from '../../theme';
-import { reportService } from '../../services/reportService';
+import { useTranslation } from 'react-i18next';
 
-const STATUS_MAP: Record<number, { label: string; color: string }> = {
-  0: { label: 'Tiếp nhận', color: '#F59E0B' },
-  1: { label: 'Đã xác minh', color: '#3B82F6' },
-  2: { label: 'Đang xử lý', color: '#7a5af8' },
-  3: { label: 'Hoàn thành', color: '#10B981' },
-  4: { label: 'Từ chối', color: '#EF4444' },
-};
+import { reportService } from '../../services/reportService';
+import { useAppTheme } from '../../contexts/ThemeContext';
+import PageHeader from '../../component/PageHeader';
 
 const CATEGORY_ICONS: Record<number, string> = {
   1: 'road-variant', 2: 'tree-outline', 3: 'fire',
   4: 'trash-can-outline', 5: 'weather-pouring', 6: 'alert-circle-outline',
 };
 
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  try {
+    const date = new Date(dateStr);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  } catch {
+    return dateStr;
+  }
+};
+
 const MyReportsScreen = () => {
   const navigation = useNavigation<any>();
+  const { t } = useTranslation();
+  const { colors, isDark } = useAppTheme();
+  const styles = getStyles(colors, isDark);
+  
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -55,9 +66,38 @@ const MyReportsScreen = () => {
   const onRefresh = () => { setRefreshing(true); fetchReports(1, true); };
   const loadMore = () => { if (hasMore && !loading) fetchReports(page + 1); };
 
+  const getStatusLabel = (trangThai: number) => {
+    switch (trangThai) {
+      case 0:
+        return t('reports.status.received', 'Tiếp nhận');
+      case 1:
+        return t('reports.status.verified', 'Đã xác minh');
+      case 2:
+        return t('reports.status.processing', 'Đang xử lý');
+      case 3:
+        return t('reports.status.completed', 'Hoàn thành');
+      case 4:
+        return t('reports.status.rejected', 'Từ chối');
+      default:
+        return t('reports.status.received', 'Tiếp nhận');
+    }
+  };
+
+  const getStatusStyle = (trangThai: number, themeColors: any) => {
+    switch (trangThai) {
+      case 0: return { color: themeColors.warning, bg: themeColors.warning + '15' };
+      case 1: return { color: themeColors.info, bg: themeColors.info + '15' };
+      case 2: return { color: themeColors.primary, bg: themeColors.primary + '15' };
+      case 3: return { color: themeColors.success, bg: themeColors.success + '15' };
+      case 4: return { color: themeColors.error, bg: themeColors.error + '15' };
+      default: return { color: themeColors.warning, bg: themeColors.warning + '15' };
+    }
+  };
+
   const renderItem = ({ item }: { item: any }) => {
-    const status = STATUS_MAP[item.trang_thai] || STATUS_MAP[0];
+    const statusStyle = getStatusStyle(item.trang_thai, colors);
     const catIcon = CATEGORY_ICONS[item.danh_muc] || 'alert-circle-outline';
+    const statusLabel = getStatusLabel(item.trang_thai);
 
     return (
       <TouchableOpacity
@@ -67,22 +107,22 @@ const MyReportsScreen = () => {
       >
         <View style={styles.cardHeader}>
           <View style={styles.catIcon}>
-            <Icon name={catIcon} size={18} color={theme.colors.primary} />
+            <Icon name={catIcon} size={18} color={colors.primary} />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={styles.cardContent}>
             <Text style={styles.cardTitle} numberOfLines={2}>{item.tieu_de}</Text>
             <Text style={styles.cardDate}>
-              {new Date(item.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+              {formatDate(item.created_at)}
             </Text>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: status.color + '15' }]}>
-            <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+            <Text style={[styles.statusText, { color: statusStyle.color }]}>{statusLabel}</Text>
           </View>
         </View>
 
         {item.dia_chi && (
           <View style={styles.addressRow}>
-            <Icon name="map-marker-outline" size={14} color={theme.colors.textTertiary} />
+            <Icon name="map-marker-outline" size={14} color={colors.textTertiary} />
             <Text style={styles.addressText} numberOfLines={1}>{item.dia_chi}</Text>
           </View>
         )}
@@ -92,30 +132,25 @@ const MyReportsScreen = () => {
 
   if (loading && reports.length === 0) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Icon name="arrow-left" size={22} color={theme.colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Báo cáo của tôi</Text>
-        </View>
-        <View style={styles.center}><ActivityIndicator color={theme.colors.primary} /></View>
-      </SafeAreaView>
+      <View style={styles.container}>
+        <PageHeader title={t('reports.myReports', 'Báo cáo của tôi')} variant="default" showBack={true} />
+        <View style={styles.center}><ActivityIndicator color={colors.primary} /></View>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={22} color={theme.colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Báo cáo của tôi</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('CreateReport')} style={styles.addBtn}>
-          <Icon name="plus" size={22} color={theme.colors.primary} />
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
+      <PageHeader
+        title={t('reports.myReports', 'Báo cáo của tôi')}
+        variant="default"
+        showBack={true}
+        rightComponent={
+          <TouchableOpacity onPress={() => navigation.navigate('CreateReport')} style={styles.addBtn}>
+            <Icon name="plus" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        }
+      />
 
       <FlatList
         data={reports}
@@ -127,50 +162,46 @@ const MyReportsScreen = () => {
         onEndReachedThreshold={0.3}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Icon name="file-document-outline" size={56} color={theme.colors.textTertiary} />
-            <Text style={styles.emptyTitle}>Chưa có báo cáo nào</Text>
-            <Text style={styles.emptyDesc}>Báo cáo của bạn sẽ hiển thị ở đây</Text>
+            <Icon name="file-document-outline" size={56} color={colors.textTertiary} />
+            <Text style={styles.emptyTitle}>{t('reports.noReports', 'Chưa có báo cáo nào')}</Text>
+            <Text style={styles.emptyDesc}>{t('reports.myReportsDesc', 'Báo cáo của bạn sẽ hiển thị ở đây')}</Text>
           </View>
         }
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16,
-    paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center' },
-  headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: theme.colors.text },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.backgroundSecondary },
   addBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'flex-end' },
 
   list: { padding: 16, gap: 12 },
   card: {
-    backgroundColor: '#fff', borderRadius: 14, padding: 14,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    backgroundColor: colors.card, borderRadius: 14, padding: 14,
+    borderWidth: 1, borderColor: colors.borderLight,
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  cardContent: { flex: 1 },
   catIcon: {
     width: 36, height: 36, borderRadius: 10,
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: colors.primary + '15',
     justifyContent: 'center', alignItems: 'center',
   },
-  cardTitle: { fontSize: 14, fontWeight: '600', color: theme.colors.text, marginBottom: 2 },
-  cardDate: { fontSize: 12, color: theme.colors.textSecondary },
+  cardTitle: { fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 2 },
+  cardDate: { fontSize: 12, color: colors.textSecondary },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
   statusText: { fontSize: 11, fontWeight: '600' },
 
-  addressRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-  addressText: { flex: 1, fontSize: 12, color: theme.colors.textSecondary },
+  addressRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.borderLight },
+  addressText: { flex: 1, fontSize: 12, color: colors.textSecondary },
 
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   empty: { alignItems: 'center', paddingTop: 80, gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: '600', color: theme.colors.text },
-  emptyDesc: { fontSize: 13, color: theme.colors.textSecondary },
+  emptyTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
+  emptyDesc: { fontSize: 13, color: colors.textSecondary },
 });
 
 export default MyReportsScreen;

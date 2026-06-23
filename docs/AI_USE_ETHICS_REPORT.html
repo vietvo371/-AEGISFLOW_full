@@ -1,0 +1,76 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8">
+<title>AI-Use & Ethics Report — AegisFlow AI</title><style>
+@page { size: A4; margin: 18mm 16mm; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; color: #1a202c;
+       font-size: 10.6pt; line-height: 1.5; max-width: 100%; }
+h1 { font-size: 19pt; color: #1E3A5F; border-bottom: 3px solid #00B4D8; padding-bottom: 6px; margin: 0 0 4px; }
+h2 { font-size: 12.5pt; color: #fff; background: #1E3A5F; padding: 5px 10px; border-radius: 4px;
+     margin: 18px 0 8px; page-break-after: avoid; }
+h3 { font-size: 11pt; color: #1E3A5F; margin: 12px 0 4px; }
+p { margin: 5px 0; text-align: justify; }
+strong { color: #12263a; }
+ul { margin: 5px 0 5px 0; padding-left: 20px; }
+li { margin: 2px 0; }
+hr { border: none; border-top: 1px solid #cbd5e0; margin: 14px 0; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 9.6pt; page-break-inside: avoid; }
+th { background: #00B4D8; color: #fff; text-align: left; padding: 5px 8px; }
+td { border: 1px solid #cbd5e0; padding: 4px 8px; vertical-align: top; }
+tr:nth-child(even) td { background: #f1f5f9; }
+blockquote { border-left: 4px solid #F4A261; background: #fff8f0; margin: 10px 0;
+             padding: 6px 12px; color: #7a4a16; font-size: 9.8pt; }
+code { background: #edf2f7; padding: 1px 4px; border-radius: 3px; font-family: 'SF Mono', Menlo, monospace; font-size: 9pt; }
+em { color: #334155; }
+</style></head>
+<body><h1>AI-USE &amp; ETHICS REPORT</h1>
+<p><strong>TEAM INFORMATION</strong></p>
+<ul>
+<li><strong>Team Name:</strong> [insert details]</li>
+<li><strong>Institution:</strong> Duy Tan University</li>
+<li><strong>Country:</strong> Vietnam</li>
+<li><strong>Track:</strong> Climate Change</li>
+<li><strong>Project Title:</strong> AegisFlow AI — AI-Powered Flood Prediction &amp; Rescue Coordination Platform</li>
+</ul>
+<hr/>
+<h2>SECTION 1: INTRODUCTION</h2>
+<p>Southeast Asian cities lose an estimated US$4.5 billion every year to flooding, and in Vietnam emergency response still takes 90–180 minutes — long after the water has risen. Da Nang alone has flooded twelve times in the past decade. AegisFlow AI addresses this response gap with a unified platform that forecasts flood risk one to six hours ahead, ranks rescue requests by urgency and vulnerability, and routes evacuees around flooded zones. AI is necessary here because the decisions are multi-variable, time-critical, and must scale across a city faster than human coordinators can manually triage — turning fragmented warnings into coordinated action in under 90 seconds.</p>
+<h2>SECTION 2: PROBLEM CONTEXT &amp; SOLUTION OVERVIEW</h2>
+<p>In the ASEAN context, 250 million people live in flood-prone areas and 74% of Vietnam&#x27;s population is exposed. The stakeholders are city emergency managers, rescue teams, and at-risk citizens — groups that today operate in disconnected silos using phone calls and static maps. Our data spans IoT water-level, rainfall and tide sensors, live weather (Open-Meteo, Da Nang), and historical flood events. AegisFlow AI ingests this through a Laravel backend with PostGIS geospatial storage, triggers a Python FastAPI AI service for prediction and optimisation, and pushes results in real time to a Next.js command dashboard and a React Native citizen app with Firebase push notifications. Four AI capabilities work together: ensemble flood-risk classification, temporal multi-step forecasting, rescue-priority scoring, and evacuation-route optimisation — each surfaced to a human operator for approval before any action is dispatched.</p>
+<h2>SECTION 3: AI TOOLS &amp; METHODS USED</h2>
+<p>The core flood-risk classifier is a <strong>stacking ensemble</strong> built with scikit-learn 1.6: five base learners — Random Forest, Extra Trees, Gradient Boosting, LightGBM and XGBoost — feed a Logistic Regression meta-learner, trained on 18 engineered features (water level, rainfall, tide, soil saturation, cyclical seasonality, and interaction terms). A separate temporal forecaster predicts risk 1/3/6 hours ahead from a sequence of recent readings, with an XGBoost fallback. Evacuation routing uses <strong>NetworkX</strong> graph search with Haversine distance and flood-polygon avoidance. Rescue prioritisation is a transparent multi-factor weighted-scoring algorithm. The dashboard also embeds an LLM operator assistant (Vercel AI SDK + OpenAI gpt-4o-mini) driven by a domain-specific system prompt covering Da Nang flood zones, water-level thresholds, and shelters. Serving is via FastAPI; PostgreSQL/PostGIS and Redis handle storage and caching.</p>
+<h2>SECTION 4: ASSESSMENT OF AI OUTPUT</h2>
+<p><strong>Accuracy.</strong> The stacking ensemble reaches 98.81% accuracy (weighted F1 = 0.9881) on a held-out split, with the strongest single model (XGBoost) scoring AUC-ROC 0.9984. We treat these figures with caution: they were measured on a <strong>balanced 8,000-row dataset (2,000 per risk class)</strong> whose labels were derived from VNMHA physics-based thresholds and historical events. High scores therefore reflect strong fit to a curated distribution, not yet validated real-world hydrology — the explicit goal of our Phase-1 pilot.</p>
+<p><strong>Technical bias.</strong> Balancing classes prevents the model from ignoring rare &quot;critical&quot; events, but synthetic generation risks encoding the very threshold rules we want the model to generalise beyond. We mitigate this with feature-importance inspection, a <code>quality_score</code> that flags unreliable sensor readings upstream, and a rule-based fallback that keeps the system safe when inputs drift out of distribution.</p>
+<p><strong>Cultural and regional sensitivity.</strong> The priority algorithm intentionally up-weights elderly, disabled, and children — reflecting community values rather than purely actuarial logic — and avoids any socioeconomic input that could bias rescue order. Flood thresholds are configurable per city, so the model is not hard-coded to Da Nang.</p>
+<p><strong>Linguistic nuance.</strong> Emergencies demand the citizen&#x27;s own language. The AegisFlow interface, alerts and route guidance ship natively in six ASEAN languages — Vietnamese, English, Indonesian, Malay, Thai and Filipino — rather than relying on lossy machine translation, and the operator assistant replies in the user&#x27;s own language.</p>
+<h2>SECTION 5: HUMAN INTERVENTION &amp; JUSTIFICATION</h2>
+<p>AegisFlow is human-in-the-loop by design: the AI proposes, a human authorises. Every recommendation enters an explicit Approve/Reject workflow, and no rescue team is dispatched autonomously. During development we found the AI insufficient in three areas and intervened accordingly. First, the model&#x27;s confidence on synthetic data overstated real-world certainty, so we added confidence display, feature-importance explanations, and a rule-based fallback so operators can override. Second, the temporal forecaster degraded on noisy or dropped sensor feeds, so we engineered it to consume sequences and fall back to XGBoost. Third, automated route choices occasionally ignored local knowledge (closed bridges, gatherings), so final dispatch always rests with the operator. We reserve AI for scale and speed, and human expertise for accountability and context.</p>
+<h2>SECTION 6: REFLECTION ON AI-HUMAN CO-CREATION</h2>
+<p>The clear advantage of co-creation was speed at scale: AI triaged hundreds of simulated requests in priority order far faster than manual coordination, while humans retained judgement on edge cases. The main risk was automation bias — operators trusting a confident-looking score. We countered it with transparency (confidence, contributing factors) and a mandatory approval step. The hardest challenge was honest evaluation: resisting the temptation to present 98.81% as field-ready rather than dataset-ready. The lesson: in disaster AI, trustworthy fallbacks and clear human ownership matter as much as headline accuracy.</p>
+<h2>SECTION 7: CONCLUSION</h2>
+<p>AegisFlow AI shows that an ensemble-driven, human-supervised platform can compress flood response from hours to minutes while remaining transparent and fair. Its regional contribution is a replicable, six-language, ASEAN-ready architecture that any coastal city can self-configure. Our central ethical finding is that responsible AI for emergencies is defined less by accuracy alone and more by the guardrails around it — human-in-the-loop authorisation, vulnerable-first fairness, honest reporting of data limitations, and graceful failure. We commit to validating these claims on real sensor data before any operational deployment.</p>
+<hr/>
+<h2>SECTION 8: APPENDICES</h2>
+<p><strong>A. Screenshots</strong> <em>(attach in final PDF)</em></p>
+<ul>
+<li>A1 — Command dashboard: live flood map (OpenMapVN/Leaflet), sensor status, active alerts, analytics KPIs</li>
+<li>A2 — AI forecast panel: CRITICAL risk with 1h/3h/6h horizon, confidence and contributing factors</li>
+<li>A3 — Rescue coordination: priority queue, auto team assignment, GPS/ETA tracking</li>
+<li>A4 — React Native citizen app: SOS button, evacuation route, FCM flood alert, nearest shelter</li>
+</ul>
+<p><strong>B. Prompt Samples (LLM operator assistant)</strong></p>
+<ul>
+<li>Model: OpenAI gpt-4o-mini via Vercel AI SDK. The system prompt encodes Da Nang domain knowledge (flood-prone wards; water-level thresholds 2.5 / 3.5 / 4.5 m on the Cẩm Lệ river; key shelters) and hard safety rules: respond in the user&#x27;s language, always state confidence, flag CRITICAL cases, recommend hotlines 114/115, <em>&quot;never speculate beyond available data — say &#x27;insufficient data&#x27; if unsure,&quot;</em> and <em>&quot;human operators make final decisions — you recommend, they approve.&quot;</em></li>
+<li>Example: <em>&quot;Explain the current flood risk level for Cẩm Lệ and what a citizen there should do now.&quot;</em></li>
+</ul>
+<p><strong>C. Data Sources &amp; Licenses</strong></p>
+<table><thead><tr><th>Data</th><th>Source</th><th>License</th></tr></thead><tbody><tr><td>Water level / rainfall / tide</td><td>IoT sensors (thresholds from VNMHA)</td><td>Internal</td></tr><tr><td>Live weather</td><td>Open-Meteo API (Da Nang)</td><td>Free, attribution</td></tr><tr><td>Historical flood events</td><td>Global Flood Database (DFO, Dartmouth)</td><td>Public domain</td></tr><tr><td>Flood-zone boundaries</td><td>Da Nang City GIS Portal</td><td>Open government data</td></tr><tr><td>Training dataset</td><td>8,000 rows, balanced, physics-threshold labels</td><td>Project-generated</td></tr></tbody></table>
+<p><strong>D. Model &amp; Stack Summary</strong></p>
+<ul>
+<li>Flood model: stacking ensemble (RF + ExtraTrees + GradientBoosting + LightGBM + XGBoost → LogisticRegression), 18 features, 98.81% accuracy / F1 0.9881</li>
+<li>Forecast: temporal multi-step (1/3/6h), XGBoost fallback</li>
+<li>Routing: NetworkX graph + flood-polygon avoidance</li>
+<li>Stack: FastAPI · Laravel 13 · Next.js 16 / React 19 · React Native 0.81 · PostgreSQL 16 + PostGIS · Redis · Firebase FCM</li>
+</ul>
+<hr/>
+<p><em>Word count (Sections 1–7): ~960 words. Format: submit as PDF. Deadline: June 20, 2026.</em> <em>Duy Tan University — AegisFlow AI Team — ASEAN AI Hackathon 2026, Climate Change Track.</em></p></body></html>

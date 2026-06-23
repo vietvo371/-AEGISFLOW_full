@@ -11,10 +11,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
-import { OPENMAP_STYLE_URL } from '../config/mapbox';
+import { OPENMAP_STYLE_URL, getOpenMapStyleUrl } from '../config/mapbox';
 import Geolocation from 'react-native-geolocation-service';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { theme } from '../theme/colors';
+import { useAppTheme } from '../contexts/ThemeContext';
 
 interface Location {
   latitude: number;
@@ -43,6 +43,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   required = false,
   onAddressChange,
 }) => {
+  const { colors, theme, isDark } = useAppTheme();
+  const styles = getStyles(colors, theme);
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
@@ -203,7 +205,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         style={[styles.button, error ? styles.buttonError : {}]}
         onPress={() => setModalVisible(true)}>
         <View style={styles.buttonContent}>
-          <Icon name="map-marker" size={24} color={theme.colors.primary} style={styles.buttonIcon} />
+          <Icon name="map-marker" size={24} color={colors.primary} style={styles.buttonIcon} />
           <Text
             style={[
               styles.buttonText,
@@ -226,7 +228,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
                 style={styles.closeButton}>
-                <Icon name="arrow-left" size={24} color={theme.colors.text} />
+                <Icon name="arrow-left" size={24} color={colors.text} />
               </TouchableOpacity>
               <Text style={styles.modalTitle}>Select Location</Text>
               <View style={styles.headerRight} />
@@ -235,7 +237,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             <View style={styles.mapContainer}>
               <MapboxGL.MapView
                 style={styles.map}
-                styleURL={OPENMAP_STYLE_URL}
+                styleURL={getOpenMapStyleUrl(isDark)}
                 onPress={handleMapPress}>
                 <MapboxGL.Camera
                   ref={cameraRef}
@@ -247,7 +249,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
                     id="selected-location"
                     coordinate={[selectedLocation.longitude, selectedLocation.latitude]}>
                     <View style={styles.markerContainer}>
-                      <Icon name="map-marker" size={36} color={theme.colors.error} />
+                      <Icon name="map-marker" size={36} color={colors.error} />
                     </View>
                   </MapboxGL.PointAnnotation>
                 )}
@@ -258,7 +260,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
               <TouchableOpacity
                 style={styles.currentLocationButton}
                 onPress={getCurrentLocation}>
-                <Icon name="crosshairs-gps" size={24} color={theme.colors.white} />
+                <Icon name="crosshairs-gps" size={24} color={colors.white} />
                 <Text style={styles.currentLocationText}>Use Current Location</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -274,26 +276,26 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, theme: any) => StyleSheet.create({
   container: {
     marginBottom: theme.spacing.md,
   },
   label: {
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text,
+    color: colors.text,
     marginBottom: theme.spacing.xs,
   },
   required: {
-    color: theme.colors.error,
+    color: colors.error,
   },
   button: {
     height: 48,
     paddingHorizontal: theme.spacing.md,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
   },
   buttonContent: {
@@ -304,30 +306,30 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.sm,
   },
   buttonError: {
-    borderColor: theme.colors.error,
+    borderColor: colors.error,
   },
   buttonText: {
     flex: 1,
     fontFamily: theme.typography.fontFamily.regular,
     fontSize: theme.typography.fontSize.md,
-    color: theme.colors.text,
+    color: colors.text,
   },
   placeholderText: {
-    color: theme.colors.textLight,
+    color: colors.textLight,
   },
   errorText: {
     fontFamily: theme.typography.fontFamily.regular,
     fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.error,
+    color: colors.error,
     marginTop: theme.spacing.xs,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: theme.colors.overlay,
+    backgroundColor: colors.overlay,
   },
   modalContent: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     marginTop: 80,
     borderTopLeftRadius: theme.borderRadius.lg,
     borderTopRightRadius: theme.borderRadius.lg,
@@ -338,12 +340,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: theme.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: colors.border,
   },
   modalTitle: {
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.fontSize.lg,
-    color: theme.colors.text,
+    color: colors.text,
   },
   closeButton: {
     padding: theme.spacing.xs,
@@ -364,13 +366,13 @@ const styles = StyleSheet.create({
   },
   modalFooter: {
     padding: theme.spacing.md,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
   },
   currentLocationButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     paddingVertical: theme.spacing.sm,
     borderRadius: theme.borderRadius.md,
     marginBottom: theme.spacing.sm,
@@ -379,16 +381,16 @@ const styles = StyleSheet.create({
     marginLeft: theme.spacing.sm,
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.fontSize.md,
-    color: theme.colors.white,
+    color: colors.white,
   },
   confirmButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     paddingVertical: theme.spacing.sm,
     borderRadius: theme.borderRadius.md,
     alignItems: 'center',
   },
   confirmButtonText: {
-    color: theme.colors.white,
+    color: colors.white,
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.fontSize.md,
   },

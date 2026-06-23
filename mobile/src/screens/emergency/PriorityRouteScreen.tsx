@@ -11,7 +11,8 @@ import {
     Alert,
     Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import MapboxGL from '@rnmapbox/maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -26,10 +27,8 @@ import {
     wp,
     hp,
 } from '../../theme';
-import env from '../../config/env';
-import { OPENMAP_STYLE_URL } from '../../config/mapbox';
-import PageHeader from '../../component/PageHeader';
-import NotificationBellButton from '../../component/NotificationBellButton';
+import { getOpenMapStyleUrl } from '../../config/mapbox';
+import { useAppTheme } from '../../contexts/ThemeContext';
 import { incidentService, Incident } from '../../services/incidentService';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -51,7 +50,11 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 const PriorityRouteScreen = () => {
-    const { t, i18n } = useTranslation();
+    const { colors, isDark } = useAppTheme();
+    const insets = useSafeAreaInsets();
+    const navigation = useNavigation();
+    const styles = getStyles(colors, insets);
+    const { t, currentLanguage } = useTranslation();
     const [incidents, setIncidents] = useState<Incident[]>([]);
     const [loading, setLoading] = useState(true);
     const [userLocation, setUserLocation] = useState<number[] | null>(null);
@@ -94,7 +97,6 @@ const PriorityRouteScreen = () => {
             position => {
                 const { longitude, latitude } = position.coords;
 
-                // Check if coordinates are within Da Nang bounds
                 const isWithinDaNang = (
                   longitude >= 108.02 &&
                   longitude <= 108.29 &&
@@ -105,12 +107,12 @@ const PriorityRouteScreen = () => {
                 if (longitude && latitude && isWithinDaNang) {
                     setUserLocation([longitude, latitude]);
                 } else {
-                    setUserLocation([108.2122, 16.0680]); // Fallback to Da Nang center
+                    setUserLocation([108.2122, 16.0680]);
                 }
             },
             error => {
                 console.error('Location error:', error);
-                setUserLocation([108.2122, 16.0680]); // Fallback to Da Nang center
+                setUserLocation([108.2122, 16.0680]);
             },
             { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
         );
@@ -142,10 +144,9 @@ const PriorityRouteScreen = () => {
                 const durMin = Math.round(route.duration / 60);
                 setRouteInfo({
                     distance: `${distKm} km`,
-                    duration: `${durMin} ${i18n.language === 'vi' ? 'phút' : 'min'}`,
+                    duration: `${durMin} ${currentLanguage === 'vi' ? 'phút' : 'min'}`,
                 });
 
-                // Fit camera to route
                 if (cameraRef.current) {
                     const coords = route.geometry.coordinates;
                     const lngs = coords.map((c: number[]) => c[0]);
@@ -154,7 +155,7 @@ const PriorityRouteScreen = () => {
                     cameraRef.current.fitBounds(
                         [Math.min(...lngs), Math.min(...lats)],
                         [Math.max(...lngs), Math.max(...lats)],
-                        [80, 80, 200, 80],
+                        [120, 80, 200, 80],
                         1000
                     );
                 }
@@ -177,7 +178,6 @@ const PriorityRouteScreen = () => {
         
         try {
             setSendingPriority(true);
-            // Simulate network request to send push notification & priority signal
             await new Promise(resolve => setTimeout(() => resolve(true), 1500));
             
             Alert.alert(
@@ -197,7 +197,7 @@ const PriorityRouteScreen = () => {
         if (userLocation && cameraRef.current) {
             cameraRef.current.setCamera({
                 centerCoordinate: userLocation,
-                zoomLevel: 13,
+                zoomLevel: 14,
                 animationDuration: 1000,
             });
         }
@@ -236,31 +236,17 @@ const PriorityRouteScreen = () => {
             </TouchableOpacity>
         );
     };
+
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
-            <PageHeader 
-                title={t('priorityRoute.title', 'Priority Route')} 
-                subtitle={viewMode === 'map' ? t('priorityRoute.mapSubtitle', 'Real-time Traffic Dispatch') : t('priorityRoute.listSubtitle', 'Active Hotspots')}
-                variant="default"
-                showBack={true}
-                showNotification={true}
-                rightComponent={
-                    <TouchableOpacity
-                        style={styles.headerToggleBtn}
-                        onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-                    >
-                        <Icon name={viewMode === 'map' ? "format-list-bulleted" : "map-outline"} size={22} color={theme.colors.primary} />
-                    </TouchableOpacity>
-                }
-            />
-
+            <StatusBar barStyle={isDark ? "light-content" : "dark-content"} translucent backgroundColor="transparent" />
+            
             {viewMode === 'map' ? (
                 <View style={{ flex: 1 }}>
                     <MapboxGL.MapView
                         ref={mapRef}
                         style={styles.map}
-                        styleURL={OPENMAP_STYLE_URL}
+                        styleURL={getOpenMapStyleUrl(isDark)}
                         logoEnabled={false}
                         attributionEnabled={false}
                     >
@@ -281,6 +267,7 @@ const PriorityRouteScreen = () => {
                         {incidents.map(incident => {
                             if (!incident.location) return null;
                             const color = SEVERITY_COLORS[incident.severity] || '#6B7280';
+                            const isSelected = selectedIncident?.id === incident.id;
                             return (
                                 <MapboxGL.PointAnnotation
                                     key={`incident-${incident.id}`}
@@ -288,11 +275,11 @@ const PriorityRouteScreen = () => {
                                     coordinate={[incident.location.lng, incident.location.lat]}
                                     onSelected={() => fetchRoute(incident)}
                                 >
-                                    <View style={[styles.markerContainer, { borderColor: color }]}>
+                                    <View style={[styles.markerContainer, { borderColor: color, backgroundColor: isSelected ? color : colors.card }]}>
                                         <Icon
                                             name={TYPE_ICONS[incident.type] || 'alert-circle'}
-                                            size={16}
-                                            color={color}
+                                            size={isSelected ? 18 : 16}
+                                            color={isSelected ? '#fff' : color}
                                         />
                                     </View>
                                 </MapboxGL.PointAnnotation>
@@ -302,32 +289,66 @@ const PriorityRouteScreen = () => {
                         {routeGeoJSON && (
                             <MapboxGL.ShapeSource id="routeSource" shape={routeGeoJSON}>
                                 <MapboxGL.LineLayer
-                                    id="routeLine"
+                                    id="routeLineShadow"
                                     style={{
-                                        lineColor: '#7a5af8',
-                                        lineWidth: 6,
+                                        lineColor: isDark ? '#ffffff' : '#000000',
+                                        lineWidth: 8,
                                         lineCap: 'round',
                                         lineJoin: 'round',
-                                        lineOpacity: 0.85,
+                                        lineOpacity: 0.2,
+                                    }}
+                                />
+                                <MapboxGL.LineLayer
+                                    id="routeLine"
+                                    style={{
+                                        lineColor: colors.primary,
+                                        lineWidth: 5,
+                                        lineCap: 'round',
+                                        lineJoin: 'round',
+                                        lineOpacity: 0.9,
+                                        lineDasharray: [1.2, 1.2],
                                     }}
                                 />
                             </MapboxGL.ShapeSource>
                         )}
                     </MapboxGL.MapView>
 
+                    {/* Floating Header */}
+                    <View style={styles.floatingHeader} pointerEvents="box-none">
+                        <View style={styles.headerRow}>
+                            <TouchableOpacity 
+                                style={styles.iconButton}
+                                onPress={() => navigation.goBack()}
+                                activeOpacity={0.7}
+                            >
+                                <Icon name="chevron-left" size={28} color={colors.text} />
+                            </TouchableOpacity>
+                            
+                            <View style={styles.headerTitleBox}>
+                                <Text style={styles.headerTitle}>{t('priorityRoute.title', 'Tuyến đường ưu tiên')}</Text>
+                                <Text style={styles.headerSubtitle}>{t('priorityRoute.mapSubtitle', 'Điều phối thời gian thực')}</Text>
+                            </View>
+
+                            <TouchableOpacity
+                                style={styles.iconButton}
+                                onPress={() => setViewMode('list')}
+                                activeOpacity={0.7}
+                            >
+                                <Icon name="format-list-bulleted" size={24} color={colors.primary} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
                     <View style={styles.fabContainer}>
                         <TouchableOpacity style={styles.fab} onPress={centerUserLocation}>
-                            <Icon name="crosshairs-gps" size={ICON_SIZE.lg} color={theme.colors.text} />
+                            <Icon name="crosshairs-gps" size={24} color={colors.text} />
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.fab}
-                            onPress={fetchActiveIncidents}
-                        >
-                            <Icon name="refresh" size={ICON_SIZE.lg} color={theme.colors.text} />
+                        <TouchableOpacity style={styles.fab} onPress={fetchActiveIncidents}>
+                            <Icon name="refresh" size={24} color={colors.text} />
                         </TouchableOpacity>
                     </View>
 
-                    {selectedIncident && (
+                    {selectedIncident ? (
                         <View style={styles.routeCard}>
                             <View style={styles.routeCardHeader}>
                                 <View style={{ flex: 1 }}>
@@ -335,22 +356,22 @@ const PriorityRouteScreen = () => {
                                         {selectedIncident.title}
                                     </Text>
                                     {loadingRoute ? (
-                                        <ActivityIndicator size="small" color="#7a5af8" />
+                                        <ActivityIndicator size="small" color={colors.primary} style={{ alignSelf: 'flex-start', marginTop: 4 }} />
                                     ) : routeInfo ? (
                                         <View style={styles.routeInfoRow}>
                                             <View style={styles.routeInfoItem}>
-                                                <Icon name="map-marker-distance" size={14} color="#64748B" />
+                                                <Icon name="map-marker-distance" size={14} color={colors.textSecondary} />
                                                 <Text style={styles.routeInfoText}>{routeInfo.distance}</Text>
                                             </View>
                                             <View style={styles.routeInfoItem}>
-                                                <Icon name="clock-outline" size={14} color="#64748B" />
+                                                <Icon name="clock-outline" size={14} color={colors.textSecondary} />
                                                 <Text style={styles.routeInfoText}>{routeInfo.duration}</Text>
                                             </View>
                                         </View>
                                     ) : null}
                                 </View>
                                 <TouchableOpacity onPress={clearRoute} style={styles.closeBtn}>
-                                    <Icon name="close" size={20} color="#64748B" />
+                                    <Icon name="close" size={20} color={colors.textSecondary} />
                                 </TouchableOpacity>
                             </View>
                             <TouchableOpacity 
@@ -359,7 +380,7 @@ const PriorityRouteScreen = () => {
                                 disabled={sendingPriority}
                             >
                                 <LinearGradient
-                                    colors={['#7a5af8', '#6938ef']}
+                                    colors={[colors.primary, colors.primary]}
                                     start={{ x: 0, y: 0 }}
                                     end={{ x: 1, y: 0 }}
                                     style={styles.dispatchGradient}
@@ -369,34 +390,47 @@ const PriorityRouteScreen = () => {
                                     ) : (
                                         <>
                                             <View style={styles.dispatchIconCircle}>
-                                                <Icon name="bullhorn-variant" size={18} color="#6938ef" />
+                                                <Icon name="bullhorn-variant" size={18} color={colors.primary} />
                                             </View>
-                                            <Text style={styles.dispatchBtnText}>{t('priorityRoute.dispatchButton', 'DISPATCH PRIORITY SIGNAL')}</Text>
+                                            <Text style={styles.dispatchBtnText}>{t('priorityRoute.dispatchButton', 'PHÁT LỆNH ƯU TIÊN GIAO THÔNG')}</Text>
                                         </>
                                     )}
                                 </LinearGradient>
                             </TouchableOpacity>
                         </View>
-                    )}
-
-                    {!selectedIncident && (
+                    ) : (
                         <View style={styles.countChip}>
-                            <Icon name="alert-circle" size={16} color="#7a5af8" />
+                            <Icon name="alert-circle" size={18} color={colors.primary} />
                             <Text style={styles.countText}>
-                                {loading ? '...' : t('priorityRoute.monitoringPointsCount', '{{count}} points to monitor', { count: incidents.length })}
+                                {loading ? 'Đang tải...' : `${incidents.length} điểm cần xử lý`}
                             </Text>
                         </View>
                     )}
                 </View>
             ) : (
                 <View style={styles.listContainer}>
+                    <View style={styles.listHeaderArea}>
+                        <TouchableOpacity 
+                            style={styles.iconButtonList}
+                            onPress={() => navigation.goBack()}
+                        >
+                            <Icon name="chevron-left" size={28} color={colors.text} />
+                        </TouchableOpacity>
+                        <Text style={styles.listMainTitle}>{t('priorityRoute.title', 'Tuyến đường ưu tiên')}</Text>
+                        <TouchableOpacity
+                            style={styles.iconButtonList}
+                            onPress={() => setViewMode('map')}
+                        >
+                            <Icon name="map-outline" size={24} color={colors.primary} />
+                        </TouchableOpacity>
+                    </View>
                     <View style={styles.listSubHeader}>
-                         <Text style={styles.listSubTitle}>{t('priorityRoute.activeIncidentsCount', '{{count}} active incidents', { count: incidents.length })}</Text>
+                         <Text style={styles.listSubTitle}>{t('priorityRoute.activeIncidentsCount', '{{count}} sự cố cần giải quyết', { count: incidents.length })}</Text>
                     </View>
 
                     {loading ? (
                         <View style={styles.loadingContainer}>
-                            <ActivityIndicator size="large" color="#7a5af8" />
+                            <ActivityIndicator size="large" color={colors.primary} />
                         </View>
                     ) : (
                         <FlatList
@@ -408,14 +442,14 @@ const PriorityRouteScreen = () => {
                                 <RefreshControl
                                     refreshing={false}
                                     onRefresh={fetchActiveIncidents}
-                                    colors={['#7a5af8']}
-                                    tintColor={'#7a5af8'}
+                                    colors={[colors.primary]}
+                                    tintColor={colors.primary}
                                 />
                             }
                             ListEmptyComponent={
                                 <View style={styles.emptyContainer}>
-                                    <Icon name="shield-check" size={64} color="#CBD5E1" />
-                                    <Text style={styles.emptyText}>{t('priorityRoute.noOpenIncidents', 'No active open incidents')}</Text>
+                                    <Icon name="shield-check" size={64} color={colors.border} />
+                                    <Text style={styles.emptyText}>{t('priorityRoute.noOpenIncidents', 'Không có sự cố nào cần xử lý')}</Text>
                                 </View>
                             }
                         />
@@ -426,37 +460,72 @@ const PriorityRouteScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, insets: any) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8FAFC',
+        backgroundColor: colors.background,
     },
     listContainer: {
         flex: 1,
-        backgroundColor: '#F8FAFC', 
+        backgroundColor: colors.background, 
+        paddingTop: insets.top,
     },
     map: {
         flex: 1,
     },
-    headerToggleBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: '#F1F5F9',
+    floatingHeader: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        paddingTop: insets.top + 8,
+        paddingHorizontal: SCREEN_PADDING.horizontal,
+        zIndex: 10,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: colors.card,
+        borderRadius: BORDER_RADIUS.full,
+        paddingHorizontal: 8,
+        paddingVertical: 8,
+        ...theme.shadows.md,
+    },
+    iconButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: colors.backgroundSecondary,
+    },
+    headerTitleBox: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    headerTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: colors.text,
+    },
+    headerSubtitle: {
+        fontSize: 12,
+        color: colors.textSecondary,
+        marginTop: 2,
     },
     fabContainer: {
         position: 'absolute',
         right: SCREEN_PADDING.horizontal,
-        bottom: 220,
+        bottom: 120,
         gap: SPACING.md,
+        zIndex: 10,
     },
     fab: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: theme.colors.white,
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: colors.card,
         justifyContent: 'center',
         alignItems: 'center',
         ...theme.shadows.md,
@@ -465,21 +534,21 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: theme.colors.white,
         borderWidth: 2,
         justifyContent: 'center',
         alignItems: 'center',
-        ...theme.shadows.md,
+        ...theme.shadows.sm,
     },
     routeCard: {
         position: 'absolute',
         bottom: 24,
         left: SCREEN_PADDING.horizontal,
         right: SCREEN_PADDING.horizontal,
-        backgroundColor: theme.colors.white,
+        backgroundColor: colors.card,
         borderRadius: BORDER_RADIUS.xl,
-        padding: SPACING.md,
+        padding: SPACING.lg,
         ...theme.shadows.lg,
+        zIndex: 10,
     },
     routeCardHeader: {
         flexDirection: 'row',
@@ -487,19 +556,19 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.md,
     },
     closeBtn: {
-        backgroundColor: '#F1F5F9',
+        backgroundColor: colors.backgroundSecondary,
         borderRadius: BORDER_RADIUS.full,
-        padding: 4,
+        padding: 6,
     },
     routeCardTitle: {
-        fontSize: FONT_SIZE.md,
+        fontSize: 17,
         fontWeight: '700',
-        color: '#1E293B',
-        marginBottom: 6,
+        color: colors.text,
+        marginBottom: 8,
     },
     routeInfoRow: {
         flexDirection: 'row',
-        gap: SPACING.md,
+        gap: SPACING.lg,
     },
     routeInfoItem: {
         flexDirection: 'row',
@@ -507,9 +576,9 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     routeInfoText: {
-        fontSize: FONT_SIZE.sm,
-        fontWeight: '700',
-        color: '#64748B',
+        fontSize: 14,
+        fontWeight: '600',
+        color: colors.textSecondary,
     },
     dispatchTouch: {
         borderRadius: BORDER_RADIUS.lg,
@@ -533,83 +602,107 @@ const styles = StyleSheet.create({
     dispatchBtnText: {
         color: '#fff',
         fontWeight: '800',
-        fontSize: FONT_SIZE.md,
-        letterSpacing: 1,
+        fontSize: 14,
+        letterSpacing: 0.5,
     },
     countChip: {
         position: 'absolute',
-        bottom: 24,
+        bottom: 32,
         alignSelf: 'center',
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: theme.colors.white,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
+        backgroundColor: colors.card,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
         borderRadius: BORDER_RADIUS.full,
-        gap: 8,
+        gap: 10,
         ...theme.shadows.md,
+        zIndex: 10,
     },
     countText: {
-        fontSize: FONT_SIZE.sm,
-        fontWeight: '600',
-        color: '#1E293B',
+        fontSize: 15,
+        fontWeight: '700',
+        color: colors.text,
+    },
+    listHeaderArea: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: SCREEN_PADDING.horizontal,
+        paddingVertical: 12,
+        backgroundColor: colors.card,
+    },
+    iconButtonList: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.backgroundSecondary,
+    },
+    listMainTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: colors.text,
     },
     listSubHeader: {
         paddingHorizontal: SCREEN_PADDING.horizontal,
         paddingVertical: SPACING.md,
-        backgroundColor: '#fff',
+        backgroundColor: colors.card,
         borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
+        borderBottomColor: colors.borderLight,
     },
     listSubTitle: {
-        fontSize: FONT_SIZE.sm,
-        fontWeight: '700',
-        color: '#64748B',
+        fontSize: 14,
+        fontWeight: '600',
+        color: colors.textSecondary,
     },
     listContent: {
         padding: SCREEN_PADDING.horizontal,
         paddingBottom: 40,
+        paddingTop: 16,
         flexGrow: 1,
     },
     listCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: theme.colors.white,
+        backgroundColor: colors.card,
         borderRadius: BORDER_RADIUS.xl,
         padding: SPACING.md,
-        marginBottom: SPACING.sm,
-        gap: SPACING.sm,
+        marginBottom: SPACING.md,
+        gap: SPACING.md,
         ...theme.shadows.sm,
+        borderWidth: 1,
+        borderColor: colors.borderLight,
     },
     listCardSelected: {
         borderWidth: 2,
-        borderColor: '#7a5af8',
+        borderColor: colors.primary,
     },
     listIcon: {
-        width: 44,
-        height: 44,
-        borderRadius: 12,
+        width: 48,
+        height: 48,
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
     },
     listTitle: {
-        fontSize: FONT_SIZE.md,
+        fontSize: 16,
         fontWeight: '700',
-        color: '#1E293B',
+        color: colors.text,
     },
     listMeta: {
-        fontSize: 11,
-        color: '#94A3B8',
+        fontSize: 13,
+        color: colors.textTertiary,
         marginTop: 4,
-        fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
     },
     severityBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
         borderRadius: BORDER_RADIUS.full,
     },
     severityText: {
-        fontSize: 10,
+        fontSize: 11,
         fontWeight: '800',
     },
     loadingContainer: {
@@ -624,9 +717,10 @@ const styles = StyleSheet.create({
         paddingVertical: SPACING['4xl'],
     },
     emptyText: {
-        marginTop: SPACING.md,
-        fontSize: FONT_SIZE.md,
-        color: theme.colors.textSecondary,
+        marginTop: SPACING.lg,
+        fontSize: 16,
+        color: colors.textSecondary,
+        fontWeight: '500',
     },
 });
 

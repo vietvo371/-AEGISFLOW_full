@@ -10,7 +10,7 @@ import PageHeader from '../../component/PageHeader';
 import InputCustom from '../../component/InputCustom';
 import ButtonCustom from '../../component/ButtonCustom';
 import ModalCustom from '../../component/ModalCustom';
-import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, SCREEN_PADDING, wp, hp } from '../../theme';
+import { SPACING, FONT_SIZE, BORDER_RADIUS, SCREEN_PADDING, wp, hp } from '../../theme';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { reportService } from '../../services/reportService';
 import { rescueService } from '../../services/rescueService';
@@ -18,10 +18,12 @@ import { mapService } from '../../services/mapService';
 import { mediaService } from '../../services/mediaService';
 import { CreateReportRequest, Media } from '../../types/api/report';
 import { useRoute, RouteProp } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { RootStackParamList } from '../../navigation/types';
 import env from '../../config/env';
-import { OPENMAP_STYLE_URL } from '../../config/mapbox';
+import { OPENMAP_STYLE_URL, getOpenMapStyleUrl } from '../../config/mapbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 const DRAFT_KEY = '@aegisflowai_report_draft';
 
@@ -44,8 +46,11 @@ const PRIORITIES = [
 
 const CreateReportScreen = () => {
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const route = useRoute<RouteProp<RootStackParamList, 'CreateReport'>>();
   const isRescue = route.params?.isRescue === true;
+  const { colors, isDark } = useAppTheme();
+  const styles = getStyles(colors, isDark);
 
   const [loading, setLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -78,7 +83,7 @@ const CreateReportScreen = () => {
   const categoryBackdropAnim = useRef(new Animated.Value(0)).current;
 
   const [formData, setFormData] = useState<CreateReportRequest>({
-    tieu_de: isRescue ? 'Cần hỗ trợ cứu hộ' : '',
+    tieu_de: '',
     mo_ta: '',
     danh_muc: 5, // Default to Ngập lụt (value 5)
     vi_do: 16.0680,
@@ -95,6 +100,7 @@ const CreateReportScreen = () => {
   // Load draft on mount
   useEffect(() => {
     AsyncStorage.getItem(DRAFT_KEY).then(raw => {
+      let draftLoaded = false;
       if (raw) {
         try {
           const saved = JSON.parse(raw) as Partial<CreateReportRequest>;
@@ -108,27 +114,36 @@ const CreateReportScreen = () => {
             );
 
             const coordinatesToUse = isSavedLocWithinDaNang ? {
-              vi_do: saved.vi_do,
-              kinh_do: saved.kinh_do,
+              vi_do: saved.vi_do as number,
+              kinh_do: saved.kinh_do as number,
             } : {
               vi_do: 16.0680,
               kinh_do: 108.2122,
             };
 
-            setFormData(prev => ({ 
-              ...prev, 
-              ...saved, 
-              ...coordinatesToUse, 
-              media_ids: [] 
+            setFormData(prev => ({
+              ...prev,
+              ...saved,
+              ...coordinatesToUse,
+              media_ids: []
             }));
             setDraftRestored(true);
+            draftLoaded = true;
             setTimeout(() => setDraftRestored(false), 4000) as unknown as void;
           }
         } catch { /* ignore corrupt draft */ }
       }
       isMounted.current = true;
+
+      // If no draft was loaded and it's a rescue request, set the localized default title
+      if (!draftLoaded && isRescue) {
+        setFormData(prev => ({
+          ...prev,
+          tieu_de: t('reports.defaultRescueTitle', 'Cần hỗ trợ cứu hộ')
+        }));
+      }
     });
-  }, []);
+  }, [isRescue, t]);
 
   // Auto-save draft on every form change (after mount)
   useEffect(() => {
@@ -175,6 +190,16 @@ const CreateReportScreen = () => {
       'urgent': 4,
     };
     return priorityMap[priority.toLowerCase()] || 2; // Default to medium
+  };
+
+  const getPriorityKey = (value: number) => {
+    switch (value) {
+      case 1: return 'normal';
+      case 2: return 'medium';
+      case 3: return 'high';
+      case 4: return 'urgent';
+      default: return 'medium';
+    }
   };
 
   // Animate loading
@@ -249,7 +274,7 @@ const CreateReportScreen = () => {
   const uploadMediaAssets = async (assets: any[]) => {
     setUploadingMedia(true);
     setUploadProgress(0);
-    setUploadStatus('Đang chuẩn bị...');
+    setUploadStatus(t('reports.preparing'));
 
     const newMedia: Media[] = [];
     const newMediaIds: number[] = [];
@@ -260,7 +285,7 @@ const CreateReportScreen = () => {
     for (let i = 0; i < assets.length; i++) {
       const asset = assets[i];
       try {
-        setUploadStatus(`Đang tải ${i + 1}/${totalAssets} file...`);
+        setUploadStatus(t('reports.uploadingCount', { current: i + 1, total: totalAssets }));
         setUploadProgress((i / totalAssets) * 50); // 50% for upload
 
         console.log('🚀 [API Request] Upload Media:', asset.fileName);
@@ -297,7 +322,7 @@ const CreateReportScreen = () => {
       if (aiAnalysisData) {
         // Start AI analysis animation
         setAiAnalyzing(true);
-        setUploadStatus('🤖 AI đang phân tích ảnh...');
+        setUploadStatus(t('reports.aiAnalyzingAlert'));
         setUploadProgress(60);
 
         // Simulate AI processing time with progress
@@ -307,13 +332,15 @@ const CreateReportScreen = () => {
         await new Promise<void>(resolve => setTimeout(resolve, 500));
         setUploadProgress(85);
 
-        const categoryLabel = CATEGORIES.find(c => c.value === aiAnalysisData.danh_muc_id)?.label || 'Khác';
-        const priorityLabel = PRIORITIES.find(p => p.value === mapPriorityLevel(aiAnalysisData.muc_do_uu_tien || 'medium'))?.label || 'Trung bình';
+        const categoryData = CATEGORIES.find(c => c.value === aiAnalysisData.danh_muc_id);
+        const categoryLabel = categoryData ? t('reports.categories.' + (categoryData.value === 5 ? 'flood' : 'other')) : t('reports.categories.other');
+        const priorityVal = mapPriorityLevel(aiAnalysisData.muc_do_uu_tien || 'medium');
+        const priorityLabel = t('reports.priorities.' + getPriorityKey(priorityVal));
 
         // Track which fields are auto-filled by AI
         const filledFields: string[] = [];
 
-        setUploadStatus('📝 Đang điền thông tin...');
+        setUploadStatus(t('reports.fillingInfo'));
         setUploadProgress(95);
 
         setFormData(prev => {
@@ -345,20 +372,20 @@ const CreateReportScreen = () => {
 
         setAiFilledFields(filledFields);
         setUploadProgress(100);
-        setUploadStatus('✅ Hoàn tất!');
+        setUploadStatus(t('reports.completedStatus'));
 
         // Prepare AI analysis message
         const detectedObjects = aiAnalysisData.ai_analysis?.detected_objects || [];
         const objectsText = detectedObjects.length > 0
-          ? `\n\n🔍 Phát hiện: ${detectedObjects.slice(0, 5).join(', ')}${detectedObjects.length > 5 ? '...' : ''}`
+          ? `${t('reports.detectedLabel')}: ${detectedObjects.slice(0, 5).join(', ')}${detectedObjects.length > 5 ? '...' : ''}`
           : '';
 
         setAiAnalysisMessage(
-          `AI đã tự động phân tích và điền:\n\n` +
-          `📁 Danh mục: ${categoryLabel}\n` +
-          `⚠️ Mức độ: ${priorityLabel}\n` +
-          `📝 Tiêu đề & Mô tả${objectsText}\n\n` +
-          `Bạn có thể chỉnh sửa nếu cần.`
+          t('reports.aiAnalysisResult') + '\n\n' +
+          t('reports.category') + ': ' + categoryLabel + '\n' +
+          t('reports.priority') + ': ' + priorityLabel + '\n' +
+          t('reports.titleAndDesc') + (objectsText ? `\n\n🔍 ${objectsText}` : '') + '\n\n' +
+          t('reports.editPrompt')
         );
 
         await new Promise<void>(resolve => setTimeout(resolve, 500));
@@ -377,8 +404,8 @@ const CreateReportScreen = () => {
     try {
       const result = await launchCamera({
         mediaType: 'photo',
-        quality: 0.5, // Reduced quality to avoid 413
-        maxWidth: 1024, // Resize large images
+        quality: 0.5,
+        maxWidth: 1024,
         maxHeight: 1024,
         saveToPhotos: true,
       });
@@ -388,7 +415,7 @@ const CreateReportScreen = () => {
       }
     } catch (error) {
       console.error('Camera error:', error);
-      setErrorMessage('Không thể mở camera. Vui lòng kiểm tra quyền truy cập.');
+      setErrorMessage(t('reports.cameraError'));
       setShowErrorModal(true);
     }
   };
@@ -396,10 +423,10 @@ const CreateReportScreen = () => {
   const handleSelectFromGallery = async () => {
     try {
       const result = await launchImageLibrary({
-        mediaType: 'photo', // Chỉ cho phép ảnh
+        mediaType: 'photo',
         selectionLimit: 5 - uploadedMedia.length,
-        quality: 0.5, // Reduced quality to avoid 413
-        maxWidth: 1024, // Resize large images
+        quality: 0.5,
+        maxWidth: 1024,
         maxHeight: 1024,
       });
 
@@ -408,32 +435,32 @@ const CreateReportScreen = () => {
       }
     } catch (error) {
       console.error('Image picker error:', error);
-      setErrorMessage('Không thể chọn ảnh. Vui lòng thử lại.');
+      setErrorMessage(t('reports.galleryError'));
       setShowErrorModal(true);
     }
   };
 
   const handleSelectMedia = () => {
     if (uploadedMedia.length >= 5) {
-      setErrorMessage('Bạn chỉ được tải lên tối đa 5 ảnh/video');
+      setErrorMessage(t('reports.maxPhotosWarning'));
       setShowErrorModal(true);
       return;
     }
 
     Alert.alert(
-      'Chọn hình ảnh',
-      'Chọn nguồn hình ảnh',
+      t('reports.selectImage'),
+      t('reports.selectImageSource'),
       [
         {
-          text: 'Chụp ảnh',
+          text: t('reports.takePhoto'),
           onPress: handleTakePhoto,
         },
         {
-          text: 'Chọn từ thư viện',
+          text: t('reports.chooseFromGallery'),
           onPress: handleSelectFromGallery,
         },
         {
-          text: 'Hủy',
+          text: t('reports.cancel'),
           style: 'cancel',
         },
       ],
@@ -456,7 +483,6 @@ const CreateReportScreen = () => {
   }>({});
 
   useEffect(() => {
-    // Initialize tempLocation with current formData location when modal opens
     if (showMapModal) {
       setTempLocation([formData.kinh_do, formData.vi_do]);
       setTempAddress(formData.dia_chi);
@@ -529,19 +555,19 @@ const CreateReportScreen = () => {
     const newErrors: typeof errors = {};
 
     if (!formData.tieu_de.trim()) {
-      newErrors.tieu_de = 'Vui lòng nhập tiêu đề';
+      newErrors.tieu_de = t('reports.titleRequired');
     } else if (formData.tieu_de.length < 10) {
-      newErrors.tieu_de = 'Tiêu đề phải có ít nhất 10 ký tự';
+      newErrors.tieu_de = t('reports.titleMinLength');
     }
 
     if (!formData.mo_ta.trim()) {
-      newErrors.mo_ta = 'Vui lòng nhập mô tả';
+      newErrors.mo_ta = t('reports.descRequired');
     } else if (formData.mo_ta.length < 20) {
-      newErrors.mo_ta = 'Mô tả phải có ít nhất 20 ký tự';
+      newErrors.mo_ta = t('reports.descMinLength');
     }
 
     if (!formData.dia_chi.trim()) {
-      newErrors.dia_chi = 'Vui lòng nhập địa chỉ';
+      newErrors.dia_chi = t('reports.addressRequired');
     }
 
     setErrors(newErrors);
@@ -566,23 +592,19 @@ const CreateReportScreen = () => {
         };
         const response = await rescueService.createRequest(rescueData as any);
         if (response.success) {
-          setSuccessMessage('Yêu cầu cứu hộ khẩn cấp của bạn đã được gửi đi. Đội cứu hộ đang lộ trình!');
+          setSuccessMessage(t('reports.rescueSuccessMsg'));
           setShowSuccessModal(true);
         }
       } else {
         const response = await reportService.createReport(formData);
         if (response.success) {
-          setSuccessMessage('Phản ánh của bạn đã được tạo thành công!');
+          setSuccessMessage(t('reports.submitSuccessMsg'));
           setShowSuccessModal(true);
         }
       }
     } catch (error: any) {
       console.error('❌ [API Error] Create Report:', error);
-      if (error.response) {
-        console.log('Error Data:', error.response.data);
-        console.log('Error Status:', error.response.status);
-      }
-      let message = 'Không thể tạo phản ánh của bạn. Vui lòng thử lại.';
+      let message = t('reports.submitErrorMsg');
 
       if (error.response?.data?.message) {
         message = error.response.data.message;
@@ -629,7 +651,6 @@ const CreateReportScreen = () => {
     const coords = feature.geometry.coordinates;
     setTempLocation(coords);
 
-    // Programmatically move camera to selected coordinates while preserving user's zoom level
     cameraRef.current?.setCamera({
       centerCoordinate: coords,
       animationDuration: 600,
@@ -655,7 +676,7 @@ const CreateReportScreen = () => {
         ...formData,
         kinh_do: tempLocation[0],
         vi_do: tempLocation[1],
-        dia_chi: tempAddress || formData.dia_chi || `Vị trí: ${tempLocation[1].toFixed(6)}, ${tempLocation[0].toFixed(6)}`
+        dia_chi: tempAddress || formData.dia_chi || `${t('reports.location')}: ${tempLocation[1].toFixed(6)}, ${tempLocation[0].toFixed(6)}`
       });
       setShowMapModal(false);
     }
@@ -668,19 +689,19 @@ const CreateReportScreen = () => {
 
   return (
     <View style={styles.container}>
-      <PageHeader title={isRescue ? "Yêu cầu Cứu hộ SOS" : "Tạo phản ánh mới"} variant="default" />
+      <PageHeader title={isRescue ? t('reports.createReportSos') : t('reports.createReport')} variant="default" />
 
       {/* Draft Restored Banner */}
       {draftRestored && (
         <View style={styles.draftBanner}>
-          <Icon name="content-save-outline" size={15} color="#7a5af8" />
-          <Text style={styles.draftBannerText}>Đã khôi phục bản nháp trước đó của bạn</Text>
+          <Icon name="content-save-outline" size={15} color={colors.primary} />
+          <Text style={styles.draftBannerText}>{t('reports.draftRestored')}</Text>
           <TouchableOpacity onPress={() => {
             setDraftRestored(false);
             AsyncStorage.removeItem(DRAFT_KEY);
             setFormData({ tieu_de: '', mo_ta: '', danh_muc: 5, vi_do: 16.0680, kinh_do: 108.2122, dia_chi: '', uu_tien: 1, la_cong_khai: true, the_tags: [], media_ids: [] });
           }}>
-            <Text style={styles.draftBannerDiscard}>Xóa</Text>
+            <Text style={styles.draftBannerDiscard}>{t('reports.discard')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -690,20 +711,20 @@ const CreateReportScreen = () => {
         <View style={styles.card}>
           <View style={styles.sectionTitleRow}>
             <View style={styles.sectionTitleWithIcon}>
-              <Icon name="image-multiple" size={20} color={theme.colors.primary} />
-              <Text style={styles.sectionTitle}>Hình ảnh minh họa</Text>
+              <Icon name="image-multiple" size={20} color={colors.primary} />
+              <Text style={styles.sectionTitle}>{t('reports.imageTitle')}</Text>
             </View>
             <LinearGradient
-              colors={[theme.colors.primary + '10', theme.colors.primary + '30']}
+              colors={[colors.primary + '10', colors.primary + '30']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.aiChip}
             >
-              <Icon name="robot" size={14} color={theme.colors.primary} />
-              <Text style={styles.aiChipText}>AI phân tích</Text>
+              <Icon name="robot" size={14} color={colors.primary} />
+              <Text style={styles.aiChipText}>{t('reports.aiAnalyzing')}</Text>
             </LinearGradient>
           </View>
-          <Text style={styles.sectionSubtitle}>Thêm ảnh để AI phân tích và tự động điền thông tin</Text>
+          <Text style={styles.sectionSubtitle}>{t('reports.imageDesc')}</Text>
 
           <View style={styles.mediaGrid}>
             {uploadedMedia.map((media, index) => (
@@ -722,12 +743,12 @@ const CreateReportScreen = () => {
                     onPress={() => handleRemoveMedia(media.id)}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
-                    <Icon name="close-circle" size={24} color={theme.colors.white} />
+                    <Icon name="close-circle" size={24} color={colors.white} />
                   </TouchableOpacity>
                 </View>
                 {(media as any).ai_analysis && (
                   <View style={styles.mediaAiBadge}>
-                    <Icon name="check-decagram" size={14} color={theme.colors.success} />
+                    <Icon name="check-decagram" size={14} color={colors.success} />
                   </View>
                 )}
               </View>
@@ -741,13 +762,13 @@ const CreateReportScreen = () => {
                 disabled={uploadingMedia}
               >
                 {uploadingMedia ? (
-                  <ActivityIndicator size="large" color={theme.colors.primary} />
+                  <ActivityIndicator size="large" color={colors.primary} />
                 ) : (
                   <>
                     <View style={styles.uploadIconBox}>
-                      <Icon name="camera-plus-outline" size={32} color={theme.colors.primary} />
+                      <Icon name="camera-plus-outline" size={32} color={colors.primary} />
                     </View>
-                    <Text style={styles.uploadCardText}>Thêm ảnh</Text>
+                    <Text style={styles.uploadCardText}>{t('reports.addPhoto')}</Text>
                     <Text style={styles.uploadCardHint}>{uploadedMedia.length}/5</Text>
                   </>
                 )}
@@ -755,8 +776,8 @@ const CreateReportScreen = () => {
             )}
           </View>
           <View style={styles.uploadInfoRow}>
-            <Icon name="information-outline" size={16} color={theme.colors.textSecondary} />
-            <Text style={styles.uploadInfo}>Tối đa 5 ảnh (JPG, PNG). AI sẽ phân tích ảnh đầu tiên.</Text>
+            <Icon name="information-outline" size={16} color={colors.textSecondary} />
+            <Text style={styles.uploadInfo}>{t('reports.maxPhotos')}</Text>
           </View>
         </View>
 
@@ -764,17 +785,17 @@ const CreateReportScreen = () => {
         <View style={styles.card}>
           <View style={styles.sectionTitleRow}>
             <View style={styles.sectionTitleWithIcon}>
-              <Icon name="shape" size={20} color={theme.colors.primary} />
-              <Text style={styles.sectionTitle}>Danh mục</Text>
+              <Icon name="shape" size={20} color={colors.primary} />
+              <Text style={styles.sectionTitle}>{t('reports.category')}</Text>
             </View>
             {aiFilledFields.includes('danh_muc') && (
               <View style={styles.aiFilledBadge}>
-                <Icon name="robot" size={12} color={theme.colors.primary} />
-                <Text style={styles.aiFilledText}>AI chọn</Text>
+                <Icon name="robot" size={12} color={colors.primary} />
+                <Text style={styles.aiFilledText}>{t('reports.aiAutoFilledBadge')}</Text>
               </View>
             )}
           </View>
-          <Text style={styles.sectionSubtitle}>Chọn danh mục phù hợp với vấn đề</Text>
+          <Text style={styles.sectionSubtitle}>{t('reports.categoryDesc')}</Text>
 
           <TouchableOpacity
             style={styles.categorySelectButton}
@@ -787,23 +808,23 @@ const CreateReportScreen = () => {
                 <>
                   <View style={[
                     styles.categorySelectIcon,
-                    { backgroundColor: selectedCategory ? selectedCategory.color + '15' : theme.colors.backgroundSecondary }
+                    { backgroundColor: selectedCategory ? selectedCategory.color + '15' : colors.backgroundSecondary }
                   ]}>
                     <Icon
                       name={selectedCategory?.icon || 'shape'}
                       size={24}
-                      color={selectedCategory?.color || theme.colors.textSecondary}
+                      color={selectedCategory?.color || colors.textSecondary}
                     />
                   </View>
                   <View style={styles.categorySelectContent}>
                     <Text style={styles.categorySelectLabel}>
-                      {selectedCategory?.label || 'Chọn danh mục'}
+                      {selectedCategory ? t('reports.categories.' + (selectedCategory.value === 5 ? 'flood' : 'other')) : t('reports.selectCategory')}
                     </Text>
                     {selectedCategory && (
-                      <Text style={styles.categorySelectHint}>Nhấn để thay đổi</Text>
+                      <Text style={styles.categorySelectHint}>{t('reports.tapToChange')}</Text>
                     )}
                   </View>
-                  <Icon name="chevron-down" size={24} color={theme.colors.textSecondary} />
+                  <Icon name="chevron-down" size={24} color={colors.textSecondary} />
                 </>
               );
             })()}
@@ -814,27 +835,26 @@ const CreateReportScreen = () => {
         <View style={styles.card}>
           <View style={styles.sectionTitleRow}>
             <View style={styles.sectionTitleWithIcon}>
-              <Icon name="text-box" size={20} color={theme.colors.primary} />
-              <Text style={styles.sectionTitle}>Thông tin chi tiết</Text>
+              <Icon name="text-box" size={20} color={colors.primary} />
+              <Text style={styles.sectionTitle}>{t('reports.detailsTitle')}</Text>
             </View>
             {aiFilledFields.length > 0 && (
               <View style={styles.aiFilledBadge}>
-                <Icon name="check-decagram" size={14} color={theme.colors.success} />
-                <Text style={styles.aiFilledText}>AI đã điền</Text>
+                <Icon name="check-decagram" size={14} color={colors.success} />
+                <Text style={styles.aiFilledText}>{t('reports.aiAutoFilled')}</Text>
               </View>
             )}
           </View>
-          <Text style={styles.sectionSubtitle}>Mô tả rõ ràng về vấn đề bạn gặp phải</Text>
+          <Text style={styles.sectionSubtitle}>{t('reports.detailsDesc')}</Text>
 
           <View style={styles.inputGroup}>
             <View style={styles.inputWithBadge}>
               <InputCustom
-                label="Tiêu đề"
-                placeholder="Nhập tiêu đề phản ánh"
+                label={t('reports.titleLabel')}
+                placeholder={t('reports.enterTitle')}
                 value={formData.tieu_de}
                 onChangeText={(text) => {
                   setFormData({ ...formData, tieu_de: text });
-                  // Remove from AI filled fields when manually edited
                   if (aiFilledFields.includes('tieu_de')) {
                     setAiFilledFields(prev => prev.filter(f => f !== 'tieu_de'));
                   }
@@ -846,7 +866,7 @@ const CreateReportScreen = () => {
               />
               {aiFilledFields.includes('tieu_de') && (
                 <View style={styles.aiFieldIndicator}>
-                  <Icon name="robot" size={12} color={theme.colors.primary} />
+                  <Icon name="robot" size={12} color={colors.primary} />
                 </View>
               )}
             </View>
@@ -858,12 +878,11 @@ const CreateReportScreen = () => {
           <View style={styles.inputGroup}>
             <View style={styles.inputWithBadge}>
               <InputCustom
-                label="Mô tả"
-                placeholder="Mô tả chi tiết vấn đề"
+                label={t('reports.descriptionLabel')}
+                placeholder={t('reports.enterDescription')}
                 value={formData.mo_ta}
                 onChangeText={(text) => {
                   setFormData({ ...formData, mo_ta: text });
-                  // Remove from AI filled fields when manually edited
                   if (aiFilledFields.includes('mo_ta')) {
                     setAiFilledFields(prev => prev.filter(f => f !== 'mo_ta'));
                   }
@@ -877,7 +896,7 @@ const CreateReportScreen = () => {
               />
               {aiFilledFields.includes('mo_ta') && (
                 <View style={[styles.aiFieldIndicator, { top: 8 }]}>
-                  <Icon name="robot" size={12} color={theme.colors.primary} />
+                  <Icon name="robot" size={12} color={colors.primary} />
                 </View>
               )}
             </View>
@@ -890,12 +909,12 @@ const CreateReportScreen = () => {
           <View style={styles.inputGroup}>
             <View style={styles.tagInputHeader}>
               <View style={styles.tagInputTitle}>
-                <Icon name="tag-multiple" size={16} color={theme.colors.textSecondary} />
-                <Text style={styles.tagInputLabel}>Thẻ (Tags) - Tùy chọn</Text>
+                <Icon name="tag-multiple" size={16} color={colors.textSecondary} />
+                <Text style={styles.tagInputLabel}>{t('reports.tagsTitle')}</Text>
               </View>
             </View>
             <InputCustom
-              placeholder="Nhập thẻ (ví dụ: ngập lụt)"
+              placeholder={t('reports.enterTag')}
               value={currentTag}
               onChangeText={setCurrentTag}
               rightIcon="plus-circle"
@@ -906,10 +925,10 @@ const CreateReportScreen = () => {
               <View style={styles.tagList}>
                 {(formData.the_tags || []).map((tag, index) => (
                   <View key={index} style={styles.tagChip}>
-                    <Icon name="pound" size={14} color={theme.colors.primary} />
+                    <Icon name="pound" size={14} color={colors.primary} />
                     <Text style={styles.tagText}>{tag}</Text>
                     <TouchableOpacity onPress={() => handleRemoveTag(tag)} hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
-                      <Icon name="close-circle" size={16} color={theme.colors.textSecondary} />
+                      <Icon name="close-circle" size={16} color={colors.textSecondary} />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -921,15 +940,15 @@ const CreateReportScreen = () => {
         {/* Location */}
         <View style={styles.card}>
           <View style={styles.sectionTitleWithIcon}>
-            <Icon name="map-marker" size={20} color={theme.colors.primary} />
-            <Text style={styles.sectionTitle}>Vị trí sự việc</Text>
+            <Icon name="map-marker" size={20} color={colors.primary} />
+            <Text style={styles.sectionTitle}>{t('reports.locationTitle')}</Text>
           </View>
-          <Text style={styles.sectionSubtitle}>Xác định chính xác vị trí xảy ra sự việc</Text>
+          <Text style={styles.sectionSubtitle}>{t('reports.locationDesc')}</Text>
 
           <View style={styles.inputGroup}>
             <InputCustom
-              label="Địa chỉ"
-              placeholder="Nhập địa chỉ cụ thể"
+              label={t('reports.addressLabel')}
+              placeholder={t('reports.enterAddress')}
               value={formData.dia_chi}
               onChangeText={(text) => setFormData({ ...formData, dia_chi: text })}
               error={errors.dia_chi}
@@ -942,17 +961,17 @@ const CreateReportScreen = () => {
               onPress={openMapModal}
             >
               <View style={styles.mapButtonIcon}>
-                <Icon name="map-search" size={24} color={theme.colors.primary} />
+                <Icon name="map-search" size={24} color={colors.primary} />
               </View>
               <View style={styles.mapButtonContent}>
-                <Text style={styles.mapButtonText}>Chọn vị trí trên bản đồ</Text>
-                <Text style={styles.mapButtonHint}>Chạm để mở bản đồ</Text>
+                <Text style={styles.mapButtonText}>{t('reports.selectOnMap')}</Text>
+                <Text style={styles.mapButtonHint}>{t('reports.tapToOpenMap')}</Text>
               </View>
-              <Icon name="chevron-right" size={24} color={theme.colors.textSecondary} />
+              <Icon name="chevron-right" size={24} color={colors.textSecondary} />
             </TouchableOpacity>
             {formData.vi_do && formData.kinh_do && (
               <Text style={styles.coordsText}>
-                Tọa độ: {formData.vi_do.toFixed(6)}, {formData.kinh_do.toFixed(6)}
+                {t('reports.coordinates')}: {formData.vi_do.toFixed(6)}, {formData.kinh_do.toFixed(6)}
               </Text>
             )}
           </View>
@@ -962,17 +981,17 @@ const CreateReportScreen = () => {
         <View style={styles.card}>
           <View style={styles.sectionTitleRow}>
             <View style={styles.sectionTitleWithIcon}>
-              <Icon name="alert-circle" size={20} color={theme.colors.primary} />
-              <Text style={styles.sectionTitle}>Mức độ ưu tiên</Text>
+              <Icon name="alert-circle" size={20} color={colors.primary} />
+              <Text style={styles.sectionTitle}>{t('reports.priorityTitle')}</Text>
             </View>
             {aiFilledFields.includes('uu_tien') && (
               <View style={styles.aiFilledBadge}>
-                <Icon name="robot" size={12} color={theme.colors.primary} />
-                <Text style={styles.aiFilledText}>AI đề xuất</Text>
+                <Icon name="robot" size={12} color={colors.primary} />
+                <Text style={styles.aiFilledText}>{t('reports.aiAutoFilledPriority')}</Text>
               </View>
             )}
           </View>
-          <Text style={styles.sectionSubtitle}>Đánh giá mức độ nghiêm trọng của vấn đề</Text>
+          <Text style={styles.sectionSubtitle}>{t('reports.priorityDesc')}</Text>
 
           <View style={styles.priorityContainer}>
             {PRIORITIES.map((priority) => {
@@ -991,7 +1010,6 @@ const CreateReportScreen = () => {
                   ]}
                   onPress={() => {
                     setFormData({ ...formData, uu_tien: priority.value });
-                    // Remove from AI filled fields when manually changed
                     if (aiFilledFields.includes('uu_tien')) {
                       setAiFilledFields(prev => prev.filter(f => f !== 'uu_tien'));
                     }
@@ -999,15 +1017,15 @@ const CreateReportScreen = () => {
                   activeOpacity={0.7}
                 >
                   <View style={styles.priorityContent}>
-                    {isActive && <Icon name="check-circle" size={18} color={theme.colors.white} />}
+                    {isActive && <Icon name="check-circle" size={18} color={colors.white} />}
                     <Text style={[
                       styles.priorityText,
-                      isActive && { color: theme.colors.white, fontWeight: '700' }
+                      isActive && { color: colors.white, fontWeight: '700' }
                     ]}>
-                      {priority.label}
+                      {t('reports.priorities.' + getPriorityKey(priority.value))}
                     </Text>
                     {isAiFilled && (
-                      <Icon name="robot" size={14} color={theme.colors.white} />
+                      <Icon name="robot" size={14} color={colors.white} />
                     )}
                   </View>
                 </TouchableOpacity>
@@ -1016,43 +1034,41 @@ const CreateReportScreen = () => {
           </View>
         </View>
 
-
-
         {/* Settings */}
         <View style={styles.card}>
           <View style={styles.sectionTitleWithIcon}>
-            <Icon name="shield-check" size={20} color={theme.colors.primary} />
-            <Text style={styles.sectionTitle}>Quyền riêng tư</Text>
+            <Icon name="shield-check" size={20} color={colors.primary} />
+            <Text style={styles.sectionTitle}>{t('reports.privacyTitle')}</Text>
           </View>
-          <Text style={styles.sectionSubtitle}>Ai có thể xem phản ánh này?</Text>
+          <Text style={styles.sectionSubtitle}>{t('reports.privacyDesc')}</Text>
 
           <View style={styles.privacyCard}>
             <View style={[
               styles.privacyIconBox,
-              { backgroundColor: formData.la_cong_khai ? theme.colors.success + '15' : theme.colors.warning + '15' }
+              { backgroundColor: formData.la_cong_khai ? colors.success + '15' : colors.warning + '15' }
             ]}>
               <Icon
                 name={formData.la_cong_khai ? "eye" : "eye-off"}
                 size={24}
-                color={formData.la_cong_khai ? theme.colors.success : theme.colors.warning}
+                color={formData.la_cong_khai ? colors.success : colors.warning}
               />
             </View>
             <View style={styles.privacyContent}>
               <Text style={styles.privacyLabel}>
-                {formData.la_cong_khai ? 'Công khai' : 'Riêng tư'}
+                {formData.la_cong_khai ? t('reports.public') : t('reports.private')}
               </Text>
               <Text style={styles.privacyDescription}>
                 {formData.la_cong_khai
-                  ? 'Mọi người đều có thể nhìn thấy'
-                  : 'Chỉ bạn và cơ quan chức năng'}
+                  ? t('reports.publicDesc')
+                  : t('reports.privateDesc')}
               </Text>
             </View>
             <Switch
               value={formData.la_cong_khai}
               onValueChange={(value) => setFormData({ ...formData, la_cong_khai: value })}
-              trackColor={{ false: theme.colors.border, true: theme.colors.success }}
-              thumbColor={theme.colors.white}
-              ios_backgroundColor={theme.colors.border}
+              trackColor={{ false: colors.border, true: colors.success }}
+              thumbColor={colors.white}
+              ios_backgroundColor={colors.border}
             />
           </View>
         </View>
@@ -1060,13 +1076,13 @@ const CreateReportScreen = () => {
         {/* Submit Button */}
         <View style={styles.footer}>
           <View style={styles.submitInfoCard}>
-            <Icon name="information" size={20} color={theme.colors.info} />
+            <Icon name="information" size={20} color={colors.primary} />
             <Text style={styles.submitInfoText}>
-              Phản ánh của bạn sẽ được gửi đến cơ quan chức năng phù hợp
+              {t('reports.submitDesc')}
             </Text>
           </View>
           <ButtonCustom
-            title={loading ? 'Đang gửi...' : 'Gửi phản ánh'}
+            title={loading ? t('reports.submitting') : t('reports.submitReport')}
             onPress={handleSubmit}
             disabled={loading || uploadingMedia || aiAnalyzing}
             icon="send"
@@ -1087,11 +1103,11 @@ const CreateReportScreen = () => {
             <SafeAreaView style={styles.mapModalContainer} edges={['bottom']}>
               <View style={styles.mapHeader}>
                 <TouchableOpacity onPress={() => setShowMapModal(false)} style={styles.closeButton}>
-                  <Icon name="close" size={24} color={theme.colors.text} />
+                  <Icon name="close" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.mapTitle}>Chọn vị trí</Text>
+                <Text style={styles.mapTitle}>{t('reports.selectLocation')}</Text>
                 <TouchableOpacity onPress={confirmLocation} style={styles.confirmButton}>
-                  <Text style={styles.confirmButtonText}>Xác nhận</Text>
+                  <Text style={styles.confirmButtonText}>{t('common.confirm')}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -1099,7 +1115,7 @@ const CreateReportScreen = () => {
                 <MapboxGL.MapView
                   ref={mapRef}
                   style={styles.map}
-                  styleURL={OPENMAP_STYLE_URL}
+                  styleURL={getOpenMapStyleUrl(isDark)}
                   logoEnabled={false}
                   attributionEnabled={false}
                   onPress={handleMapPress}
@@ -1117,7 +1133,7 @@ const CreateReportScreen = () => {
                       coordinate={tempLocation}
                     >
                       <View style={styles.markerContainer}>
-                        <Icon name="map-marker" size={40} color={theme.colors.primary} />
+                        <Icon name="map-marker" size={40} color={colors.primary} />
                       </View>
                     </MapboxGL.PointAnnotation>
                   )}
@@ -1125,10 +1141,10 @@ const CreateReportScreen = () => {
 
                 <View style={styles.addressOverlay}>
                   {loadingAddress ? (
-                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                    <ActivityIndicator size="small" color={colors.primary} />
                   ) : (
                     <Text style={styles.addressText} numberOfLines={2}>
-                      {tempAddress || 'Chạm vào bản đồ để chọn vị trí'}
+                      {tempAddress || t('reports.tapMapToSelect')}
                     </Text>
                   )}
                 </View>
@@ -1142,7 +1158,7 @@ const CreateReportScreen = () => {
       <ModalCustom
         isModalVisible={showSuccessModal}
         setIsModalVisible={setShowSuccessModal}
-        title="Thành công"
+        title={t('common.success')}
         type="success"
         isClose={false}
         actionText="OK"
@@ -1155,7 +1171,7 @@ const CreateReportScreen = () => {
       <ModalCustom
         isModalVisible={showErrorModal}
         setIsModalVisible={setShowErrorModal}
-        title="Lỗi"
+        title={t('common.error')}
         type="error"
         isClose={false}
         actionText="OK"
@@ -1167,10 +1183,10 @@ const CreateReportScreen = () => {
       <ModalCustom
         isModalVisible={showAIModal}
         setIsModalVisible={setShowAIModal}
-        title="🤖 AI đã phân tích ảnh"
+        title={t('reports.aiModalTitle')}
         type="success"
         isClose={false}
-        actionText="Đồng ý"
+        actionText={t('common.confirm')}
       >
         <Text style={styles.aiModalText}>{aiAnalysisMessage}</Text>
       </ModalCustom>
@@ -1208,9 +1224,9 @@ const CreateReportScreen = () => {
 
             {/* Modal Header */}
             <View style={styles.categoryModalHeader}>
-              <Text style={styles.categoryModalTitle}>Chọn danh mục</Text>
+              <Text style={styles.categoryModalTitle}>{t('reports.selectCategory')}</Text>
               <TouchableOpacity onPress={handleCloseCategoryModal}>
-                <Icon name="close" size={24} color={theme.colors.text} />
+                <Icon name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -1228,7 +1244,6 @@ const CreateReportScreen = () => {
                       ]}
                       onPress={() => {
                         setFormData({ ...formData, danh_muc: category.value });
-                        // Remove from AI filled fields when manually changed
                         if (aiFilledFields.includes('danh_muc')) {
                           setAiFilledFields(prev => prev.filter(f => f !== 'danh_muc'));
                         }
@@ -1251,12 +1266,12 @@ const CreateReportScreen = () => {
                           styles.categoryOptionLabel,
                           isSelected && { color: category.color }
                         ]}>
-                          {category.label}
+                          {t('reports.categories.' + (category.value === 5 ? 'flood' : 'other'))}
                         </Text>
                       </View>
                       {isSelected && (
                         <View style={[styles.categoryOptionCheck, { backgroundColor: category.color }]}>
-                          <Icon name="check" size={18} color={theme.colors.white} />
+                          <Icon name="check" size={18} color={colors.white} />
                         </View>
                       )}
                     </TouchableOpacity>
@@ -1293,11 +1308,11 @@ const CreateReportScreen = () => {
                 },
               ]}
             >
-              <Icon name="robot" size={48} color={theme.colors.primary} />
+              <Icon name="robot" size={48} color={colors.primary} />
             </Animated.View>
 
             <Text style={styles.loadingTitle}>
-              {uploadingMedia ? '📤 Đang tải ảnh lên' : '🤖 AI đang phân tích'}
+              {uploadingMedia ? t('reports.uploadingMedia') : t('reports.aiAnalyzingImage')}
             </Text>
             <Text style={styles.loadingStatus}>{uploadStatus}</Text>
 
@@ -1325,14 +1340,14 @@ const CreateReportScreen = () => {
                   uploadProgress >= 50 && styles.stepDotCompleted,
                 ]}>
                   {uploadProgress >= 50 ? (
-                    <Icon name="check" size={12} color={theme.colors.white} />
+                    <Icon name="check" size={12} color={colors.white} />
                   ) : null}
                 </View>
                 <Text style={[
                   styles.stepText,
                   uploadProgress >= 10 && styles.stepTextActive,
                 ]}>
-                  Tải ảnh
+                  {t('reports.uploadStep')}
                 </Text>
               </View>
 
@@ -1345,14 +1360,14 @@ const CreateReportScreen = () => {
                   uploadProgress >= 95 && styles.stepDotCompleted,
                 ]}>
                   {uploadProgress >= 95 ? (
-                    <Icon name="check" size={12} color={theme.colors.white} />
+                    <Icon name="check" size={12} color={colors.white} />
                   ) : null}
                 </View>
                 <Text style={[
                   styles.stepText,
                   uploadProgress >= 50 && styles.stepTextActive,
                 ]}>
-                  Phân tích AI
+                  {t('reports.aiStep')}
                 </Text>
               </View>
 
@@ -1365,19 +1380,19 @@ const CreateReportScreen = () => {
                   uploadProgress === 100 && styles.stepDotCompleted,
                 ]}>
                   {uploadProgress === 100 ? (
-                    <Icon name="check" size={12} color={theme.colors.white} />
+                    <Icon name="check" size={12} color={colors.white} />
                   ) : null}
                 </View>
                 <Text style={[
                   styles.stepText,
                   uploadProgress >= 95 && styles.stepTextActive,
                 ]}>
-                  Hoàn tất
+                  {t('reports.finishStep')}
                 </Text>
               </View>
             </View>
 
-            <Text style={styles.loadingHint}>Vui lòng đợi trong giây lát...</Text>
+            <Text style={styles.loadingHint}>{t('reports.pleaseWait')}</Text>
           </View>
         </View>
       </Modal>
@@ -1385,26 +1400,38 @@ const CreateReportScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
     padding: SCREEN_PADDING.horizontal,
   },
   card: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.md,
     marginBottom: SPACING.md,
-    ...theme.shadows.sm,
+    borderWidth: isDark ? 1 : 0,
+    borderColor: colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: isDark ? 0 : 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: isDark ? 0 : 2,
+      },
+    }),
   },
   sectionTitle: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
-    color: theme.colors.text,
+    color: colors.text,
   },
   sectionTitleRow: {
     flexDirection: 'row',
@@ -1419,35 +1446,35 @@ const styles = StyleSheet.create({
   },
   sectionSubtitle: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     marginBottom: SPACING.md,
     lineHeight: 20,
   },
   aiChip: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
     gap: 4,
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.15)' : 'rgba(122, 90, 248, 0.1)',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 4,
     borderRadius: BORDER_RADIUS.full,
     borderWidth: 1,
-    borderColor: theme.colors.primary + '30',
+    borderColor: isDark ? colors.primary : 'rgba(122, 90, 248, 0.3)',
   },
   aiChipText: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.primary,
+    color: colors.primary,
     fontWeight: '600',
   },
   categorySelectButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.md,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 2,
-    borderColor: theme.colors.border,
-    ...theme.shadows.sm,
+    borderColor: colors.border,
   },
   categorySelectIcon: {
     width: 48,
@@ -1462,13 +1489,13 @@ const styles = StyleSheet.create({
   },
   categorySelectLabel: {
     fontSize: FONT_SIZE.md,
-    color: theme.colors.text,
+    color: colors.text,
     fontWeight: '600',
     marginBottom: 2,
   },
   categorySelectHint: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
   },
   categoryBackdrop: {
     position: 'absolute',
@@ -1482,7 +1509,7 @@ const styles = StyleSheet.create({
   sheetHandle: {
     width: 40,
     height: 4,
-    backgroundColor: theme.colors.border,
+    backgroundColor: colors.border,
     borderRadius: 2,
     alignSelf: 'center',
     marginTop: SPACING.md,
@@ -1493,7 +1520,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderTopLeftRadius: BORDER_RADIUS['2xl'],
     borderTopRightRadius: BORDER_RADIUS['2xl'],
     maxHeight: hp('70%'),
@@ -1501,7 +1528,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: colors.black,
         shadowOffset: { width: 0, height: -4 },
         shadowOpacity: 0.15,
         shadowRadius: 12,
@@ -1519,12 +1546,12 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.md,
     paddingBottom: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: colors.border,
   },
   categoryModalTitle: {
     fontSize: FONT_SIZE.xl,
     fontWeight: '700',
-    color: theme.colors.text,
+    color: colors.text,
   },
   categoryModalScroll: {
     flex: 1,
@@ -1536,16 +1563,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.md,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderRadius: BORDER_RADIUS.lg,
     marginBottom: SPACING.sm,
     borderWidth: 2,
     borderColor: 'transparent',
   },
   categoryOptionSelected: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderWidth: 2,
-    ...theme.shadows.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: isDark ? 0 : 0.1,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: isDark ? 0 : 4,
+      },
+    }),
   },
   categoryOptionIcon: {
     width: 56,
@@ -1560,7 +1597,7 @@ const styles = StyleSheet.create({
   },
   categoryOptionLabel: {
     fontSize: FONT_SIZE.lg,
-    color: theme.colors.text,
+    color: colors.text,
     fontWeight: '600',
   },
   categoryOptionCheck: {
@@ -1578,7 +1615,7 @@ const styles = StyleSheet.create({
   },
   charCount: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'right',
     marginTop: 4,
   },
@@ -1594,48 +1631,79 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: 8,
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.15)' : 'rgba(122, 90, 248, 0.1)',
     borderRadius: BORDER_RADIUS.full,
     padding: 6,
     borderWidth: 2,
-    borderColor: theme.colors.white,
-    ...theme.shadows.sm,
+    borderColor: colors.card,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
   aiFilledBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
     gap: 4,
-    backgroundColor: theme.colors.success + '10',
+    backgroundColor: isDark ? 'rgba(52, 211, 153, 0.15)' : 'rgba(23, 178, 106, 0.1)',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 4,
     borderRadius: BORDER_RADIUS.full,
     borderWidth: 1,
-    borderColor: theme.colors.success + '30',
+    borderColor: isDark ? colors.success : 'rgba(23, 178, 106, 0.3)',
   },
   aiFilledText: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.success,
+    color: colors.success,
     fontWeight: '600',
   },
   priorityChipAiFilled: {
-    ...theme.shadows.sm,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
   mapButton: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: SPACING.md,
     padding: SPACING.md,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 2,
-    borderColor: theme.colors.border,
-    ...theme.shadows.sm,
+    borderColor: colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: isDark ? 0 : 0.05,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: isDark ? 0 : 1,
+      },
+    }),
   },
   mapButtonIcon: {
     width: 48,
     height: 48,
     borderRadius: BORDER_RADIUS.md,
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.15)' : 'rgba(122, 90, 248, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
@@ -1645,17 +1713,17 @@ const styles = StyleSheet.create({
   },
   mapButtonText: {
     fontSize: FONT_SIZE.md,
-    color: theme.colors.text,
+    color: colors.text,
     fontWeight: '600',
     marginBottom: 2,
   },
   mapButtonHint: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
   },
   coordsText: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: SPACING.xs,
     marginLeft: SPACING.xs,
   },
@@ -1669,7 +1737,7 @@ const styles = StyleSheet.create({
   },
   tagInputLabel: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   tagList: {
@@ -1681,17 +1749,17 @@ const styles = StyleSheet.create({
   tagChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.15)' : 'rgba(122, 90, 248, 0.1)',
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
     borderRadius: BORDER_RADIUS.full,
     gap: 4,
     borderWidth: 1,
-    borderColor: theme.colors.primary + '30',
+    borderColor: isDark ? colors.primary : 'rgba(122, 90, 248, 0.3)',
   },
   tagText: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.primary,
+    color: colors.primary,
     fontWeight: '600',
   },
   priorityContainer: {
@@ -1704,10 +1772,10 @@ const styles = StyleSheet.create({
     minWidth: '47%',
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.sm,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 2,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
   },
   priorityContent: {
     flexDirection: 'row',
@@ -1717,7 +1785,7 @@ const styles = StyleSheet.create({
   },
   priorityText: {
     fontSize: FONT_SIZE.md,
-    color: theme.colors.text,
+    color: colors.text,
     fontWeight: '600',
   },
   modalOverlay: {
@@ -1727,18 +1795,18 @@ const styles = StyleSheet.create({
   },
   uploadArea: {
     borderWidth: 2,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     borderStyle: 'dashed',
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.xl,
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
   },
   uploadIconCircle: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.15)' : 'rgba(122, 90, 248, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.sm,
@@ -1746,7 +1814,7 @@ const styles = StyleSheet.create({
   uploadTitle: {
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
-    color: theme.colors.text,
+    color: colors.text,
     marginBottom: 4,
   },
   mediaGrid: {
@@ -1760,8 +1828,18 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.lg,
     overflow: 'hidden',
     position: 'relative',
-    backgroundColor: theme.colors.backgroundSecondary,
-    ...theme.shadows.sm,
+    backgroundColor: colors.backgroundSecondary,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: isDark ? 0 : 0.08,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: isDark ? 0 : 1,
+      },
+    }),
   },
   mediaPhoto: {
     width: '100%',
@@ -1786,7 +1864,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mediaIndexText: {
-    color: theme.colors.white,
+    color: colors.white,
     fontSize: FONT_SIZE.xs,
     fontWeight: '700',
   },
@@ -1799,40 +1877,50 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: SPACING.xs,
     left: SPACING.xs,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.white,
     borderRadius: BORDER_RADIUS.full,
     padding: 4,
-    ...theme.shadows.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   uploadCard: {
     width: (wp('100%') - SCREEN_PADDING.horizontal * 2 - SPACING.md * 3) / 2,
     aspectRatio: 1,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 2,
-    borderColor: theme.colors.primary,
+    borderColor: colors.primary,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.primary + '05',
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.05)' : 'rgba(122, 90, 248, 0.05)',
   },
   uploadIconBox: {
     width: 64,
     height: 64,
     borderRadius: BORDER_RADIUS.lg,
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.15)' : 'rgba(122, 90, 248, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.sm,
   },
   uploadCardText: {
     fontSize: FONT_SIZE.md,
-    color: theme.colors.primary,
+    color: colors.primary,
     fontWeight: '600',
     marginBottom: 4,
   },
   uploadCardHint: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   uploadInfoRow: {
@@ -1845,17 +1933,17 @@ const styles = StyleSheet.create({
   uploadInfo: {
     flex: 1,
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 18,
   },
   privacyCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.md,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 2,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
   },
   privacyIconBox: {
     width: 48,
@@ -1871,12 +1959,12 @@ const styles = StyleSheet.create({
   privacyLabel: {
     fontSize: FONT_SIZE.md,
     fontWeight: '700',
-    color: theme.colors.text,
+    color: colors.text,
     marginBottom: 2,
   },
   privacyDescription: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 16,
   },
   footer: {
@@ -1888,42 +1976,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.sm,
     padding: SPACING.md,
-    backgroundColor: theme.colors.info + '10',
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.1)' : 'rgba(122, 90, 248, 0.05)',
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
-    borderColor: theme.colors.info + '30',
+    borderColor: isDark ? colors.primary : 'rgba(122, 90, 248, 0.3)',
   },
   submitInfoText: {
     flex: 1,
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.info,
+    color: colors.primary,
     fontWeight: '500',
     lineHeight: 20,
   },
   submitButton: {
     borderRadius: BORDER_RADIUS.xl,
-    ...theme.shadows.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   modalText: {
     textAlign: 'center',
-    color: theme.colors.text,
+    color: colors.text,
     fontSize: FONT_SIZE.md,
   },
   aiModalText: {
     textAlign: 'left',
-    color: theme.colors.text,
+    color: colors.text,
     fontSize: FONT_SIZE.sm,
     lineHeight: 22,
     paddingHorizontal: SPACING.xs,
   },
   mapModalContainer: {
     flex: 1,
-    backgroundColor: theme.colors.white,
-    marginTop: hp('20%'), // Start from 20% down (80% height)
+    backgroundColor: colors.card,
+    marginTop: hp('20%'),
     borderTopLeftRadius: BORDER_RADIUS.xl,
     borderTopRightRadius: BORDER_RADIUS.xl,
     overflow: 'hidden',
-    ...theme.shadows.lg,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: -8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
   },
   mapHeader: {
     flexDirection: 'row',
@@ -1931,8 +2039,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.card,
   },
   closeButton: {
     padding: SPACING.sm,
@@ -1940,16 +2048,16 @@ const styles = StyleSheet.create({
   mapTitle: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
-    color: theme.colors.text,
+    color: colors.text,
   },
   confirmButton: {
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: BORDER_RADIUS.md,
   },
   confirmButtonText: {
-    color: theme.colors.white,
+    color: colors.white,
     fontWeight: '600',
     fontSize: FONT_SIZE.sm,
   },
@@ -1969,58 +2077,80 @@ const styles = StyleSheet.create({
     bottom: SPACING.xl,
     left: SPACING.md,
     right: SPACING.md,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     padding: SPACING.md,
     borderRadius: BORDER_RADIUS.lg,
-    ...theme.shadows.md,
+    borderWidth: isDark ? 1 : 0,
+    borderColor: colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 50,
   },
   addressText: {
-    color: theme.colors.text,
+    color: colors.text,
     fontSize: FONT_SIZE.sm,
     fontWeight: '600',
     textAlign: 'center',
   },
   loadingOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.xl,
   },
   loadingCard: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.xl * 1.5,
     alignItems: 'center',
     width: '100%',
     maxWidth: 340,
-    ...theme.shadows.xl,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.2,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   loadingIconContainer: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.15)' : 'rgba(122, 90, 248, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.lg,
     borderWidth: 3,
-    borderColor: theme.colors.primary + '30',
+    borderColor: isDark ? colors.primary : 'rgba(122, 90, 248, 0.3)',
   },
   loadingTitle: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
-    color: theme.colors.text,
+    color: colors.text,
     marginBottom: SPACING.xs,
     textAlign: 'center',
   },
   loadingStatus: {
     fontSize: FONT_SIZE.md,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     marginBottom: SPACING.lg,
     textAlign: 'center',
   },
@@ -2031,19 +2161,19 @@ const styles = StyleSheet.create({
   progressBarBackground: {
     width: '100%',
     height: 8,
-    backgroundColor: theme.colors.border,
+    backgroundColor: colors.border,
     borderRadius: BORDER_RADIUS.full,
     overflow: 'hidden',
     marginBottom: SPACING.xs,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: BORDER_RADIUS.full,
   },
   progressText: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     fontWeight: '600',
   },
@@ -2063,41 +2193,41 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: theme.colors.border,
+    backgroundColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xs,
     borderWidth: 2,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
   },
   stepDotActive: {
-    backgroundColor: theme.colors.primary + '30',
-    borderColor: theme.colors.primary,
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.3)' : 'rgba(122, 90, 248, 0.3)',
+    borderColor: colors.primary,
   },
   stepDotCompleted: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   stepText: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     fontWeight: '500',
   },
   stepTextActive: {
-    color: theme.colors.primary,
+    color: colors.primary,
     fontWeight: '600',
   },
   stepDivider: {
     height: 2,
-    backgroundColor: theme.colors.border,
+    backgroundColor: colors.border,
     flex: 0.5,
     marginHorizontal: -SPACING.xs,
     marginBottom: SPACING.lg,
   },
   loadingHint: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -2105,9 +2235,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: '#7a5af810',
+    backgroundColor: isDark ? 'rgba(122, 90, 248, 0.15)' : 'rgba(122, 90, 248, 0.08)',
     borderBottomWidth: 1,
-    borderBottomColor: '#7a5af820',
+    borderBottomColor: isDark ? colors.primary : 'rgba(122, 90, 248, 0.2)',
     paddingHorizontal: SCREEN_PADDING.horizontal,
     paddingVertical: SPACING.sm,
   },
@@ -2115,12 +2245,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FONT_SIZE.xs,
     fontWeight: '600',
-    color: '#7a5af8',
+    color: colors.primary,
   },
   draftBannerDiscard: {
     fontSize: FONT_SIZE.xs,
     fontWeight: '700',
-    color: theme.colors.error,
+    color: colors.error,
   },
 });
 

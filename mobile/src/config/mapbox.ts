@@ -23,6 +23,13 @@ export const OPENMAP_STYLE_URL =
     ? `${openMapStyleUrl}${openMapStyleUrl.includes('?') ? '&' : '?'}apikey=${openMapApiKey}`
     : openMapStyleUrl;
 
+export const getOpenMapStyleUrl = (isDark: boolean = false) => {
+  const base = isDark
+    ? 'https://tiles.openmap.vn/styles/night-v1/style.json'
+    : 'https://tiles.openmap.vn/styles/day-v1/style.json';
+  return openMapApiKey ? `${base}?apikey=${openMapApiKey}` : base;
+};
+
 // Configure camera settings
 export const DEFAULT_CAMERA_CONFIG = {
   zoomLevel: 12,

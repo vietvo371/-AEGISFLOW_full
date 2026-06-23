@@ -13,7 +13,7 @@ import {
 import Animated, { FadeInDown, FadeInUp, SlideInDown } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
-  theme,
+  theme as staticTheme,
   wp,
   hp,
   SPACING,
@@ -28,6 +28,7 @@ import LoadingOverlay from '../../component/LoadingOverlay';
 import LanguageSelector from '../../component/LanguageSelector';
 import { authService } from '../../services/authService';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 interface ForgotPasswordScreenProps {
   navigation: any;
@@ -48,6 +49,8 @@ const getLanguageFlag = (code: string) => {
 
 const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation }) => {
   const { getCurrentLanguage } = useTranslation();
+  const { colors, isDark, theme: appTheme } = useAppTheme();
+  const styles = getStyles(colors, isDark, appTheme);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string }>({});
@@ -162,7 +165,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
-              <Icon name="arrow-left" size={ICON_SIZE.sm} color={theme.colors.text} />
+              <Icon name="arrow-left" size={ICON_SIZE.sm} color={colors.text} />
             </TouchableOpacity>
           </Animated.View>
 
@@ -172,7 +175,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
             entering={FadeInDown.duration(600).delay(200).springify()}
           >
             <View style={styles.iconContainer}>
-              <Icon name="lock-reset" size={ICON_SIZE.xl} color={theme.colors.primary} />
+              <Icon name="lock-reset" size={ICON_SIZE.xl} color={colors.primary} />
             </View>
 
             <Text style={styles.title}>
@@ -228,7 +231,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
           >
             {/* Security Badge */}
             <View style={styles.securityBadge}>
-              <Icon name="shield-check" size={ICON_SIZE.xs} color={theme.colors.primary} />
+              <Icon name="shield-check" size={ICON_SIZE.xs} color={colors.primary} />
               <Text style={styles.securityText}>
                 Dữ liệu được bảo mật và mã hóa
               </Text>
@@ -242,10 +245,10 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.background,
   },
   backgroundContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -262,12 +265,12 @@ const styles = StyleSheet.create({
     width: wp('10%'),
     height: wp('10%'),
     borderRadius: wp('5%'),
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -288,7 +291,7 @@ const styles = StyleSheet.create({
     width: wp('30%'),
     height: wp('30%'),
     borderRadius: wp('15%'),
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: colors.primary + '15',
   },
   decorativeCircle2: {
     position: 'absolute',
@@ -297,7 +300,7 @@ const styles = StyleSheet.create({
     width: wp('24%'),
     height: wp('24%'),
     borderRadius: wp('12%'),
-    backgroundColor: theme.colors.secondary + '15',
+    backgroundColor: colors.secondary + '15',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -316,7 +319,7 @@ const styles = StyleSheet.create({
     width: wp('10%'),
     height: wp('10%'),
     borderRadius: wp('5%'),
-    backgroundColor: theme.colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -330,7 +333,7 @@ const styles = StyleSheet.create({
     width: wp('20%'),
     height: wp('20%'),
     borderRadius: wp('10%'),
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: colors.primary + '15',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.lg,
@@ -338,14 +341,14 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE['2xl'],
-    color: theme.colors.text,
+    color: colors.text,
     marginBottom: SPACING.sm,
     textAlign: 'center',
   },
   subtitle: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE.md,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: FONT_SIZE.md * 1.5,
     paddingHorizontal: SPACING.lg,
@@ -353,10 +356,12 @@ const styles = StyleSheet.create({
 
   // Form Styles
   formContainer: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: BORDER_RADIUS['2xl'],
     padding: SPACING.xl,
     marginBottom: SPACING.xl,
+    borderWidth: isDark ? 1 : 0,
+    borderColor: colors.border,
     ...theme.shadows.xl,
   },
   form: {
@@ -378,11 +383,11 @@ const styles = StyleSheet.create({
   backToLoginText: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE.md,
-    color: theme.colors.text,
+    color: colors.text,
     textAlign: 'center',
   },
   backToLoginLinkText: {
-    color: theme.colors.primary,
+    color: colors.primary,
     fontFamily: theme.typography.fontFamily,
     fontWeight: theme.typography.fontWeight.semibold,
   },
@@ -396,21 +401,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: colors.primary + '10',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
     borderRadius: BORDER_RADIUS.full,
     borderWidth: 1,
-    borderColor: theme.colors.primary + '20',
+    borderColor: colors.primary + '20',
   },
   securityText: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     textAlign: 'center',
     flex: 1,
   },
-
 });
 
 export default ForgotPasswordScreen;

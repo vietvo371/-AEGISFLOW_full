@@ -21,7 +21,10 @@
     "search": "Maghanap",
     "filter": "Salain",
     "all": "Lahat",
-    "noData": "Walang data"
+    "noData": "Walang data",
+    "user": "User",
+    "info": "Info",
+    "normal": "Normal"
   },
   "auth": {
     "login": "Mag-login",
@@ -102,7 +105,10 @@
     "verificationFailed": "Nabigo ang Pag-verify",
     "verificationSuccessful": "Matagumpay ang Pag-verify!",
     "invalidOtp": "Di-wastong OTP code",
-    "otpResent": "Ang OTP code ay naipadala muli"
+    "otpResent": "Ang OTP code ay naipadala muli",
+    "failedResend": "Failed to resend OTP code",
+    "verifyingAccount": "Verifying account...",
+    "verifyingReset": "Verifying password reset..."
   },
   "changePassword": {
     "title": "Baguhin ang Password",
@@ -196,7 +202,9 @@
       "heavy_rain": "Malakas na Ulan",
       "landslide": "Pagguho ng lupa",
       "dam_failure": "Pagkabigo sa Dam",
-      "other": "Iba pa"
+      "other": "Iba pa",
+      "accident": "Accident",
+      "congestion": "Congestion"
     },
     "severity": {
       "low": "Mababa",
@@ -213,7 +221,22 @@
     "confirmUpdate": "Kumpirmahin ang Update",
     "updateSuccess": "Matagumpay ang pag-update",
     "updateFailed": "Nabigo ang pag-update",
-    "noIncidents": "Walang insidente"
+    "noIncidents": "Walang insidente",
+    "subtitle": "Real-time monitoring from AI Digital Twin",
+    "noIncidentsDesc": "No incidents reported yet",
+    "openCountBanner": "{{count}} open incidents — immediate action required",
+    "allTypes": "All Types",
+    "additionalData": "ADDITIONAL DATA",
+    "assignment": "ASSIGNMENT",
+    "closeIncident": "Close Incident",
+    "markAsDone": "Mark as Done",
+    "notOccurred": "Not yet occurred",
+    "quickActions": "QUICK ACTIONS",
+    "reporter": "REPORTER",
+    "startProcessing": "Start Processing",
+    "timeline": "TIMELINE",
+    "unassigned": "Unassigned",
+    "unknownLocation": "Unknown location"
   },
   "reports": {
     "title": "Mga ulat",
@@ -238,7 +261,10 @@
     },
     "categories": {
       "flood": "Baha",
-      "other": "Iba pa"
+      "other": "Iba pa",
+      "environment": "Environment",
+      "fire": "Fire",
+      "waste": "Waste"
     },
     "priorities": {
       "normal": "Normal",
@@ -255,7 +281,11 @@
     "vote": "Bumoto",
     "comment": "Magkomento",
     "rate": "Rate",
-    "views": "mga pananaw"
+    "views": "mga pananaw",
+    "severity": "Severity",
+    "editReport": "I-edit ang Ulat",
+    "myReportsDesc": "Ipapakita rito ang iyong mga ulat",
+    "defaultRescueTitle": "Kahilingan para sa Pagsagip sa Emergency"
   },
   "emergency": {
     "title": "Emergency Response",
@@ -269,7 +299,14 @@
     "startNavigation": "Simulan ang Navigation",
     "incidentList": "Listahan ng Insidente",
     "mapView": "Mapa",
-    "listView": "Listahan"
+    "listView": "Listahan",
+    "accept": "Accept",
+    "acceptMission": "Accept Mission",
+    "confirmAccept": "Do you want to handle incident",
+    "confirmDispatch": "Confirm Dispatch",
+    "dispatchUnit": "Dispatch Unit",
+    "missionAccepted": "Mission accepted! Please respond to the incident promptly.",
+    "missionInProgress": "Mission in progress"
   },
   "profile": {
     "title": "Profile",
@@ -288,7 +325,9 @@
       "emergency": "Emergency Responder",
       "operator": "Operator ng Trapiko",
       "admin": "Tagapangasiwa"
-    }
+    },
+    "saveChanges": "I-save ang mga Pagbabago",
+    "emailDisabledHelp": "Ang email na naka-link sa iyong account ay hindi mababago"
   },
   "notifications": {
     "title": "Mga abiso",
@@ -317,7 +356,10 @@
     "title": "Piliin ang Wika",
     "vietnamese": "Tiếng Việt",
     "english": "Ingles",
-    "selectLanguage": "Piliin ang Wika"
+    "selectLanguage": "Piliin ang Wika",
+    "selectLanguagePrompt": "Select Language",
+    "changeLanguageDesc": "Change the app display language",
+    "incompleteTranslationNote": "Some content may not be fully translated."
   },
   "errors": {
     "networkError": "Error sa koneksyon sa network",
@@ -377,7 +419,10 @@
     "depth": "Lalim",
     "rising": "Tumataas",
     "falling": "nahuhulog",
-    "stable": "Matatag"
+    "stable": "Matatag",
+    "safetyTips": {
+      "drainage": "Clear drainage ditches around your home"
+    }
   },
   "sensor": {
     "title": "Sensor",
@@ -460,7 +505,8 @@
       "shelters": "Silungan",
       "myLocation": "Aking Lokasyon",
       "refresh": "I-refresh",
-      "callEmergency": "Tumawag sa Emergency"
+      "callEmergency": "Tumawag sa Emergency",
+      "activeAlerts": "Active Alerts"
     },
     "shelters": {
       "title": "Silungan",
@@ -634,7 +680,16 @@
       "changePassword": "Baguhin ang Password",
       "about": "Tungkol sa",
       "logoutTitle": "Mag-logout",
-      "logoutMessage": "Sigurado ka bang gusto mong mag-logout?"
+      "logoutMessage": "Sigurado ka bang gusto mong mag-logout?",
+      "manageProfile": "Personal Info",
+      "notificationSettings": "Notification Settings",
+      "helpCenter": "Help Center",
+      "theme": "Theme",
+      "selectTheme": "Select Display Mode",
+      "themeDevelopment": "Dark mode is under development.",
+      "groupAccount": "Account",
+      "groupPreferences": "Preferences & Activity",
+      "groupSupport": "Support & Info"
     }
   },
   "aboutScreen": {
@@ -671,5 +726,91 @@
     "followUs": "Sundan Kami",
     "privacyPolicy": "Patakaran sa Privacy",
     "termsOfUse": "Mga Tuntunin sa Paggamit"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "darkUnderDev": "Madilim (Kasalukuyang ginagawa)",
+    "system": "System"
+  },
+  "priorityRoute": {
+    "title": "Priority Route",
+    "mapSubtitle": "Real-time Traffic Dispatch",
+    "listSubtitle": "Active Hotspots",
+    "dispatchButton": "DISPATCH PRIORITY SIGNAL",
+    "dispatchFailed": "Failed to dispatch priority command. Please try again.",
+    "dispatchSuccessDesc": "Priority traffic control command dispatched for incident #{{id}}.",
+    "monitoringPointsCount": "{{count}} monitoring points",
+    "activeIncidentsCount": "{{count}} active incidents",
+    "noOpenIncidents": "No active open incidents",
+    "hotspotType": "Object Type"
+  },
+  "emailVerification": {
+    "title": "Email Verification",
+    "subtitle": "Verify your email address",
+    "subtitleCodeSent": "Verification code sent to email",
+    "verifyEmail": "Verify Email",
+    "sendCodeDescription": "Tap below to send a verification code to your registered email",
+    "sendVerificationCode": "Send Verification Code",
+    "enterVerificationCode": "Enter Verification Code",
+    "codeSentDescription": "Code has been sent to your email",
+    "resendCodeAfter": "Resend after",
+    "resendCode": "Resend Code",
+    "emailAlreadyVerified": "Email Already Verified",
+    "emailVerifiedDescription": "Your email address has been successfully verified.",
+    "emailVerifiedSuccess": "Email verified successfully!",
+    "enterFullOtp": "Please enter the complete OTP code",
+    "otpIncorrect": "OTP code is incorrect",
+    "backToProfile": "Back to Profile",
+    "checkingStatus": "Checking...",
+    "checkingDescription": "Checking email verification status",
+    "getEmailError": "Failed to retrieve email information",
+    "sendOtpSuccess": "Verification code sent",
+    "sendOtpError": "Failed to send verification code",
+    "sendOtpFailed": "Send verification code failed"
+  },
+  "phoneVerification": {
+    "title": "Phone Verification",
+    "subtitle": "Verify your phone number",
+    "subtitleCodeSent": "Verification code sent to phone",
+    "verifyPhone": "Verify Phone Number",
+    "sendCodeDescription": "Tap below to send a verification code to your phone number",
+    "sendVerificationCode": "Send Verification Code",
+    "enterVerificationCode": "Enter Verification Code",
+    "codeSentDescription": "Code has been sent to your phone number",
+    "resendCodeAfter": "Resend after",
+    "resendCode": "Resend Code",
+    "phoneAlreadyVerified": "Phone Already Verified",
+    "phoneVerifiedDescription": "Your phone number has been successfully verified.",
+    "phoneVerifiedSuccess": "Phone number verified successfully!",
+    "enterFullOtp": "Please enter the complete OTP code",
+    "otpIncorrect": "OTP code is incorrect",
+    "backToProfile": "Back to Profile",
+    "checkingStatus": "Checking...",
+    "checkingDescription": "Checking phone verification status",
+    "getPhoneError": "Failed to retrieve phone information",
+    "sendOtpSuccess": "Verification code sent",
+    "sendOtpError": "Failed to send verification code",
+    "sendOtpFailed": "Send verification code failed"
+  },
+  "notificationSettingsScreen": {
+    "title": "Mga Setting ng Notification",
+    "description": "I-customize kung paano ka makakatanggap ng real-time na mga notification mula sa AegisFlow para manatiling updated sa pinakabagong sitwasyon ng panahon at baha.",
+    "sectionFloodAlerts": "MGA ALERT SA BAHA",
+    "sectionCommunity": "MGA ULAT NG KOMUNIDAD",
+    "sectionRescue": "SUPORTA SA RESCUE",
+    "alerts": "Mga Alert sa Sakuna",
+    "alertsDesc": "Makatanggap ng mga notification kapag may mga bagong pag-unlad ng baha sa lugar",
+    "critical": "Mga Emergency Alert",
+    "criticalDesc": "Palaging makatanggap ng mga kritikal na alerto mula sa Command Center kahit na naka-silent mode",
+    "reportStatus": "Katayuan ng Ulat",
+    "reportStatusDesc": "Makatanggap ng mga notification kapag naaprubahan o naproseso ang iyong ulat",
+    "comments": "Mga Komento at Feedback",
+    "commentsDesc": "Mga notification kapag may mga bagong komento sa mga ulat sa baha",
+    "rescueUpdate": "Hiling sa Pagsagip ng SOS",
+    "rescueUpdateDesc": "Mga update sa pag-unlad ng ruta ng pagsagip mula sa mabilis na pangkat ng pagtugon",
+    "teamAssigned": "Impormasyon ng Rescue Team",
+    "teamAssignedDesc": "Notification kapag ang isang mabilis na koponan ng pagtugon ay naipadala upang tumulong",
+    "footerNote": "Tinitiyak ng AegisFlow ang iyong mga komunikasyon at privacy"
   }
 }

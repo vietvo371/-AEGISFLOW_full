@@ -3,14 +3,15 @@ import {
   View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform,
   ScrollView, TextInput, Animated, Image, Linking, Alert, PermissionsAndroid,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Geolocation from 'react-native-geolocation-service';
 import MapboxGL from '@rnmapbox/maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { theme, cardStyles } from '../../theme';
+import { theme } from '../../theme';
+import { useAppTheme } from '../../contexts/ThemeContext';
 import { useWebSocket } from '../../contexts/WebSocketContext';
-import { OPENMAP_STYLE_URL, ndaDirectionsURL } from '../../config/mapbox';
+import { OPENMAP_STYLE_URL, getOpenMapStyleUrl } from '../../config/mapbox';
 import env from '../../config/env';
 import { mapService } from '../../services/mapService';
 import { reportService } from '../../services/reportService';
@@ -292,6 +293,8 @@ const generateSafeArcRoute = (coords: [number, number][]): [number, number][] =>
 
 // ─── Component ─────────────────────────────────────────────
 const MapScreen = () => {
+  const { colors, isDark } = useAppTheme();
+  const styles = getStyles(colors);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute();
@@ -307,11 +310,11 @@ const MapScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState(-1);
   const [mapReports, setMapReports] = useState<MapReport[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [selectedReport, setSelectedReport] = useState<MapReport | null>(null);
   const [reportDetail, setReportDetail] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [trafficGeoJSON, setTrafficGeoJSON] = useState<any>(null);
   const [floodZonesGeoJSON, setFloodZonesGeoJSON] = useState<any>(null);
   const [floodReportsGeoJSON, setFloodReportsGeoJSON] = useState<any>(null);
   const [shelters, setShelters] = useState<any[]>([]);
@@ -496,6 +499,7 @@ const MapScreen = () => {
       setFloodReportsGeoJSON({ type: 'FeatureCollection', features: [] });
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
   }, [isEmergency, selectedCategory]);
 
@@ -522,18 +526,18 @@ const MapScreen = () => {
     }
   }, []);
 
-  useEffect(() => { fetchLayers(); }, []);
+  useEffect(() => { fetchLayers(); }, [fetchLayers]);
 
   useEffect(() => {
     if (mapLoaded) {
       const timer = setTimeout(fetchMapReports, 500);
       return () => clearTimeout(timer);
     }
-  }, [mapLoaded]);
+  }, [mapLoaded, fetchMapReports]);
 
   useEffect(() => {
     if (mapLoaded) fetchMapReports();
-  }, [selectedCategory]);
+  }, [selectedCategory, mapLoaded, fetchMapReports]);
 
   useEffect(() => {
     const target = routeParams?.shelterRoute;
@@ -572,7 +576,7 @@ const MapScreen = () => {
       unmounted = true;
       if (isConnected) try { unsubscribe('public-incidents'); } catch { /* */ }
     };
-  }, [isConnected, mapLoaded]);
+  }, [isConnected, mapLoaded, listen, subscribe, unsubscribe, fetchMapReports]);
 
   // ─── Bottom Sheet Animation ──────────────────────────────
   const showSheet = selectedReport || selectedIncident || selectedShelter;
@@ -584,7 +588,7 @@ const MapScreen = () => {
         Animated.timing(backdropAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       ]).start();
     }
-  }, [showSheet]);
+  }, [showSheet, slideAnim, backdropAnim]);
 
   const handleCloseSheet = () => {
     Animated.parallel([
@@ -1019,19 +1023,17 @@ const MapScreen = () => {
       });
   };
 
-  const getShelterRouteGeoJSON = () => realRouteGeoJSON;
 
-  const shelterRouteGeoJSON = getShelterRouteGeoJSON();
 
   // ─── Render ──────────────────────────────────────────────
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
 
       <MapboxGL.MapView
         ref={mapRef}
         style={styles.map}
-        styleURL={OPENMAP_STYLE_URL}
+        styleURL={getOpenMapStyleUrl(isDark)}
         logoEnabled={false}
         attributionEnabled={false}
         onDidFinishLoadingMap={() => setMapLoaded(true)}
@@ -1275,7 +1277,7 @@ const MapScreen = () => {
       </MapboxGL.MapView>
 
       {/* Loading */}
-      {loading && (
+      {loading && isInitialLoad && (
         <View style={styles.loadingOverlay}>
           <View style={styles.loadingBox}>
             <Text style={styles.loadingText}>{t('common.loading')}</Text>
@@ -1287,21 +1289,21 @@ const MapScreen = () => {
       <View style={[styles.headerOverlay, { paddingTop: topInset }]} pointerEvents="box-none">
         <View style={styles.searchRow} pointerEvents="box-none">
           <View style={styles.searchBar}>
-            <Icon name="magnify" size={20} color={theme.colors.textSecondary} />
+            <Icon name="magnify" size={20} color={colors.textSecondary} />
             <TextInput
               style={styles.searchInput}
               placeholder={t('citizen.map.searchPlace', 'Tìm kiếm địa điểm, sự cố...')}
-              placeholderTextColor={theme.colors.textTertiary}
+              placeholderTextColor={colors.textTertiary}
               value={searchQuery}
               onChangeText={handleSearchTextChange}
             />
             {searchQuery.length > 0 ? (
               <TouchableOpacity onPress={handleClearSearch} style={{ marginRight: 8 }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Icon name="close-circle" size={18} color={theme.colors.textTertiary} />
+                <Icon name="close-circle" size={18} color={colors.textTertiary} />
               </TouchableOpacity>
             ) : null}
             <TouchableOpacity onPress={fetchMapReports} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Icon name="refresh" size={20} color={isEmergency ? '#EF4444' : theme.colors.primary} />
+              <Icon name="refresh" size={20} color={isEmergency ? '#EF4444' : colors.primary} />
             </TouchableOpacity>
           </View>
 
@@ -1328,7 +1330,7 @@ const MapScreen = () => {
                       case 'incident': return '#EF4444';
                       case 'report': return '#3B82F6';
                       case 'street': return '#0284C7';
-                      default: return theme.colors.textSecondary;
+                      default: return colors.textSecondary;
                     }
                   };
                   return (
@@ -1348,7 +1350,7 @@ const MapScreen = () => {
                           {item.subtitle}
                         </Text>
                       </View>
-                      <Icon name="chevron-right" size={16} color={theme.colors.border} />
+                      <Icon name="chevron-right" size={16} color={colors.border} />
                     </TouchableOpacity>
                   );
                 })}
@@ -1360,7 +1362,7 @@ const MapScreen = () => {
         {activeShelterRoute && (
           <View style={styles.routeBanner}>
             <View style={styles.routeBannerIcon}>
-              <Icon name="navigation-variant" size={18} color={theme.colors.white} />
+              <Icon name="navigation-variant" size={18} color={colors.white} />
             </View>
             <View style={styles.routeBannerTextWrap}>
               <Text style={styles.routeBannerTitle} numberOfLines={1}>
@@ -1383,7 +1385,7 @@ const MapScreen = () => {
               onPress={() => setActiveShelterRoute(null)}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Icon name="close" size={18} color={theme.colors.textSecondary} />
+              <Icon name="close" size={18} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
         )}
@@ -1419,7 +1421,7 @@ const MapScreen = () => {
               }
             };
             const isActive = selectedCategory === cat.id;
-            const color = cat.color || theme.colors.primary;
+            const color = cat.color || colors.primary;
             const count = isEmergency
               ? (cat.id === -1 ? mapIncidents.length
                 : cat.id === 1 ? mapIncidents.filter(i => (i.type as string) === 'congestion').length
@@ -1449,7 +1451,7 @@ const MapScreen = () => {
       {/* GPS FAB */}
       <View style={styles.fabContainer} pointerEvents="box-none">
         <TouchableOpacity style={styles.fab} onPress={centerUserLocation}>
-          <Icon name="crosshairs-gps" size={22} color={theme.colors.text} />
+          <Icon name="crosshairs-gps" size={22} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -1457,22 +1459,22 @@ const MapScreen = () => {
       <View style={[styles.layerControlsContainer, { top: topInset + 90 + routeOffset, zIndex: 99 }]} pointerEvents="box-none">
         {/* Locate Button */}
         <TouchableOpacity style={styles.layerBtn} onPress={centerUserLocation}>
-          <Icon name="crosshairs-gps" size={20} color={locating ? theme.colors.primary : theme.colors.textSecondary} />
+          <Icon name="crosshairs-gps" size={20} color={locating ? colors.primary : colors.textSecondary} />
         </TouchableOpacity>
 
         {/* Refresh Button */}
         <TouchableOpacity style={styles.layerBtn} onPress={fetchMapReports}>
-          <Icon name="refresh" size={20} color={loading ? theme.colors.primary : theme.colors.textSecondary} />
+          <Icon name="refresh" size={20} color={loading ? colors.primary : colors.textSecondary} />
         </TouchableOpacity>
 
         {/* Layers Toggle Button */}
         <TouchableOpacity style={styles.layerBtn} onPress={toggleLayerPanel}>
-          <Icon name="layers" size={20} color={showLayers ? theme.colors.primary : theme.colors.textSecondary} />
+          <Icon name="layers" size={20} color={showLayers ? colors.primary : colors.textSecondary} />
         </TouchableOpacity>
 
         {/* Legend Toggle Button */}
         <TouchableOpacity style={styles.legendBtn} onPress={() => setShowLegend(!showLegend)}>
-          <Icon name="map-marker" size={18} color={showLegend ? theme.colors.primary : theme.colors.textSecondary} />
+          <Icon name="map-marker" size={18} color={showLegend ? colors.primary : colors.textSecondary} />
           <Text style={styles.legendBtnText}>{t('citizen.map.legend', 'Legend')}</Text>
         </TouchableOpacity>
       </View>
@@ -1490,10 +1492,10 @@ const MapScreen = () => {
         pointerEvents={showLayers ? "auto" : "none"}
       >
         <View style={styles.layerPanelHeader}>
-          <Icon name="layers" size={14} color={theme.colors.primary} />
+          <Icon name="layers" size={14} color={colors.primary} />
           <Text style={styles.layerPanelTitle}>{t('citizen.map.layers', 'Map Layers')}</Text>
           <TouchableOpacity onPress={toggleLayerPanel} style={styles.layerPanelClose}>
-            <Icon name="close" size={16} color={theme.colors.textSecondary} />
+            <Icon name="close" size={16} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
         {LAYER_CONFIGS.map(cfg => {
@@ -1504,8 +1506,8 @@ const MapScreen = () => {
               style={styles.layerItem}
               onPress={() => toggleLayer(cfg.key)}
             >
-              <Icon name={cfg.icon} size={18} color={isActive ? cfg.color : theme.colors.textTertiary} />
-              <Text style={[styles.layerItemLabel, { color: isActive ? theme.colors.text : theme.colors.textTertiary }]}>
+              <Icon name={cfg.icon} size={18} color={isActive ? cfg.color : colors.textTertiary} />
+              <Text style={[styles.layerItemLabel, { color: isActive ? colors.text : colors.textTertiary }]}>
                 {cfg.key === 'flood_zones' ? t('citizen.map.floodZones') :
                  cfg.key === 'flood_streets' ? t('citizen.map.floodStreets') :
                  cfg.key === 'flood_points' ? t('citizen.map.floodPoints') :
@@ -1515,7 +1517,7 @@ const MapScreen = () => {
               </Text>
               <View style={[
                 styles.layerToggle,
-                { backgroundColor: isActive ? theme.colors.primary : theme.colors.border }
+                { backgroundColor: isActive ? colors.primary : colors.border }
               ]}>
                 <View style={[
                   styles.layerToggleDot,
@@ -1620,6 +1622,8 @@ const ReportSheet = ({ report, detail, loading, onClose, onNavigate }: {
   report: MapReport; detail: any; loading: boolean;
   onClose: () => void; onNavigate: (id: number) => void;
 }) => {
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
   const catColor = getCategoryColor(report.danh_muc);
   return (
     <>
@@ -1629,7 +1633,7 @@ const ReportSheet = ({ report, detail, loading, onClose, onNavigate }: {
           <Text style={styles.sheetSub}>#{report.id}</Text>
         </View>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-          <Icon name="close" size={18} color={theme.colors.textSecondary} />
+          <Icon name="close" size={18} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
@@ -1658,21 +1662,21 @@ const ReportSheet = ({ report, detail, loading, onClose, onNavigate }: {
 
           {detail.dia_chi && (
             <View style={styles.infoRow}>
-              <Icon name="map-marker" size={16} color={theme.colors.textSecondary} />
+              <Icon name="map-marker" size={16} color={colors.textSecondary} />
               <Text style={styles.infoText} numberOfLines={1}>{detail.dia_chi}</Text>
             </View>
           )}
 
           {detail.water_level_cm != null && (
             <View style={styles.infoRow}>
-              <Icon name="waves" size={16} color={theme.colors.textSecondary} />
+              <Icon name="waves" size={16} color={colors.textSecondary} />
               <Text style={styles.infoText}>Mực nước: {detail.water_level_cm} cm</Text>
             </View>
           )}
 
           {(detail.ward_name || detail.district_name) && (
             <View style={styles.infoRow}>
-              <Icon name="map-marker-radius" size={16} color={theme.colors.textSecondary} />
+              <Icon name="map-marker-radius" size={16} color={colors.textSecondary} />
               <Text style={styles.infoText} numberOfLines={1}>
                 {[detail.ward_name, detail.district_name].filter(Boolean).join(', ')}
               </Text>
@@ -1681,7 +1685,7 @@ const ReportSheet = ({ report, detail, loading, onClose, onNavigate }: {
 
           {!detail.is_flood_report && (
             <TouchableOpacity style={styles.actionBtn} onPress={() => onNavigate(report.id)}>
-              <Icon name="information-outline" size={18} color={theme.colors.primary} />
+              <Icon name="information-outline" size={18} color={colors.primary} />
               <Text style={styles.actionBtnText}>Xem chi tiết</Text>
             </TouchableOpacity>
           )}
@@ -1695,6 +1699,8 @@ const ReportSheet = ({ report, detail, loading, onClose, onNavigate }: {
 const IncidentSheet = ({ incident, onClose, onNavigate }: {
   incident: Incident; onClose: () => void; onNavigate: (id: number) => void;
 }) => {
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
   const { t } = useTranslation();
   const sevColor = getSeverityColor(incident.severity);
   const sevLabel = t(`incidents.severity.${incident.severity}`) || SEVERITY_LABELS[incident.severity] || incident.severity || 'Thấp';
@@ -1714,7 +1720,7 @@ const IncidentSheet = ({ incident, onClose, onNavigate }: {
           <Text style={styles.sheetSub}>#{incident.id}</Text>
         </View>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-          <Icon name="close" size={18} color={theme.colors.textSecondary} />
+          <Icon name="close" size={18} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
@@ -1763,7 +1769,7 @@ const IncidentSheet = ({ incident, onClose, onNavigate }: {
 
       <View style={styles.sheetActions}>
         <TouchableOpacity
-          style={[styles.actionBtnOutline, { borderColor: theme.colors.border }]}
+          style={[styles.actionBtnOutline, { borderColor: colors.border }]}
           onPress={handleCallEmergency}
         >
           <Icon name="phone" size={18} color="#EF4444" />
@@ -1782,6 +1788,8 @@ const IncidentSheet = ({ incident, onClose, onNavigate }: {
 const ShelterSheet = ({ shelter, onClose, onNavigate }: {
   shelter: any; onClose: () => void; onNavigate: () => void;
 }) => {
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
   const name = shelter.name || shelter.ten_diem || 'Điểm trú ẩn';
   const address = shelter.address || shelter.dia_chi || 'Không rõ';
   const capacity = shelter.capacity || shelter.suc_chua || 0;
@@ -1800,7 +1808,7 @@ const ShelterSheet = ({ shelter, onClose, onNavigate }: {
           <Text style={styles.sheetSub} numberOfLines={1}>{address}</Text>
         </View>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-          <Icon name="close" size={18} color={theme.colors.textSecondary} />
+          <Icon name="close" size={18} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
@@ -1817,11 +1825,11 @@ const ShelterSheet = ({ shelter, onClose, onNavigate }: {
 
       <View style={{ marginTop: 12 }}>
         <View style={styles.infoRow}>
-          <Icon name="account-group" size={18} color={theme.colors.textSecondary} />
+          <Icon name="account-group" size={18} color={colors.textSecondary} />
           <Text style={styles.infoText}>Sức chứa: {capacity - available}/{capacity} người</Text>
         </View>
         <View style={styles.infoRow}>
-          <Icon name="bed-empty" size={18} color={theme.colors.textSecondary} />
+          <Icon name="bed-empty" size={18} color={colors.textSecondary} />
           <Text style={styles.infoText}>Còn trống: {available} chỗ</Text>
         </View>
       </View>
@@ -1837,7 +1845,7 @@ const ShelterSheet = ({ shelter, onClose, onNavigate }: {
 };
 
 // ─── Styles ────────────────────────────────────────────────
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
 
@@ -1847,17 +1855,17 @@ const styles = StyleSheet.create({
   searchRow: { marginTop: 8 },
   searchBar: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 14, height: 48,
+    backgroundColor: colors.card, borderRadius: 14, paddingHorizontal: 14, height: 48,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4,
   },
-  searchInput: { flex: 1, marginLeft: 8, fontSize: 14, color: theme.colors.text },
+  searchInput: { flex: 1, marginLeft: 8, fontSize: 14, color: colors.text },
   routeBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginTop: 8,
     marginRight: 56,
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: 13,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -1871,7 +1879,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1879,12 +1887,12 @@ const styles = StyleSheet.create({
   routeBannerTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: theme.colors.text,
+    color: colors.text,
   },
   routeBannerSub: {
     marginTop: 2,
     fontSize: 10,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
   },
   routeBannerClose: {
     width: 28,
@@ -1892,7 +1900,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.borderLight,
   },
 
   filterScrollView: { marginRight: 60 },
@@ -1900,8 +1908,8 @@ const styles = StyleSheet.create({
   filterRow: { paddingTop: 10, paddingBottom: 4, gap: 8, paddingRight: 16 },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 7,
-    borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB',
+    backgroundColor: colors.card, paddingHorizontal: 12, paddingVertical: 7,
+    borderRadius: 20, borderWidth: 1, borderColor: colors.border,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3, elevation: 2,
   },
   chipText: { fontSize: 12, fontWeight: '600' },
@@ -1912,52 +1920,52 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: Platform.select({ ios: 100, android: 80 }), right: 16,
   },
   fab: {
-    width: 48, height: 48, borderRadius: 24, backgroundColor: '#fff',
+    width: 48, height: 48, borderRadius: 24, backgroundColor: colors.card,
     justifyContent: 'center', alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 6, elevation: 4,
   },
 
   loadingOverlay: { position: 'absolute', top: 140, left: 0, right: 0, alignItems: 'center', zIndex: 10 },
-  loadingBox: { backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, elevation: 3 },
-  loadingText: { fontSize: 13, color: theme.colors.textSecondary, textAlign: 'center', paddingVertical: 12 },
+  loadingBox: { backgroundColor: colors.card, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, elevation: 3 },
+  loadingText: { fontSize: 13, color: colors.textSecondary, textAlign: 'center', paddingVertical: 12 },
 
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 100 },
   bottomSheet: {
     position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 101,
-    backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    backgroundColor: colors.card, borderTopLeftRadius: 20, borderTopRightRadius: 20,
     paddingHorizontal: 20, paddingBottom: Platform.select({ ios: 34, android: 20 }),
     shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 10,
   },
-  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: '#E5E7EB', alignSelf: 'center', marginVertical: 12 },
+  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginVertical: 12 },
 
   sheetHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
-  sheetTitle: { fontSize: 17, fontWeight: '700', color: theme.colors.text, marginBottom: 2 },
-  sheetSub: { fontSize: 12, color: theme.colors.textSecondary },
-  closeBtn: { padding: 6, borderRadius: 20, backgroundColor: '#F3F4F6' },
+  sheetTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 2 },
+  sheetSub: { fontSize: 12, color: colors.textSecondary },
+  closeBtn: { padding: 6, borderRadius: 20, backgroundColor: colors.borderLight },
 
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   badgeText: { fontSize: 12, fontWeight: '600' },
   dot: { width: 6, height: 6, borderRadius: 3 },
 
-  descText: { fontSize: 14, color: theme.colors.textSecondary, lineHeight: 20, marginBottom: 12 },
+  descText: { fontSize: 14, color: colors.textSecondary, lineHeight: 20, marginBottom: 12 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
-  infoText: { flex: 1, fontSize: 13, color: theme.colors.textSecondary },
-  thumb: { width: 160, height: 100, borderRadius: 10, marginRight: 10, backgroundColor: '#F3F4F6' },
+  infoText: { flex: 1, fontSize: 13, color: colors.textSecondary },
+  thumb: { width: 160, height: 100, borderRadius: 10, marginRight: 10, backgroundColor: colors.borderLight },
   incidentMediaScroll: { marginBottom: 12 },
   incidentHeroImage: {
     width: 280,
     height: 132,
     borderRadius: 14,
     marginRight: 10,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.borderLight,
   },
 
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    marginTop: 16, paddingVertical: 12, backgroundColor: theme.colors.primary + '10', borderRadius: 12,
+    marginTop: 16, paddingVertical: 12, backgroundColor: colors.primary + '10', borderRadius: 12,
   },
-  actionBtnText: { fontSize: 14, fontWeight: '600', color: theme.colors.primary },
+  actionBtnText: { fontSize: 14, fontWeight: '600', color: colors.primary },
 
   aiPanel: {
     backgroundColor: '#0F0F1A', borderRadius: 12, padding: 14, marginBottom: 12,
@@ -1995,7 +2003,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -2004,7 +2012,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#f3f4f6',
+    borderColor: colors.border,
   },
   legendBtn: {
     flexDirection: 'row',
@@ -2013,19 +2021,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#f3f4f6',
+    borderColor: colors.border,
   },
   legendBtnText: {
     fontSize: 11,
     fontWeight: '600',
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
   },
 
   // ─── Layer Panel ──────────────────────────────────────────
@@ -2033,7 +2041,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Platform.select({ ios: 100, android: 90 }),
     right: 64,
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -2050,14 +2058,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-    backgroundColor: '#fafafa',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.backgroundSecondary,
   },
   layerPanelTitle: {
     flex: 1,
     fontSize: 13,
     fontWeight: '700',
-    color: theme.colors.text,
+    color: colors.text,
   },
   layerPanelClose: {
     padding: 4,
@@ -2097,7 +2105,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: Platform.select({ ios: 110, android: 90 }),
     left: 12,
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -2111,7 +2119,7 @@ const styles = StyleSheet.create({
   legendTitle: {
     fontSize: 10,
     fontWeight: '700',
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     letterSpacing: 1,
     paddingHorizontal: 14,
     paddingTop: 12,
@@ -2127,7 +2135,7 @@ const styles = StyleSheet.create({
   legendSectionTitle: {
     fontSize: 10,
     fontWeight: '600',
-    color: theme.colors.textTertiary,
+    color: colors.textTertiary,
     marginBottom: 6,
   },
   legendItem: {
@@ -2154,7 +2162,7 @@ const styles = StyleSheet.create({
   },
   legendItemText: {
     fontSize: 11,
-    color: theme.colors.text,
+    color: colors.text,
   },
 
   // ─── Search Suggestions Dropdown ──────────────────────────
@@ -2163,7 +2171,7 @@ const styles = StyleSheet.create({
     top: 54,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: 16,
     maxHeight: 280,
     shadowColor: '#000',
@@ -2172,7 +2180,7 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: colors.border,
     overflow: 'hidden',
     zIndex: 9999,
   },
@@ -2188,7 +2196,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f8fafc',
+    borderBottomColor: colors.borderLight,
   },
   suggestionIconBg: {
     width: 32,
@@ -2204,12 +2212,12 @@ const styles = StyleSheet.create({
   suggestionTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1e293b',
+    color: colors.text,
     marginBottom: 2,
   },
   suggestionSubtitle: {
     fontSize: 11,
-    color: '#64748b',
+    color: colors.textSecondary,
   },
 });
 

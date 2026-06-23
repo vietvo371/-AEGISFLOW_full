@@ -19,10 +19,13 @@ import {
 } from 'react-native-responsive-screen';
 import api from '../../utils/Api';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 const UpdatePasswordScreen = () => {
   const navigation = useNavigation();
   const { t } = useTranslation();
+  const { colors, isDark, theme } = useAppTheme();
+  const styles = getStyles(colors, isDark, theme);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -60,9 +63,9 @@ const UpdatePasswordScreen = () => {
 
   const getPasswordStrength = (password: string) => {
     if (password.length === 0) return null;
-    if (password.length < 6) return { level: 'weak', color: '#FF6B6B' };
-    if (password.length < 10) return { level: 'medium', color: '#FFA726' };
-    return { level: 'strong', color: '#4CAF50' };
+    if (password.length < 6) return { level: 'weak', color: colors.error };
+    if (password.length < 10) return { level: 'medium', color: colors.warning };
+    return { level: 'strong', color: colors.success };
   };
 
   const performUpdatePassword = async () => {
@@ -165,7 +168,7 @@ const UpdatePasswordScreen = () => {
               }
             }}
             placeholder={placeholder}
-            placeholderTextColor="#999"
+            placeholderTextColor={isDark ? colors.textTertiary : '#999'}
             secureTextEntry={!showPassword}
             autoCapitalize="none"
           />
@@ -176,7 +179,7 @@ const UpdatePasswordScreen = () => {
             <Icon
               name={showPassword ? "eye-off" : "eye"}
               size={20}
-              color="#666"
+              color={colors.textSecondary}
             />
           </TouchableOpacity>
         </View>
@@ -204,7 +207,7 @@ const UpdatePasswordScreen = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-left" size={24} color="#000" />
+          <Icon name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('changePassword.title')}</Text>
         <TouchableOpacity
@@ -213,7 +216,7 @@ const UpdatePasswordScreen = () => {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator size="small" color="#4A90E2" />
+            <ActivityIndicator size="small" color={colors.primary} />
           ) : (
             <Text style={styles.saveText}>Save</Text>
           )}
@@ -249,7 +252,7 @@ const UpdatePasswordScreen = () => {
         )}
 
         <View style={styles.infoBox}>
-          <Icon name="information" size={20} color="#666" />
+          <Icon name="information" size={20} color={colors.textSecondary} />
           <Text style={styles.infoText}>
             {t('changePassword.enterStrongPassword')}
           </Text>
@@ -259,10 +262,10 @@ const UpdatePasswordScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -271,7 +274,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    borderBottomColor: colors.border,
   },
   backButton: {
     padding: 4,
@@ -279,14 +282,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: wp('4.5%'),
     fontWeight: '600',
-    color: '#000',
+    color: colors.text,
   },
   saveButton: {
     padding: 8,
   },
   saveText: {
     fontSize: wp('4%'),
-    color: '#4A90E2',
+    color: colors.primary,
     fontWeight: '600',
   },
   saveButtonDisabled: {
@@ -301,7 +304,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: wp('3.5%'),
-    color: '#000',
+    color: colors.text,
     fontWeight: '500',
     marginBottom: 8,
   },
@@ -311,12 +314,12 @@ const styles = StyleSheet.create({
   passwordInput: {
     padding: 12,
     paddingRight: 50,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: colors.border,
     fontSize: wp('4%'),
-    color: '#000',
+    color: colors.text,
   },
   eyeButton: {
     position: 'absolute',
@@ -325,12 +328,12 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   inputError: {
-    borderColor: '#FF6B6B',
+    borderColor: colors.error,
     borderWidth: 1,
   },
   errorText: {
     fontSize: wp('3%'),
-    color: '#FF6B6B',
+    color: colors.error,
     marginTop: 4,
     marginLeft: 4,
   },
@@ -341,7 +344,7 @@ const styles = StyleSheet.create({
   },
   passwordStrengthLabel: {
     fontSize: wp('3%'),
-    color: '#666',
+    color: colors.textSecondary,
     marginRight: 8,
   },
   passwordStrengthText: {
@@ -350,7 +353,7 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     flexDirection: 'row',
-    backgroundColor: '#F2F2F7',
+    backgroundColor: colors.backgroundSecondary,
     padding: 12,
     borderRadius: 8,
     marginTop: 24,
@@ -358,7 +361,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: wp('3.5%'),
-    color: '#666',
+    color: colors.textSecondary,
     marginLeft: 8,
   },
 });

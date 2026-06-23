@@ -1,12 +1,10 @@
 import * as React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme, TAB_BAR } from '../theme';
 import { RootStackParamList, CitizenTabParamList, EmergencyTabParamList } from './types';
 import CustomTabBar from '../components/navigation/CustomTabBar';
-import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../hooks/useTranslation';
 
 // Auth flow
@@ -23,7 +21,6 @@ import PhoneVerificationScreen from '../screens/auth/PhoneVerificationScreen';
 // Main screens
 import HomeScreen from '../screens/main/HomeScreen';
 import MapScreen from '../screens/main/MapScreen';
-import ReportsScreen from '../screens/main/ReportsScreen';
 import AlertsScreen from '../screens/main/AlertsScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 
@@ -56,7 +53,6 @@ import HelpCenterScreen from '../screens/settings/HelpCenterScreen';
 import AboutScreen from '../screens/settings/AboutScreen';
 
 // Emergency Module
-import EmergencyIncidentsScreen from '../screens/emergency/EmergencyIncidentsScreen';
 import MissionListScreen from '../screens/emergency/MissionListScreen';
 import PriorityRouteScreen from '../screens/emergency/PriorityRouteScreen';
 import EmergencyProfileScreen from '../screens/emergency/EmergencyProfileScreen';
@@ -72,14 +68,7 @@ import WeatherDetailScreen from '../screens/weather/WeatherDetailScreen';
 import ShelterListScreen from '../screens/shelter/ShelterListScreen';
 import SensorDetailScreen from '../screens/sensor/SensorDetailScreen';
 
-// Placeholder for screens being developed
-const PlaceholderScreen = ({ route }: any) => (
-  <View style={styles.placeholder}>
-    <Icon name="hammer-wrench" size={48} color={theme.colors.primary} />
-    <Text style={styles.placeholderText}>{route.name}</Text>
-    <Text style={styles.placeholderSubtext}>Đang phát triển</Text>
-  </View>
-);
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const CitizenTab = createBottomTabNavigator<CitizenTabParamList>();
@@ -145,35 +134,35 @@ const CitizenTabs = () => {
         name="ReportDetail"
         component={ReportDetailScreen}
         options={{
-          title: 'Chi tiết',
+          title: t('reports.reportDetail', 'Chi tiết phản ánh'),
         }}
       />
       <CitizenTab.Screen
         name="CreateReport"
         component={CreateReportScreen}
         options={{
-          title: 'Tạo phản ánh mới',
+          title: t('reports.createReport', 'Tạo phản ánh mới'),
         }}
       />
       <CitizenTab.Screen
         name="Notifications"
         component={NotificationsScreen}
         options={{
-          title: 'Thông báo',
+          title: t('profile.notifications', 'Thông báo'),
         }}
       />
       <CitizenTab.Screen
         name="EditReport"
         component={EditReportScreen}
         options={{
-          title: 'Chỉnh sửa phản ánh',
+          title: t('reports.editReport', 'Chỉnh sửa phản ánh'),
         }}
       />
       <CitizenTab.Screen
         name="MyReports"
         component={MyReportsScreen}
         options={{
-          title: 'Báo cáo của tôi',
+          title: t('reports.myReports', 'Báo cáo của tôi'),
         }}
       />
     </CitizenTab.Navigator>
@@ -312,24 +301,6 @@ const MainNavigator = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  placeholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.colors.white,
-    padding: 20,
-    gap: 12,
-  },
-  placeholderText: {
-    fontSize: 24,
-    fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.text,
-  },
-  placeholderSubtext: {
-    fontSize: 16,
-    color: theme.colors.textSecondary,
-  },
-});
+
 
 export default MainNavigator;

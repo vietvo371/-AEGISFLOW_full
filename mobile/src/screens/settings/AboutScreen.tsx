@@ -1,14 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import PageHeader from '../../component/PageHeader';
-import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING } from '../../theme';
+import { SPACING, FONT_SIZE, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING } from '../../theme';
 import { useTranslation } from 'react-i18next';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 const AboutScreen = () => {
     const navigation = useNavigation();
     const { t } = useTranslation();
+    const { colors, isDark } = useAppTheme();
+    const styles = getStyles(colors, isDark);
 
     const appInfo = {
         name: 'AegisFlow AI',
@@ -45,7 +48,7 @@ const AboutScreen = () => {
                 {/* App Logo & Info */}
                 <View style={styles.logoSection}>
                     <View style={styles.logoContainer}>
-                        <Icon name="city-variant" size={64} color={theme.colors.primary} />
+                        <Icon name="city-variant" size={64} color={colors.primary} />
                     </View>
                     <Text style={styles.appName}>{appInfo.name}</Text>
                     <Text style={styles.appVersion}>{t('aboutScreen.version', `Version ${appInfo.version} (${appInfo.buildNumber})`, { version: appInfo.version, build: appInfo.buildNumber })}</Text>
@@ -59,7 +62,7 @@ const AboutScreen = () => {
                         {features.map((feature, index) => (
                             <View key={index} style={styles.featureCard}>
                                 <View style={styles.featureIconContainer}>
-                                    <Icon name={feature.icon} size={ICON_SIZE.lg} color={theme.colors.primary} />
+                                    <Icon name={feature.icon} size={ICON_SIZE.lg} color={colors.primary} />
                                 </View>
                                 <Text style={styles.featureTitle}>{feature.title}</Text>
                                 <Text style={styles.featureDescription}>{feature.description}</Text>
@@ -70,7 +73,7 @@ const AboutScreen = () => {
 
                 {/* Mission */}
                 <View style={styles.missionSection}>
-                    <Icon name="target" size={ICON_SIZE.xl} color={theme.colors.primary} />
+                    <Icon name="target" size={ICON_SIZE.xl} color={colors.primary} />
                     <Text style={styles.missionTitle}>{t('aboutScreen.ourMission', 'Our Mission')}</Text>
                     <Text style={styles.missionText}>
                         {t('aboutScreen.missionText', 'Building a smart city, connecting residents with authorities to solve urban issues together quickly and effectively.')}
@@ -87,12 +90,12 @@ const AboutScreen = () => {
                                 style={styles.contactItem}
                                 onPress={() => Linking.openURL(`mailto:${member.email}`)}
                             >
-                                <Icon name="email-outline" size={ICON_SIZE.md} color={theme.colors.primary} />
+                                <Icon name="email-outline" size={ICON_SIZE.md} color={colors.primary} />
                                 <View style={styles.contactInfo}>
                                     <Text style={styles.contactName}>{member.name}</Text>
                                     <Text style={styles.contactEmail}>{member.email}</Text>
                                 </View>
-                                <Icon name="chevron-right" size={ICON_SIZE.sm} color={theme.colors.textSecondary} />
+                                <Icon name="chevron-right" size={ICON_SIZE.sm} color={colors.textSecondary} />
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -108,7 +111,7 @@ const AboutScreen = () => {
                                 style={styles.socialButton}
                                 onPress={() => Linking.openURL(social.url)}
                             >
-                                <Icon name={social.icon} size={ICON_SIZE.lg} color={theme.colors.white} />
+                                <Icon name={social.icon} size={ICON_SIZE.lg} color="#FFFFFF" />
                                 <Text style={styles.socialName}>{social.name}</Text>
                             </TouchableOpacity>
                         ))}
@@ -141,26 +144,28 @@ const AboutScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: theme.colors.background,
+        backgroundColor: colors.backgroundSecondary,
     },
     content: {
         flex: 1,
     },
     logoSection: {
         alignItems: 'center',
-        backgroundColor: theme.colors.white,
+        backgroundColor: colors.card,
         padding: SCREEN_PADDING.horizontal,
         paddingVertical: SPACING.xl * 2,
         marginBottom: SPACING.md,
+        borderBottomWidth: 1,
+        borderColor: colors.borderLight,
     },
     logoContainer: {
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: theme.colors.primary + '15',
+        backgroundColor: colors.primary + '15',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: SPACING.md,
@@ -168,29 +173,31 @@ const styles = StyleSheet.create({
     appName: {
         fontSize: FONT_SIZE['2xl'],
         fontWeight: '700',
-        color: theme.colors.text,
+        color: colors.text,
         marginBottom: SPACING.xs,
     },
     appVersion: {
         fontSize: FONT_SIZE.sm,
-        color: theme.colors.textSecondary,
+        color: colors.textSecondary,
         marginBottom: SPACING.md,
     },
     appDescription: {
         fontSize: FONT_SIZE.md,
-        color: theme.colors.textSecondary,
+        color: colors.textSecondary,
         textAlign: 'center',
         lineHeight: 22,
     },
     section: {
-        backgroundColor: theme.colors.white,
+        backgroundColor: colors.card,
         padding: SCREEN_PADDING.horizontal,
         marginBottom: SPACING.md,
+        borderWidth: isDark ? 1 : 0,
+        borderColor: colors.border,
     },
     sectionTitle: {
         fontSize: FONT_SIZE.lg,
         fontWeight: '600',
-        color: theme.colors.text,
+        color: colors.text,
         marginBottom: SPACING.md,
     },
     featureGrid: {
@@ -201,16 +208,18 @@ const styles = StyleSheet.create({
     featureCard: {
         flex: 1,
         minWidth: '45%',
-        backgroundColor: theme.colors.backgroundSecondary,
+        backgroundColor: colors.background,
         borderRadius: BORDER_RADIUS.md,
         padding: SPACING.md,
         alignItems: 'center',
+        borderWidth: isDark ? 1 : 0,
+        borderColor: colors.borderLight,
     },
     featureIconContainer: {
         width: 56,
         height: 56,
         borderRadius: 28,
-        backgroundColor: theme.colors.primary + '15',
+        backgroundColor: colors.primary + '15',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: SPACING.sm,
@@ -218,18 +227,18 @@ const styles = StyleSheet.create({
     featureTitle: {
         fontSize: FONT_SIZE.sm,
         fontWeight: '600',
-        color: theme.colors.text,
+        color: colors.text,
         marginBottom: 4,
         textAlign: 'center',
     },
     featureDescription: {
         fontSize: FONT_SIZE.xs,
-        color: theme.colors.textSecondary,
+        color: colors.textSecondary,
         textAlign: 'center',
         lineHeight: 16,
     },
     missionSection: {
-        backgroundColor: theme.colors.primary + '10',
+        backgroundColor: colors.primary + '10',
         padding: SCREEN_PADDING.horizontal,
         paddingVertical: SPACING.xl,
         marginHorizontal: SCREEN_PADDING.horizontal,
@@ -240,13 +249,13 @@ const styles = StyleSheet.create({
     missionTitle: {
         fontSize: FONT_SIZE.lg,
         fontWeight: '700',
-        color: theme.colors.text,
+        color: colors.text,
         marginTop: SPACING.md,
         marginBottom: SPACING.sm,
     },
     missionText: {
         fontSize: FONT_SIZE.sm,
-        color: theme.colors.textSecondary,
+        color: colors.textSecondary,
         textAlign: 'center',
         lineHeight: 22,
     },
@@ -257,7 +266,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: SPACING.md,
-        backgroundColor: theme.colors.backgroundSecondary,
+        backgroundColor: colors.background,
         borderRadius: BORDER_RADIUS.md,
         gap: SPACING.md,
     },
@@ -267,12 +276,12 @@ const styles = StyleSheet.create({
     contactName: {
         fontSize: FONT_SIZE.md,
         fontWeight: '600',
-        color: theme.colors.text,
+        color: colors.text,
         marginBottom: 2,
     },
     contactEmail: {
         fontSize: FONT_SIZE.sm,
-        color: theme.colors.primary,
+        color: colors.primary,
     },
     socialGrid: {
         flexDirection: 'row',
@@ -282,7 +291,7 @@ const styles = StyleSheet.create({
     socialButton: {
         flex: 1,
         minWidth: '45%',
-        backgroundColor: theme.colors.primary,
+        backgroundColor: colors.primary,
         borderRadius: BORDER_RADIUS.md,
         padding: SPACING.md,
         alignItems: 'center',
@@ -291,7 +300,7 @@ const styles = StyleSheet.create({
     socialName: {
         fontSize: FONT_SIZE.sm,
         fontWeight: '600',
-        color: theme.colors.white,
+        color: '#FFFFFF',
     },
     legalSection: {
         flexDirection: 'row',
@@ -305,16 +314,16 @@ const styles = StyleSheet.create({
     },
     legalText: {
         fontSize: FONT_SIZE.sm,
-        color: theme.colors.primary,
+        color: colors.primary,
         fontWeight: '500',
     },
     legalDivider: {
         fontSize: FONT_SIZE.sm,
-        color: theme.colors.textSecondary,
+        color: colors.textSecondary,
     },
     copyright: {
         fontSize: FONT_SIZE.xs,
-        color: theme.colors.textSecondary,
+        color: colors.textSecondary,
         textAlign: 'center',
         paddingBottom: SPACING.xl,
     },

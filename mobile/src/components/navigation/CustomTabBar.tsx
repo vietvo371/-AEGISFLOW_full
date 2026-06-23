@@ -1,396 +1,395 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Platform, Animated, Modal, TouchableWithoutFeedback } from 'react-native';
+import {
+  View, TouchableOpacity, Text, StyleSheet,
+  Platform, Animated, Modal, TouchableWithoutFeedback,
+} from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme, SPACING, BORDER_RADIUS, TAB_BAR } from '../../theme';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useAppTheme } from '../../contexts/ThemeContext';
+
+const IOS_HOME_INDICATOR_SAFE = 34;
 
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
-    const { t } = useTranslation();
-    const insets = useSafeAreaInsets();
-    const bottomInset = Platform.OS === 'ios' ? Math.max(insets.bottom, 12) : 12;
-    const [actionSheetVisible, setActionSheetVisible] = useState(false);
-    
-    // Check if we are in Emergency mode by looking for emergency-specific routes
-    const isEmergency = state.routes.some(route =>
-        ['SituationMap', 'Incidents', 'PriorityRoute'].includes(route.name)
-    );
-    const activeRouteName = state.routes[state.index]?.name;
-    const shouldHideTabBar = [
-        'SOS',
-        'CreateReport',
-        'MyReports',
-        'EditReport',
-        'ReportDetail',
-        'Notifications'
-    ].includes(activeRouteName);
+  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const { colors, isDark } = useAppTheme();
 
-    if (shouldHideTabBar) {
-        return null;
-    }
-    
-    // Emergency Color (Red theme)
-    const emergencyActiveColor = '#EF4444'; // Red-500
-    const emergencyBgColor = 'rgba(239, 68, 68, 0.1)'; // Light Red transparent
+  const safeBottom = Platform.OS === 'ios'
+    ? Math.max(insets.bottom, IOS_HOME_INDICATOR_SAFE)
+    : Math.max(insets.bottom, 8);
 
-    const handleActionSelect = (route: string) => {
-        setActionSheetVisible(false);
-        navigation.navigate(route);
-    };
+  const [actionSheetVisible, setActionSheetVisible] = useState(false);
 
-    return (
-        <View style={styles.container}>
-            <View style={[
-                styles.tabBar,
-                {
-                    paddingBottom: bottomInset,
-                    minHeight: 64 + bottomInset,
-                },
-            ]}>
-                {state.routes.map((route, index) => {
-                    const { options } = descriptors[route.key];
-                    const label = options.tabBarLabel !== undefined
-                        ? options.tabBarLabel
-                        : options.title !== undefined
-                            ? options.title
-                            : route.name;
+  const isEmergency = state.routes.some(r =>
+    ['SituationMap', 'Incidents', 'PriorityRoute'].includes(r.name)
+  );
+  const activeRouteName = state.routes[state.index]?.name;
+  const HIDDEN_SCREENS = [
+    'SOS', 'CreateReport', 'MyReports',
+    'EditReport', 'ReportDetail', 'Notifications',
+  ];
 
-                    // Map active nested sub-screens to highlight their parent tabs
-                    let isFocused = state.index === index;
-                    if (!isFocused) {
-                        if (route.name === 'Home') {
-                            isFocused = ['Notifications', 'ReportDetail', 'CreateReport', 'EditReport'].includes(activeRouteName);
-                        } else if (route.name === 'Profile') {
-                            isFocused = ['MyReports'].includes(activeRouteName);
-                        }
-                    }
+  if (HIDDEN_SCREENS.includes(activeRouteName)) return null;
 
-                    // Hidden tabs that should not render a button in the tab bar
-                    const HIDDEN_SCREENS = [
-                        'SOS',
-                        'ReportDetail',
-                        'CreateReport',
-                        'Notifications',
-                        'EditReport',
-                        'MyReports'
-                    ];
+  const emergencyActiveColor = '#EF4444';
+  const emergencyBgColor = 'rgba(239, 68, 68, 0.1)';
 
-                    if (HIDDEN_SCREENS.includes(route.name)) {
-                        // Special check: index 2 (which is 'SOS') is used for the placeholder in citizen mode
-                        if (!isEmergency && route.name === 'SOS') {
-                            return <View key={route.key} style={styles.tabItemPlaceholder} />;
-                        }
-                        return null;
-                    }
+  const handleActionSelect = (route: string) => {
+    setActionSheetVisible(false);
+    navigation.navigate(route);
+  };
 
-                    const onPress = () => {
-                        const event = navigation.emit({
-                            type: 'tabPress',
-                            target: route.key,
-                            canPreventDefault: true,
-                        });
+  const TAB_VISIBLE_HEIGHT = 56;
 
-                        if (!isFocused && !event.defaultPrevented) {
-                            navigation.navigate(route.name);
-                        }
-                    };
+  return (
+    <View style={styles.wrapper}>
+      {/* Tab bar body */}
+      <View style={[
+        styles.tabBar,
+        {
+          paddingBottom: safeBottom,
+          height: TAB_VISIBLE_HEIGHT + safeBottom,
+          backgroundColor: isDark ? colors.card : colors.white,
+          borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+        },
+      ]}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label =
+            options.tabBarLabel !== undefined ? options.tabBarLabel
+              : options.title !== undefined ? options.title
+                : route.name;
 
-                    const onLongPress = () => {
-                        navigation.emit({
-                            type: 'tabLongPress',
-                            target: route.key,
-                        });
-                    };
+          let isFocused = state.index === index;
+          if (!isFocused) {
+            if (route.name === 'Home') {
+              isFocused = ['Notifications', 'ReportDetail', 'CreateReport', 'EditReport'].includes(activeRouteName);
+            } else if (route.name === 'Profile') {
+              isFocused = ['MyReports'].includes(activeRouteName);
+            }
+          }
 
-                    const primaryColor = isEmergency ? emergencyActiveColor : theme.colors.primary;
+          if (HIDDEN_SCREENS.includes(route.name)) {
+            if (!isEmergency && route.name === 'SOS') {
+              return <View key={route.key} style={styles.tabItemPlaceholder} />;
+            }
+            return null;
+          }
 
-                    return (
-                        <TouchableOpacity
-                            key={route.key}
-                            accessibilityRole="button"
-                            accessibilityState={isFocused ? { selected: true } : {}}
-                            accessibilityLabel={options.tabBarAccessibilityLabel}
-                            onPress={onPress}
-                            onLongPress={onLongPress}
-                            style={styles.tabItem}
-                            activeOpacity={0.7}
-                        >
-                            <Animated.View style={[
-                                styles.iconContainer,
-                                isFocused && {
-                                    backgroundColor: isEmergency ? emergencyBgColor : `${theme.colors.primary}15`,
-                                }
-                            ]}>
-                                {options.tabBarIcon && options.tabBarIcon({
-                                    focused: isFocused,
-                                    color: isFocused ? primaryColor : theme.colors.textSecondary,
-                                    size: isFocused ? TAB_BAR.iconSize + 2 : TAB_BAR.iconSize
-                                })}
-                            </Animated.View>
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress', target: route.key, canPreventDefault: true,
+            });
+            if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name);
+          };
 
-                            <Text style={[
-                                styles.tabLabel,
-                                { color: isFocused ? primaryColor : theme.colors.textSecondary },
-                                isFocused ? styles.tabLabelActive : styles.tabLabelInactive,
-                            ]}>
-                                {typeof label === 'string' ? label : ''}
-                            </Text>
-                        </TouchableOpacity>
-                    );
-                })}
-            </View>
+          const onLongPress = () => navigation.emit({ type: 'tabLongPress', target: route.key });
+          const primaryColor = isEmergency ? emergencyActiveColor : colors.primary;
 
-            {/* FAB Button - Opens Action Sheet */}
-            {!isEmergency && (
-                <View style={styles.floatingButtonContainer}>
-                    <TouchableOpacity
-                        style={styles.floatingButton}
-                        onPress={() => setActionSheetVisible(true)}
-                        activeOpacity={0.8}
-                    >
-                        <LinearGradient
-                            colors={theme.colors.gradientPrimary}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={styles.floatingButtonGradient}
-                        >
-                            <Icon name="plus" size={32} color={theme.colors.white} />
-                        </LinearGradient>
-                    </TouchableOpacity>
-                </View>
-            )}
-
-            {/* Action Sheet Modal */}
-            <Modal
-                visible={actionSheetVisible}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setActionSheetVisible(false)}
+          return (
+            <TouchableOpacity
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              style={styles.tabItem}
+              activeOpacity={0.7}
             >
-                <TouchableWithoutFeedback onPress={() => setActionSheetVisible(false)}>
-                    <View style={styles.modalOverlay}>
-                        <TouchableWithoutFeedback>
-                            <View style={[styles.actionSheet, { paddingBottom: Math.max(insets.bottom, 20) }]}>
-                                <View style={styles.dragIndicator} />
-                                <Text style={styles.actionSheetTitle}>{t('citizen.sos.sheetQuestion')}</Text>
-                                
-                                <TouchableOpacity 
-                                    style={[styles.actionButton, styles.sosButton]} 
-                                    onPress={() => handleActionSelect('SOS')}
-                                    activeOpacity={0.8}
-                                >
-                                    <View style={styles.sosIconContainer}>
-                                        <Icon name="phone-alert" size={28} color={theme.colors.white} />
-                                    </View>
-                                    <View style={styles.actionTextContainer}>
-                                        <Text style={styles.sosTitle}>{t('citizen.sos.sheetSosTitle')}</Text>
-                                        <Text style={styles.actionDescription}>{t('citizen.sos.sheetSosDesc')}</Text>
-                                    </View>
-                                    <Icon name="chevron-right" size={24} color="#EF4444" />
-                                </TouchableOpacity>
+              <Animated.View style={[
+                styles.iconContainer,
+                isFocused && {
+                  backgroundColor: isEmergency ? emergencyBgColor : `${colors.primary}20`,
+                },
+              ]}>
+                {options.tabBarIcon?.({
+                  focused: isFocused,
+                  color: isFocused ? primaryColor : colors.textSecondary,
+                  size: isFocused ? TAB_BAR.iconSize + 2 : TAB_BAR.iconSize,
+                })}
+              </Animated.View>
+              <Text style={[
+                styles.tabLabel,
+                { color: isFocused ? primaryColor : colors.textSecondary },
+                isFocused ? styles.tabLabelActive : styles.tabLabelInactive,
+              ]}>
+                {typeof label === 'string' ? label : ''}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
-                                <TouchableOpacity 
-                                    style={styles.actionButton} 
-                                    onPress={() => handleActionSelect('CreateReport')}
-                                    activeOpacity={0.8}
-                                >
-                                    <View style={styles.reportIconContainer}>
-                                        <Icon name="image-search" size={28} color={theme.colors.primary} />
-                                    </View>
-                                    <View style={styles.actionTextContainer}>
-                                        <Text style={styles.reportTitle}>{t('citizen.sos.sheetReportTitle')}</Text>
-                                        <Text style={styles.actionDescription}>{t('citizen.sos.sheetReportDesc')}</Text>
-                                    </View>
-                                    <Icon name="chevron-right" size={24} color={theme.colors.textSecondary} />
-                                </TouchableOpacity>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </View>
-                </TouchableWithoutFeedback>
-            </Modal>
+      {/* FAB */}
+      {!isEmergency && (
+        <View style={[styles.floatingButtonContainer, { bottom: TAB_VISIBLE_HEIGHT + safeBottom - TAB_VISIBLE_HEIGHT / 2 - 34 }]}>
+          <TouchableOpacity
+            style={[
+              styles.floatingButton,
+              { backgroundColor: isDark ? colors.card : colors.white },
+            ]}
+            onPress={() => setActionSheetVisible(true)}
+            activeOpacity={0.85}
+          >
+            <LinearGradient
+              colors={colors.gradientPrimary}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.floatingButtonGradient}
+            >
+              <Icon name="plus" size={30} color={colors.white} />
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
-    );
+      )}
+
+      {/* Action Sheet */}
+      <Modal
+        visible={actionSheetVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setActionSheetVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setActionSheetVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={[
+                styles.actionSheet,
+                {
+                  backgroundColor: isDark ? colors.card : colors.white,
+                  paddingBottom: Math.max(insets.bottom, 24),
+                },
+              ]}>
+                <View style={[styles.dragIndicator, { backgroundColor: isDark ? colors.border : '#D1D5DB' }]} />
+                <Text style={[styles.actionSheetTitle, { color: colors.text }]}>
+                  {t('citizen.sos.sheetQuestion')}
+                </Text>
+
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.sosButton]}
+                  onPress={() => handleActionSelect('SOS')}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.sosIconContainer}>
+                    <Icon name="phone-alert" size={26} color={colors.white} />
+                  </View>
+                  <View style={styles.actionTextContainer}>
+                    <Text style={styles.sosTitle}>{t('citizen.sos.sheetSosTitle')}</Text>
+                    <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>
+                      {t('citizen.sos.sheetSosDesc')}
+                    </Text>
+                  </View>
+                  <Icon name="chevron-right" size={22} color="#EF4444" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.actionButton,
+                    {
+                      backgroundColor: isDark ? colors.backgroundSecondary : '#F9FAFB',
+                      borderColor: isDark ? colors.border : '#E5E7EB',
+                    },
+                  ]}
+                  onPress={() => handleActionSelect('CreateReport')}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.reportIconContainer}>
+                    <Icon name="image-search" size={26} color={colors.primary} />
+                  </View>
+                  <View style={styles.actionTextContainer}>
+                    <Text style={[styles.reportTitle, { color: colors.text }]}>
+                      {t('citizen.sos.sheetReportTitle')}
+                    </Text>
+                    <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>
+                      {t('citizen.sos.sheetReportDesc')}
+                    </Text>
+                  </View>
+                  <Icon name="chevron-right" size={22} color={colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        position: 'relative',
-        backgroundColor: 'transparent',
-    },
-    tabBar: {
-        flexDirection: 'row',
-        backgroundColor: theme.colors.white,
-        borderTopLeftRadius: BORDER_RADIUS['2xl'],
-        borderTopRightRadius: BORDER_RADIUS['2xl'],
-        paddingTop: 8,
-        paddingHorizontal: SPACING.sm,
-        alignItems: 'flex-start',
-        ...Platform.select({
-            ios: {
-                shadowColor: theme.colors.black,
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: 0.08,
-                shadowRadius: 12,
-            },
-            android: {
-                elevation: 16,
-            },
-        }),
-    },
-    tabItem: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 4,
-    },
-    tabItemPlaceholder: {
-        flex: 1,
-    },
-    iconContainer: {
-        paddingHorizontal: 16,
-        paddingVertical: 6,
-        borderRadius: BORDER_RADIUS.xl,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 4,
-    },
-    tabLabel: {
-        fontSize: 12,
-        marginTop: 2,
-    },
-    tabLabelActive: {
-        fontWeight: '600',
-    },
-    tabLabelInactive: {
-        fontWeight: '400',
-    },
-    floatingButtonContainer: {
-        position: 'absolute',
-        top: -30,
-        left: '50%',
-        marginLeft: -34,
-        alignItems: 'center',
-        zIndex: 10,
-    },
-    floatingButton: {
-        width: 68,
-        height: 68,
-        borderRadius: 34,
-        backgroundColor: theme.colors.white,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 4,
-        ...Platform.select({
-            ios: {
-                shadowColor: theme.colors.primary,
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.4,
-                shadowRadius: 12,
-            },
-            android: {
-                elevation: 10,
-            },
-        }),
-    },
-    floatingButtonGradient: {
-        width: '100%',
-        height: '100%',
-        borderRadius: 34,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        justifyContent: 'flex-end',
-    },
-    actionSheet: {
-        backgroundColor: theme.colors.white,
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingHorizontal: 20,
-        paddingTop: 12,
-    },
-    dragIndicator: {
-        width: 40,
-        height: 5,
-        backgroundColor: '#E5E5EA',
-        borderRadius: 3,
-        alignSelf: 'center',
-        marginBottom: 20,
-    },
-    actionSheetTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: theme.colors.text,
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    actionButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F9FAFB',
-        padding: 16,
-        borderRadius: 16,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-    },
-    sosButton: {
-        backgroundColor: '#FEF2F2',
-        borderColor: '#FCA5A5',
-    },
-    sosIconContainer: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        backgroundColor: '#EF4444',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 16,
-        ...Platform.select({
-            ios: {
-                shadowColor: '#EF4444',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-            },
-            android: {
-                elevation: 6,
-            },
-        }),
-    },
-    reportIconContainer: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        backgroundColor: '#EEF2FF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 16,
-    },
-    actionTextContainer: {
-        flex: 1,
-    },
-    sosTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#B91C1C',
-        marginBottom: 4,
-    },
-    reportTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: theme.colors.text,
-        marginBottom: 4,
-    },
-    actionDescription: {
-        fontSize: 13,
-        color: theme.colors.textSecondary,
-        lineHeight: 18,
-    },
+  wrapper: {
+    position: 'relative',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 8,
+    paddingHorizontal: SPACING.xs,
+    alignItems: 'flex-start',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 2,
+    paddingBottom: 0,
+  },
+  tabItemPlaceholder: {
+    flex: 1,
+  },
+  iconContainer: {
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: BORDER_RADIUS.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 3,
+  },
+  tabLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+  },
+  tabLabelActive: {
+    fontWeight: '600',
+  },
+  tabLabelInactive: {
+    fontWeight: '400',
+  },
+
+  // FAB
+  floatingButtonContainer: {
+    position: 'absolute',
+    alignSelf: 'center',
+    left: '50%',
+    marginLeft: -32,
+    zIndex: 20,
+  },
+  floatingButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#7a5af8',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
+  },
+  floatingButtonGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    justifyContent: 'flex-end',
+  },
+  actionSheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingTop: 14,
+  },
+  dragIndicator: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 18,
+  },
+  actionSheetTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 18,
+    textAlign: 'center',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#E5E7EB',
+  },
+  sosButton: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FCA5A5',
+  },
+  sosIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#EF4444',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.25,
+        shadowRadius: 6,
+      },
+      android: { elevation: 5 },
+    }),
+  },
+  reportIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  actionTextContainer: {
+    flex: 1,
+  },
+  sosTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#B91C1C',
+    marginBottom: 3,
+  },
+  reportTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 3,
+  },
+  actionDescription: {
+    fontSize: 12,
+    lineHeight: 17,
+  },
 });
 
 export default CustomTabBar;

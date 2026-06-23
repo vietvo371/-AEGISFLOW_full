@@ -1,26 +1,31 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  RefreshControl, Alert,
+  RefreshControl, Image, Platform, StatusBar, Modal, Alert
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import { theme, FONT_SIZE, SPACING, BORDER_RADIUS, ICON_SIZE, SCREEN_PADDING } from '../../theme';
+import { theme, SCREEN_PADDING } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAppTheme } from '../../contexts/ThemeContext';
 import { authService } from '../../services/authService';
 import { reportService } from '../../services/reportService';
-import { useNotifications } from '../../hooks/useNotifications';
+
+// Height of the visible portion of the tab bar (excluding safe area bottom)
+const TAB_VISIBLE_HEIGHT = 56;
 
 const ProfileScreen = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigation = useNavigation<any>();
   const { user: contextUser, signOut } = useAuth();
-  const { unreadCount } = useNotifications();
   const [user, setUser] = useState<any>(contextUser);
   const [refreshing, setRefreshing] = useState(false);
   const [reportCount, setReportCount] = useState(0);
+  const { themeMode, setThemeMode, isDark, colors } = useAppTheme();
+  const currentTheme = themeMode === 'dark' ? 'dark' : 'light';
+  const [showThemeModal, setShowThemeModal] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -61,161 +66,340 @@ const ProfileScreen = () => {
     );
   };
 
+  const handleThemePress = () => {
+    setShowThemeModal(true);
+  };
+
+  const getLanguageLabel = () => {
+    const code = i18n.language || 'vi';
+    if (code.startsWith('vi')) return 'Tiếng Việt';
+    if (code.startsWith('en')) return 'English';
+    if (code.startsWith('id')) return 'Bahasa Indonesia';
+    if (code.startsWith('ms')) return 'Bahasa Melayu';
+    if (code.startsWith('th')) return 'ไทย';
+    if (code.startsWith('tl')) return 'Filipino';
+    return 'Tiếng Việt';
+  };
+
   const currentUser = user || contextUser;
   const fullName = currentUser?.ho_ten || currentUser?.name || '';
   const initials = fullName
     ? fullName.split(' ').map((w: string) => w[0]).slice(-2).join('').toUpperCase()
     : '?';
 
-  const MENU_GROUP_1 = [
-    { id: 'myReports', icon: 'file-document-multiple-outline', label: t('citizen.profile.myReports', 'Phản ánh của tôi'), screen: 'MyReports', badge: reportCount > 0 ? reportCount : undefined },
-    { id: 'myRescue', icon: 'lifebuoy', label: t('citizen.profile.myRescue', 'Yêu cầu cứu hộ'), screen: 'MyRescueRequests' },
-    { id: 'notifications', icon: 'bell-outline', label: t('citizen.profile.notifications', 'Thông báo'), screen: 'Notifications', badge: unreadCount > 0 ? unreadCount : undefined },
+  const ACCOUNT_GROUP = [
+    { 
+      id: 'manageProfile', 
+      icon: 'account-outline', 
+      label: t('citizen.profile.manageProfile', 'Thông tin cá nhân'), 
+      onPress: () => navigation.navigate('UserProfile', { userId: currentUser?.id }) 
+    },
+    { 
+      id: 'security', 
+      icon: 'lock-outline', 
+      label: t('citizen.profile.changePassword', 'Mật khẩu & Bảo mật'), 
+      onPress: () => navigation.navigate('ChangePasswordLoggedIn') 
+    },
+    { 
+      id: 'notificationSettings', 
+      icon: 'bell-outline', 
+      label: t('citizen.profile.notificationSettings', 'Cài đặt thông báo'), 
+      onPress: () => navigation.navigate('NotificationSettings') 
+    },
+    { 
+      id: 'language', 
+      icon: 'translate', 
+      label: t('language.title', 'Ngôn ngữ'), 
+      value: getLanguageLabel(),
+      onPress: () => navigation.navigate('LanguageSettings') 
+    },
   ];
 
-  const MENU_GROUP_2 = [
-    { id: 'notificationSettings', icon: 'bell-cog-outline', label: t('citizen.profile.notificationSettings', 'Cài đặt thông báo'), screen: 'NotificationSettings' },
-    { id: 'security', icon: 'lock-outline', label: t('citizen.profile.changePassword', 'Đổi mật khẩu'), screen: 'ChangePasswordLoggedIn' },
-    { id: 'about', icon: 'information-outline', label: t('citizen.profile.about', 'Giới thiệu'), screen: 'About' },
+  const PREFERENCES_GROUP = [
+    { 
+      id: 'myReports', 
+      icon: 'file-document-multiple-outline', 
+      label: t('citizen.profile.myReports', 'Phản ánh của tôi'), 
+      badge: reportCount > 0 ? reportCount : undefined,
+      onPress: () => navigation.navigate('MyReports') 
+    },
+    { 
+      id: 'myRescue', 
+      icon: 'lifebuoy', 
+      label: t('citizen.profile.myRescue', 'Yêu cầu cứu hộ'), 
+      onPress: () => navigation.navigate('MyRescueRequests') 
+    },
+    { 
+      id: 'theme', 
+      icon: 'palette-outline', 
+      label: t('citizen.profile.theme', 'Giao diện'), 
+      value: currentTheme === 'light' ? t('theme.light', 'Sáng') : t('theme.dark', 'Tối'),
+      onPress: handleThemePress 
+    },
   ];
 
-  const renderMenuItem = (item: any, isLast: boolean) => (
-    <TouchableOpacity
-      key={item.id}
-      style={[styles.menuItem, !isLast && styles.menuItemBorder]}
-      onPress={() => navigation.navigate(item.screen)}
-      activeOpacity={0.6}
-    >
-      <View style={styles.menuItemLeft}>
-        <View style={[styles.menuIconWrap, { backgroundColor: theme.colors.primary + '12' }]}>
-          <Icon name={item.icon} size={ICON_SIZE.sm} color={theme.colors.primary} />
-        </View>
-        <Text style={styles.menuLabel}>{item.label}</Text>
+  const SUPPORT_GROUP = [
+    { 
+      id: 'helpCenter', 
+      icon: 'help-circle-outline', 
+      label: t('citizen.profile.helpCenter', 'Trung tâm trợ giúp'), 
+      onPress: () => navigation.navigate('HelpCenter') 
+    },
+    { 
+      id: 'about', 
+      icon: 'information-outline', 
+      label: t('citizen.profile.about', 'Giới thiệu'), 
+      onPress: () => navigation.navigate('About') 
+    },
+  ];
+
+  const renderGroup = (title: string, items: any[]) => (
+    <View style={styles.groupContainer}>
+      <Text style={[styles.groupTitle, { color: colors.textSecondary }]}>{title}</Text>
+      <View style={[styles.groupCard, { backgroundColor: colors.card }]}>
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1;
+          return (
+            <TouchableOpacity
+              key={item.id}
+              style={[styles.menuItem, !isLast && { borderBottomWidth: 1, borderBottomColor: colors.borderLight }]}
+              onPress={item.onPress}
+              activeOpacity={0.6}
+            >
+              <View style={styles.menuItemLeft}>
+                <Icon name={item.icon} size={22} color={colors.text} />
+                <Text style={[styles.menuLabel, { color: colors.text }]}>{item.label}</Text>
+              </View>
+              <View style={styles.menuItemRight}>
+                {item.value && <Text style={[styles.menuValue, { color: colors.textSecondary }]}>{item.value}</Text>}
+                {item.badge && (
+                  <View style={styles.menuBadge}>
+                    <Text style={styles.menuBadgeText}>{item.badge}</Text>
+                  </View>
+                )}
+                <Icon name="chevron-right" size={20} color={colors.textTertiary} />
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
-      <View style={styles.menuItemRight}>
-        {item.badge && (
-          <View style={styles.menuBadge}>
-            <Text style={styles.menuBadgeText}>{item.badge}</Text>
-          </View>
-        )}
-        <Icon name="chevron-right" size={ICON_SIZE.sm} color={theme.colors.textTertiary} />
-      </View>
-    </TouchableOpacity>
+    </View>
   );
 
   const insets = useSafeAreaInsets();
+  // Extra bottom pad = tab bar visible area + FAB protrusion + some breathing room
+  const scrollBottomPad = TAB_VISIBLE_HEIGHT + (Platform.OS === 'ios' ? Math.max(insets.bottom, 34) : Math.max(insets.bottom, 8)) + 24;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { backgroundColor: isDark ? colors.systemGroupedBackground : '#F2F2F7' }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} translucent backgroundColor="transparent" />
+      {/* Header */}
+      <View style={[styles.header, {
+        backgroundColor: isDark ? colors.systemGroupedBackground : '#F2F2F7',
+        paddingTop: insets.top,
+        height: 52 + insets.top,
+        borderBottomColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)',
+      }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('citizen.profile.title', 'Hồ sơ')}</Text>
+      </View>
+
       <ScrollView
-        contentContainerStyle={styles.scroll}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={[styles.scroll, { paddingBottom: scrollBottomPad }]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile Header */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials}</Text>
+        {/* Profile Card */}
+        <View style={[styles.profileCard, { backgroundColor: colors.card }]}>
+          {currentUser?.avatar ? (
+            <Image source={{ uri: currentUser.avatar }} style={styles.avatarImage} />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Text style={styles.avatarText}>{initials}</Text>
+            </View>
+          )}
+          <View style={styles.profileDetails}>
+            <Text style={[styles.userName, { color: colors.text }]}>{fullName || t('common.user', 'Người dùng')}</Text>
+            <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{currentUser?.email || ''}</Text>
           </View>
-          <Text style={styles.userName}>{fullName || t('common.user', 'Người dùng')}</Text>
-          <Text style={styles.userEmail}>{currentUser?.email || ''}</Text>
-
-          <TouchableOpacity
-            style={styles.editBtn}
-            onPress={() => navigation.navigate('UserProfile', { userId: currentUser?.id })}
-          >
-            <Icon name="pencil-outline" size={ICON_SIZE.xs} color={theme.colors.text} />
-            <Text style={styles.editBtnText}>{t('citizen.profile.editProfile', 'Chỉnh sửa')}</Text>
-          </TouchableOpacity>
         </View>
 
-        {/* Menu Group 1 */}
-        <View style={styles.menuCard}>
-          {MENU_GROUP_1.map((item, i) => renderMenuItem(item, i === MENU_GROUP_1.length - 1))}
-        </View>
+        {/* Group 1: Tài khoản */}
+        {renderGroup(t('citizen.profile.groupAccount', 'Account'), ACCOUNT_GROUP)}
 
-        {/* Menu Group 2 */}
-        <View style={styles.menuCard}>
-          {MENU_GROUP_2.map((item, i) => renderMenuItem(item, i === MENU_GROUP_2.length - 1))}
-        </View>
+        {/* Group 2: Tiện ích & Giao diện */}
+        {renderGroup(t('citizen.profile.groupPreferences', 'Preferences'), PREFERENCES_GROUP)}
+        {renderGroup(t('citizen.profile.groupSupport', 'Support'), SUPPORT_GROUP)}
 
-        {/* Logout */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
-          <Icon name="logout" size={ICON_SIZE.sm} color={theme.colors.error} />
-          <Text style={styles.logoutText}>{t('citizen.profile.logout', 'Đăng xuất')}</Text>
+        <TouchableOpacity
+          style={[styles.logoutCard, { backgroundColor: colors.card }]}
+          onPress={handleLogout}
+          activeOpacity={0.7}
+        >
+          <Icon name="logout" size={22} color={colors.error} />
+          <Text style={[styles.logoutLabel, { color: colors.error }]}>{t('citizen.profile.logout', 'Đăng xuất')}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.version}>AegisFlow AI v1.0.0</Text>
-        <View style={{ height: SPACING['3xl'] }} />
+        <Text style={[styles.version, { color: colors.textTertiary }]}>AegisFlow AI v1.0.0</Text>
       </ScrollView>
+
+      <Modal
+        visible={showThemeModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowThemeModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setShowThemeModal(false)}
+        >
+          <TouchableOpacity
+            style={[styles.modalContentCard, { backgroundColor: colors.card }]}
+            activeOpacity={1}
+          >
+            <View style={styles.modalHeader}>
+              <Icon name="palette-outline" size={28} color={colors.primary} />
+              <Text style={[styles.modalTitle, { color: colors.text }]}>{t('citizen.profile.theme', 'Giao diện')}</Text>
+              <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>{t('citizen.profile.selectTheme', 'Chọn chế độ hiển thị')}</Text>
+            </View>
+
+            <View style={styles.modalOptions}>
+              <TouchableOpacity
+                style={[styles.modalOptionButton, currentTheme === 'light' && styles.modalOptionActive]}
+                activeOpacity={0.7}
+                onPress={() => { setThemeMode('light'); setShowThemeModal(false); }}
+              >
+                <View style={styles.modalOptionLeft}>
+                  <Icon name="weather-sunny" size={22} color={currentTheme === 'light' ? colors.primary : colors.textSecondary} />
+                  <Text style={[styles.modalOptionText, currentTheme === 'light' && styles.modalOptionTextActive]}>
+                    {t('theme.light', 'Giao diện sáng')}
+                  </Text>
+                </View>
+                {currentTheme === 'light' && <Icon name="check-circle" size={20} color={colors.primary} />}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalOptionButton, currentTheme === 'dark' && styles.modalOptionActive]}
+                activeOpacity={0.7}
+                onPress={() => { setThemeMode('dark'); setShowThemeModal(false); }}
+              >
+                <View style={styles.modalOptionLeft}>
+                  <Icon name="weather-night" size={22} color={currentTheme === 'dark' ? colors.primary : colors.textSecondary} />
+                  <Text style={[styles.modalOptionText, currentTheme === 'dark' && styles.modalOptionTextActive]}>
+                    {t('theme.dark', 'Giao diện tối')}
+                  </Text>
+                </View>
+                {currentTheme === 'dark' && <Icon name="check-circle" size={20} color={colors.primary} />}
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.modalCancelButton}
+              activeOpacity={0.7}
+              onPress={() => setShowThemeModal(false)}
+            >
+              <Text style={[styles.modalCancelText, { color: colors.textSecondary }]}>{t('common.cancel', 'Hủy')}</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.backgroundSecondary },
-  scroll: { padding: SCREEN_PADDING.horizontal },
-
-  // Profile
-  profileSection: {
-    alignItems: 'center',
-    paddingVertical: SPACING['2xl'],
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F7', // iOS system grouped background
   },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  header: {
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    backgroundColor: '#F2F2F7',
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: theme.colors.text,
+    letterSpacing: -0.2,
+  },
+  scroll: {
+    paddingHorizontal: SCREEN_PADDING.horizontal,
+    paddingTop: 16,
+  },
+  
+  // Profile Card
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    ...theme.shadows.xs,
+  },
+  avatarImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+  },
+  avatarPlaceholder: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.md,
   },
   avatarText: {
-    fontSize: FONT_SIZE['2xl'],
+    fontSize: 22,
     fontWeight: '700',
     color: theme.colors.textWhite,
   },
+  profileDetails: {
+    flex: 1,
+    marginLeft: 16,
+  },
   userName: {
-    fontSize: FONT_SIZE.xl,
+    fontSize: 18,
     fontWeight: '700',
     color: theme.colors.text,
   },
   userEmail: {
-    fontSize: FONT_SIZE.sm,
+    fontSize: 14,
     color: theme.colors.textSecondary,
-    marginTop: SPACING.xs,
-  },
-  editBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-    marginTop: SPACING.lg,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.xl,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-  },
-  editBtnText: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '500',
-    color: theme.colors.text,
+    marginTop: 4,
   },
 
-  // Menu
-  menuCard: {
+  // Groups
+  groupContainer: {
+    marginBottom: 20,
+  },
+  groupTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+    marginLeft: 4,
+    letterSpacing: 0.5,
+  },
+  groupCard: {
     backgroundColor: theme.colors.white,
-    borderRadius: BORDER_RADIUS.lg,
-    marginBottom: SPACING.md,
-    ...theme.shadows.sm,
+    borderRadius: 16,
+    overflow: 'hidden',
+    ...theme.shadows.xs,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    minHeight: 56,
   },
   menuItemBorder: {
     borderBottomWidth: 1,
@@ -224,63 +408,163 @@ const styles = StyleSheet.create({
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.md,
-  },
-  menuIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: BORDER_RADIUS.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
+    gap: 12,
   },
   menuLabel: {
-    fontSize: FONT_SIZE.md,
+    fontSize: 16,
     fontWeight: '500',
     color: theme.colors.text,
   },
   menuItemRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: 8,
+  },
+  menuValue: {
+    fontSize: 15,
+    color: theme.colors.textSecondary,
   },
   menuBadge: {
     backgroundColor: theme.colors.primary,
-    borderRadius: BORDER_RADIUS.full,
-    minWidth: 22,
-    height: 22,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: SPACING.xs,
+    paddingHorizontal: 6,
   },
   menuBadgeText: {
-    fontSize: FONT_SIZE['2xs'],
+    fontSize: 11,
     fontWeight: '700',
     color: theme.colors.textWhite,
   },
 
-  // Logout
-  logoutBtn: {
+  // Logout Card
+  logoutCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.lg,
-    backgroundColor: theme.colors.errorLight,
-    borderRadius: BORDER_RADIUS.lg,
-    marginTop: SPACING.sm,
+    backgroundColor: theme.colors.white,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    minHeight: 56,
+    gap: 12,
+    marginBottom: 16,
+    ...theme.shadows.xs,
   },
-  logoutText: {
-    fontSize: FONT_SIZE.md,
+  logoutLabel: {
+    fontSize: 16,
     fontWeight: '600',
     color: theme.colors.error,
   },
 
-  // Version
   version: {
     textAlign: 'center',
-    fontSize: FONT_SIZE.xs,
+    fontSize: 12,
     color: theme.colors.textTertiary,
-    marginTop: SPACING.lg,
+    marginTop: 8,
+    marginBottom: 24,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContentCard: {
+    backgroundColor: theme.colors.white,
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 320,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: theme.colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: theme.colors.text,
+    marginTop: 8,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  modalOptions: {
+    width: '100%',
+    gap: 12,
+    marginBottom: 20,
+  },
+  modalOptionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: theme.colors.backgroundSecondary,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+  },
+  modalOptionActive: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '08',
+  },
+  modalOptionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: theme.colors.text,
+  },
+  modalOptionTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  modalOptionTextDisabled: {
+    color: theme.colors.textTertiary,
+  },
+  modalOptionDisabled: {
+    opacity: 0.6,
+  },
+  comingSoonBadge: {
+    backgroundColor: 'rgba(99, 102, 241, 0.12)',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.25)',
+  },
+  comingSoonText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6366F1',
+    letterSpacing: 0.2,
+  },
+  modalCancelButton: {
+    width: '100%',
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
   },
 });
 

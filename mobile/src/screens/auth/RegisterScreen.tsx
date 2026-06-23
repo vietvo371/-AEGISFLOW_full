@@ -9,7 +9,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
-import { AlertService } from '../../services/AlertService';
+import { AlertService } from '../../services/AlertService.tsx';
 import Animated, { FadeInDown, FadeInUp, SlideInDown } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -20,6 +20,7 @@ import ButtonCustom from '../../component/ButtonCustom';
 import LoadingOverlay from '../../component/LoadingOverlay';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 interface RegisterScreenProps {
   navigation: any;
@@ -28,6 +29,8 @@ interface RegisterScreenProps {
 const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const { signUp } = useAuth();
   const { t, getCurrentLanguage } = useTranslation();
+  const { colors, isDark, theme: appTheme } = useAppTheme();
+  const styles = getStyles(colors, isDark, appTheme);
 
   const initialFormData = {
     name: '',
@@ -288,9 +291,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   };
 
   const getPasswordStrengthText = (strength: number) => {
-    if (strength <= 2) return { text: t('auth.weak', 'Yếu'), color: theme.colors.error };
-    if (strength <= 4) return { text: t('auth.medium', 'Trung bình'), color: theme.colors.warning };
-    return { text: t('auth.strong', 'Mạnh'), color: theme.colors.success };
+    if (strength <= 2) return { text: t('auth.weak', 'Yếu'), color: colors.error };
+    if (strength <= 4) return { text: t('auth.medium', 'Trung bình'), color: colors.warning };
+    return { text: t('auth.strong', 'Mạnh'), color: colors.success };
   };
 
   const renderStep1 = () => (
@@ -457,14 +460,14 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             style={styles.headerIconButton}
             onPress={() => navigation.goBack()}
           >
-            <Icon name="arrow-left" size={24} color={theme.colors.text} />
+             <Icon name="arrow-left" size={24} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.headerIconButton}
             onPress={() => navigation.navigate('Help')}
           >
-            <Icon name="headset" size={24} color={theme.colors.text} />
+             <Icon name="headset" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
@@ -520,7 +523,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
             {/* Security Badge */}
             <View style={styles.securityBadge}>
-              <Icon name="shield-check" size={16} color={theme.colors.primary} />
+              <Icon name="shield-check" size={16} color={colors.primary} />
               <Text style={styles.securityText}>
                 {t('auth.dataProtected') || 'Dữ liệu được bảo mật và mã hóa'}
               </Text>
@@ -535,10 +538,10 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.background,
   },
   backgroundContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -555,12 +558,12 @@ const styles = StyleSheet.create({
     width: wp('10%'),
     height: wp('10%'),
     borderRadius: wp('5%'),
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -577,7 +580,7 @@ const styles = StyleSheet.create({
     width: wp('37.5%'),
     height: wp('37.5%'),
     borderRadius: wp('18.75%'),
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: colors.primary + '15',
   },
   decorativeCircle2: {
     position: 'absolute',
@@ -586,7 +589,7 @@ const styles = StyleSheet.create({
     width: wp('25%'),
     height: wp('25%'),
     borderRadius: wp('12.5%'),
-    backgroundColor: theme.colors.secondary + '15',
+    backgroundColor: colors.secondary + '15',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -604,21 +607,21 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: FONT_SIZE.md,
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
     marginBottom: SPACING.xs,
   },
   title: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE['4xl'],
-    color: theme.colors.primary,
+    color: colors.primary,
     marginBottom: SPACING.sm,
     fontWeight: 'bold',
   },
   subtitle: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE.md,
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: FONT_SIZE.md * 1.5,
     paddingHorizontal: SPACING.lg,
@@ -626,19 +629,21 @@ const styles = StyleSheet.create({
 
   // Form Styles
   formContainer: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: BORDER_RADIUS['2xl'],
     padding: SPACING.xl,
     marginBottom: SPACING.xl,
+    borderWidth: isDark ? 1 : 0,
+    borderColor: colors.border,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 12 },
-        shadowOpacity: 0.15,
+        shadowOpacity: isDark ? 0 : 0.15,
         shadowRadius: 24,
       },
       android: {
-        elevation: 12,
+        elevation: isDark ? 0 : 12,
       },
     }),
   },
@@ -649,12 +654,12 @@ const styles = StyleSheet.create({
   formTitle: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE.xl,
-    color: theme.colors.text,
+    color: colors.text,
     marginBottom: SPACING.xs,
   },
   formSubtitle: {
     fontSize: FONT_SIZE.sm,
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   form: {
@@ -676,16 +681,16 @@ const styles = StyleSheet.create({
     width: wp('2%'),
     height: wp('2%'),
     borderRadius: wp('1%'),
-    backgroundColor: theme.colors.border,
+    backgroundColor: colors.border,
   },
   stepDotActive: {
     width: wp('2.5%'),
     height: wp('2.5%'),
     borderRadius: wp('1.25%'),
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
   },
   stepDotCompleted: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
   },
 
   // Button Container Styles
@@ -699,12 +704,12 @@ const styles = StyleSheet.create({
     flex: 1,
     height: hp('6%'),
     backgroundColor: 'transparent',
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
   },
   nextButton: {
     flex: 1,
     height: hp('6%'),
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
   },
 
   // Password Strength Styles
@@ -714,7 +719,7 @@ const styles = StyleSheet.create({
   },
   passwordStrengthBar: {
     height: wp('1%'),
-    backgroundColor: theme.colors.border,
+    backgroundColor: colors.border,
     borderRadius: wp('0.5%'),
     overflow: 'hidden',
     marginBottom: SPACING.xs,
@@ -741,11 +746,11 @@ const styles = StyleSheet.create({
   loginText: {
     fontFamily: theme.typography.fontFamily,
     fontSize: FONT_SIZE.md,
-    color: theme.colors.text,
+    color: colors.text,
     textAlign: 'center',
   },
   loginLinkText: {
-    color: theme.colors.primary,
+    color: colors.primary,
     fontFamily: theme.typography.fontFamily,
     fontWeight: theme.typography.fontWeight.semibold,
   },
@@ -753,16 +758,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: colors.primary + '10',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
     borderRadius: BORDER_RADIUS.full,
     borderWidth: 1,
-    borderColor: theme.colors.primary + '20',
+    borderColor: colors.primary + '20',
   },
   securityText: {
     fontSize: FONT_SIZE.xs,
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     textAlign: 'center',
     flex: 1,

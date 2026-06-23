@@ -2,13 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BlurView } from '@react-native-community/blur';
 
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, Text } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import OnboardingCard from '../../component/OnboardingCard';
 import Marquee from '../../component/Marquee';
 import { theme } from '../../theme/colors';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -45,6 +46,8 @@ interface OnboardingScreenProps {
 
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   const { t } = useTranslation();
+  const { colors, isDark, theme: appTheme } = useAppTheme();
+  const styles = getStyles(colors, isDark, appTheme);
   const [activeIndex, setActiveIndex] = useState(0);
   const onboardingData = getOnboardingData(t);
 
@@ -138,16 +141,16 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
       </BlurView>
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(246, 241, 146, 0.5)',
+    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.4)' : 'rgba(246, 241, 146, 0.2)',
   },
   blurContainer: {
     flex: 1,
@@ -175,18 +178,17 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     fontSize: 24,
     fontWeight: 'bold',
-
   },
   title: {
     fontSize: 32,
     fontFamily: theme.typography.fontFamily,
-    color: theme.colors.white,
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   description: {
     fontSize: 16,
     fontFamily: theme.typography.fontFamily,
-    color: theme.colors.textDarkLight,
+    color: '#E5E7EB',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -201,25 +203,30 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: theme.colors.textDarkLight,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
   paginationDotActive: {
     width: 24,
-    backgroundColor: "#FFFF66",
+    backgroundColor: isDark ? colors.primary : "#FFFF66",
   },
   button: {
-    backgroundColor: "#FFFF66",
+    backgroundColor: isDark ? colors.primary : "#FFFF66",
     paddingVertical: 16,
     paddingHorizontal: 40,
     borderRadius: theme.borderRadius.lg,
     alignItems: 'center',
     alignSelf: 'stretch',
-    ...theme.shadows.yellow,
+    shadowColor: isDark ? colors.primary : '#FFFF66',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonText: {
     fontSize: 18,
     fontFamily: theme.typography.fontFamily,
-    color: theme.colors.secondary,
+    color: isDark ? '#FFFFFF' : colors.secondary,
   },
 });
-export default OnboardingScreen; 
+
+export default OnboardingScreen;

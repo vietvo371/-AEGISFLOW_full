@@ -21,7 +21,10 @@
     "search": "Mencari",
     "filter": "Menyaring",
     "all": "Semua",
-    "noData": "Tidak ada data"
+    "noData": "Tidak ada data",
+    "user": "User",
+    "info": "Info",
+    "normal": "Normal"
   },
   "auth": {
     "login": "Login",
@@ -102,7 +105,10 @@
     "verificationFailed": "Verifikasi Gagal",
     "verificationSuccessful": "Verifikasi Berhasil!",
     "invalidOtp": "Kode OTP tidak valid",
-    "otpResent": "Kode OTP telah dikirim ulang"
+    "otpResent": "Kode OTP telah dikirim ulang",
+    "failedResend": "Failed to resend OTP code",
+    "verifyingAccount": "Verifying account...",
+    "verifyingReset": "Verifying password reset..."
   },
   "changePassword": {
     "title": "Ubah Kata Sandi",
@@ -196,7 +202,9 @@
       "heavy_rain": "Hujan lebat",
       "landslide": "Tanah longsor",
       "dam_failure": "Kegagalan Bendungan",
-      "other": "Lainnya"
+      "other": "Lainnya",
+      "accident": "Accident",
+      "congestion": "Congestion"
     },
     "severity": {
       "low": "Rendah",
@@ -213,7 +221,22 @@
     "confirmUpdate": "Konfirmasikan Pembaruan",
     "updateSuccess": "Pembaruan berhasil",
     "updateFailed": "Pembaruan gagal",
-    "noIncidents": "Tidak ada insiden"
+    "noIncidents": "Tidak ada insiden",
+    "subtitle": "Real-time monitoring from AI Digital Twin",
+    "noIncidentsDesc": "No incidents reported yet",
+    "openCountBanner": "{{count}} open incidents — immediate action required",
+    "allTypes": "All Types",
+    "additionalData": "ADDITIONAL DATA",
+    "assignment": "ASSIGNMENT",
+    "closeIncident": "Close Incident",
+    "markAsDone": "Mark as Done",
+    "notOccurred": "Not yet occurred",
+    "quickActions": "QUICK ACTIONS",
+    "reporter": "REPORTER",
+    "startProcessing": "Start Processing",
+    "timeline": "TIMELINE",
+    "unassigned": "Unassigned",
+    "unknownLocation": "Unknown location"
   },
   "reports": {
     "title": "Laporan",
@@ -238,7 +261,10 @@
     },
     "categories": {
       "flood": "Banjir",
-      "other": "Lainnya"
+      "other": "Lainnya",
+      "environment": "Environment",
+      "fire": "Fire",
+      "waste": "Waste"
     },
     "priorities": {
       "normal": "Normal",
@@ -255,7 +281,11 @@
     "vote": "Memilih",
     "comment": "Komentar",
     "rate": "Kecepatan",
-    "views": "pandangan"
+    "views": "pandangan",
+    "severity": "Severity",
+    "editReport": "Edit Laporan",
+    "myReportsDesc": "Laporan Anda akan ditampilkan di sini",
+    "defaultRescueTitle": "Permintaan Penyelamatan Darurat"
   },
   "emergency": {
     "title": "Tanggap darurat",
@@ -269,7 +299,14 @@
     "startNavigation": "Mulai Navigasi",
     "incidentList": "Daftar Insiden",
     "mapView": "Peta",
-    "listView": "Daftar"
+    "listView": "Daftar",
+    "accept": "Accept",
+    "acceptMission": "Accept Mission",
+    "confirmAccept": "Do you want to handle incident",
+    "confirmDispatch": "Confirm Dispatch",
+    "dispatchUnit": "Dispatch Unit",
+    "missionAccepted": "Mission accepted! Please respond to the incident promptly.",
+    "missionInProgress": "Mission in progress"
   },
   "profile": {
     "title": "Profil",
@@ -288,7 +325,9 @@
       "emergency": "Respon Darurat",
       "operator": "Operator Lalu Lintas",
       "admin": "Administrator"
-    }
+    },
+    "saveChanges": "Simpan Perubahan",
+    "emailDisabledHelp": "Email yang ditautkan ke akun Anda tidak dapat diubah"
   },
   "notifications": {
     "title": "Pemberitahuan",
@@ -317,7 +356,10 @@
     "title": "Pilih Bahasa",
     "vietnamese": "Tiếng Việt",
     "english": "Bahasa inggris",
-    "selectLanguage": "Pilih Bahasa"
+    "selectLanguage": "Pilih Bahasa",
+    "selectLanguagePrompt": "Select Language",
+    "changeLanguageDesc": "Change the app display language",
+    "incompleteTranslationNote": "Some content may not be fully translated."
   },
   "errors": {
     "networkError": "Kesalahan koneksi jaringan",
@@ -377,7 +419,10 @@
     "depth": "Kedalaman",
     "rising": "Kenaikan",
     "falling": "Jatuh",
-    "stable": "Stabil"
+    "stable": "Stabil",
+    "safetyTips": {
+      "drainage": "Clear drainage ditches around your home"
+    }
   },
   "sensor": {
     "title": "Sensor",
@@ -460,7 +505,8 @@
       "shelters": "Tempat berlindung",
       "myLocation": "Lokasi Saya",
       "refresh": "Menyegarkan",
-      "callEmergency": "Panggilan Darurat"
+      "callEmergency": "Panggilan Darurat",
+      "activeAlerts": "Active Alerts"
     },
     "shelters": {
       "title": "Tempat berlindung",
@@ -634,7 +680,16 @@
       "changePassword": "Ubah Kata Sandi",
       "about": "Tentang",
       "logoutTitle": "Keluar",
-      "logoutMessage": "Apakah Anda yakin ingin logout?"
+      "logoutMessage": "Apakah Anda yakin ingin logout?",
+      "manageProfile": "Personal Info",
+      "notificationSettings": "Notification Settings",
+      "helpCenter": "Help Center",
+      "theme": "Theme",
+      "selectTheme": "Select Display Mode",
+      "themeDevelopment": "Dark mode is under development.",
+      "groupAccount": "Account",
+      "groupPreferences": "Preferences & Activity",
+      "groupSupport": "Support & Info"
     }
   },
   "aboutScreen": {
@@ -671,5 +726,91 @@
     "followUs": "Ikuti Kami",
     "privacyPolicy": "Kebijakan Privasi",
     "termsOfUse": "Ketentuan Penggunaan"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "darkUnderDev": "Gelap (Sedang dikembangkan)",
+    "system": "System"
+  },
+  "priorityRoute": {
+    "title": "Priority Route",
+    "mapSubtitle": "Real-time Traffic Dispatch",
+    "listSubtitle": "Active Hotspots",
+    "dispatchButton": "DISPATCH PRIORITY SIGNAL",
+    "dispatchFailed": "Failed to dispatch priority command. Please try again.",
+    "dispatchSuccessDesc": "Priority traffic control command dispatched for incident #{{id}}.",
+    "monitoringPointsCount": "{{count}} monitoring points",
+    "activeIncidentsCount": "{{count}} active incidents",
+    "noOpenIncidents": "No active open incidents",
+    "hotspotType": "Object Type"
+  },
+  "emailVerification": {
+    "title": "Email Verification",
+    "subtitle": "Verify your email address",
+    "subtitleCodeSent": "Verification code sent to email",
+    "verifyEmail": "Verify Email",
+    "sendCodeDescription": "Tap below to send a verification code to your registered email",
+    "sendVerificationCode": "Send Verification Code",
+    "enterVerificationCode": "Enter Verification Code",
+    "codeSentDescription": "Code has been sent to your email",
+    "resendCodeAfter": "Resend after",
+    "resendCode": "Resend Code",
+    "emailAlreadyVerified": "Email Already Verified",
+    "emailVerifiedDescription": "Your email address has been successfully verified.",
+    "emailVerifiedSuccess": "Email verified successfully!",
+    "enterFullOtp": "Please enter the complete OTP code",
+    "otpIncorrect": "OTP code is incorrect",
+    "backToProfile": "Back to Profile",
+    "checkingStatus": "Checking...",
+    "checkingDescription": "Checking email verification status",
+    "getEmailError": "Failed to retrieve email information",
+    "sendOtpSuccess": "Verification code sent",
+    "sendOtpError": "Failed to send verification code",
+    "sendOtpFailed": "Send verification code failed"
+  },
+  "phoneVerification": {
+    "title": "Phone Verification",
+    "subtitle": "Verify your phone number",
+    "subtitleCodeSent": "Verification code sent to phone",
+    "verifyPhone": "Verify Phone Number",
+    "sendCodeDescription": "Tap below to send a verification code to your phone number",
+    "sendVerificationCode": "Send Verification Code",
+    "enterVerificationCode": "Enter Verification Code",
+    "codeSentDescription": "Code has been sent to your phone number",
+    "resendCodeAfter": "Resend after",
+    "resendCode": "Resend Code",
+    "phoneAlreadyVerified": "Phone Already Verified",
+    "phoneVerifiedDescription": "Your phone number has been successfully verified.",
+    "phoneVerifiedSuccess": "Phone number verified successfully!",
+    "enterFullOtp": "Please enter the complete OTP code",
+    "otpIncorrect": "OTP code is incorrect",
+    "backToProfile": "Back to Profile",
+    "checkingStatus": "Checking...",
+    "checkingDescription": "Checking phone verification status",
+    "getPhoneError": "Failed to retrieve phone information",
+    "sendOtpSuccess": "Verification code sent",
+    "sendOtpError": "Failed to send verification code",
+    "sendOtpFailed": "Send verification code failed"
+  },
+  "notificationSettingsScreen": {
+    "title": "Pengaturan Pemberitahuan",
+    "description": "Sesuaikan cara Anda menerima pemberitahuan real-time dari AegisFlow untuk tetap mengetahui situasi cuaca dan banjir terbaru.",
+    "sectionFloodAlerts": "PERINGATAN BANJIR",
+    "sectionCommunity": "LAPORAN KOMUNITAS",
+    "sectionRescue": "DUKUNGAN PENYELAMATAN",
+    "alerts": "Peringatan Bencana",
+    "alertsDesc": "Terima pemberitahuan saat ada perkembangan banjir baru di wilayah tersebut",
+    "critical": "Peringatan Darurat",
+    "criticalDesc": "Selalu terima peringatan kritis dari Pusat Komando bahkan dalam mode senyap",
+    "reportStatus": "Status Laporan",
+    "reportStatusDesc": "Terima pemberitahuan saat laporan Anda disetujui atau diproses",
+    "comments": "Komentar & Umpan Balik",
+    "commentsDesc": "Pemberitahuan saat ada komentar baru di laporan banjir",
+    "rescueUpdate": "Permintaan SOS",
+    "rescueUpdateDesc": "Pembaruan pada rute penyelamatan dari tim respons cepat",
+    "teamAssigned": "Info Tim Penyelamat",
+    "teamAssignedDesc": "Pemberitahuan saat tim respons cepat telah dikirim untuk membantu",
+    "footerNote": "AegisFlow mengamankan komunikasi dan privasi Anda"
   }
 }

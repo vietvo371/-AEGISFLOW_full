@@ -1,9 +1,9 @@
 {
-  "version": "4.1.0",
-  "accuracy": 0.988125,
-  "weighted_f1": 0.9881225995834135,
-  "macro_f1": 0.9881225995834134,
-  "auc_roc_weighted_ovr": 0.9998468749999999,
+  "version": "4.2.0",
+  "trained_at": "2026-06-18T23:38:59.584900",
+  "algorithm": "Leak-free stacking: RF+ET+GB+LightGBM+XGBoost -> Calibrated(LogReg, isotonic)",
+  "dataset": "flood_danang_clean_balanced.csv (8000 rows, balanced 2000/class)",
+  "evaluation": "held-out 20% test split (stratified, seed 42)",
   "features": [
     "water_level_m",
     "rainfall_mm",
@@ -30,6 +30,164 @@
     "low",
     "medium"
   ],
-  "algorithm": "Stacking: RF+ET+GB+LightGBM+XGBoost -> LogisticRegression",
-  "dataset": "flood_danang_clean_balanced.csv (8000 rows, balanced 2000/class)"
+  "accuracy": 0.98875,
+  "balanced_accuracy": 0.98875,
+  "weighted_f1": 0.98875,
+  "macro_f1": 0.98875,
+  "auc_roc_weighted_ovr": 0.999884,
+  "calibration_ece": 0.003965,
+  "calibration_brier": 0.00383,
+  "per_class": {
+    "critical": {
+      "precision": 0.99,
+      "recall": 0.995,
+      "f1": 0.9925
+    },
+    "high": {
+      "precision": 0.985,
+      "recall": 0.985,
+      "f1": 0.985
+    },
+    "low": {
+      "precision": 0.995,
+      "recall": 0.99,
+      "f1": 0.9925
+    },
+    "medium": {
+      "precision": 0.985,
+      "recall": 0.985,
+      "f1": 0.985
+    }
+  },
+  "confusion_matrix": [
+    [
+      398,
+      2,
+      0,
+      0
+    ],
+    [
+      4,
+      394,
+      0,
+      2
+    ],
+    [
+      0,
+      0,
+      396,
+      4
+    ],
+    [
+      0,
+      4,
+      2,
+      394
+    ]
+  ],
+  "monotonic_stress_test": {
+    "pass": true,
+    "curve": [
+      {
+        "water_level_m": 0.5,
+        "risk_score": 13.5,
+        "risk_level": "low",
+        "confidence": 0.955
+      },
+      {
+        "water_level_m": 1.0,
+        "risk_score": 19.2,
+        "risk_level": "low",
+        "confidence": 0.785
+      },
+      {
+        "water_level_m": 1.5,
+        "risk_score": 44.9,
+        "risk_level": "medium",
+        "confidence": 0.996
+      },
+      {
+        "water_level_m": 2.0,
+        "risk_score": 45.0,
+        "risk_level": "medium",
+        "confidence": 1.0
+      },
+      {
+        "water_level_m": 2.5,
+        "risk_score": 45.0,
+        "risk_level": "medium",
+        "confidence": 1.0
+      },
+      {
+        "water_level_m": 3.0,
+        "risk_score": 45.0,
+        "risk_level": "medium",
+        "confidence": 0.999
+      },
+      {
+        "water_level_m": 3.5,
+        "risk_score": 45.3,
+        "risk_level": "medium",
+        "confidence": 0.988
+      },
+      {
+        "water_level_m": 4.0,
+        "risk_score": 46.4,
+        "risk_level": "medium",
+        "confidence": 0.949
+      },
+      {
+        "water_level_m": 4.5,
+        "risk_score": 71.8,
+        "risk_level": "high",
+        "confidence": 0.991
+      },
+      {
+        "water_level_m": 5.0,
+        "risk_score": 72.0,
+        "risk_level": "high",
+        "confidence": 0.999
+      },
+      {
+        "water_level_m": 5.5,
+        "risk_score": 72.0,
+        "risk_level": "high",
+        "confidence": 0.999
+      },
+      {
+        "water_level_m": 6.0,
+        "risk_score": 72.0,
+        "risk_level": "high",
+        "confidence": 0.999
+      }
+    ]
+  },
+  "shap_top_features": {
+    "water_level_m": 1.43614,
+    "cumulative_stress": 0.92928,
+    "water_x_saturation": 0.83249,
+    "historical_score": 0.78929,
+    "trend_x_rain6h": 0.78617,
+    "rainfall_mm": 0.57181,
+    "water_level_trend": 0.53706,
+    "soil_saturation": 0.44626,
+    "rain_6h": 0.40035,
+    "hours_rain": 0.27823,
+    "rain_x_tide": 0.20342,
+    "tide_level": 0.20129,
+    "rain_x_season": 0.12671,
+    "year_index": 0.07507,
+    "month_cos": 0.04941,
+    "month": 0.0484,
+    "month_sin": 0.04749,
+    "seasonal_risk_score": 0.04381
+  },
+  "upgrades_vs_v41": [
+    "leak-free out-of-fold stacking (v4.1 used in-sample probabilities)",
+    "isotonic probability calibration (trustworthy confidence)",
+    "cost-sensitive weights (critical x2, high x1.5)",
+    "noise-augmented base learners (OOD robustness)",
+    "held-out + calibration + monotonicity reporting",
+    "SHAP global explainability"
+  ]
 }

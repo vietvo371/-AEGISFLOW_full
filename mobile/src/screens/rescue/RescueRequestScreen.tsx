@@ -8,7 +8,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Geolocation from 'react-native-geolocation-service';
-import { theme, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../theme';
+import { SPACING, FONT_SIZE, BORDER_RADIUS } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { rescueService, CreateRescueRequestData } from '../../services/rescueService';
 import { mapService } from '../../services/mapService';
@@ -16,6 +16,7 @@ import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { mediaService } from '../../services/mediaService';
 import PageHeader from '../../component/PageHeader';
 import InputCustom from '../../component/InputCustom';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 const FALLBACK_LOCATION = {
   latitude: 16.0699,
@@ -43,6 +44,8 @@ const RescueRequestScreen = () => {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { colors, isDark } = useAppTheme();
+  const styles = getStyles(colors, isDark);
   const [submitting, setSubmitting] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(true);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
@@ -70,10 +73,10 @@ const RescueRequestScreen = () => {
   }, []);
 
   const URGENCY_OPTIONS = [
-    { value: 'low', label: t('citizen.rescue.form.normal') || 'Bình thường', color: '#10B981', icon: 'information', bgColor: '#ECFDF5' },
-    { value: 'medium', label: t('citizen.rescue.form.medium') || 'Trung bình', color: '#3B82F6', icon: 'alert-circle', bgColor: '#EFF6FF' },
-    { value: 'high', label: t('citizen.rescue.form.high') || 'Cao', color: '#F59E0B', icon: 'alert', bgColor: '#FFFBEB' },
-    { value: 'critical', label: t('citizen.rescue.form.critical') || 'Khẩn cấp', color: '#EF4444', icon: 'alert-octagon', bgColor: '#FEF2F2' },
+    { value: 'low', label: t('citizen.rescue.form.normal') || 'Bình thường', color: '#10B981', icon: 'information', bgColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5' },
+    { value: 'medium', label: t('citizen.rescue.form.medium') || 'Trung bình', color: '#3B82F6', icon: 'alert-circle', bgColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF' },
+    { value: 'high', label: t('citizen.rescue.form.high') || 'Cao', color: '#F59E0B', icon: 'alert', bgColor: isDark ? 'rgba(245, 158, 11, 0.15)' : '#FFFBEB' },
+    { value: 'critical', label: t('citizen.rescue.form.critical') || 'Khẩn cấp', color: '#EF4444', icon: 'alert-octagon', bgColor: isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2' },
   ] as const;
 
   const CATEGORY_OPTIONS = [
@@ -124,7 +127,7 @@ const RescueRequestScreen = () => {
     Geolocation.getCurrentPosition(
       async (pos: any) => {
         const { latitude, longitude } = pos.coords;
-        
+
         const isWithinDaNang = (
           longitude >= 108.02 &&
           longitude <= 108.29 &&
@@ -181,7 +184,7 @@ const RescueRequestScreen = () => {
       }
     } catch (error) {
       console.error('Camera error:', error);
-      Alert.alert(t('common.error'), 'Không thể mở camera. Vui lòng kiểm tra quyền truy cập.');
+      Alert.alert(t('common.error'), t('citizen.rescue.cameraError'));
     }
   };
 
@@ -200,23 +203,23 @@ const RescueRequestScreen = () => {
       }
     } catch (error) {
       console.error('Image picker error:', error);
-      Alert.alert(t('common.error'), 'Không thể chọn ảnh. Vui lòng thử lại.');
+      Alert.alert(t('common.error'), t('citizen.rescue.galleryError'));
     }
   };
 
   const handleSelectMedia = () => {
     if (photos.length >= 5) {
-      Alert.alert(t('common.warning'), 'Bạn chỉ được tải lên tối đa 5 ảnh');
+      Alert.alert(t('common.warning'), t('citizen.rescue.maxPhotosWarning'));
       return;
     }
 
     Alert.alert(
-      'Chọn hình ảnh',
-      'Chọn nguồn hình ảnh',
+      t('citizen.rescue.selectImage'),
+      t('citizen.rescue.selectImageSource'),
       [
-        { text: 'Chụp ảnh', onPress: handleTakePhoto },
-        { text: 'Chọn từ thư viện', onPress: handleSelectFromGallery },
-        { text: 'Hủy', style: 'cancel' },
+        { text: t('citizen.rescue.takePhoto'), onPress: handleTakePhoto },
+        { text: t('citizen.rescue.chooseFromGallery'), onPress: handleSelectFromGallery },
+        { text: t('citizen.rescue.cancel'), style: 'cancel' },
       ],
       { cancelable: true }
     );
@@ -247,14 +250,13 @@ const RescueRequestScreen = () => {
     let newErrors: Record<string, string> = {};
     if (!form.caller_name?.trim()) newErrors.caller_name = t('auth.nameRequired');
     if (!form.address?.trim()) newErrors.address = t('citizen.sos.form.address') + ' ' + t('citizen.sos.form.required');
-    if (!form.caller_phone?.trim()) newErrors.caller_phone = 'Vui lòng nhập số điện thoại';
+    if (!form.caller_phone?.trim()) newErrors.caller_phone = t('citizen.rescue.phoneRequired');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      // Scroll to top or show alert if needed
       return;
     }
     if (!form.latitude || !form.longitude) {
@@ -276,7 +278,7 @@ const RescueRequestScreen = () => {
           t('citizen.sos.success.message'),
           [
             {
-              text: 'Xem yêu cầu',
+              text: t('citizen.rescue.myRequests'),
               onPress: () => {
                 setPhotos([]);
                 navigation.navigate('MyRescueRequests');
@@ -328,14 +330,14 @@ const RescueRequestScreen = () => {
           <View style={styles.card}>
             <View style={styles.sectionTitleRow}>
               <View style={styles.sectionTitleWithIcon}>
-                <Icon name="account-circle-outline" size={20} color={theme.colors.primary} />
-                <Text style={styles.sectionTitle}>Thông tin liên hệ</Text>
+                <Icon name="account-circle-outline" size={20} color={colors.primary} />
+                <Text style={styles.sectionTitle}>{t('citizen.rescue.contactInfo')}</Text>
               </View>
             </View>
-            
+
             <View style={styles.inputGroup}>
               <InputCustom
-                label="Họ và tên"
+                label={t('citizen.rescue.form.fullName')}
                 placeholder={t('auth.enterFullName')}
                 value={form.caller_name || ''}
                 onChangeText={v => setField('caller_name', v)}
@@ -343,10 +345,10 @@ const RescueRequestScreen = () => {
                 leftIcon="account"
               />
             </View>
-            
+
             <View style={styles.inputGroup}>
               <InputCustom
-                label="Số điện thoại"
+                label={t('citizen.rescue.form.phone')}
                 placeholder={t('citizen.rescue.form.phone')}
                 value={form.caller_phone || ''}
                 onChangeText={v => setField('caller_phone', v)}
@@ -361,22 +363,22 @@ const RescueRequestScreen = () => {
           <View style={styles.card}>
             <View style={styles.sectionTitleRow}>
               <View style={styles.sectionTitleWithIcon}>
-                <Icon name="map-marker-radius" size={20} color={theme.colors.primary} />
-                <Text style={styles.sectionTitle}>Vị trí của bạn</Text>
+                <Icon name="map-marker-radius" size={20} color={colors.primary} />
+                <Text style={styles.sectionTitle}>{t('citizen.rescue.yourLocation')}</Text>
               </View>
               <TouchableOpacity onPress={refreshLocation} style={styles.refreshBtn}>
                 {loadingLocation ? (
-                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                  <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
-                  <Icon name="crosshairs-gps" size={18} color={theme.colors.primary} />
+                  <Icon name="crosshairs-gps" size={18} color={colors.primary} />
                 )}
-                <Text style={styles.refreshBtnText}>Định vị lại</Text>
+                <Text style={styles.refreshBtnText}>{t('citizen.rescue.reLocate')}</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.inputGroup}>
               <InputCustom
-                label="Địa chỉ chi tiết"
+                label={t('citizen.rescue.detailAddress')}
                 placeholder={t('citizen.sos.form.addressPlaceholder')}
                 value={form.address || ''}
                 onChangeText={v => setField('address', v)}
@@ -392,12 +394,12 @@ const RescueRequestScreen = () => {
           <View style={styles.card}>
             <View style={styles.sectionTitleRow}>
               <View style={styles.sectionTitleWithIcon}>
-                <Icon name="alert-decagram" size={20} color={theme.colors.primary} />
-                <Text style={styles.sectionTitle}>Mức độ & Loại hỗ trợ</Text>
+                <Icon name="alert-decagram" size={20} color={colors.primary} />
+                <Text style={styles.sectionTitle}>{t('citizen.rescue.levelAndType')}</Text>
               </View>
             </View>
-            
-            <Text style={styles.fieldLabel}>Mức độ khẩn cấp</Text>
+
+            <Text style={styles.fieldLabel}>{t('citizen.rescue.urgencyLevel')}</Text>
             <View style={styles.urgencyGrid}>
               {URGENCY_OPTIONS.map(opt => {
                 const selected = form.urgency === opt.value;
@@ -414,7 +416,7 @@ const RescueRequestScreen = () => {
                     onPress={() => setField('urgency', opt.value)}
                     activeOpacity={0.7}
                   >
-                    <Icon name={opt.icon} size={18} color={selected ? opt.color : theme.colors.textSecondary} />
+                    <Icon name={opt.icon} size={18} color={selected ? opt.color : colors.textSecondary} />
                     <Text style={[
                       styles.urgencyText,
                       selected && { color: opt.color, fontWeight: '700' }
@@ -426,25 +428,25 @@ const RescueRequestScreen = () => {
               })}
             </View>
 
-            <Text style={[styles.fieldLabel, { marginTop: 16 }]}>Loại hỗ trợ cần thiết</Text>
+            <Text style={[styles.fieldLabel, { marginTop: 16 }]}>{t('citizen.rescue.supportType')}</Text>
             <TouchableOpacity
               style={styles.categorySelectButton}
               onPress={() => setShowCategoryPicker(true)}
               activeOpacity={0.7}
             >
-              <View style={[styles.categorySelectIcon, { backgroundColor: theme.colors.backgroundSecondary }]}>
+              <View style={[styles.categorySelectIcon, { backgroundColor: colors.backgroundSecondary }]}>
                 <Icon
                   name={selectedCategory?.icon || 'shape'}
                   size={24}
-                  color={theme.colors.primary}
+                  color={colors.primary}
                 />
               </View>
               <View style={styles.categorySelectContent}>
                 <Text style={styles.categorySelectLabel}>
-                  {selectedCategory?.label || 'Chọn loại hỗ trợ'}
+                  {selectedCategory?.label || t('citizen.rescue.selectCategory')}
                 </Text>
               </View>
-              <Icon name="chevron-down" size={24} color={theme.colors.textSecondary} />
+              <Icon name="chevron-down" size={24} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -452,36 +454,36 @@ const RescueRequestScreen = () => {
           <View style={styles.card}>
             <View style={styles.sectionTitleRow}>
               <View style={styles.sectionTitleWithIcon}>
-                <Icon name="clipboard-list-outline" size={20} color={theme.colors.primary} />
-                <Text style={styles.sectionTitle}>Chi tiết cứu hộ</Text>
+                <Icon name="clipboard-list-outline" size={20} color={colors.primary} />
+                <Text style={styles.sectionTitle}>{t('citizen.rescue.rescueDetails')}</Text>
               </View>
             </View>
 
             <View style={styles.detailsRow}>
               <View style={styles.detailItem}>
-                <Text style={styles.fieldLabel}>Số người</Text>
+                <Text style={styles.fieldLabel}>{t('citizen.rescue.peopleCount')}</Text>
                 <View style={styles.stepperContainer}>
                   <TouchableOpacity
                     style={styles.stepperBtn}
                     onPress={() => setField('people_count', Math.max(1, (form.people_count || 1) - 1))}
                   >
-                    <Icon name="minus" size={18} color={theme.colors.primary} />
+                    <Icon name="minus" size={18} color={colors.primary} />
                   </TouchableOpacity>
                   <Text style={styles.stepperValue}>{form.people_count}</Text>
                   <TouchableOpacity
                     style={styles.stepperBtn}
                     onPress={() => setField('people_count', (form.people_count || 1) + 1)}
                   >
-                    <Icon name="plus" size={18} color={theme.colors.primary} />
+                    <Icon name="plus" size={18} color={colors.primary} />
                   </TouchableOpacity>
                 </View>
               </View>
 
               <View style={styles.detailItem}>
-                <Text style={styles.fieldLabel}>Mực nước (m)</Text>
+                <Text style={styles.fieldLabel}>{t('citizen.rescue.waterLevelM')}</Text>
                 <View style={styles.waterInputWrap}>
                   <InputCustom
-                    placeholder="VD: 0.5"
+                    placeholder={t('citizen.rescue.form.waterLevelPlaceholder') || 'VD: 0.5'}
                     value={form.water_level_m?.toString() || ''}
                     onChangeText={v => setField('water_level_m', v ? parseFloat(v) : undefined)}
                     keyboardType="numeric"
@@ -491,7 +493,7 @@ const RescueRequestScreen = () => {
               </View>
             </View>
 
-            <Text style={[styles.fieldLabel, { marginTop: 16, marginBottom: 8 }]}>Nhóm đối tượng dễ tổn thương</Text>
+            <Text style={[styles.fieldLabel, { marginTop: 16, marginBottom: 8 }]}>{t('citizen.rescue.vulnerableGroup')}</Text>
             <View style={styles.vulnerableGrid}>
               {VULNERABLE_OPTIONS.map(opt => {
                 const selected = form.vulnerable_groups?.includes(opt.value);
@@ -505,7 +507,7 @@ const RescueRequestScreen = () => {
                     onPress={() => toggleVulnerable(opt.value)}
                     activeOpacity={0.7}
                   >
-                    <Icon name={opt.icon} size={18} color={selected ? theme.colors.white : theme.colors.textSecondary} />
+                    <Icon name={opt.icon} size={18} color={selected ? colors.white : colors.textSecondary} />
                     <Text style={[
                       styles.vulnerableText,
                       selected && styles.vulnerableTextSelected
@@ -522,8 +524,8 @@ const RescueRequestScreen = () => {
           <View style={styles.card}>
             <View style={styles.sectionTitleRow}>
               <View style={styles.sectionTitleWithIcon}>
-                <Icon name="image-multiple" size={20} color={theme.colors.primary} />
-                <Text style={styles.sectionTitle}>Hình ảnh & Mô tả (Tùy chọn)</Text>
+                <Icon name="image-multiple" size={20} color={colors.primary} />
+                <Text style={styles.sectionTitle}>{t('citizen.rescue.mediaAndDescription')}</Text>
               </View>
             </View>
 
@@ -536,7 +538,7 @@ const RescueRequestScreen = () => {
                     onPress={() => handleRemovePhoto(index)}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
-                    <Icon name="close-circle" size={24} color={theme.colors.white} />
+                    <Icon name="close-circle" size={24} color={colors.white} />
                   </TouchableOpacity>
                 </View>
               ))}
@@ -549,13 +551,13 @@ const RescueRequestScreen = () => {
                   disabled={uploading}
                 >
                   {uploading ? (
-                    <ActivityIndicator size="large" color={theme.colors.primary} />
+                    <ActivityIndicator size="large" color={colors.primary} />
                   ) : (
                     <>
                       <View style={styles.uploadIconBox}>
-                        <Icon name="camera-plus-outline" size={32} color={theme.colors.primary} />
+                        <Icon name="camera-plus-outline" size={32} color={colors.primary} />
                       </View>
-                      <Text style={styles.uploadCardText}>Thêm ảnh</Text>
+                      <Text style={styles.uploadCardText}>{t('citizen.rescue.addPhoto')}</Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -564,7 +566,7 @@ const RescueRequestScreen = () => {
 
             <View style={{ marginTop: 16 }}>
               <InputCustom
-                label="Mô tả thêm"
+                label={t('citizen.rescue.additionalDescription')}
                 placeholder={t('citizen.sos.form.descriptionPlaceholder')}
                 value={form.description || ''}
                 onChangeText={v => setField('description', v)}
@@ -581,10 +583,10 @@ const RescueRequestScreen = () => {
         <View style={styles.submitSummary}>
           <View style={[styles.submitSeverityDot, { backgroundColor: selectedUrgency.color }]} />
           <Text style={styles.submitSummaryText}>
-            {selectedUrgency.label} · {form.people_count || 1} người · {selectedCategory?.label}
+            {selectedUrgency.label} · {t('citizen.rescue.peopleCountValue', { count: form.people_count || 1 })} · {selectedCategory?.label}
           </Text>
         </View>
-        
+
         <TouchableOpacity
           style={[styles.submitBtn, submitting && styles.submitBtnDisabled]}
           onPress={handleSubmit}
@@ -597,7 +599,7 @@ const RescueRequestScreen = () => {
             ) : (
               <>
                 <Icon name="alert-octagon" size={24} color="#fff" style={styles.submitIcon} />
-                <Text style={styles.submitBtnText}>GỬI YÊU CẦU CỨU HỘ</Text>
+                <Text style={styles.submitBtnText}>{t('citizen.rescue.submitRequest')}</Text>
               </>
             )}
           </Animated.View>
@@ -619,12 +621,12 @@ const RescueRequestScreen = () => {
           />
           <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 20) }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Chọn loại hỗ trợ</Text>
+              <Text style={styles.modalTitle}>{t('citizen.rescue.selectCategory')}</Text>
               <TouchableOpacity
                 onPress={() => setShowCategoryPicker(false)}
                 style={styles.modalDoneBtn}
               >
-                <Icon name="close" size={24} color={theme.colors.text} />
+                <Icon name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalList} showsVerticalScrollIndicator={false}>
@@ -641,12 +643,12 @@ const RescueRequestScreen = () => {
                     activeOpacity={0.7}
                   >
                     <View style={[styles.modalIconContainer, selected && styles.modalIconContainerSelected]}>
-                      <Icon name={opt.icon} size={24} color={selected ? theme.colors.primary : theme.colors.textSecondary} />
+                      <Icon name={opt.icon} size={24} color={selected ? colors.primary : colors.textSecondary} />
                     </View>
                     <Text style={[styles.modalRowLabel, selected && styles.modalRowLabelSelected]}>
                       {opt.label}
                     </Text>
-                    {selected && <Icon name="check-circle" size={24} color={theme.colors.primary} />}
+                    {selected && <Icon name="check-circle" size={24} color={colors.primary} />}
                   </TouchableOpacity>
                 );
               })}
@@ -658,10 +660,10 @@ const RescueRequestScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
   },
   keyboardArea: {
     flex: 1,
@@ -675,14 +677,14 @@ const styles = StyleSheet.create({
   emergencyBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF2F2',
+    backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2',
     padding: 16,
     borderRadius: BORDER_RADIUS.xl,
     borderWidth: 1,
-    borderColor: '#FCA5A5',
+    borderColor: isDark ? colors.error : '#FCA5A5',
     marginBottom: 20,
     ...Platform.select({
-      ios: { shadowColor: '#EF4444', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8 },
+      ios: { shadowColor: colors.error, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8 },
       android: { elevation: 3 },
     }),
   },
@@ -690,7 +692,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: isDark ? 'rgba(239, 68, 68, 0.25)' : '#FEE2E2',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -709,20 +711,32 @@ const styles = StyleSheet.create({
   emergencyTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#B91C1C',
+    color: isDark ? colors.error : '#B91C1C',
     marginBottom: 4,
   },
   emergencyText: {
     fontSize: 13,
-    color: '#991B1B',
+    color: isDark ? colors.text : '#991B1B',
     lineHeight: 18,
   },
   card: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: BORDER_RADIUS.xl,
     padding: 20,
     marginBottom: 16,
-    ...theme.shadows.md,
+    borderWidth: isDark ? 1 : 0,
+    borderColor: colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: isDark ? 0 : 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: isDark ? 0 : 2,
+      },
+    }),
   },
   sectionTitleRow: {
     flexDirection: 'row',
@@ -738,12 +752,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: theme.colors.text,
+    color: colors.text,
   },
   refreshBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: BORDER_RADIUS.full,
@@ -752,7 +766,7 @@ const styles = StyleSheet.create({
   refreshBtnText: {
     fontSize: 12,
     fontWeight: '600',
-    color: theme.colors.primary,
+    color: colors.primary,
   },
   inputGroup: {
     marginBottom: 16,
@@ -760,7 +774,7 @@ const styles = StyleSheet.create({
   fieldLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.text,
+    color: colors.text,
     marginBottom: 8,
   },
   urgencyGrid: {
@@ -776,25 +790,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 8,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1.5,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     gap: 6,
   },
   urgencyText: {
     fontSize: 14,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   categorySelectButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderRadius: BORDER_RADIUS.xl,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
   },
   categorySelectIcon: {
     width: 44,
@@ -810,7 +824,7 @@ const styles = StyleSheet.create({
   categorySelectLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: theme.colors.text,
+    color: colors.text,
   },
   detailsRow: {
     flexDirection: 'row',
@@ -823,10 +837,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     height: 48,
     paddingHorizontal: 8,
   },
@@ -834,15 +848,18 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: BORDER_RADIUS.md,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
-    ...theme.shadows.sm,
+    ...Platform.select({
+      ios: { shadowColor: colors.black, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+      android: { elevation: 1 },
+    }),
   },
   stepperValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: theme.colors.text,
+    color: colors.text,
   },
   waterInputWrap: {
     flex: 1,
@@ -858,22 +875,22 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: BORDER_RADIUS.full,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     gap: 6,
   },
   vulnerableChipSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   vulnerableText: {
     fontSize: 13,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   vulnerableTextSelected: {
-    color: theme.colors.white,
+    color: colors.white,
   },
   mediaGrid: {
     flexDirection: 'row',
@@ -902,9 +919,9 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: BORDER_RADIUS.lg,
-    backgroundColor: theme.colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
@@ -914,7 +931,7 @@ const styles = StyleSheet.create({
   },
   uploadCardText: {
     fontSize: 11,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   submitPanel: {
@@ -922,12 +939,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     paddingTop: 12,
     paddingHorizontal: 20,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    ...theme.shadows.lg,
+    borderTopColor: colors.border,
+    ...Platform.select({
+      ios: { shadowColor: colors.black, shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.05, shadowRadius: 8 },
+      android: { elevation: 8 },
+    }),
   },
   submitSummary: {
     flexDirection: 'row',
@@ -943,7 +963,7 @@ const styles = StyleSheet.create({
   },
   submitSummaryText: {
     fontSize: 13,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '600',
   },
   submitBtn: {
@@ -973,14 +993,14 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   modalDismissArea: {
     flex: 1,
   },
   modalContent: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '70%',
@@ -995,7 +1015,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: theme.colors.text,
+    color: colors.text,
   },
   modalDoneBtn: {
     padding: 4,
@@ -1008,37 +1028,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     borderRadius: BORDER_RADIUS.xl,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: 'transparent',
   },
   modalRowSelected: {
-    backgroundColor: `${theme.colors.primary}10`,
-    borderColor: theme.colors.primary,
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.15)' : 'rgba(122, 90, 248, 0.1)',
+    borderColor: colors.primary,
   },
   modalIconContainer: {
     width: 40,
     height: 40,
     borderRadius: BORDER_RADIUS.lg,
-    backgroundColor: theme.colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   modalIconContainerSelected: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
   },
   modalRowLabel: {
     flex: 1,
     fontSize: 16,
-    color: theme.colors.text,
+    color: colors.text,
     fontWeight: '500',
   },
   modalRowLabelSelected: {
     fontWeight: '700',
-    color: theme.colors.primary,
+    color: colors.primary,
   },
 });
 

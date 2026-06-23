@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { RootStackParamList, CitizenTabParamList } from '../../navigation/types';
 import { theme, FONT_SIZE, SPACING, BORDER_RADIUS, SCREEN_PADDING } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAppTheme } from '../../contexts/ThemeContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import { alertService, AlertItem } from '../../services/alertService';
 import { weatherService, WeatherSummary } from '../../services/weatherService';
@@ -38,6 +39,7 @@ const SEVERITY_CONFIG: Record<string, { labelKey: string; color: string; bg: str
 
 const HomeScreen = () => {
   const { t, i18n } = useTranslation();
+  const { colors, isDark } = useAppTheme();
 
   const SAFETY_TIPS = [
     { id: '1', title: t('citizen.weather.tips.beforeFlood', 'Trước khi ngập'), desc: t('citizen.weather.tips.beforeFloodDesc', 'Di dời đồ đạc lên cao, ngắt cầu dao điện.'), icon: 'home-alert', color: '#F59E0B', bg: '#FEF3C7' },
@@ -105,7 +107,7 @@ const HomeScreen = () => {
   const displayWindSpeed = windSpeed != null ? `${windSpeed}km/h` : '--';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDark ? colors.background : colors.backgroundSecondary }]}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
       {/* Violet Header */}
@@ -143,29 +145,29 @@ const HomeScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Weather Card */}
-        <View style={styles.weatherCard}>
+        <View style={[styles.weatherCard, { backgroundColor: colors.card }]}>
           <View style={styles.weatherMain}>
             <Icon name="weather-partly-cloudy" size={48} color="#F59E0B" />
             <View style={{ marginLeft: 12 }}>
-              <Text style={styles.weatherTemp}>{displayTemp}</Text>
-              <Text style={styles.weatherDesc}>{weather?.forecast || t('citizen.dashboard.weather')}</Text>
+              <Text style={[styles.weatherTemp, { color: colors.text }]}>{displayTemp}</Text>
+              <Text style={[styles.weatherDesc, { color: colors.textSecondary }]}>{weather?.forecast || t('citizen.dashboard.weather')}</Text>
             </View>
           </View>
           <View style={styles.weatherMeta}>
             <View style={styles.weatherMetaItem}>
               <Icon name="water-percent" size={14} color="#3B82F6" />
-              <Text style={styles.weatherMetaText}>{displayHumidity}</Text>
-              <Text style={styles.weatherMetaLabel}>{t('citizen.dashboard.humidity')}</Text>
+              <Text style={[styles.weatherMetaText, { color: colors.textSecondary }]}>{displayHumidity}</Text>
+              <Text style={[styles.weatherMetaLabel, { color: colors.textTertiary }]}>{t('citizen.dashboard.humidity')}</Text>
             </View>
             <View style={styles.weatherMetaItem}>
               <Icon name="weather-pouring" size={14} color="#3B82F6" />
-              <Text style={styles.weatherMetaText}>{displayRainfall}</Text>
-              <Text style={styles.weatherMetaLabel}>{t('citizen.dashboard.rainfall')}</Text>
+              <Text style={[styles.weatherMetaText, { color: colors.textSecondary }]}>{displayRainfall}</Text>
+              <Text style={[styles.weatherMetaLabel, { color: colors.textTertiary }]}>{t('citizen.dashboard.rainfall')}</Text>
             </View>
             <View style={styles.weatherMetaItem}>
               <Icon name="weather-windy" size={14} color="#3B82F6" />
-              <Text style={styles.weatherMetaText}>{displayWindSpeed}</Text>
-              <Text style={styles.weatherMetaLabel}>{t('citizen.dashboard.wind')}</Text>
+              <Text style={[styles.weatherMetaText, { color: colors.textSecondary }]}>{displayWindSpeed}</Text>
+              <Text style={[styles.weatherMetaLabel, { color: colors.textTertiary }]}>{t('citizen.dashboard.wind')}</Text>
             </View>
           </View>
         </View>
@@ -191,27 +193,27 @@ const HomeScreen = () => {
         </View>
 
         {/* 3 Metrics Row */}
-        <View style={styles.metricsRow}>
+        <View style={[styles.metricsRow, { backgroundColor: colors.card }]}>
           <View style={styles.metricItem}>
-            <Text style={styles.metricValue}>{displayRainfall}</Text>
-            <Text style={styles.metricLabel}>{t('citizen.dashboard.rainfall').toUpperCase()}</Text>
+            <Text style={[styles.metricValue, { color: colors.text }]}>{displayRainfall}</Text>
+            <Text style={[styles.metricLabel, { color: colors.textTertiary }]}>{t('citizen.dashboard.rainfall').toUpperCase()}</Text>
           </View>
           <View style={styles.metricItem}>
-            <Text style={styles.metricValue}>1.2m</Text>
-            <Text style={styles.metricLabel}>{t('flood.waterLevel').toUpperCase()}</Text>
+            <Text style={[styles.metricValue, { color: colors.text }]}>1.2m</Text>
+            <Text style={[styles.metricLabel, { color: colors.textTertiary }]}>{t('flood.waterLevel').toUpperCase()}</Text>
           </View>
           <View style={styles.metricItem}>
-            <Text style={styles.metricValue}>{displayHumidity}</Text>
-            <Text style={styles.metricLabel}>{t('citizen.dashboard.humidity').toUpperCase()}</Text>
+            <Text style={[styles.metricValue, { color: colors.text }]}>{displayHumidity}</Text>
+            <Text style={[styles.metricLabel, { color: colors.textTertiary }]}>{t('citizen.dashboard.humidity').toUpperCase()}</Text>
           </View>
         </View>
 
         {/* Risk Assessment Card */}
-        <View style={styles.riskCard}>
+        <View style={[styles.riskCard, { backgroundColor: colors.card }]}>
           <View style={styles.riskHeader}>
             <View style={styles.riskHeaderLeft}>
               <Icon name="shield-alert-outline" size={20} color="#F59E0B" />
-              <Text style={styles.riskTitle}>{t('citizen.dashboard.riskAssessment')}</Text>
+              <Text style={[styles.riskTitle, { color: colors.text }]}>{t('citizen.dashboard.riskAssessment')}</Text>
             </View>
             <View style={styles.riskBadge}>
               <Text style={styles.riskBadgeText}>{t('citizen.alerts.medium')}</Text>
@@ -222,45 +224,45 @@ const HomeScreen = () => {
           <View style={styles.riskBar}>
             <View style={styles.riskBarGreen} />
             <View style={styles.riskBarYellow} />
-            <View style={styles.riskBarEmpty} />
+            <View style={[styles.riskBarEmpty, { backgroundColor: colors.border }]} />
           </View>
 
           {/* 2x2 risk metrics */}
           <View style={styles.riskGrid}>
-            <View style={styles.riskGridItem}>
+            <View style={[styles.riskGridItem, { backgroundColor: colors.backgroundSecondary }]}>
               <Icon name="weather-pouring" size={20} color="#3B82F6" />
               <View>
-                <Text style={styles.riskGridLabel}>{t('citizen.dashboard.rainfall')}</Text>
-                <Text style={styles.riskGridValue}>{displayRainfall}</Text>
+                <Text style={[styles.riskGridLabel, { color: colors.textSecondary }]}>{t('citizen.dashboard.rainfall')}</Text>
+                <Text style={[styles.riskGridValue, { color: colors.text }]}>{displayRainfall}</Text>
               </View>
             </View>
-            <View style={styles.riskGridItem}>
+            <View style={[styles.riskGridItem, { backgroundColor: colors.backgroundSecondary }]}>
               <Icon name="waves" size={20} color="#F97316" />
               <View>
-                <Text style={styles.riskGridLabel}>{t('flood.waterLevel')}</Text>
-                <Text style={styles.riskGridValue}>0.3m</Text>
+                <Text style={[styles.riskGridLabel, { color: colors.textSecondary }]}>{t('flood.waterLevel')}</Text>
+                <Text style={[styles.riskGridValue, { color: colors.text }]}>0.3m</Text>
               </View>
             </View>
-            <View style={styles.riskGridItem}>
+            <View style={[styles.riskGridItem, { backgroundColor: colors.backgroundSecondary }]}>
               <Icon name="chart-line" size={20} color="#EF4444" />
               <View>
-                <Text style={styles.riskGridLabel}>{t('flood.status.monitoring')}</Text>
-                <Text style={styles.riskGridValue}>{t('flood.rising')}</Text>
+                <Text style={[styles.riskGridLabel, { color: colors.textSecondary }]}>{t('flood.status.monitoring')}</Text>
+                <Text style={[styles.riskGridValue, { color: colors.text }]}>{t('flood.rising')}</Text>
               </View>
             </View>
-            <View style={styles.riskGridItem}>
+            <View style={[styles.riskGridItem, { backgroundColor: colors.backgroundSecondary }]}>
               <Icon name="pipe-leak" size={20} color="#22C55E" />
               <View>
-                <Text style={styles.riskGridLabel}>{t('flood.safetyTips.drainage', 'Drainage')}</Text>
-                <Text style={styles.riskGridValue}>{t('common.normal', 'Normal')}</Text>
+                <Text style={[styles.riskGridLabel, { color: colors.textSecondary }]}>{t('flood.safetyTips.drainage', 'Drainage')}</Text>
+                <Text style={[styles.riskGridValue, { color: colors.text }]}>{t('common.normal', 'Normal')}</Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Quick Actions - colorful */}
+        {/* Quick Actions */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('citizen.dashboard.quickActions')}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('citizen.dashboard.quickActions')}</Text>
         </View>
         <View style={styles.quickRow}>
           {QUICK_ACTIONS.map(action => (
@@ -270,10 +272,10 @@ const HomeScreen = () => {
               onPress={() => handleQuickAction(action)}
               activeOpacity={0.7}
             >
-              <View style={[styles.quickIcon, { backgroundColor: action.bg }]}>
-                <Icon name={action.icon} size={22} color={action.color} />
+              <View style={[styles.quickIcon, { backgroundColor: isDark ? colors.backgroundSecondary : action.bg }]}>
+                <Icon name={action.icon} size={22} color={isDark ? colors.primary : action.color} />
               </View>
-              <Text style={styles.quickLabel}>{t(`citizen.dashboard.${action.labelKey}`)}</Text>
+              <Text style={[styles.quickLabel, { color: colors.text }]}>{t(`citizen.dashboard.${action.labelKey}`)}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -321,19 +323,19 @@ const HomeScreen = () => {
 
         {/* Active Alerts Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('citizen.dashboard.activeAlerts')}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('citizen.dashboard.activeAlerts')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Alerts' as any)} style={styles.seeAllBtn}>
             <Text style={styles.seeAll}>{t('common.all', 'Xem tất cả')}</Text>
-            <Icon name="arrow-right" size={14} color="#7a5af8" />
+            <Icon name="arrow-right" size={14} color={colors.primary} />
           </TouchableOpacity>
         </View>
 
         {loading && activeAlerts.length === 0 ? (
-          <ActivityIndicator style={{ marginTop: 20 }} color={theme.colors.primary} />
+          <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />
         ) : activeAlerts.length === 0 ? (
-          <View style={styles.emptyCard}>
+          <View style={[styles.emptyCard, { backgroundColor: colors.card }]}>
             <Icon name="shield-check-outline" size={40} color="#22C55E" />
-            <Text style={styles.emptyText}>{t('citizen.alerts.allClear', 'Khu vực an toàn')}</Text>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('citizen.alerts.allClear', 'Khu vực an toàn')}</Text>
           </View>
         ) : (
           activeAlerts.slice(0, 4).map(alert => {
@@ -341,29 +343,26 @@ const HomeScreen = () => {
             return (
               <TouchableOpacity
                 key={alert.id}
-                style={styles.alertCard}
+                style={[styles.alertCard, { backgroundColor: colors.card, borderColor: isDark ? colors.border : 'rgba(0,0,0,0.04)' }]}
                 onPress={() => navigation.navigate('AlertDetail' as any, { id: alert.id })}
                 activeOpacity={0.8}
               >
-                {/* Severity vertical indicator bar */}
                 <View style={[styles.alertCardIndicator, { backgroundColor: sev.color }]} />
-
                 <View style={styles.alertCardLeft}>
-                  <View style={[styles.alertIconCircle, { backgroundColor: sev.color + '12' }]}>
+                  <View style={[styles.alertIconCircle, { backgroundColor: sev.color + '20' }]}>
                     <Icon name={alert.severity === 'critical' ? 'alert' : 'waves'} size={16} color={sev.color} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.alertCardTitle} numberOfLines={1}>{alert.title}</Text>
+                    <Text style={[styles.alertCardTitle, { color: colors.text }]} numberOfLines={1}>{alert.title}</Text>
                     <View style={styles.alertCardMeta}>
-                      <Icon name="clock-outline" size={11} color={theme.colors.textSecondary} />
-                      <Text style={styles.alertCardTime}>
+                      <Icon name="clock-outline" size={11} color={colors.textSecondary} />
+                      <Text style={[styles.alertCardTime, { color: colors.textSecondary }]}>
                         {alert.created_at ? getTimeAgo(alert.created_at, t) : ''}
                       </Text>
                     </View>
                   </View>
                 </View>
-                
-                <View style={[styles.severityBadge, { backgroundColor: sev.color + '12' }]}>
+                <View style={[styles.severityBadge, { backgroundColor: sev.color + '20' }]}>
                   <Text style={[styles.severityBadgeText, { color: sev.color }]}>
                     {t(`citizen.alerts.${sev.labelKey}`).toUpperCase()}
                   </Text>
@@ -374,17 +373,17 @@ const HomeScreen = () => {
         )}
 
         {/* Live Radar Preview Card */}
-        <TouchableOpacity 
-          style={styles.radarCard}
+        <TouchableOpacity
+          style={[styles.radarCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
           onPress={() => navigation.navigate('Map' as any)}
           activeOpacity={0.9}
         >
           <View style={styles.radarContent}>
             <View style={styles.radarHeader}>
-              <Icon name="radar" size={20} color="#7a5af8" />
-              <Text style={styles.radarTitle}>{t('citizen.dashboard.radarTitle', 'Bản đồ Radar & Cảnh báo')}</Text>
+              <Icon name="radar" size={20} color={colors.primary} />
+              <Text style={[styles.radarTitle, { color: colors.text }]}>{t('citizen.dashboard.radarTitle', 'Bản đồ Radar & Cảnh báo')}</Text>
             </View>
-            <Text style={styles.radarDesc}>{t('citizen.dashboard.radarDesc', 'Xem trạng thái ngập lụt cục bộ, trạm trú ẩn và lộ trình an toàn quanh khu vực của bạn theo thời gian thực.')}</Text>
+            <Text style={[styles.radarDesc, { color: colors.textSecondary }]}>{t('citizen.dashboard.radarDesc', 'Xem trạng thái ngập lụt cục bộ, trạm trú ẩn và lộ trình an toàn quanh khu vực của bạn theo thời gian thực.')}</Text>
             <View style={styles.radarAction}>
               <Text style={styles.radarActionText}>{t('citizen.dashboard.radarAction', 'Mở bản đồ')}</Text>
               <Icon name="arrow-right" size={16} color="#fff" />
@@ -397,20 +396,20 @@ const HomeScreen = () => {
 
         {/* Safety Tips Carousel */}
         <View style={[styles.sectionHeader, { marginTop: SPACING.md }]}>
-          <Text style={styles.sectionTitle}>{t('citizen.dashboard.safetyTipsTitle', 'Cẩm nang an toàn')}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('citizen.dashboard.safetyTipsTitle', 'Cẩm nang an toàn')}</Text>
         </View>
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.tipsScroll}
         >
           {SAFETY_TIPS.map(tip => (
-            <View key={tip.id} style={styles.tipCard}>
-              <View style={[styles.tipIconBox, { backgroundColor: tip.bg }]}>
+            <View key={tip.id} style={[styles.tipCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+              <View style={[styles.tipIconBox, { backgroundColor: isDark ? colors.backgroundSecondary : tip.bg }]}>
                 <Icon name={tip.icon} size={24} color={tip.color} />
               </View>
-              <Text style={styles.tipTitle} numberOfLines={1}>{tip.title}</Text>
-              <Text style={styles.tipDesc} numberOfLines={2}>{tip.desc}</Text>
+              <Text style={[styles.tipTitle, { color: colors.text }]} numberOfLines={1}>{tip.title}</Text>
+              <Text style={[styles.tipDesc, { color: colors.textSecondary }]} numberOfLines={2}>{tip.desc}</Text>
             </View>
           ))}
         </ScrollView>

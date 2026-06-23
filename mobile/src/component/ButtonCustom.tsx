@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { theme } from '../theme/colors';
+import { useAppTheme } from '../contexts/ThemeContext';
 
 interface ButtonCustomProps {
   onPress: () => void;
@@ -42,45 +42,48 @@ const ButtonCustom: React.FC<ButtonCustomProps> = ({
   fullWidth = false,
   gradient = false,
 }) => {
+  const { colors, theme } = useAppTheme();
+  const styles = getStyles(theme);
+
   const getButtonStyle = () => {
-    const styles: ViewStyle[] = [{
+    const btnStyles: ViewStyle[] = [{
       borderRadius: theme.borderRadius.md,
       justifyContent: 'center',
       alignItems: 'center',
       flexDirection: 'row',
       width: fullWidth ? '100%' : 'auto',
-      ...theme.shadows.yellow,
+      ...theme.shadows.sm,
     }];
 
     // Add variant styles
     switch (variant) {
       case 'secondary':
-        styles.push({
-          backgroundColor: theme.colors.secondary,
+        btnStyles.push({
+          backgroundColor: colors.secondary,
           ...theme.shadows.md,
         });
         break;
       case 'outline':
-        styles.push({
+        btnStyles.push({
           backgroundColor: 'transparent',
           borderWidth: 1,
-          borderColor: theme.colors.primary,
+          borderColor: colors.primary,
         });
         break;
       case 'ghost':
-        styles.push({
+        btnStyles.push({
           backgroundColor: 'transparent',
           borderWidth: 0,
         });
         break;
       default:
         if (gradient) {
-          styles.push({
+          btnStyles.push({
             backgroundColor: 'transparent',
           });
         } else {
-          styles.push({
-            backgroundColor: theme.colors.primary,
+          btnStyles.push({
+            backgroundColor: colors.primary,
           });
         }
     }
@@ -88,19 +91,19 @@ const ButtonCustom: React.FC<ButtonCustomProps> = ({
     // Add size styles
     switch (size) {
       case 'small':
-        styles.push({
+        btnStyles.push({
           paddingVertical: theme.spacing.xs,
           paddingHorizontal: theme.spacing.sm,
         });
         break;
       case 'large':
-        styles.push({
+        btnStyles.push({
           paddingVertical: theme.spacing.md,
           paddingHorizontal: theme.spacing.lg,
         });
         break;
       default:
-        styles.push({
+        btnStyles.push({
           paddingVertical: theme.spacing.sm,
           paddingHorizontal: theme.spacing.md,
         });
@@ -108,65 +111,66 @@ const ButtonCustom: React.FC<ButtonCustomProps> = ({
 
     // Add disabled styles
     if (disabled) {
-      styles.push({
-        backgroundColor: theme.colors.disabled,
-        borderColor: theme.colors.disabled,
+      btnStyles.push({
+        backgroundColor: colors.disabled,
+        borderColor: colors.disabled,
       });
     }
 
     // Add custom styles
     if (style) {
-      styles.push(style);
+      btnStyles.push(style);
     }
 
-    return styles;
+    return btnStyles;
   };
 
   const getTextStyle = () => {
-    const styles: TextStyle[] = [{
-      fontFamily: theme.typography.fontFamily.medium,
+    const txtStyles: TextStyle[] = [{
+      fontFamily: theme.typography.fontFamily || undefined,
+      fontWeight: theme.typography.fontWeight.medium,
       fontSize: theme.typography.fontSize.md,
     }];
 
     // Add variant text styles
     switch (variant) {
       case 'outline':
-        styles.push({
-          color: theme.colors.primary,
+        txtStyles.push({
+          color: colors.primary,
         });
         break;
       default:
-        styles.push({
-          color: theme.colors.white,
+        txtStyles.push({
+          color: colors.white,
         });
     }
 
     // Add disabled text styles
     if (disabled) {
-      styles.push({
-        color: theme.colors.white,
+      txtStyles.push({
+        color: colors.white,
       });
     }
 
     // Add custom text styles
     if (textStyle) {
-      styles.push(textStyle);
+      txtStyles.push(textStyle);
     }
 
-    return styles;
+    return txtStyles;
   };
 
   const ButtonContent = () => (
     <>
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' || variant === 'ghost' ? theme.colors.primary : theme.colors.white} />
+        <ActivityIndicator color={variant === 'outline' || variant === 'ghost' ? colors.primary : colors.white} />
       ) : (
         <View style={styles.contentContainer}>
           {icon && iconPosition === 'left' && (
             <Icon
               name={icon}
               size={20}
-              color={variant === 'outline' || variant === 'ghost' ? theme.colors.primary : theme.colors.white}
+              color={variant === 'outline' || variant === 'ghost' ? colors.primary : colors.white}
               style={styles.leftIcon}
             />
           )}
@@ -175,7 +179,7 @@ const ButtonCustom: React.FC<ButtonCustomProps> = ({
             <Icon
               name={icon}
               size={20}
-              color={variant === 'outline' || variant === 'ghost' ? theme.colors.primary : theme.colors.white}
+              color={variant === 'outline' || variant === 'ghost' ? colors.primary : colors.white}
               style={styles.rightIcon}
             />
           )}
@@ -191,7 +195,7 @@ const ButtonCustom: React.FC<ButtonCustomProps> = ({
         disabled={disabled || loading}
         style={[getButtonStyle(), { overflow: 'hidden' }]}>
         <LinearGradient
-          colors={theme.colors.gradientYellow}
+          colors={colors.gradientSecondary || ['#F59E0B', '#D97706']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[styles.gradientContainer, getButtonStyle()]}>
@@ -211,7 +215,7 @@ const ButtonCustom: React.FC<ButtonCustomProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   contentContainer: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -3,10 +3,11 @@ import { View, Text, StyleSheet, SectionList, TouchableOpacity, ActivityIndicato
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import PageHeader from '../../component/PageHeader';
-import { theme, SPACING, FONT_SIZE, BORDER_RADIUS, hp } from '../../theme';
+import { SPACING, FONT_SIZE, BORDER_RADIUS, hp } from '../../theme';
 import { useNotifications, Notification as WSNotification } from '../../hooks/useNotifications';
 import { notificationService } from '../../services/notificationService';
 import { Notification as APINotification } from '../../types/api/notification';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 // Unified notification type
 interface UnifiedNotification {
@@ -22,6 +23,8 @@ interface UnifiedNotification {
 
 const NotificationsScreen = () => {
   const navigation = useNavigation();
+  const { colors, isDark, theme } = useAppTheme();
+  const styles = getStyles(colors, isDark, theme);
 
   // WebSocket notifications (realtime)
   const wsHook = useNotifications();
@@ -63,7 +66,7 @@ const NotificationsScreen = () => {
     try {
       if (!isSilent) setLoading(true);
       setError(null);
-      const response = await notificationService.getNotifications();
+      const response = await notificationService.getNotifications() as any;
       console.log('🔍 fetchNotifications response:', response);
       if (response.success) {
         setApiNotifications(response.data?.data || response.data || []);
@@ -88,11 +91,30 @@ const NotificationsScreen = () => {
     fetchNotifications(true);
   };
 
-  // Merge and sort notifications
+  // Merge and deduplicate notifications from WebSocket (realtime) and API (persisted)
   const wsNotifsArray = wsHook?.notifications || [];
+
+  const apiConverted = apiNotifications.map(convertAPINotification);
+  const wsConverted = wsNotifsArray.map(convertWSNotification);
+
+  // Build a fingerprint set from API notifications
+  const apiFingerprints = new Set(
+    apiConverted.map(n => {
+      const minuteTs = Math.floor(n.timestamp.getTime() / 60000);
+      return `${n.title}|${n.message}|${minuteTs}`;
+    })
+  );
+
+  // Only include WS notifications that don't already exist in API list
+  const uniqueWsNotifs = wsConverted.filter(n => {
+    const minuteTs = Math.floor(n.timestamp.getTime() / 60000);
+    const fp = `${n.title}|${n.message}|${minuteTs}`;
+    return !apiFingerprints.has(fp);
+  });
+
   const allNotifications: UnifiedNotification[] = [
-    ...wsNotifsArray.map(convertWSNotification),
-    ...apiNotifications.map(convertAPINotification),
+    ...uniqueWsNotifs,
+    ...apiConverted,
   ].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
   // Helper to group notifications
@@ -238,27 +260,27 @@ const NotificationsScreen = () => {
     switch (type) {
       case 'report_status':
       case 'report_status_update':
-        return theme.colors.primary;
+        return colors.primary;
       case 'points_updated':
-        return theme.colors.success;
+        return colors.success;
       case 'incident_created':
       case 'IncidentCreated':
-        return '#F04438';
+        return colors.error;
       case 'new_nearby_report':
-        return '#7a5af8';
+        return colors.primary;
       case 'alert':
       case 'AlertCreated':
       case 'flood_warning':
-        return '#F04438';
+        return colors.error;
       case 'RecommendationApproved':
       case 'ai_recommendation':
       case 'recommendation':
-        return '#10B981'; // emerald green
+        return colors.success;
       case 'rescue_dispatch':
       case 'rescue_status_update':
-        return '#F59E0B'; // amber
+        return colors.secondary;
       default:
-        return theme.colors.textSecondary;
+        return colors.textSecondary;
     }
   };
 
@@ -279,11 +301,14 @@ const NotificationsScreen = () => {
         style={[
           styles.itemContainer,
           !item.read && styles.unreadItem,
-          !item.read && { borderLeftColor: typeColor }
         ]}
         onPress={() => handleNotificationPress(item)}
-        activeOpacity={0.85}
+        activeOpacity={0.7}
       >
+        <View style={styles.unreadDotPlaceholder}>
+          {!item.read && <View style={[styles.leftUnreadDot, { backgroundColor: typeColor }]} />}
+        </View>
+
         <View style={[styles.iconWrapper, { backgroundColor: typeColor + '12' }]}>
           <Icon name={getIconForType(item.type)} size={22} color={typeColor} />
         </View>
@@ -314,7 +339,7 @@ const NotificationsScreen = () => {
             </View>
           )}
         </View>
-        {!item.read && <View style={[styles.unreadStatusDot, { backgroundColor: typeColor }]} />}
+        <Icon name="chevron-right" size={16} color={colors.textTertiary} style={{ marginLeft: 8, alignSelf: 'center' }} />
       </TouchableOpacity>
     );
   };
@@ -330,7 +355,7 @@ const NotificationsScreen = () => {
               <Text style={styles.headerRightText}>Đọc tất cả</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings' as any)} style={styles.settingsHeaderBtn} activeOpacity={0.7}>
-              <Icon name="cog-outline" size={20} color={theme.colors.primary} />
+              <Icon name="cog-outline" size={20} color={colors.primary} />
             </TouchableOpacity>
           </View>
         }
@@ -340,7 +365,7 @@ const NotificationsScreen = () => {
 
       {loading && !refreshing ? (
         <View style={styles.loadingWrapper}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Đang tải thông báo...</Text>
         </View>
       ) : (
@@ -348,14 +373,15 @@ const NotificationsScreen = () => {
           sections={notificationSections}
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
           keyExtractor={(item) => item.id}
           contentContainerStyle={[styles.listContainer, allNotifications.length === 0 && { flexGrow: 1 }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={[theme.colors.primary]}
-              tintColor={theme.colors.primary}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
             />
           }
           stickySectionHeadersEnabled={false}
@@ -364,7 +390,7 @@ const NotificationsScreen = () => {
               <View style={styles.emptyCard}>
                 <View style={styles.emptyIconOutlineError}>
                   <View style={styles.emptyIconCircleError}>
-                    <Icon name="wifi-off" size={42} color="#F04438" />
+                    <Icon name="wifi-off" size={42} color={colors.error} />
                   </View>
                 </View>
                 <Text style={styles.emptyTitle}>Lỗi kết nối máy chủ</Text>
@@ -372,7 +398,7 @@ const NotificationsScreen = () => {
                   Không thể đồng bộ thông báo từ AegisFlow. Vui lòng kiểm tra lại đường truyền internet của bạn.
                 </Text>
                 <TouchableOpacity style={styles.retryButton} onPress={onRefresh} activeOpacity={0.8}>
-                  <Icon name="refresh" size={18} color="#F04438" />
+                  <Icon name="refresh" size={18} color={colors.error} />
                   <Text style={styles.retryButtonText}>Thử lại</Text>
                 </TouchableOpacity>
               </View>
@@ -380,7 +406,7 @@ const NotificationsScreen = () => {
               <View style={styles.emptyCard}>
                 <View style={styles.emptyIconOutline}>
                   <View style={styles.emptyIconCircle}>
-                    <Icon name="bell-off-outline" size={42} color={theme.colors.primary} />
+                    <Icon name="bell-off-outline" size={42} color={colors.primary} />
                   </View>
                 </View>
                 <Text style={styles.emptyTitle}>Hộp thư trống</Text>
@@ -398,54 +424,45 @@ const NotificationsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.backgroundSecondary,
   },
   listContainer: {
-    padding: SPACING.md,
     paddingBottom: SPACING['4xl'],
   },
   sectionHeader: {
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: 4,
-    marginBottom: SPACING.xs,
-    marginTop: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: 16,
+    backgroundColor: colors.backgroundSecondary,
+    marginBottom: 4,
+    marginTop: 12,
   },
   sectionTitle: {
     fontSize: 13,
-    fontWeight: '800',
-    color: '#64748B',
+    fontWeight: '600',
+    color: colors.textSecondary,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 0.5,
   },
   itemContainer: {
     flexDirection: 'row',
-    padding: SPACING.md,
-    backgroundColor: theme.colors.white,
-    borderRadius: BORDER_RADIUS.xl,
-    marginBottom: SPACING.sm,
-    borderWidth: 1,
-    borderColor: '#EEF2F6',
-    shadowColor: '#090A1D',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.02,
-    shadowRadius: 8,
-    elevation: 2,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: colors.card,
+    alignItems: 'center',
   },
   unreadItem: {
-    backgroundColor: '#F5F3FF', // Brand light violet background
-    borderLeftWidth: 4,
-    borderColor: '#DDD6FE',
+    backgroundColor: isDark ? 'rgba(122, 90, 248, 0.08)' : '#FAF9FF',
   },
   iconWrapper: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.md,
+    marginRight: 12,
   },
   itemMainContent: {
     flex: 1,
@@ -457,32 +474,32 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   itemTitleText: {
-    fontSize: FONT_SIZE.md,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#334155',
+    color: colors.text,
     flex: 1,
-    marginRight: SPACING.xs,
+    marginRight: 8,
   },
   unreadTitleText: {
-    fontWeight: '800',
-    color: theme.colors.primary,
+    fontWeight: '700',
+    color: colors.text,
   },
   itemTimeText: {
-    fontSize: 11,
-    color: '#94A3B8',
-    fontWeight: '600',
+    fontSize: 13,
+    color: colors.textTertiary,
+    fontWeight: '400',
   },
   itemMessageText: {
-    fontSize: FONT_SIZE.sm,
-    color: '#475569',
-    lineHeight: 20,
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 18,
   },
   unreadMessageText: {
-    color: '#1E1B4B',
-    fontWeight: '500',
+    color: colors.text,
+    fontWeight: '400',
   },
   actionRow: {
-    marginTop: SPACING.sm,
+    marginTop: SPACING.xs,
     flexDirection: 'row',
   },
   actionBadge: {
@@ -497,14 +514,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
   },
-  unreadStatusDot: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
   loadingWrapper: {
     flex: 1,
     justifyContent: 'center',
@@ -513,7 +522,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: FONT_SIZE.sm,
-    color: '#94A3B8',
+    color: colors.textSecondary,
     fontWeight: '600',
   },
   emptyCard: {
@@ -524,117 +533,115 @@ const styles = StyleSheet.create({
     paddingVertical: hp('10%'),
   },
   emptyIconOutline: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: 'rgba(122, 90, 248, 0.05)',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.04)' : 'rgba(122, 90, 248, 0.03)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   emptyIconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: 'rgba(122, 90, 248, 0.1)',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.08)' : 'rgba(122, 90, 248, 0.06)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(122, 90, 248, 0.15)',
+    borderColor: isDark ? 'rgba(155, 138, 251, 0.15)' : 'rgba(122, 90, 248, 0.1)',
   },
   emptyIconOutlineError: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: 'rgba(240, 68, 56, 0.05)',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: isDark ? 'rgba(248, 113, 113, 0.04)' : 'rgba(240, 68, 56, 0.03)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   emptyIconCircleError: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: 'rgba(240, 68, 56, 0.1)',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: isDark ? 'rgba(248, 113, 113, 0.08)' : 'rgba(240, 68, 56, 0.06)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(240, 68, 56, 0.15)',
+    borderColor: isDark ? 'rgba(248, 113, 113, 0.15)' : 'rgba(240, 68, 56, 0.1)',
   },
   emptyTitle: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: '800',
-    color: '#1E293B',
-    marginBottom: SPACING.sm,
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: SPACING.xs,
   },
   emptySub: {
-    fontSize: FONT_SIZE.xs,
-    color: '#64748B',
+    fontSize: 13,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 18,
-    paddingHorizontal: SPACING.md,
-    marginBottom: SPACING.xl,
+    paddingHorizontal: SPACING.xl,
+    marginBottom: SPACING.lg,
   },
   refreshButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 22,
-    paddingVertical: 12,
-    borderRadius: 24,
+    backgroundColor: isDark ? 'rgba(155, 138, 251, 0.15)' : 'rgba(122, 90, 248, 0.08)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
     gap: 6,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
   },
   refreshButtonText: {
-    color: '#FFF',
+    color: colors.primary,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F04438',
-    paddingHorizontal: 22,
-    paddingVertical: 12,
-    borderRadius: 24,
+    backgroundColor: isDark ? 'rgba(248, 113, 113, 0.15)' : 'rgba(240, 68, 56, 0.08)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
     gap: 6,
-    shadowColor: '#F04438',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
   },
   retryButtonText: {
-    color: '#FFF',
+    color: colors.error,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   headerRightTextButton: {
     paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    backgroundColor: 'rgba(122, 90, 248, 0.08)',
+    paddingHorizontal: 8,
   },
   headerRightText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.primary,
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.primary,
   },
   settingsHeaderBtn: {
     padding: 6,
-    borderRadius: 16,
-    backgroundColor: 'rgba(122, 90, 248, 0.08)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  unreadDotPlaceholder: {
+    width: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  leftUnreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
+    marginLeft: 82,
   },
 });
 
 export default NotificationsScreen;
-
-
-
-

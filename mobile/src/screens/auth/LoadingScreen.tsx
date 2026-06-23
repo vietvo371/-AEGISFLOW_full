@@ -5,8 +5,9 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
-import { theme } from '../../theme/colors';
+import { theme as staticTheme } from '../../theme/colors';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 interface LoadingScreenProps {
   navigation: any;
@@ -14,6 +15,8 @@ interface LoadingScreenProps {
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation }) => {
   const { user, isEmergency, loading } = useAuth();
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
 
   useEffect(() => {
     if (loading) return;
@@ -40,27 +43,27 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation }) => {
       />
       <ActivityIndicator
         size="large"
-        color={theme.colors.primary}
+        color={colors.primary}
         style={styles.spinner}
       />
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.background,
   },
   logo: {
     width: 100,
     height: 100,
-    marginBottom: theme.spacing.xl,
+    marginBottom: staticTheme.spacing.xl,
   },
   spinner: {
-    marginTop: theme.spacing.lg,
+    marginTop: staticTheme.spacing.lg,
   },
 });
 

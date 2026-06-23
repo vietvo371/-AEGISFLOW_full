@@ -46,7 +46,11 @@ export type RootStackParamList = {
   EmergencyTabs: NavigatorScreenParams<EmergencyTabParamList>;
 
   // Auth
-  ChangePassword: undefined;
+  ChangePassword: {
+    identifier: string;
+    type: 'phone' | 'email';
+    token: string;
+  };
   UpdatePassword: { token: string };
   EmailVerification: undefined;
   PhoneVerification: undefined;

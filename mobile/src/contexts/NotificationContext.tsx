@@ -1,13 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useWebSocket } from './WebSocketContext';
 import { useAuth } from './AuthContext';
 import { notificationService } from '../services/notificationService';
 import Toast from 'react-native-toast-message';
 import { AlertService } from '../services/AlertService';
+import messaging from '@react-native-firebase/messaging';
 
 export interface Notification {
   id: string;
-  type: 'report_status' | 'report_status_update' | 'points_updated' | 'new_nearby_report' | 'incident_created' | 'alert' | 'flood_warning';
+  type: 'report_status' | 'report_status_update' | 'points_updated' | 'new_nearby_report' | 'incident_created' | 'alert' | 'flood_warning' | 'rescue_dispatch' | 'rescue_status_update';
   title: string;
   message: string;
   data?: any;
@@ -162,28 +163,20 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       triggerRefresh();
     };
 
-    // Listen to report status updates - TRY MULTIPLE EVENT NAME FORMATS
+    // Listen to report status updates - one canonical format per channel to avoid duplicate processing.
+    // Previously 5 formats were registered; if the server uses App\Events\ReportStatusUpdated AND
+    // 'report.status.updated' both matched, the handler would fire twice for a single broadcast.
     try {
       listen(userChannel, 'report.status.updated', handleReportStatusUpdate);
-      listen(userChannel, 'App\\Events\\ReportStatusUpdated', handleReportStatusUpdate);
-      listen(userChannel, 'App\\Events\\ReportStatusUpdatedForUsers', handleReportStatusUpdate);
       listen(publicChannel, 'report.status.updated', handleReportStatusUpdate);
-      listen(publicChannel, 'App\\Events\\ReportStatusUpdatedForUsers', handleReportStatusUpdate);
-      console.log('✅ Registered Echo listeners for report.status.updated (5 formats)');
+      console.log('✅ Registered Echo listeners for report.status.updated');
     } catch (error) {
       console.error('❌ Failed to register Echo listeners:', error);
     }
+
     
-    // Method 2: Pusher API trực tiếp (backup method)
-    try {
-      subscribePusher('user-reports', 'report.status.updated', (data: any) => {
-        console.log('📩 [Pusher] Received report.status.updated:', data);
-        handleReportStatusUpdate(data);
-      });
-      console.log('✅ Registered Pusher listener for user-reports channel');
-    } catch (error) {
-      console.error('❌ Failed to register Pusher listener:', error);
-    }
+    // Method 2 (Pusher direct) intentionally removed — Echo listener above already handles this.
+    // Having both caused each report.status.updated event to fire handleReportStatusUpdate twice.
 
     // Listen to points updates
     listen(userChannel, 'points.updated', (data) => {
@@ -227,9 +220,11 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       triggerRefresh();
     });
 
-    // Listen to IncidentCreated broadcast on traffic channel
+    // Listen to IncidentCreated broadcast on traffic channel.
+    // Previously 2 event formats were registered separately, so a single broadcast
+    // could match both and create two notifications. Now using one handler.
     try {
-      listen(trafficChannel, 'IncidentCreated', (data: any) => {
+      const handleIncidentCreated = (data: any) => {
         console.log('🚨 [Traffic] IncidentCreated broadcast:', data);
 
         const notification: Notification = {
@@ -245,34 +240,23 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         setNotifications(prev => [notification, ...prev]);
         fetchUnreadCount();
         triggerRefresh();
-      });
+      };
 
-      listen(trafficChannel, 'App\\Events\\IncidentCreated', (data: any) => {
-        console.log('🚨 [Traffic] App\\Events\\IncidentCreated:', data);
-
-        const notification: Notification = {
-          id: `traffic-incident-${data.id || Date.now()}`,
-          type: 'incident_created',
-          title: `Sự cố ${data.severity || ''}`.trim(),
-          message: data.title || 'Sự cố giao thông mới',
-          data,
-          timestamp: new Date(),
-          read: false,
-        };
-
-        setNotifications(prev => [notification, ...prev]);
-        fetchUnreadCount();
-        triggerRefresh();
-      });
-      console.log('✅ Registered traffic channel IncidentCreated listeners');
+      listen(trafficChannel, 'IncidentCreated', handleIncidentCreated);
+      console.log('✅ Registered traffic channel IncidentCreated listener');
     } catch (error) {
       console.error('❌ Failed to register traffic channel listeners:', error);
     }
 
-    // Listen to notification sent event - MULTIPLE EVENT FORMATS FOR 100% MATCH RATE
+
+    // Listen to notification sent event — handles all types EXCEPT rescue_dispatch
+    // (rescue_dispatch has its own dedicated handler below to ensure popup always fires)
     const handleNotificationSent = (data: any) => {
       console.log('🔔 [Global Listener] Notification sent event received:', data);
-      
+
+      // rescue_dispatch is handled by the dedicated handler below — skip here to avoid duplicate
+      if (data.type === 'rescue_dispatch') return;
+
       const notification: Notification = {
         id: `notif-${data.id || Date.now()}`,
         type: data.type || 'report_status',
@@ -289,10 +273,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
       // Show Alert popup dialog ONLY for highly critical/emergency alerts
       const titleLower = notification.title.toLowerCase();
-      const isCritical = 
-        notification.type === 'incident_created' || 
-        data.urgency === 'critical' || 
-        data.severity === 'critical' || 
+      const isCritical =
+        notification.type === 'incident_created' ||
+        data.urgency === 'critical' ||
+        data.severity === 'critical' ||
         data.severity === 'high' ||
         titleLower.includes('khẩn cấp') ||
         titleLower.includes('sơ tán') ||
@@ -309,13 +293,58 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     };
 
     try {
+      // Listen to notification.sent using a single canonical event name.
+      // Previously 4 formats were registered which caused the same event to be
+      // processed multiple times when the server broadcast matched more than one.
       listen(userChannel, 'notification.sent', handleNotificationSent);
-      listen(userChannel, '.notification.sent', handleNotificationSent);
-      listen(userChannel, 'NotificationSent', handleNotificationSent);
-      listen(userChannel, 'App\\Events\\NotificationSent', handleNotificationSent);
-      console.log('✅ Registered user channel notification.sent listeners (4 formats)');
+      console.log('✅ Registered user channel notification.sent listener');
     } catch (error) {
-      console.error('❌ Failed to register notification.sent listeners:', error);
+      console.error('❌ Failed to register notification.sent listener:', error);
+    }
+
+    // ── Rescue dispatch listener (for rescue team members) ──────────────────
+    // Backend broadcasts 'notification.sent' with type='rescue_dispatch' on
+    // the user's private channel when an admin assigns a rescue request to their team.
+    // The handler above already catches it via handleNotificationSent, but we add
+    // a dedicated handler here to show a high-priority popup for dispatch orders.
+    const handleRescueDispatch = (data: any) => {
+      console.log('🚨 [Rescue Dispatch] Mission assigned:', data);
+
+      const notifType = data.type || '';
+      if (notifType !== 'rescue_dispatch') return; // guard: only process dispatch events
+
+      const notification: Notification = {
+        id: `dispatch-${data.id || data.rescue_id || Date.now()}`,
+        type: 'rescue_dispatch',
+        title: data.title || data.tieu_de || '🚨 Nhiệm vụ mới được phân công',
+        message: data.message || data.noi_dung || 'Đội của bạn được điều động đến hiện trường',
+        data,
+        timestamp: new Date(),
+        read: false,
+      };
+
+      setNotifications(prev => [notification, ...prev]);
+      fetchUnreadCount();
+      triggerRefresh();
+
+      // Always show a high-priority Alert popup for rescue dispatch
+      AlertService.alert(
+        notification.title,
+        notification.message,
+        [{ text: 'Xem nhiệm vụ', style: 'default' }],
+        'info'
+      );
+    };
+
+    // NOTE: 'notification.sent' above already fires handleNotificationSent for
+    // all notification types including rescue_dispatch. We register a second
+    // dedicated listener here so the dispatch popup always fires even if the
+    // shared handler is modified in the future.
+    try {
+      listen(userChannel, 'notification.sent', handleRescueDispatch);
+      console.log('✅ Registered rescue dispatch listener');
+    } catch (error) {
+      console.error('❌ Failed to register rescue dispatch listener:', error);
     }
 
     // Listen to AlertCreated events on the public flood channel
@@ -369,18 +398,53 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         }
       };
 
+      // Listen to AlertCreated using a single canonical format.
+      // Previously 2 formats (AlertCreated + App\Events\AlertCreated) were both registered
+      // which caused one server broadcast to create two notifications.
       listen(floodChannel, 'AlertCreated', handleAlertCreated);
-      listen(floodChannel, 'App\\Events\\AlertCreated', handleAlertCreated);
-      console.log('✅ Registered flood channel AlertCreated listeners');
+      console.log('✅ Registered flood channel AlertCreated listener');
     } catch (error) {
       console.error('❌ Failed to register flood channel listeners:', error);
     }
+
+    // ── FCM Foreground: catch rescue_dispatch push while app is open ───────────
+    // When the app is in the foreground, FCM doesn't show a system notification.
+    // We intercept the raw FCM message and show a popup ourselves.
+    const unsubFcm = messaging().onMessage(async remoteMessage => {
+      const data = remoteMessage.data as Record<string, string> | undefined;
+      if (!data) return;
+
+      const type = data.type ?? '';
+      if (type === 'rescue_dispatch') {
+        const title = remoteMessage.notification?.title || data.title || '🚨 Nhiệm vụ mới';
+        const body  = remoteMessage.notification?.body  || data.message || 'Đội của bạn được điều động đến hiện trường';
+
+        console.log('🚒 [FCM Foreground] rescue_dispatch received:', { title, body, data });
+
+        const notification: Notification = {
+          id: `fcm-dispatch-${Date.now()}`,
+          type: 'rescue_dispatch',
+          title,
+          message: body,
+          data,
+          timestamp: new Date(),
+          read: false,
+        };
+
+        setNotifications(prev => [notification, ...prev]);
+        fetchUnreadCount();
+        triggerRefresh();
+
+        AlertService.alert(title, body, [{ text: 'Xem nhiệm vụ', style: 'default' }], 'info');
+      }
+    });
 
     // Cleanup
     return () => {
       unsubscribe(userChannel);
       unsubscribe(trafficChannel);
       unsubscribe(floodChannel);
+      unsubFcm(); // Remove FCM foreground listener
     };
   }, [
     fetchUnreadCount,

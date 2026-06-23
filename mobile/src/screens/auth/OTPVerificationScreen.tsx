@@ -23,12 +23,15 @@ import {
 
 import { StackScreen } from '../../navigation/types';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 const OTP_LENGTH = 6;
 
 const OTPVerificationScreen: StackScreen<'OTPVerification'> = ({ navigation, route }) => {
   const { t } = useTranslation();
+  const { colors, isDark, theme: appTheme } = useAppTheme();
+  const styles = getStyles(colors, isDark, appTheme);
   const { identifier, type, flow = 'forgot' } = route.params;
 
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -338,7 +341,7 @@ const OTPVerificationScreen: StackScreen<'OTPVerification'> = ({ navigation, rou
               onPress={() => navigation.goBack()}
               style={styles.backButton}
             >
-              <Icon name="arrow-left" size={24} color={theme.colors.text} />
+              <Icon name="arrow-left" size={24} color={colors.text} />
             </TouchableOpacity>
 
             <View style={styles.headerContent}>
@@ -405,7 +408,7 @@ const OTPVerificationScreen: StackScreen<'OTPVerification'> = ({ navigation, rou
                         entering={FadeInDown.duration(200)}
                         style={styles.otpInputCheck}
                       >
-                        <Icon name="check" size={12} color={theme.colors.primary} />
+                        <Icon name="check" size={12} color={colors.primary} />
                       </Animated.View>
                     )}
                   </Animated.View>
@@ -468,7 +471,7 @@ const OTPVerificationScreen: StackScreen<'OTPVerification'> = ({ navigation, rou
               onPress={handleDelete}
               activeOpacity={0.7}
             >
-              <Icon name="backspace-outline" size={24} color="#666" />
+              <Icon name="backspace-outline" size={24} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.numberButton, styles.zeroButton]}
@@ -503,10 +506,10 @@ const OTPVerificationScreen: StackScreen<'OTPVerification'> = ({ navigation, rou
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.background,
   },
   backgroundContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -518,7 +521,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: colors.primary + '10',
   },
   decorativeCircle2: {
     position: 'absolute',
@@ -527,7 +530,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: theme.colors.secondary + '10',
+    backgroundColor: colors.secondary + '10',
   },
   mainContent: {
     flex: 1,
@@ -549,12 +552,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -569,33 +572,35 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: wp('6%'),
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     marginBottom: hp('0.5%'),
     fontWeight: '600',
   },
   headerSubtitle: {
     fontSize: wp('4%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontFamily: theme.typography.fontFamily,
     lineHeight: wp('5%'),
   },
 
   // OTP Display Section
   otpDisplaySection: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: wp('4%'),
     padding: wp('6%'),
     marginBottom: hp('2%'),
+    borderWidth: isDark ? 1 : 0,
+    borderColor: colors.border,
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0 : 0.1,
         shadowRadius: 8,
       },
       android: {
-        elevation: 4,
+        elevation: isDark ? 0 : 4,
       },
     }),
   },
@@ -621,19 +626,19 @@ const styles = StyleSheet.create({
     height: wp('12%'),
     borderRadius: wp('3%'),
     borderWidth: 2,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.background,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
   },
   otpInputWrapperActive: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.white,
+    borderColor: colors.primary,
+    backgroundColor: colors.card,
     transform: [{ scale: 1.05 }],
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 6,
@@ -644,12 +649,12 @@ const styles = StyleSheet.create({
     }),
   },
   otpInputWrapperFilled: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primary + '15',
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '15',
     transform: [{ scale: 1.02 }],
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 3,
@@ -662,11 +667,11 @@ const styles = StyleSheet.create({
   otpInputText: {
     fontSize: wp('6%'),
     fontFamily: theme.typography.fontFamily,
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
     fontWeight: '600',
   },
   otpInputTextFilled: {
-    color: theme.colors.primary,
+    color: colors.primary,
   },
   otpInputCheck: {
     position: 'absolute',
@@ -675,12 +680,12 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -700,7 +705,7 @@ const styles = StyleSheet.create({
   progressBar: {
     flex: 1,
     height: 4,
-    backgroundColor: theme.colors.border,
+    backgroundColor: colors.border,
     borderRadius: 2,
     marginRight: wp('3%'),
     overflow: 'hidden',
@@ -708,11 +713,12 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     borderRadius: 2,
+    backgroundColor: colors.primary,
   },
   progressText: {
     fontFamily: theme.typography.fontFamily,
     fontSize: wp('3.5%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
   },
 
   // Resend Section Styles
@@ -722,11 +728,11 @@ const styles = StyleSheet.create({
   timerText: {
     fontFamily: theme.typography.fontFamily,
     fontSize: wp('4%'),
-    color: theme.colors.textLight,
+    color: colors.textSecondary,
   },
   timer: {
     fontFamily: theme.typography.fontFamily,
-    color: theme.colors.primary,
+    color: colors.primary,
     fontWeight: '600',
   },
   resendButton: {
@@ -735,24 +741,26 @@ const styles = StyleSheet.create({
   resendButtonText: {
     fontFamily: theme.typography.fontFamily,
     fontSize: wp('4%'),
-    color: theme.colors.primary,
+    color: colors.primary,
     fontWeight: '600',
   },
 
   // Custom Keyboard Styles
   keyboardContainer: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     paddingVertical: hp('2%'),
     paddingHorizontal: wp('4%'),
+    borderTopWidth: isDark ? 1 : 0,
+    borderTopColor: colors.border,
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0 : 0.1,
         shadowRadius: 8,
       },
       android: {
-        elevation: 8,
+        elevation: isDark ? 0 : 8,
       },
     }),
   },
@@ -766,38 +774,38 @@ const styles = StyleSheet.create({
     aspectRatio: 1.2,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.white,
+    backgroundColor: colors.card,
     borderRadius: wp('3%'),
     marginBottom: hp('1%'),
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0 : 0.1,
         shadowRadius: 4,
       },
       android: {
-        elevation: 2,
+        elevation: isDark ? 0 : 2,
       },
     }),
   },
   numberText: {
     fontSize: wp('6%'),
-    color: theme.colors.text,
+    color: colors.text,
     fontFamily: theme.typography.fontFamily,
     fontWeight: '600',
   },
   deleteButton: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 0,
   },
   zeroButton: {
     // Số 0 ở giữa
   },
   verifyButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     borderWidth: 0,
   },
 });
