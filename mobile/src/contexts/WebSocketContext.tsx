@@ -22,6 +22,7 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
   // Ref để track WebSocket đã connect thật sự (không dùng state để tránh race condition)
   const wsReady = useRef(false);
+  const connectedHandlerRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -34,21 +35,60 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
         const token = await AsyncStorage.getItem('@auth_token');
         if (!token) return;
 
-        await WebSocketService.connect();
+        const echo = await WebSocketService.connect();
 
-        if (mounted) {
-          setIsConnected(true);
-          wsReady.current = true;
+        // Lắng nghe sự kiện kết nối thật sự từ Pusher
+        // thay vì set isConnected ngay sau connect() resolve
+        const pusher = (echo as any)?.connector?.pusher;
+        if (pusher?.connection) {
+          const onConnected = () => {
+            if (mounted) {
+              console.log('[WebSocketProvider] ✅ Pusher connected — setting isConnected=true');
+              wsReady.current = true;
+              setIsConnected(true);
+            }
+          };
+          const onDisconnected = () => {
+            if (mounted) {
+              console.log('[WebSocketProvider] ❌ Pusher disconnected — setting isConnected=false');
+              wsReady.current = false;
+              setIsConnected(false);
+            }
+          };
+
+          // Nếu đã connected rồi (reconnect)
+          if (pusher.connection.state === 'connected') {
+            onConnected();
+          } else {
+            pusher.connection.bind('connected', onConnected);
+          }
+          pusher.connection.bind('disconnected', onDisconnected);
+          pusher.connection.bind('unavailable', onDisconnected);
+          pusher.connection.bind('failed', onDisconnected);
+
+          connectedHandlerRef.current = () => {
+            pusher.connection.unbind('connected', onConnected);
+            pusher.connection.unbind('disconnected', onDisconnected);
+            pusher.connection.unbind('unavailable', onDisconnected);
+            pusher.connection.unbind('failed', onDisconnected);
+          };
+        } else {
+          // Fallback nếu không có Pusher instance
+          if (mounted) {
+            wsReady.current = true;
+            setIsConnected(true);
+          }
         }
       } catch (_error) {
         // App vẫn hoạt động bình thường, chỉ không có realtime
+        console.log('[WebSocketProvider] ⚠️ WebSocket init failed, continuing without realtime');
       }
     };
 
     initWebSocket();
 
     const unsubscribeNetInfo = NetInfo.addEventListener(state => {
-      if (state.isConnected && !isConnected) {
+      if (state.isConnected && !wsReady.current) {
         initWebSocket();
       }
     });
@@ -56,10 +96,14 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       mounted = false;
       wsReady.current = false;
+      if (connectedHandlerRef.current) {
+        connectedHandlerRef.current();
+        connectedHandlerRef.current = null;
+      }
       unsubscribeNetInfo();
       WebSocketService.disconnect();
     };
-  }, [isConnected]);
+  }, []);
 
   const subscribe = (channel: string) => {
     if (!wsReady.current) return;

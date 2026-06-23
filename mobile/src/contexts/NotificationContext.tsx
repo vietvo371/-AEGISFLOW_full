@@ -248,18 +248,15 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       console.error('❌ Failed to register traffic channel listeners:', error);
     }
 
-
-    // Listen to notification sent event — handles all types EXCEPT rescue_dispatch
-    // (rescue_dispatch has its own dedicated handler below to ensure popup always fires)
+    // Listen to notification sent event — unified handler for all types
     const handleNotificationSent = (data: any) => {
       console.log('🔔 [Global Listener] Notification sent event received:', data);
 
-      // rescue_dispatch is handled by the dedicated handler below — skip here to avoid duplicate
-      if (data.type === 'rescue_dispatch') return;
+      const type = data.type || 'report_status';
 
       const notification: Notification = {
         id: `notif-${data.id || Date.now()}`,
-        type: data.type || 'report_status',
+        type: type as any,
         title: data.title || data.tieu_de || 'Thông báo mới',
         message: data.message || data.noi_dung || '',
         data,
@@ -267,85 +264,61 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         read: false,
       };
 
-      setNotifications(prev => [notification, ...prev]);
+      setNotifications(prev => {
+        // De-duplicate by ID
+        if (prev.some(n => n.id === notification.id)) return prev;
+        return [notification, ...prev];
+      });
       fetchUnreadCount();
       triggerRefresh();
 
-      // Show Alert popup dialog ONLY for highly critical/emergency alerts
-      const titleLower = notification.title.toLowerCase();
-      const isCritical =
-        notification.type === 'incident_created' ||
-        data.urgency === 'critical' ||
-        data.severity === 'critical' ||
-        data.severity === 'high' ||
-        titleLower.includes('khẩn cấp') ||
-        titleLower.includes('sơ tán') ||
-        titleLower.includes('nguy hiểm');
-
-      if (isCritical) {
+      if (type === 'rescue_dispatch') {
+        // High-priority popup for rescue team dispatch orders
         AlertService.alert(
           notification.title,
           notification.message,
-          [{ text: 'Đóng', style: 'default' }],
+          [{ text: 'Xem nhiệm vụ', style: 'default' }],
           'info'
         );
+      } else {
+        // Show Alert popup dialog ONLY for highly critical/emergency alerts
+        const titleLower = notification.title.toLowerCase();
+        const isCritical =
+          notification.type === 'incident_created' ||
+          data.urgency === 'critical' ||
+          data.severity === 'critical' ||
+          data.severity === 'high' ||
+          titleLower.includes('khẩn cấp') ||
+          titleLower.includes('sơ tán') ||
+          titleLower.includes('nguy hiểm');
+
+        if (isCritical) {
+          AlertService.alert(
+            notification.title,
+            notification.message,
+            [{ text: 'Đóng', style: 'default' }],
+            'info'
+          );
+        } else {
+          Toast.show({
+            type: 'info',
+            text1: notification.title,
+            text2: notification.message,
+            visibilityTime: 4000,
+          });
+        }
       }
     };
 
     try {
-      // Listen to notification.sent using a single canonical event name.
-      // Previously 4 formats were registered which caused the same event to be
-      // processed multiple times when the server broadcast matched more than one.
+      // Single canonical listener — registering the same event twice on the same channel
+      // causes the second handler to replace the first in pusher-js.
       listen(userChannel, 'notification.sent', handleNotificationSent);
-      console.log('✅ Registered user channel notification.sent listener');
+      console.log('✅ Registered user channel notification.sent listener (unified)');
     } catch (error) {
       console.error('❌ Failed to register notification.sent listener:', error);
     }
 
-    // ── Rescue dispatch listener (for rescue team members) ──────────────────
-    // Backend broadcasts 'notification.sent' with type='rescue_dispatch' on
-    // the user's private channel when an admin assigns a rescue request to their team.
-    // The handler above already catches it via handleNotificationSent, but we add
-    // a dedicated handler here to show a high-priority popup for dispatch orders.
-    const handleRescueDispatch = (data: any) => {
-      console.log('🚨 [Rescue Dispatch] Mission assigned:', data);
-
-      const notifType = data.type || '';
-      if (notifType !== 'rescue_dispatch') return; // guard: only process dispatch events
-
-      const notification: Notification = {
-        id: `dispatch-${data.id || data.rescue_id || Date.now()}`,
-        type: 'rescue_dispatch',
-        title: data.title || data.tieu_de || '🚨 Nhiệm vụ mới được phân công',
-        message: data.message || data.noi_dung || 'Đội của bạn được điều động đến hiện trường',
-        data,
-        timestamp: new Date(),
-        read: false,
-      };
-
-      setNotifications(prev => [notification, ...prev]);
-      fetchUnreadCount();
-      triggerRefresh();
-
-      // Always show a high-priority Alert popup for rescue dispatch
-      AlertService.alert(
-        notification.title,
-        notification.message,
-        [{ text: 'Xem nhiệm vụ', style: 'default' }],
-        'info'
-      );
-    };
-
-    // NOTE: 'notification.sent' above already fires handleNotificationSent for
-    // all notification types including rescue_dispatch. We register a second
-    // dedicated listener here so the dispatch popup always fires even if the
-    // shared handler is modified in the future.
-    try {
-      listen(userChannel, 'notification.sent', handleRescueDispatch);
-      console.log('✅ Registered rescue dispatch listener');
-    } catch (error) {
-      console.error('❌ Failed to register rescue dispatch listener:', error);
-    }
 
     // Listen to AlertCreated events on the public flood channel
     try {
@@ -407,35 +380,45 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       console.error('❌ Failed to register flood channel listeners:', error);
     }
 
-    // ── FCM Foreground: catch rescue_dispatch push while app is open ───────────
+    // ── FCM Foreground: catch push notifications while app is open ───────────
     // When the app is in the foreground, FCM doesn't show a system notification.
-    // We intercept the raw FCM message and show a popup ourselves.
+    // We intercept the raw FCM message and show a popup or toast ourselves.
     const unsubFcm = messaging().onMessage(async remoteMessage => {
       const data = remoteMessage.data as Record<string, string> | undefined;
-      if (!data) return;
+      const title = remoteMessage.notification?.title || data?.title || 'Thông báo mới';
+      const body  = remoteMessage.notification?.body  || data?.message || '';
 
-      const type = data.type ?? '';
+      console.log('🚒 [FCM Foreground] Push received:', { title, body, data });
+
+      const type = data?.type || 'report_status';
+      const id = data?.id || `fcm-notif-${Date.now()}`;
+
+      const notification: Notification = {
+        id,
+        type: type as any,
+        title,
+        message: body,
+        data,
+        timestamp: new Date(),
+        read: false,
+      };
+
+      setNotifications(prev => {
+        if (prev.some(n => n.id === id)) return prev;
+        return [notification, ...prev];
+      });
+      fetchUnreadCount();
+      triggerRefresh();
+
       if (type === 'rescue_dispatch') {
-        const title = remoteMessage.notification?.title || data.title || '🚨 Nhiệm vụ mới';
-        const body  = remoteMessage.notification?.body  || data.message || 'Đội của bạn được điều động đến hiện trường';
-
-        console.log('🚒 [FCM Foreground] rescue_dispatch received:', { title, body, data });
-
-        const notification: Notification = {
-          id: `fcm-dispatch-${Date.now()}`,
-          type: 'rescue_dispatch',
-          title,
-          message: body,
-          data,
-          timestamp: new Date(),
-          read: false,
-        };
-
-        setNotifications(prev => [notification, ...prev]);
-        fetchUnreadCount();
-        triggerRefresh();
-
         AlertService.alert(title, body, [{ text: 'Xem nhiệm vụ', style: 'default' }], 'info');
+      } else {
+        Toast.show({
+          type: 'info',
+          text1: title,
+          text2: body,
+          visibilityTime: 4000,
+        });
       }
     });
 

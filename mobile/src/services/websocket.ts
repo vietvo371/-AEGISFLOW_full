@@ -8,20 +8,25 @@ import env from '../config/env';
 
 // Laravel Echo configuration cho Reverb
 // Echo sẽ tự động sử dụng window.Pusher để tạo instance
-const getEchoConfig = () => ({
-  broadcaster: 'reverb',
-  key: env.REVERB_APP_KEY,
-  wsHost: env.REVERB_HOST,
-  wsPort: env.REVERB_PORT,
-  wssPort: env.REVERB_PORT,
-  forceTLS: env.REVERB_SCHEME === 'https',
-  enabledTransports: ['ws', 'wss'],
-  authEndpoint: `${env.API_URL}/broadcasting/auth`,
-  // KHÔNG CẦN 'client: Pusher' - Echo sẽ dùng window.Pusher
-  auth: {
-    headers: {} as any,
-  },
-});
+const getEchoConfig = () => {
+  const port = parseInt(env.REVERB_PORT, 10);
+  const forceTLS = env.REVERB_SCHEME === 'https';
+  return {
+    broadcaster: 'reverb',
+    key: env.REVERB_APP_KEY,
+    wsHost: env.REVERB_HOST,
+    // Pusher expects numeric port values
+    wsPort: forceTLS ? 443 : port,
+    wssPort: forceTLS ? port : 443,
+    forceTLS,
+    // Only enable secure transport when using TLS
+    enabledTransports: forceTLS ? ['wss'] : ['ws', 'wss'],
+    authEndpoint: `${env.API_URL}/broadcasting/auth`,
+    auth: {
+      headers: {} as any,
+    },
+  };
+};
 
 class WebSocketService {
   private echo: Echo<any> | null = null;
