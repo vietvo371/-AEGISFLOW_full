@@ -306,19 +306,13 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       // Hiện Alert hoặc Toast tuỳ loại thông báo (chỉ 1 lần, tránh trùng FCM)
       showBannerOnce(bannerKeyFor(type, data), () => {
         if (type === 'rescue_dispatch') {
-          // Popup ưu tiên cao cho điều phối đội cứu hộ
+          // Chỉ hiện modal Alert — không hiện thêm Toast để tránh trùng
           AlertService.alert(
             notification.title,
             notification.message,
             [{ text: 'Xem nhiệm vụ', style: 'default' }],
             'info'
           );
-          Toast.show({
-            type: 'info',
-            text1: notification.title,
-            text2: notification.message,
-            visibilityTime: 4000,
-          });
         } else {
           const titleLower = notification.title.toLowerCase();
           const isCritical =
@@ -476,17 +470,12 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       // Hiển thị popup/Toast — chỉ 1 lần kể cả khi cùng sự kiện đến qua WebSocket
       showBannerOnce(bannerKeyFor(fcmType, data), () => {
         if (notifType === 'rescue_dispatch') {
+          // Chỉ hiện modal Alert — không hiện thêm Toast để tránh trùng
           AlertService.alert(
             title, body,
             [{ text: 'Xem nhiệm vụ', style: 'default' }],
             'info'
           );
-          Toast.show({
-            type: 'info',
-            text1: title,
-            text2: body,
-            visibilityTime: 4000,
-          });
           return;
         }
 
