@@ -428,35 +428,44 @@ const RescueRequestDetailScreen = () => {
     const renderInfoTab = () => (
         <ScrollView style={styles.tabContent} contentContainerStyle={styles.tabScrollContent} showsVerticalScrollIndicator={false}>
             {/* Status hero */}
-            <View style={[styles.card, { borderLeftWidth: 4, borderLeftColor: urgencyColor }]}>
+            <View style={[styles.card, styles.heroCard]}>
                 <View style={styles.badgeRow}>
-                    <View style={[styles.badge, { backgroundColor: statusConf.color + '18' }]}>
-                        <Icon name={statusConf.icon} size={12} color={statusConf.color} />
+                    <View style={[styles.badge, { backgroundColor: statusConf.color + '15', borderColor: statusConf.color + '30', borderWidth: 1 }]}>
+                        <Icon name={statusConf.icon} size={14} color={statusConf.color} />
                         <Text style={[styles.badgeText, { color: statusConf.color }]}>{statusConf.label.toUpperCase()}</Text>
                     </View>
-                    <View style={[styles.badge, { backgroundColor: urgencyColor + '18' }]}>
+                    <View style={[styles.badge, { backgroundColor: urgencyColor + '15', borderColor: urgencyColor + '30', borderWidth: 1 }]}>
+                        <Icon name="alert-decagram-outline" size={14} color={urgencyColor} />
                         <Text style={[styles.badgeText, { color: urgencyColor }]}>{t(`incidents.severity.${urgency}`, urgency).toUpperCase()}</Text>
                     </View>
                 </View>
+
                 <Text style={styles.heroName}>{request.caller_name}</Text>
+                
+                <View style={styles.metaItem}>
+                    <Icon name="calendar-clock" size={16} color={theme.colors.textSecondary} />
+                    <Text style={styles.metaText}>{fmtDate(request.created_at)}</Text>
+                </View>
+
                 {request.caller_phone && (
                     <TouchableOpacity
                         style={styles.phoneRow}
                         onPress={() => Linking.openURL(`tel:${request.caller_phone}`)}
+                        activeOpacity={0.7}
                     >
                         <View style={styles.phoneIcon}>
-                            <Icon name="phone" size={14} color="#10B981" />
+                            <Icon name="phone-in-talk" size={18} color="#059669" />
                         </View>
-                        <Text style={styles.phoneText}>{request.caller_phone}</Text>
+                        <View style={styles.phoneTextWrapper}>
+                            <Text style={styles.phoneLabel}>Số điện thoại</Text>
+                            <Text style={styles.phoneText}>{request.caller_phone}</Text>
+                        </View>
                         <View style={styles.callBadge}>
                             <Text style={styles.callBadgeText}>Gọi ngay</Text>
+                            <Icon name="chevron-right" size={14} color="#059669" />
                         </View>
                     </TouchableOpacity>
                 )}
-                <View style={styles.metaItem}>
-                    <Icon name="clock-outline" size={13} color={theme.colors.textSecondary} />
-                    <Text style={styles.metaText}>{fmtDate(request.created_at)}</Text>
-                </View>
             </View>
 
             {/* Location */}
@@ -484,29 +493,37 @@ const RescueRequestDetailScreen = () => {
                 </View>
             ) : null}
 
-            {/* People */}
+            {/* People and Priority */}
             <View style={styles.twoCol}>
                 <View style={[styles.card, styles.halfCard]}>
                     <Text style={styles.cardLabel}>SỐ NGƯỜI</Text>
                     <View style={styles.bigStat}>
-                        <Icon name="account-group" size={22} color="#1E40AF" />
-                        <Text style={styles.bigStatText}>{request.people_count || 0}</Text>
+                        <View style={[styles.statIconWrapper, { backgroundColor: '#EFF6FF' }]}>
+                            <Icon name="account-group" size={24} color="#2563EB" />
+                        </View>
+                        <View>
+                            <Text style={styles.bigStatText}>{request.people_count || 0}</Text>
+                            <Text style={styles.bigStatLabel}>người cần hỗ trợ</Text>
+                        </View>
                     </View>
-                    <Text style={styles.bigStatLabel}>người cần hỗ trợ</Text>
                 </View>
                 <View style={[styles.card, styles.halfCard]}>
                     <Text style={styles.cardLabel}>ƯU TIÊN</Text>
                     <View style={styles.bigStat}>
-                        <Icon name="alert-decagram" size={22} color={urgencyColor} />
-                        <Text style={[styles.bigStatText, { color: urgencyColor }]}>
-                            {urgency === 'critical' ? 'Nguy cấp' :
-                             urgency === 'high'     ? 'Cao' :
-                             urgency === 'medium'   ? 'TB' : 'Thấp'}
-                        </Text>
+                        <View style={[styles.statIconWrapper, { backgroundColor: urgencyColor + '15' }]}>
+                            <Icon name="alert-decagram" size={24} color={urgencyColor} />
+                        </View>
+                        <View>
+                            <Text style={[styles.bigStatText, { color: urgencyColor }]}>
+                                {urgency === 'critical' ? 'Nguy cấp' :
+                                 urgency === 'high'     ? 'Cao' :
+                                 urgency === 'medium'   ? 'TB' : 'Thấp'}
+                            </Text>
+                            {request.priority_score != null && (
+                                <Text style={styles.bigStatLabel}>Điểm: {request.priority_score}</Text>
+                            )}
+                        </View>
                     </View>
-                    {request.priority_score != null && (
-                        <Text style={styles.bigStatLabel}>điểm: {request.priority_score}</Text>
-                    )}
                 </View>
             </View>
 
@@ -641,9 +658,11 @@ const RescueRequestDetailScreen = () => {
 
             {/* Status strip */}
             <View style={[styles.statusStrip, { backgroundColor: statusConf.color }]}>
-                <Icon name={statusConf.icon} size={14} color="#fff" />
-                <Text style={styles.statusStripText}>{statusConf.label.toUpperCase()}</Text>
-                <View style={[styles.urgencyPill, { backgroundColor: '#ffffff30' }]}>
+                <View style={styles.statusStripContent}>
+                    <Icon name={statusConf.icon} size={16} color="#fff" />
+                    <Text style={styles.statusStripText}>{statusConf.label.toUpperCase()}</Text>
+                </View>
+                <View style={[styles.urgencyPill, { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
                     <Text style={styles.urgencyPillText}>{t(`incidents.severity.${urgency}`, urgency).toUpperCase()}</Text>
                 </View>
             </View>
@@ -700,13 +719,27 @@ const styles = StyleSheet.create({
     statusStrip: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: SPACING.sm,
-        paddingVertical: 8,
-        paddingHorizontal: SCREEN_PADDING.horizontal,
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        marginHorizontal: SCREEN_PADDING.horizontal,
+        marginTop: SPACING.md,
+        marginBottom: SPACING.xs,
+        borderRadius: BORDER_RADIUS.xl,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 4,
     },
-    statusStripText: { fontSize: 12, fontWeight: '800', color: '#fff', flex: 1, letterSpacing: 0.5 },
-    urgencyPill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: BORDER_RADIUS.full },
-    urgencyPillText: { fontSize: 10, fontWeight: '800', color: '#fff' },
+    statusStripContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING.sm,
+    },
+    statusStripText: { fontSize: 13, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
+    urgencyPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: BORDER_RADIUS.full },
+    urgencyPillText: { fontSize: 11, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
 
     // Tab bar
     tabBar: {
@@ -852,68 +885,89 @@ const styles = StyleSheet.create({
     card: {
         backgroundColor: theme.colors.white,
         borderRadius: BORDER_RADIUS.xl,
-        padding: SPACING.md,
+        padding: SPACING.lg,
         marginBottom: SPACING.md,
-        ...theme.shadows.sm,
+        shadowColor: '#64748B',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#F1F5F9',
+    },
+    heroCard: {
+        borderTopWidth: 0,
+        borderLeftWidth: 0,
+        borderRightWidth: 0,
+        borderBottomWidth: 0,
     },
     cardLabel: {
-        fontSize: 11, fontWeight: '800', letterSpacing: 0.8,
-        color: theme.colors.textSecondary, marginBottom: SPACING.sm, textTransform: 'uppercase',
+        fontSize: 12, fontWeight: '800', letterSpacing: 1,
+        color: theme.colors.textSecondary, marginBottom: SPACING.md, textTransform: 'uppercase',
     },
 
     // Hero
-    badgeRow: { flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.sm, flexWrap: 'wrap' },
+    badgeRow: { flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.md, flexWrap: 'wrap' },
     badge: {
-        flexDirection: 'row', alignItems: 'center', gap: 4,
-        paddingHorizontal: 8, paddingVertical: 4, borderRadius: BORDER_RADIUS.full,
+        flexDirection: 'row', alignItems: 'center', gap: 6,
+        paddingHorizontal: 10, paddingVertical: 6, borderRadius: BORDER_RADIUS.md,
     },
-    badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+    badgeText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
     heroName: {
-        fontSize: FONT_SIZE.xl, fontWeight: '700', color: theme.colors.text,
-        lineHeight: 28, marginBottom: SPACING.sm,
+        fontSize: 24, fontWeight: '800', color: theme.colors.text,
+        lineHeight: 32, marginBottom: SPACING.md, letterSpacing: -0.5,
     },
     phoneRow: {
-        flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: SPACING.sm,
+        flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: SPACING.md,
+        backgroundColor: '#F0FDF4', padding: SPACING.md, borderRadius: BORDER_RADIUS.lg,
+        borderWidth: 1, borderColor: '#DCFCE7',
     },
     phoneIcon: {
-        width: 30, height: 30, borderRadius: 15,
+        width: 36, height: 36, borderRadius: 18,
         backgroundColor: '#D1FAE5', justifyContent: 'center', alignItems: 'center',
     },
-    phoneText: { fontSize: FONT_SIZE.md, color: '#10B981', fontWeight: '700', flex: 1 },
+    phoneTextWrapper: { flex: 1 },
+    phoneLabel: { fontSize: 11, color: '#059669', fontWeight: '600', marginBottom: 2 },
+    phoneText: { fontSize: 16, color: '#065F46', fontWeight: '800' },
     callBadge: {
-        backgroundColor: '#D1FAE5', paddingHorizontal: 8, paddingVertical: 3,
+        flexDirection: 'row', alignItems: 'center', gap: 4,
+        backgroundColor: '#D1FAE5', paddingHorizontal: 12, paddingVertical: 6,
         borderRadius: BORDER_RADIUS.full,
     },
-    callBadgeText: { fontSize: 10, fontWeight: '800', color: '#10B981' },
-    metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-    metaText:  { fontSize: FONT_SIZE.sm, color: theme.colors.textSecondary },
+    callBadgeText: { fontSize: 12, fontWeight: '800', color: '#059669' },
+    metaItem: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+    metaText:  { fontSize: FONT_SIZE.md, color: theme.colors.textSecondary, fontWeight: '500' },
 
     // Location
-    locationRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+    locationRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.md },
     locationIcon: {
-        width: 36, height: 36, borderRadius: 18,
+        width: 44, height: 44, borderRadius: 22,
         backgroundColor: '#FEF2F2', justifyContent: 'center', alignItems: 'center',
     },
-    locationText: { fontSize: FONT_SIZE.sm, color: theme.colors.text, fontWeight: '600' },
-    districtText: { fontSize: FONT_SIZE.xs, color: theme.colors.textSecondary, marginTop: 2 },
-    descText: { fontSize: FONT_SIZE.md, color: theme.colors.text, lineHeight: 24 },
+    locationText: { fontSize: FONT_SIZE.md, color: theme.colors.text, fontWeight: '700', marginBottom: 2 },
+    districtText: { fontSize: FONT_SIZE.sm, color: theme.colors.textSecondary },
+    descText: { fontSize: FONT_SIZE.md, color: theme.colors.text, lineHeight: 24, fontWeight: '500' },
 
     // Two col
-    twoCol:   { flexDirection: 'row', gap: SPACING.sm },
-    halfCard: { flex: 1, marginBottom: SPACING.md },
-    bigStat:  { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginVertical: SPACING.sm },
-    bigStatText:  { fontSize: 22, fontWeight: '800', color: '#1E40AF' },
-    bigStatLabel: { fontSize: FONT_SIZE.xs, color: theme.colors.textSecondary },
+    twoCol:   { flexDirection: 'row', gap: SPACING.md },
+    halfCard: { flex: 1, marginBottom: SPACING.md, padding: SPACING.md },
+    bigStat:  { flexDirection: 'row', alignItems: 'center', gap: SPACING.md, marginTop: SPACING.xs },
+    statIconWrapper: {
+        width: 48, height: 48, borderRadius: 24,
+        justifyContent: 'center', alignItems: 'center',
+    },
+    bigStatText:  { fontSize: 28, fontWeight: '900', color: '#1E40AF', letterSpacing: -0.5 },
+    bigStatLabel: { fontSize: 12, color: theme.colors.textSecondary, fontWeight: '600', marginTop: 2 },
 
     // Tags
     tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
-    tag: { backgroundColor: '#EEF2FF', paddingHorizontal: 10, paddingVertical: 5, borderRadius: BORDER_RADIUS.full },
-    tagText: { fontSize: FONT_SIZE.xs, fontWeight: '600', color: '#4F46E5' },
+    tag: { backgroundColor: '#F1F5F9', paddingHorizontal: 12, paddingVertical: 8, borderRadius: BORDER_RADIUS.md },
+    tagText: { fontSize: 13, fontWeight: '700', color: '#475569' },
 
     // Team
-    teamRow:    { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
-    teamAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#DBEAFE', justifyContent: 'center', alignItems: 'center' },
-    teamName:   { fontSize: FONT_SIZE.md, fontWeight: '700', color: theme.colors.text },
+    teamRow:    { flexDirection: 'row', alignItems: 'center', gap: SPACING.md },
+    teamAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center' },
+    teamName:   { fontSize: FONT_SIZE.lg, fontWeight: '700', color: theme.colors.text },
 
     // Mission steps
     stepOuter: { flexDirection: 'row', marginBottom: 0 },

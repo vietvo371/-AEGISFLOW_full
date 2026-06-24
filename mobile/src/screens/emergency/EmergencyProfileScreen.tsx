@@ -12,6 +12,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useAppTheme } from '../../contexts/ThemeContext';
 import { authService } from '../../services/authService';
 import { reportService } from '../../services/reportService';
+import { rescueService } from '../../services/rescueService';
 
 const TAB_VISIBLE_HEIGHT = 56;
 
@@ -92,17 +93,14 @@ const EmergencyProfileScreen = () => {
   };
 
   const toggleStatus = async () => {
-    if (!teamData) return;
-    
-    // Nếu đang không ở trạng thái available hoặc offline, thì đội đang làm nhiệm vụ, không cho đổi
-    if (teamData.status !== 'available' && teamData.status !== 'offline') {
+    if (!teamData) {
       Alert.alert(
-        t('common.info', 'Thông tin'),
-        t('emergency.profile.cannotChangeStatus', 'Đội của bạn đang bận làm nhiệm vụ, không thể thay đổi trạng thái lúc này.')
+        t('common.error', 'Lỗi'),
+        t('emergency.profile.noTeamLinked', 'Tài khoản của bạn chưa được liên kết với Đội cứu hộ nào trên hệ thống.')
       );
       return;
     }
-
+    
     const newStatus = isOnDuty ? 'offline' : 'available';
     try {
       await rescueService.updateTeamStatus(teamData.id, newStatus);
