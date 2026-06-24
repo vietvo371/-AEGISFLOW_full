@@ -15,12 +15,12 @@ import { useNotifications } from '../../hooks/useNotifications';
 
 // ─── Configs ──────────────────────────────────────────────────────────────────
 
-const getStatusCfg = (colors: any) => ({
-    pending:     { label: 'Chờ xử lý',     color: colors.error, bg: colors.errorLight || '#FEF2F2', icon: 'clock-alert-outline' },
-    assigned:    { label: 'Đã phân công',   color: colors.warning, bg: colors.warningLight || '#FFFBEB', icon: 'account-check-outline' },
-    in_progress: { label: 'Đang thực hiện', color: colors.primary, bg: colors.infoLight || '#EFF6FF', icon: 'run-fast' },
-    completed:   { label: 'Hoàn thành',     color: colors.success, bg: colors.successLight || '#ECFDF5', icon: 'check-circle-outline' },
-    cancelled:   { label: 'Đã hủy',         color: colors.textSecondary, bg: colors.disabledBackground || '#F9FAFB', icon: 'close-circle-outline' },
+const getStatusCfg = (colors: any, t: any) => ({
+    pending:     { label: t('emergency.missions.status.pending', 'Chờ xử lý'),     color: colors.error, bg: colors.errorLight || '#FEF2F2', icon: 'clock-alert-outline' },
+    assigned:    { label: t('emergency.missions.status.assigned', 'Đã phân công'),   color: colors.warning, bg: colors.warningLight || '#FFFBEB', icon: 'account-check-outline' },
+    in_progress: { label: t('emergency.missions.status.in_progress', 'Đang thực hiện'), color: colors.primary, bg: colors.infoLight || '#EFF6FF', icon: 'run-fast' },
+    completed:   { label: t('emergency.missions.status.completed', 'Hoàn thành'),     color: colors.success, bg: colors.successLight || '#ECFDF5', icon: 'check-circle-outline' },
+    cancelled:   { label: t('emergency.missions.status.cancelled', 'Đã hủy'),         color: colors.textSecondary, bg: colors.disabledBackground || '#F9FAFB', icon: 'close-circle-outline' },
 });
 
 const getUrgencyCfg = (colors: any) => ({
@@ -40,11 +40,11 @@ const CAT_ICON: Record<string, string> = {
     other:      'help-circle-outline',
 };
 
-const getTabs = (colors: any) => [
-    { key: 'all',         label: 'Tất cả',       icon: 'apps',                 color: colors.primary },
-    { key: 'assigned',    label: 'Được phân công', icon: 'clock-alert-outline',  color: colors.error },
-    { key: 'in_progress', label: 'Đang làm',      icon: 'run-fast',             color: colors.primary },
-    { key: 'completed',   label: 'Xong',          icon: 'check-circle-outline', color: colors.success },
+const getTabs = (colors: any, t: any) => [
+    { key: 'all',         label: t('emergency.missions.tabs.all', 'Tất cả'),       icon: 'apps',                 color: colors.primary },
+    { key: 'assigned',    label: t('emergency.missions.tabs.assigned', 'Được phân công'), icon: 'clock-alert-outline',  color: colors.error },
+    { key: 'in_progress', label: t('emergency.missions.tabs.in_progress', 'Đang làm'),      icon: 'run-fast',             color: colors.primary },
+    { key: 'completed',   label: t('emergency.missions.tabs.completed', 'Xong'),          icon: 'check-circle-outline', color: colors.success },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -56,9 +56,9 @@ const MissionListScreen = () => {
     const { registerRefreshCallback } = useNotifications();
     const styles = getStyles(colors, isDark, theme);
 
-    const STATUS_CFG: Record<string, any> = getStatusCfg(colors);
+    const STATUS_CFG: Record<string, any> = getStatusCfg(colors, t);
     const URGENCY_CFG: Record<string, any> = getUrgencyCfg(colors);
-    const tabs = getTabs(colors);
+    const tabs = getTabs(colors, t);
 
     const [all, setAll]               = useState<RescueRequest[]>([]);
     const [loading, setLoading]       = useState(true);
@@ -136,17 +136,17 @@ const MissionListScreen = () => {
 
     // ─── Quick action ──────────────────────────────────────────────────────────
     const quickAction = (item: RescueRequest, status: string, msg: string) => {
-        Alert.alert('Xác nhận', msg, [
-            { text: 'Hủy', style: 'cancel' },
+        Alert.alert(t('common.confirm', 'Xác nhận'), msg, [
+            { text: t('common.cancel', 'Hủy'), style: 'cancel' },
             {
-                text: 'Đồng ý',
+                text: t('common.agree', 'Đồng ý'),
                 onPress: async () => {
                     try {
                         setUpdatingId(item.id);
                         await rescueService.updateStatus(item.id, status);
                         await fetchMissions();
                     } catch {
-                        Alert.alert('Lỗi', 'Cập nhật thất bại');
+                        Alert.alert(t('common.error', 'Lỗi'), t('common.updateFailed', 'Cập nhật thất bại'));
                     } finally {
                         setUpdatingId(null);
                     }
@@ -169,7 +169,7 @@ const MissionListScreen = () => {
         const location = item.address
             || (item.latitude && item.longitude
                 ? `${item.latitude.toFixed(4)}, ${item.longitude.toFixed(4)}`
-                : 'Chưa có địa chỉ');
+                : t('emergency.missions.noAddress', 'Chưa có địa chỉ'));
 
         return (
             <TouchableOpacity
@@ -199,7 +199,7 @@ const MissionListScreen = () => {
                         </View>
                         <View style={styles.nameBlock}>
                             <Text style={styles.callerName} numberOfLines={1}>
-                                {item.caller_name || 'Yêu cầu cứu hộ'}
+                                {item.caller_name || t('emergency.missions.rescueRequest', 'Yêu cầu cứu hộ')}
                             </Text>
                             {item.description ? (
                                 <Text style={styles.descText} numberOfLines={2}>{item.description}</Text>
@@ -212,7 +212,7 @@ const MissionListScreen = () => {
                         <View style={styles.row3}>
                             <Icon name="account-group-outline" size={14} color={colors.textSecondary} />
                             <Text style={styles.peopleText}>
-                                {item.people_count} người cần hỗ trợ
+                                {item.people_count} {t('emergency.missions.peopleNeedHelp', 'người cần hỗ trợ')}
                                 {item.vulnerable_groups?.length > 0
                                     ? ` · ${item.vulnerable_groups.map(g => t(`citizen.sos.form.${g}`, g)).join(', ')}`
                                     : ''}
@@ -240,14 +240,14 @@ const MissionListScreen = () => {
                             {isPending && (
                                 <TouchableOpacity
                                     style={[styles.btnAction, { backgroundColor: colors.primary }]}
-                                    onPress={() => quickAction(item, 'in_progress', 'Nhận và bắt đầu xử lý yêu cầu này?')}
+                                    onPress={() => quickAction(item, 'in_progress', t('emergency.missions.confirmAccept', 'Nhận và bắt đầu xử lý yêu cầu này?'))}
                                     disabled={isUpdating}
                                 >
                                     {isUpdating
                                         ? <ActivityIndicator size="small" color={colors.textWhite} />
                                         : (<>
                                             <Icon name="hand-wave-outline" size={16} color={colors.textWhite} />
-                                            <Text style={styles.btnActionTextPrimary}>Nhận nhiệm vụ</Text>
+                                            <Text style={styles.btnActionTextPrimary}>{t('emergency.missions.accept', 'Nhận nhiệm vụ')}</Text>
                                         </>)}
                                 </TouchableOpacity>
                             )}
@@ -258,21 +258,21 @@ const MissionListScreen = () => {
                                     onPress={() => (navigation as any).navigate('RescueRequestDetail', { id: item.id })}
                                 >
                                     <Icon name="navigation-variant-outline" size={16} color={colors.primary} />
-                                    <Text style={styles.btnNavText}>Chỉ đường</Text>
+                                    <Text style={styles.btnNavText}>{t('emergency.missions.navigate', 'Chỉ đường')}</Text>
                                 </TouchableOpacity>
                             )}
 
                             {isRunning && (
                                 <TouchableOpacity
                                     style={[styles.btnAction, styles.btnComplete]}
-                                    onPress={() => quickAction(item, 'completed', 'Xác nhận hoàn thành nhiệm vụ?')}
+                                    onPress={() => quickAction(item, 'completed', t('emergency.missions.confirmComplete', 'Xác nhận hoàn thành nhiệm vụ?'))}
                                     disabled={isUpdating}
                                 >
                                     {isUpdating
                                         ? <ActivityIndicator size="small" color={colors.success} />
                                         : (<>
                                             <Icon name="check-circle-outline" size={16} color={colors.success} />
-                                            <Text style={styles.btnCompleteText}>Hoàn thành</Text>
+                                            <Text style={styles.btnCompleteText}>{t('emergency.missions.complete', 'Hoàn thành')}</Text>
                                         </>)}
                                 </TouchableOpacity>
                             )}
@@ -280,11 +280,11 @@ const MissionListScreen = () => {
                             {isPending && (
                                 <TouchableOpacity
                                     style={[styles.btnAction, styles.btnReject]}
-                                    onPress={() => quickAction(item, 'cancelled', 'Từ chối yêu cầu này?')}
+                                    onPress={() => quickAction(item, 'cancelled', t('emergency.missions.confirmReject', 'Từ chối yêu cầu này?'))}
                                     disabled={isUpdating}
                                 >
                                     <Icon name="close-circle-outline" size={16} color={colors.textSecondary} />
-                                    <Text style={styles.btnRejectText}>Từ chối</Text>
+                                    <Text style={styles.btnRejectText}>{t('emergency.missions.reject', 'Từ chối')}</Text>
                                 </TouchableOpacity>
                             )}
                         </View>
@@ -299,7 +299,7 @@ const MissionListScreen = () => {
                                 color={sCfg.color}
                             />
                             <Text style={[styles.doneText, { color: sCfg.color }]}>
-                                {item.status === 'completed' ? 'Đã hoàn thành nhiệm vụ' : 'Đã từ chối'}
+                                {item.status === 'completed' ? t('emergency.missions.doneCompleted', 'Đã hoàn thành nhiệm vụ') : t('emergency.missions.doneRejected', 'Đã từ chối')}
                             </Text>
                         </View>
                     )}
@@ -312,10 +312,10 @@ const MissionListScreen = () => {
     if (loading) {
         return (
             <View style={styles.container}>
-                <PageHeader title="Nhiệm vụ cứu hộ" subtitle="Đang tải..." variant="default" />
+                <PageHeader title={t('emergency.missions.title', 'Nhiệm vụ cứu hộ')} subtitle={t('common.loading', 'Đang tải...')} variant="default" />
                 <View style={styles.center}>
                     <ActivityIndicator size="large" color={colors.primary} />
-                    <Text style={styles.loadingText}>Đang tải danh sách...</Text>
+                    <Text style={styles.loadingText}>{t('emergency.missions.loadingList', 'Đang tải danh sách...')}</Text>
                 </View>
             </View>
         );
@@ -327,8 +327,8 @@ const MissionListScreen = () => {
     return (
         <View style={styles.container}>
             <PageHeader
-                title="Nhiệm vụ cứu hộ"
-                subtitle={`${all.length} yêu cầu cứu trợ`}
+                title={t('emergency.missions.title', 'Nhiệm vụ cứu hộ')}
+                subtitle={`${all.length} ${t('emergency.missions.requests', 'yêu cầu cứu trợ')}`}
                 variant="default"
             />
 
@@ -339,13 +339,13 @@ const MissionListScreen = () => {
                         <Icon name="bell-alert" size={20} color={colors.textWhite} />
                     </View>
                     <Text style={styles.summaryText}>
-                        {pendingCount} yêu cầu đang chờ xử lý
+                        {pendingCount} {t('emergency.missions.pendingRequests', 'yêu cầu đang chờ xử lý')}
                     </Text>
                     <TouchableOpacity
                         style={styles.summaryAction}
                         onPress={() => switchTab('assigned')}
                     >
-                        <Text style={styles.summaryActionText}>Xem ngay</Text>
+                        <Text style={styles.summaryActionText}>{t('emergency.missions.viewNow', 'Xem ngay')}</Text>
                         <Icon name="chevron-right" size={16} color={colors.textWhite} />
                     </TouchableOpacity>
                 </View>
@@ -422,12 +422,12 @@ const MissionListScreen = () => {
                             />
                         </View>
                         <Text style={styles.emptyTitle}>
-                            {activeTab === 'all' ? 'Sẵn sàng ứng phó' :
-                             activeTab === 'assigned' ? 'Không có nhiệm vụ được phân công' :
-                             activeTab === 'in_progress' ? 'Không có nhiệm vụ đang làm' :
-                             'Chưa có nhiệm vụ hoàn thành'}
+                            {activeTab === 'all' ? t('emergency.missions.emptyAll', 'Sẵn sàng ứng phó') :
+                             activeTab === 'assigned' ? t('emergency.missions.emptyAssigned', 'Không có nhiệm vụ được phân công') :
+                             activeTab === 'in_progress' ? t('emergency.missions.emptyInProgress', 'Không có nhiệm vụ đang làm') :
+                             t('emergency.missions.emptyCompleted', 'Chưa có nhiệm vụ hoàn thành')}
                         </Text>
-                        <Text style={styles.emptyText}>Hiện không có nhiệm vụ nào trong mục này</Text>
+                        <Text style={styles.emptyText}>{t('emergency.missions.emptyDesc', 'Hiện không có nhiệm vụ nào trong mục này')}</Text>
                     </View>
                 }
             />

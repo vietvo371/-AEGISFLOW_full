@@ -24,14 +24,43 @@ const EmergencyProfileScreen = () => {
   const { themeMode, setThemeMode, isDark, colors } = useAppTheme();
   const currentTheme = themeMode === 'dark' ? 'dark' : 'light';
   const [showThemeModal, setShowThemeModal] = useState(false);
-  const [isOnDuty, setIsOnDuty] = useState(true);
+  const [isOnDuty, setIsOnDuty] = useState(false);
+  const [teamStatusText, setTeamStatusText] = useState(t('emergency.profile.statusOffline', 'Ngoại tuyến'));
+  const [teamData, setTeamData] = useState<any>(null);
+  const [teamStats, setTeamStats] = useState({ missions: 0, distance: 0, xp: 0, rank: t('emergency.profile.rankIntern', 'Thực tập sinh (Cấp 1)'), level: 1 });
 
   const fetchData = useCallback(async () => {
     try {
       const profile = await authService.getProfile();
       if (profile) setUser(profile);
+
+      // Fetch team stats
+      const team = await rescueService.getMyTeam();
+      if (team) {
+        setTeamData(team);
+        setIsOnDuty(team.status === 'available');
+        setTeamStatusText(team.status_label || t('emergency.profile.statusOffline', 'Ngoại tuyến'));
+        const missions = await rescueService.getRequests({ assigned_team_id: team.id, status: 'completed' });
+        const count = missions.length;
+        
+        // Calculate mock distance: ~3.2km per completed mission
+        const distance = count * 3.2;
+        
+        // Calculate XP: 150 XP per mission
+        const xp = count * 150;
+        
+        // Determine rank
+        let rank = t('emergency.profile.rankIntern', 'Thực tập sinh (Cấp 1)');
+        let level = 1;
+        if (xp >= 5000) { rank = t('emergency.profile.rankCommander', 'Chỉ huy (Cấp 5)'); level = 5; }
+        else if (xp >= 2000) { rank = t('emergency.profile.rankElite', 'Cơ động Tinh nhuệ (Cấp 4)'); level = 4; }
+        else if (xp >= 1000) { rank = t('emergency.profile.rankPro', 'Cứu hộ Chuyên nghiệp (Cấp 3)'); level = 3; }
+        else if (xp >= 500) { rank = t('emergency.profile.rankAdvanced', 'Nhân viên Cơ động (Cấp 2)'); level = 2; }
+
+        setTeamStats({ missions: count, distance, xp, rank, level });
+      }
     } catch { /* */ }
-  }, []);
+  }, [t]);
 
   useFocusEffect(useCallback(() => { fetchData(); }, [fetchData]));
 
@@ -62,6 +91,29 @@ const EmergencyProfileScreen = () => {
     setShowThemeModal(true);
   };
 
+  const toggleStatus = async () => {
+    if (!teamData) return;
+    
+    // Nếu đang không ở trạng thái available hoặc offline, thì đội đang làm nhiệm vụ, không cho đổi
+    if (teamData.status !== 'available' && teamData.status !== 'offline') {
+      Alert.alert(
+        t('common.info', 'Thông tin'),
+        t('emergency.profile.cannotChangeStatus', 'Đội của bạn đang bận làm nhiệm vụ, không thể thay đổi trạng thái lúc này.')
+      );
+      return;
+    }
+
+    const newStatus = isOnDuty ? 'offline' : 'available';
+    try {
+      await rescueService.updateTeamStatus(teamData.id, newStatus);
+      setIsOnDuty(!isOnDuty);
+      setTeamStatusText(newStatus === 'available' ? t('emergency.profile.statusReady', 'Sẵn sàng') : t('emergency.profile.statusOffline', 'Ngoại tuyến'));
+      setTeamData({ ...teamData, status: newStatus });
+    } catch (e: any) {
+      Alert.alert(t('common.error', 'Lỗi'), e?.message || 'Không thể cập nhật trạng thái');
+    }
+  };
+
   const getLanguageLabel = () => {
     const code = i18n.language || 'vi';
     if (code.startsWith('vi')) return 'Tiếng Việt';
@@ -70,8 +122,8 @@ const EmergencyProfileScreen = () => {
   };
 
   const currentUser = user || contextUser;
-  const fullName = currentUser?.ho_ten || currentUser?.name || 'Đội viên Cứu hộ';
-  const roleName = currentUser?.roles?.includes('rescue_team') ? 'Thành viên Đội cứu hộ' : 'Chuyên viên Điều phối';
+  const fullName = currentUser?.ho_ten || currentUser?.name || t('emergency.profile.defaultName', 'Đội viên Cứu hộ');
+  const roleName = currentUser?.roles?.includes('rescue_team') ? t('emergency.profile.roleRescue', 'Thành viên Đội cứu hộ') : t('emergency.profile.roleDispatcher', 'Chuyên viên Điều phối');
   const initials = fullName
     ? fullName.split(' ').map((w: string) => w[0]).slice(-2).join('').toUpperCase()
     : 'R';
@@ -80,31 +132,31 @@ const EmergencyProfileScreen = () => {
     { 
       id: 'dutyStatus', 
       icon: isOnDuty ? 'shield-check' : 'shield-off-outline', 
-      label: 'Trạng thái hoạt động', 
-      value: isOnDuty ? 'Sẵn sàng' : 'Ngoại tuyến',
+      label: t('emergency.profile.dutyStatus', 'Trạng thái hoạt động'), 
+      value: teamStatusText,
       valueColor: isOnDuty ? colors.success : colors.textSecondary,
-      onPress: () => setIsOnDuty(!isOnDuty) 
+      onPress: toggleStatus
     },
     { 
       id: 'missionsCompleted', 
       icon: 'lifebuoy', 
-      label: 'Nhiệm vụ hoàn thành', 
-      value: '15 nhiệm vụ',
-      onPress: () => Alert.alert('Thông tin', 'Tính năng đang phát triển.')
+      label: t('emergency.profile.missionsCompleted', 'Nhiệm vụ hoàn thành'), 
+      value: t('emergency.profile.missionsCount', '{{count}} nhiệm vụ', { count: teamStats.missions }),
+      onPress: () => Alert.alert(t('common.info', 'Thông tin'), t('emergency.profile.missionsDesc', 'Đội của bạn đã hoàn thành tổng cộng {{count}} nhiệm vụ.', { count: teamStats.missions }))
     },
     { 
       id: 'distanceTraveled', 
       icon: 'map-marker-distance', 
-      label: 'Quãng đường di chuyển', 
-      value: '45km',
-      onPress: () => Alert.alert('Thông tin', 'Tính năng đang phát triển.')
+      label: t('emergency.profile.distanceTraveled', 'Quãng đường di chuyển'), 
+      value: `${teamStats.distance.toFixed(1)}km`,
+      onPress: () => Alert.alert(t('common.info', 'Thông tin'), t('emergency.profile.distanceDesc', 'Tổng quãng đường di chuyển ước tính là {{distance}}km.', { distance: teamStats.distance.toFixed(1) }))
     },
     { 
       id: 'currentRank', 
       icon: 'medal', 
-      label: 'Cấp bậc cứu hộ', 
-      value: 'Cơ động Tinh nhuệ (Cấp 4)',
-      onPress: () => Alert.alert('Hạng hiện tại', 'Cơ động Tinh nhuệ (Cấp 4) - Đã tích lũy 1,950 XP!')
+      label: t('emergency.profile.currentRank', 'Cấp bậc cứu hộ'), 
+      value: teamStats.rank,
+      onPress: () => Alert.alert(t('emergency.profile.currentRank', 'Hạng hiện tại'), `${teamStats.rank} - ${t('emergency.profile.xpDesc', 'Đã tích lũy {{xp}} XP!', { xp: teamStats.xp })}`)
     },
   ];
 
@@ -150,13 +202,13 @@ const EmergencyProfileScreen = () => {
     { 
       id: 'history', 
       icon: 'history', 
-      label: 'Lịch sử cứu hộ', 
+      label: t('emergency.profile.history', 'Lịch sử cứu hộ'), 
       onPress: () => navigation.navigate('Incidents') 
     },
     { 
       id: 'reports', 
       icon: 'file-document-edit-outline', 
-      label: 'Báo cáo giao ban', 
+      label: t('emergency.profile.reports', 'Báo cáo giao ban'), 
       onPress: () => navigation.navigate('MyReports') 
     },
     { 
@@ -213,7 +265,7 @@ const EmergencyProfileScreen = () => {
         height: 52 + insets.top,
         borderBottomColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)',
       }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Hồ sơ Cứu hộ</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('emergency.profile.title', 'Hồ sơ Cứu hộ')}</Text>
       </View>
 
       <ScrollView
@@ -236,7 +288,7 @@ const EmergencyProfileScreen = () => {
           </View>
         </View>
 
-        {renderGroup('Hiệu suất & Hoạt động', PERFORMANCE_GROUP)}
+        {renderGroup(t('emergency.profile.performance', 'Hiệu suất & Hoạt động'), PERFORMANCE_GROUP)}
         {renderGroup(t('citizen.profile.groupAccount', 'Tài khoản'), ACCOUNT_GROUP)}
         {renderGroup(t('citizen.profile.groupPreferences', 'Tiện ích & Giao diện'), PREFERENCES_GROUP)}
         {renderGroup(t('citizen.profile.groupSupport', 'Hỗ trợ & Lịch sử'), SUPPORT_GROUP)}

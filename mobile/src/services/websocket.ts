@@ -8,25 +8,25 @@ import env from '../config/env';
 
 // Laravel Echo configuration cho Reverb
 // Echo sẽ tự động sử dụng window.Pusher để tạo instance
-const getEchoConfig = () => {
-  const port = parseInt(env.REVERB_PORT, 10);
-  const forceTLS = env.REVERB_SCHEME === 'https';
-  return {
-    broadcaster: 'reverb',
-    key: env.REVERB_APP_KEY,
-    wsHost: env.REVERB_HOST,
-    // Pusher expects numeric port values
-    wsPort: forceTLS ? 443 : port,
-    wssPort: forceTLS ? port : 443,
-    forceTLS,
-    // Only enable secure transport when using TLS
-    enabledTransports: forceTLS ? ['wss'] : ['ws', 'wss'],
-    authEndpoint: `${env.API_URL}/broadcasting/auth`,
-    auth: {
-      headers: {} as any,
-    },
-  };
-};
+const getEchoConfig = () => ({
+  broadcaster: 'reverb',
+  key: env.REVERB_APP_KEY,
+  wsHost: env.REVERB_HOST,
+  wsPort: env.REVERB_PORT,
+  wssPort: env.REVERB_PORT,
+  forceTLS: env.REVERB_SCHEME === 'https',
+  enabledTransports: ['ws', 'wss'],
+  // Tắt namespace mặc định 'App.Events'. Các event dùng broadcastAs() trả về
+  // tên ngắn ('AlertCreated', 'IncidentCreated'...). Nếu để namespace mặc định,
+  // Echo sẽ lắng nghe 'App.Events.AlertCreated' → KHÔNG khớp server → không nhận
+  // được realtime. Web frontend né bằng cách dùng '.AlertCreated' (dấu chấm đầu).
+  namespace: '',
+  authEndpoint: `${env.API_URL}/broadcasting/auth`,
+  // KHÔNG CẦN 'client: Pusher' - Echo sẽ dùng window.Pusher
+  auth: {
+    headers: {} as any,
+  },
+});
 
 class WebSocketService {
   private echo: Echo<any> | null = null;
@@ -46,12 +46,12 @@ class WebSocketService {
     try {
       // Get auth token from storage
       const token = await AsyncStorage.getItem('@auth_token');
-      
+
       console.log('🔑 Token found:', token ? `${token.substring(0, 20)}...` : 'No token');
-      
+
       // Get fresh config
       const config = getEchoConfig();
-      
+
       if (token) {
         config.auth.headers = {
           Authorization: `Bearer ${token}`,
@@ -70,9 +70,9 @@ class WebSocketService {
 
       // Initialize Laravel Echo (NO CLUSTER NEEDED!)
       this.echo = new Echo(config);
-      
+
       console.log('✅ Laravel Echo created successfully');
-      
+
       // DEBUG: Check Echo connector structure
       const connector = (this.echo as any)?.connector;
       console.log('🔍 DEBUG Echo connector:', {
@@ -80,35 +80,35 @@ class WebSocketService {
         connectorKeys: connector ? Object.keys(connector) : [],
         pusherType: typeof connector?.pusher,
       });
-      
+
       // Laravel Echo with Reverb stores the actual Pusher instance differently
       // Try different paths to get the instance
       this.pusher = connector?.pusher?.connection ? connector.pusher : null;
-      
+
       if (!this.pusher && connector?.socket) {
         // Reverb might use 'socket' instead of 'pusher'
         this.pusher = connector.socket;
         console.log('📡 Using connector.socket as Pusher instance');
       }
-      
+
       if (!this.pusher && connector) {
         // Last resort: check all connector properties
         console.log('🔍 Full connector properties:', connector);
         console.warn('⚠️ Cannot find Pusher instance, WebSocket events will not be available');
         return this.echo;
       }
-      
+
       if (!this.pusher) {
         console.error('❌ Pusher instance not available after Echo initialization');
         return this.echo;
       }
-      
+
       console.log('🚀 Pusher instance obtained:', {
         type: typeof this.pusher,
         hasConnection: !!this.pusher.connection,
         connectionState: this.pusher.connection?.state || 'unknown',
       });
-      
+
       // Bind connection events
       this.pusher.connection.bind('connected', () => {
         console.log('✅ WebSocket connected');
@@ -145,11 +145,11 @@ class WebSocketService {
 
       this.pusher.connection.bind('state_change', (states: any) => {
         console.log('🔀 Connection state change:', states.previous, '→', states.current);
-        
+
         if (states.current === 'connected') {
           console.log('✅✅✅ KẾT NỐI THÀNH CÔNG!');
         }
-        
+
         if (states.current === 'disconnected') {
           console.log('💔 Ngắt kết nối');
         }
@@ -190,23 +190,23 @@ class WebSocketService {
     }
 
     console.log(`📡 Subscribing to ${channelName}...`);
-    
+
     // Use Laravel Echo API
     const channel = channelName.startsWith('private-')
       ? this.echo.private(channelName.replace('private-', ''))
       : this.echo.channel(channelName);
-    
+
     this.channels.set(channelName, channel);
 
     console.log(`✅ Subscribed to ${channelName}`);
-    
+
     // 🔍 DEBUG: Listen to ALL events on this channel
     if (this.pusher) {
-      const pusherChannelName = channelName.startsWith('private-') 
-        ? `private-${channelName.replace('private-', '')}` 
+      const pusherChannelName = channelName.startsWith('private-')
+        ? `private-${channelName.replace('private-', '')}`
         : channelName;
       const pusherChannel = this.pusher.channel(pusherChannelName);
-      
+
       if (pusherChannel) {
         pusherChannel.bind_global((eventName: string, data: any) => {
           console.log(`🌍 [${channelName}] Global event:`, eventName);
@@ -214,7 +214,7 @@ class WebSocketService {
         });
       }
     }
-    
+
     return channel;
   }
 
@@ -227,9 +227,9 @@ class WebSocketService {
     }
 
     console.log(`📡 [Pusher] Subscribing to ${channelName}...`);
-    
+
     const channel = this.pusher.subscribe(channelName);
-    
+
     channel.bind('pusher:subscription_succeeded', () => {
       console.log(`✅ [Pusher] Subscribed to ${channelName}`);
     });
@@ -237,16 +237,16 @@ class WebSocketService {
     channel.bind('pusher:subscription_error', (error: any) => {
       console.error(`❌ [Pusher] Subscription error on ${channelName}:`, error);
     });
-    
+
     channel.bind(eventName, (data: any) => {
       console.log(`📩 [Pusher] Event ${eventName} received:`, data);
       callback(data);
     });
-    
+
     console.log(`👂 [Pusher] Listening to ${eventName} on ${channelName}`);
-    
+
     this.channels.set(`pusher-${channelName}`, channel);
-    
+
     return channel;
   }
 
@@ -277,9 +277,14 @@ class WebSocketService {
       return;
     }
 
+    // Dùng tên sự kiện THÔ (có dấu chấm đầu) để khớp broadcastAs() của server,
+    // tránh Echo prepend namespace 'App.Events' → không khớp → không nhận realtime.
+    // Giống convention web frontend ('.AlertCreated').
+    const rawEvent = eventName.startsWith('.') ? eventName : `.${eventName}`;
+
     // Laravel Echo uses .listen() instead of .bind()
-    channel.listen(eventName, callback);
-    console.log(`👂 Listening to ${eventName} on ${channelName}`);
+    channel.listen(rawEvent, callback);
+    console.log(`👂 Listening to ${rawEvent} on ${channelName}`);
   }
 
   /**

@@ -97,18 +97,38 @@ const NotificationsScreen = () => {
   const apiConverted = apiNotifications.map(convertAPINotification);
   const wsConverted = wsNotifsArray.map(convertWSNotification);
 
-  // Build a fingerprint set from API notifications
+  // Helper: strip severity emoji prefixes that WS adds (e.g. "🔴 Nguy hiểm: title" → "title")
+  // WS handler in NotificationContext builds: `${severityLabel}: ${data.title}`
+  // API stores the raw title — so we normalize before comparing.
+  const stripSeverityPrefix = (title: string): string =>
+    title.replace(/^(🔴|🟠|🟡|🔵|⚠️)\s[\w\s]+:\s*/u, '').trim();
+
+  // Build a fingerprint set from API notifications using:
+  // 1. entity ID (data.id / data.alert_id) — most reliable
+  // 2. normalized message + minute timestamp — fallback
+  const apiEntityIds = new Set(
+    apiConverted
+      .map(n => n.data?.id || n.data?.alert_id || n.data?.incident_id)
+      .filter(Boolean)
+      .map(String)
+  );
   const apiFingerprints = new Set(
     apiConverted.map(n => {
       const minuteTs = Math.floor(n.timestamp.getTime() / 60000);
-      return `${n.title}|${n.message}|${minuteTs}`;
+      return `${stripSeverityPrefix(n.title)}|${n.message}|${minuteTs}`;
     })
   );
 
   // Only include WS notifications that don't already exist in API list
   const uniqueWsNotifs = wsConverted.filter(n => {
+    // Check by entity ID first
+    const entityId =
+      n.data?.id || n.data?.alert_id || n.data?.incident_id;
+    if (entityId && apiEntityIds.has(String(entityId))) return false;
+
+    // Fallback: normalized title + message + minute timestamp
     const minuteTs = Math.floor(n.timestamp.getTime() / 60000);
-    const fp = `${n.title}|${n.message}|${minuteTs}`;
+    const fp = `${stripSeverityPrefix(n.title)}|${n.message}|${minuteTs}`;
     return !apiFingerprints.has(fp);
   });
 

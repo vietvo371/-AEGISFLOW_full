@@ -135,4 +135,9 @@ export const rescueService = {
     const response = await api.put<ApiResponse<any>>(`/rescue-requests/${id}/assign`, { team_id: teamId });
     return response.data.data;
   },
+
+  updateTeamStatus: async (id: number, status: string): Promise<any> => {
+    const response = await api.put<ApiResponse<any>>(`/rescue-teams/${id}/status`, { status });
+    return response.data.data;
+  },
 };

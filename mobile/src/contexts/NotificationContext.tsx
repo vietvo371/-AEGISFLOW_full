@@ -3,7 +3,7 @@ import { useWebSocket } from './WebSocketContext';
 import { useAuth } from './AuthContext';
 import { notificationService } from '../services/notificationService';
 import Toast from 'react-native-toast-message';
-import { AlertService } from '../services/AlertService';
+import { AlertService } from '../services/AlertService.tsx';
 import messaging from '@react-native-firebase/messaging';
 
 export interface Notification {
@@ -35,12 +35,18 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const { isConnected, subscribe, unsubscribe, listen, subscribePusher } = useWebSocket();
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  // Count from backend API (persisted, may lag slightly behind WS events)
+  const [apiUnreadCount, setApiUnreadCount] = useState(0);
+
+  // Real-time unread count: at least as large as the number of unread WS notifications
+  // so the badge updates instantly when a new WS event arrives.
+  const wsUnreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = Math.max(apiUnreadCount, wsUnreadCount);
 
   // Function to fetch unread count from API
   const fetchUnreadCount = useCallback(async () => {
     if (!user?.id) {
-      setUnreadCount(0);
+      setApiUnreadCount(0);
       return;
     }
 
@@ -48,11 +54,11 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       const response = await notificationService.getUnreadCount();
       if (response.success) {
         console.log('📊 [Global Context] Unread count from API:', response.data.count);
-        setUnreadCount(response.data.count);
+        setApiUnreadCount(response.data.count);
       }
     } catch (error: any) {
       if (error?.response?.status === 401) {
-        setUnreadCount(0);
+        setApiUnreadCount(0);
         return;
       }
       console.warn('Could not fetch unread notification count:', error?.message || error);
@@ -104,19 +110,39 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     const floodChannel = 'flood';
     subscribe(floodChannel);
 
+    // ─── Chống trùng giữa WebSocket và FCM ──────────────────────────────────
+    // Cùng một sự kiện (vd alert) có thể đến qua CẢ WebSocket (foreground) LẪN
+    // FCM push. Dùng khoá theo entity-id để mỗi sự kiện chỉ hiện banner 1 lần
+    // và chỉ thêm vào danh sách 1 lần.
+    const shownBanners = new Set<string>();
+    const bannerKeyFor = (type: string, data: any): string => {
+      const id =
+        data?.id ?? data?.alert_id ?? data?.incident_id ??
+        data?.prediction_id ?? data?.rescue_id ?? '';
+      return `${type}:${id}`;
+    };
+    const showBannerOnce = (key: string, show: () => void) => {
+      if (key && shownBanners.has(key)) return;
+      if (key) shownBanners.add(key);
+      show();
+    };
+    // Thêm notification vào danh sách, bỏ qua nếu trùng id
+    const addNotif = (n: Notification) =>
+      setNotifications(prev => (prev.some(x => x.id === n.id) ? prev : [n, ...prev]));
+
     // Handler cho report status updates
     const handleReportStatusUpdate = (data: any) => {
       console.log('📢 Report status updated:', data);
       console.log('📢 Event data structure:', JSON.stringify(data, null, 2));
-      
+
       const reportTitle = data.report?.tieu_de || 'Phản ánh của bạn';
       const newStatus = data.new_status ?? data.report?.trang_thai;
       const oldStatus = data.old_status;
       const statusText = data.status_text || getStatusText(newStatus);
-      
+
       // Tạo message dựa trên status change
       let message = '';
-      
+
       switch (newStatus) {
         case 0: // Tiếp nhận
           message = `"${reportTitle}" đã được tiếp nhận`;
@@ -136,7 +162,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         default:
           message = `"${reportTitle}" đã cập nhật: ${statusText}`;
       }
-      
+
       const notification: Notification = {
         id: `report-${data.report_id || Date.now()}`,
         type: 'report_status',
@@ -153,12 +179,12 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       };
 
       setNotifications(prev => [notification, ...prev]);
-      
+
       console.log('✅ Notification created:', notification);
-      
+
       // Fetch updated unread count from API
       fetchUnreadCount();
-      
+
       // Trigger refresh for HomeScreen and Map
       triggerRefresh();
     };
@@ -174,18 +200,18 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       console.error('❌ Failed to register Echo listeners:', error);
     }
 
-    
+
     // Method 2 (Pusher direct) intentionally removed — Echo listener above already handles this.
     // Having both caused each report.status.updated event to fire handleReportStatusUpdate twice.
 
     // Listen to points updates
     listen(userChannel, 'points.updated', (data) => {
       console.log('💰 Points updated:', data);
-      
+
       const change = data.change || data.points_change || 0;
       const newBalance = data.new_balance || data.total_points || data.points || 0;
       const reason = data.reason || data.ly_do || 'Cập nhật điểm';
-      
+
       const notification: Notification = {
         id: `points-${Date.now()}`,
         type: 'points_updated',
@@ -204,7 +230,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     // Listen to new incident events (AegisFlowAI) — private channel
     listen(userChannel, 'incident.created', (data) => {
       console.log('🚨 New incident created (private):', data);
-      
+
       const notification: Notification = {
         id: `incident-${data.id || Date.now()}`,
         type: 'incident_created',
@@ -248,15 +274,20 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       console.error('❌ Failed to register traffic channel listeners:', error);
     }
 
-    // Listen to notification sent event — unified handler for all types
-    const handleNotificationSent = (data: any) => {
-      console.log('🔔 [Global Listener] Notification sent event received:', data);
 
-      const type = data.type || 'report_status';
+    // ─── Unified notification.sent listener ────────────────────────────────
+    // CHỈ đăng ký MỘT listener cho 'notification.sent'.
+    // pusher-js KHÔNG hỗ trợ nhiều handler trên cùng event+channel —
+    // đăng ký lần 2 sẽ OVERRIDE lần 1, gây ra duplicate notification
+    // và alert không hiển thị.
+    const handleNotificationSent = (data: any) => {
+      console.log('🔔 [Notification] Received:', data.type, data.title);
+
+      const type = (data.type || 'report_status') as Notification['type'];
 
       const notification: Notification = {
         id: `notif-${data.id || Date.now()}`,
-        type: type as any,
+        type,
         title: data.title || data.tieu_de || 'Thông báo mới',
         message: data.message || data.noi_dung || '',
         data,
@@ -265,60 +296,65 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       };
 
       setNotifications(prev => {
-        // De-duplicate by ID
+        // Chống duplicate theo ID
         if (prev.some(n => n.id === notification.id)) return prev;
         return [notification, ...prev];
       });
       fetchUnreadCount();
       triggerRefresh();
 
-      if (type === 'rescue_dispatch') {
-        // High-priority popup for rescue team dispatch orders
-        AlertService.alert(
-          notification.title,
-          notification.message,
-          [{ text: 'Xem nhiệm vụ', style: 'default' }],
-          'info'
-        );
-      } else {
-        // Show Alert popup dialog ONLY for highly critical/emergency alerts
-        const titleLower = notification.title.toLowerCase();
-        const isCritical =
-          notification.type === 'incident_created' ||
-          data.urgency === 'critical' ||
-          data.severity === 'critical' ||
-          data.severity === 'high' ||
-          titleLower.includes('khẩn cấp') ||
-          titleLower.includes('sơ tán') ||
-          titleLower.includes('nguy hiểm');
-
-        if (isCritical) {
+      // Hiện Alert hoặc Toast tuỳ loại thông báo (chỉ 1 lần, tránh trùng FCM)
+      showBannerOnce(bannerKeyFor(type, data), () => {
+        if (type === 'rescue_dispatch') {
+          // Popup ưu tiên cao cho điều phối đội cứu hộ
           AlertService.alert(
             notification.title,
             notification.message,
-            [{ text: 'Đóng', style: 'default' }],
+            [{ text: 'Xem nhiệm vụ', style: 'default' }],
             'info'
           );
-        } else {
           Toast.show({
             type: 'info',
             text1: notification.title,
             text2: notification.message,
             visibilityTime: 4000,
           });
+        } else {
+          const titleLower = notification.title.toLowerCase();
+          const isCritical =
+            type === 'incident_created' ||
+            data.urgency === 'critical' ||
+            data.severity === 'critical' ||
+            data.severity === 'high' ||
+            titleLower.includes('khẩn cấp') ||
+            titleLower.includes('sơ tán') ||
+            titleLower.includes('nguy hiểm');
+
+          if (isCritical) {
+            AlertService.alert(
+              notification.title,
+              notification.message,
+              [{ text: 'Đóng', style: 'default' }],
+              'info'
+            );
+          } else {
+            Toast.show({
+              type: 'info',
+              text1: notification.title,
+              text2: notification.message,
+              visibilityTime: 4000,
+            });
+          }
         }
-      }
+      });
     };
 
     try {
-      // Single canonical listener — registering the same event twice on the same channel
-      // causes the second handler to replace the first in pusher-js.
       listen(userChannel, 'notification.sent', handleNotificationSent);
-      console.log('✅ Registered user channel notification.sent listener (unified)');
+      console.log('✅ [Notification] Single listener registered for notification.sent');
     } catch (error) {
-      console.error('❌ Failed to register notification.sent listener:', error);
+      console.error('❌ [Notification] Failed to register notification.sent listener:', error);
     }
-
 
     // Listen to AlertCreated events on the public flood channel
     try {
@@ -347,28 +383,30 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
           read: false,
         };
 
-        setNotifications(prev => [notification, ...prev]);
+        addNotif(notification);
         fetchUnreadCount();
         triggerRefresh();
 
         // High severity alerts show modal popup
         const isCritical = data.severity === 'critical' || data.severity === 'high';
-        if (isCritical) {
-          AlertService.alert(
-            `🚨 ${data.title}`,
-            data.description || 'Có cảnh báo ngập lụt mới trong khu vực. Vui lòng kiểm tra chi tiết và sơ tán nếu cần thiết.',
-            [{ text: 'Đóng', style: 'cancel' }],
-            'error'
-          );
-        } else {
-          // Medium/low severity: show Toast banner
-          Toast.show({
-            type: 'info',
-            text1: notification.title,
-            text2: notification.message,
-            visibilityTime: 4000,
-          });
-        }
+        showBannerOnce(bannerKeyFor('alert', data), () => {
+          if (isCritical) {
+            AlertService.alert(
+              `🚨 ${data.title}`,
+              data.description || 'Có cảnh báo ngập lụt mới trong khu vực. Vui lòng kiểm tra chi tiết và sơ tán nếu cần thiết.',
+              [{ text: 'Đóng', style: 'cancel' }],
+              'error'
+            );
+          } else {
+            // Medium/low severity: show Toast banner
+            Toast.show({
+              type: 'info',
+              text1: notification.title,
+              text2: notification.message,
+              visibilityTime: 4000,
+            });
+          }
+        });
       };
 
       // Listen to AlertCreated using a single canonical format.
@@ -380,22 +418,50 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       console.error('❌ Failed to register flood channel listeners:', error);
     }
 
-    // ── FCM Foreground: catch push notifications while app is open ───────────
-    // When the app is in the foreground, FCM doesn't show a system notification.
-    // We intercept the raw FCM message and show a popup or toast ourselves.
+    // ── FCM Foreground: hiển thị MỌI loại push khi app đang mở ─────────────────
+    // Khi app ở foreground, iOS/Android KHÔNG tự hiện banner hệ thống cho FCM.
+    // Ta phải tự bắt message và hiển thị. Trước đây chỉ xử lý rescue_dispatch nên
+    // alert/incident/flood_warning gửi từ admin không hiện gì trên màn hình.
     const unsubFcm = messaging().onMessage(async remoteMessage => {
-      const data = remoteMessage.data as Record<string, string> | undefined;
-      const title = remoteMessage.notification?.title || data?.title || 'Thông báo mới';
-      const body  = remoteMessage.notification?.body  || data?.message || '';
+      const data = (remoteMessage.data || {}) as Record<string, string>;
+      const fcmType = data.type ?? '';
 
-      console.log('🚒 [FCM Foreground] Push received:', { title, body, data });
+      console.log('🔔 [FCM Foreground] message received:', fcmType, data);
 
-      const type = data?.type || 'report_status';
-      const id = data?.id || `fcm-notif-${Date.now()}`;
+      const title = remoteMessage.notification?.title || data.title || 'Thông báo mới';
+      const body =
+        remoteMessage.notification?.body || data.message || data.description || '';
+
+      // Map loại FCM → loại + id nội bộ (khớp scheme WebSocket để chống trùng danh sách)
+      let notifType: Notification['type'] = 'alert';
+      let idPrefix = 'notif';
+      let entityId = data.id || '';
+      switch (fcmType) {
+        case 'alert':
+          notifType = 'alert'; idPrefix = 'alert';
+          entityId = data.id || data.alert_id || '';
+          break;
+        case 'flood_warning':
+          notifType = 'flood_warning'; idPrefix = 'alert';
+          entityId = data.id || data.prediction_id || '';
+          break;
+        case 'incident':
+          notifType = 'incident_created'; idPrefix = 'incident';
+          entityId = data.id || data.incident_id || '';
+          break;
+        case 'rescue':
+        case 'rescue_dispatch':
+          notifType = 'rescue_dispatch'; idPrefix = 'rescue';
+          entityId = data.id || data.rescue_id || '';
+          break;
+        default:
+          notifType = 'report_status'; idPrefix = 'notif';
+          entityId = data.id || '';
+      }
 
       const notification: Notification = {
-        id,
-        type: type as any,
+        id: `${idPrefix}-${entityId || Date.now()}`,
+        type: notifType,
         title,
         message: body,
         data,
@@ -403,23 +469,53 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         read: false,
       };
 
-      setNotifications(prev => {
-        if (prev.some(n => n.id === id)) return prev;
-        return [notification, ...prev];
-      });
+      addNotif(notification);
       fetchUnreadCount();
       triggerRefresh();
 
-      if (type === 'rescue_dispatch') {
-        AlertService.alert(title, body, [{ text: 'Xem nhiệm vụ', style: 'default' }], 'info');
-      } else {
-        Toast.show({
-          type: 'info',
-          text1: title,
-          text2: body,
-          visibilityTime: 4000,
-        });
-      }
+      // Hiển thị popup/Toast — chỉ 1 lần kể cả khi cùng sự kiện đến qua WebSocket
+      showBannerOnce(bannerKeyFor(fcmType, data), () => {
+        if (notifType === 'rescue_dispatch') {
+          AlertService.alert(
+            title, body,
+            [{ text: 'Xem nhiệm vụ', style: 'default' }],
+            'info'
+          );
+          Toast.show({
+            type: 'info',
+            text1: title,
+            text2: body,
+            visibilityTime: 4000,
+          });
+          return;
+        }
+
+        const titleLower = title.toLowerCase();
+        const isCritical =
+          data.severity === 'critical' ||
+          data.severity === 'high' ||
+          data.urgency === 'critical' ||
+          data.risk_level === 'critical' ||
+          data.risk_level === 'high' ||
+          titleLower.includes('khẩn cấp') ||
+          titleLower.includes('sơ tán') ||
+          titleLower.includes('nguy hiểm');
+
+        if (isCritical) {
+          AlertService.alert(
+            title, body,
+            [{ text: 'Đóng', style: 'default' }],
+            'error'
+          );
+        } else {
+          Toast.show({
+            type: 'info',
+            text1: title,
+            text2: body,
+            visibilityTime: 4000,
+          });
+        }
+      });
     });
 
     // Cleanup
@@ -444,17 +540,19 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     setNotifications(prev =>
       prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
     );
-    fetchUnreadCount();
+    // Also sync API count after a short delay so badge doesn't flicker
+    setTimeout(fetchUnreadCount, 300);
   };
 
   const markAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setApiUnreadCount(0);
     fetchUnreadCount();
   };
 
   const clearAll = () => {
     setNotifications([]);
-    setUnreadCount(0);
+    setApiUnreadCount(0);
   };
 
   return (

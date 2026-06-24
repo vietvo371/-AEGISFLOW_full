@@ -396,11 +396,15 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     marginTop: 12,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   emailDisplay: {
     fontSize: 14,
     color: colors.textSecondary,
     marginTop: 4,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   card: {
     backgroundColor: colors.card,

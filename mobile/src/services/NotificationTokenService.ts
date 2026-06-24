@@ -77,7 +77,7 @@ class NotificationTokenService {
    */
   static async getDeviceInfo(): Promise<DeviceInfo> {
     const deviceId = await this.getOrCreateDeviceId();
-    
+
     return {
       deviceId,
       deviceType: Platform.OS as 'ios' | 'android' | 'web',
@@ -97,7 +97,7 @@ class NotificationTokenService {
     try {
       // Kiểm tra quyền thông báo
       const hasPermission = await PushNotificationHelper.checkPermission();
-      
+
       if (!hasPermission) {
         const granted = await PushNotificationHelper.requestPermission();
         if (!granted) {
@@ -121,7 +121,7 @@ class NotificationTokenService {
 
       // Đăng ký với server
       const result = await this.registerDeviceWithServer(fcmToken, deviceInfo);
-      
+
       return result;
     } catch (error) {
       console.error('Lỗi nghiêm trọng trong quá trình đăng ký FCM token:', error);
@@ -162,7 +162,7 @@ class NotificationTokenService {
 
       const deviceInfo = await this.getDeviceInfo();
       const result = await this.registerDeviceWithServer(newToken, deviceInfo);
-      
+
       return result.success;
     } catch (error) {
       console.error('Lỗi khi cập nhật FCM token:', error);

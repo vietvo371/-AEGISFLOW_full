@@ -24,12 +24,12 @@ MapboxGL.setAccessToken('');
 // ─── Layer Types ─────────────────────────────────────────────
 type LayerKey = 'alerts' | 'shelters' | 'flood_zones' | 'flood_points' | 'flood_streets';
 
-const LAYER_CONFIGS: Array<{ key: LayerKey; label: string; color: string; icon: string }> = [
-  { key: 'flood_zones',   label: 'Vùng ngập',     color: '#EF4444', icon: 'map-marker-radius' },
-  { key: 'flood_streets', label: 'Đường ngập',    color: '#3B82F6', icon: 'waves' },
-  { key: 'flood_points',  label: 'Điểm ngập',     color: '#3B82F6', icon: 'water' },
-  { key: 'alerts',        label: 'Cảnh báo',       color: '#EF4444', icon: 'alert' },
-  { key: 'shelters',      label: 'Trú ẩn',         color: '#16A34A', icon: 'home-heart' },
+const LAYER_CONFIGS: Array<{ key: LayerKey; label: string; color: string; icon: string; desc: string }> = [
+  { key: 'flood_zones',   label: 'Vùng ngập',   color: '#EF4444', icon: 'map-marker-radius', desc: 'Khu vực có nguy cơ ngập' },
+  { key: 'flood_streets', label: 'Đường ngập',  color: '#3B82F6', icon: 'waves',            desc: 'Tuyến đường bị ngập nước' },
+  { key: 'flood_points',  label: 'Điểm ngập',   color: '#0EA5E9', icon: 'water',            desc: 'Vị trí ngập cục bộ' },
+  { key: 'alerts',        label: 'Cảnh báo',     color: '#F97316', icon: 'alert',            desc: 'Cảnh báo địa bàn active' },
+  { key: 'shelters',      label: 'Nơi trú ẩn',   color: '#16A34A', icon: 'home-heart',       desc: 'Điểm sơ tán an toàn' },
 ];
 
 // ─── Constants ─────────────────────────────────────────────
@@ -334,6 +334,7 @@ const MapScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [currentZoom, setCurrentZoom] = useState(13);
   const routeOffset = activeShelterRoute ? 80 : 0;
 
   const cameraRef = useRef<MapboxGL.Camera>(null);
@@ -432,12 +433,32 @@ const MapScreen = () => {
   }, []);
 
   // ─── Data Fetching ───────────────────────────────────────
+  // Default Đà Nẵng bounds — used immediately on mount and as fallback
+  // when the map tile hasn't finished rendering yet (avoids blocking on
+  // getVisibleBounds() which requires the map to be fully loaded).
+  const DA_NANG_DEFAULT_BOUNDS: MapBounds = {
+    min_lon: 108.02, min_lat: 15.82, max_lon: 108.29, max_lat: 16.16,
+  };
+
   const fetchMapReports = useCallback(async () => {
-    if (!mapRef.current) return;
     try {
       setLoading(true);
-      const bounds = await mapRef.current.getVisibleBounds();
-      if (!bounds || bounds.length < 2) return;
+
+      // Try to get real visible bounds; fall back to Đà Nẵng extent so we
+      // never block on the map tile being loaded.
+      let mapBounds: MapBounds = DA_NANG_DEFAULT_BOUNDS;
+      if (mapRef.current) {
+        try {
+          const bounds = await mapRef.current.getVisibleBounds();
+          if (bounds && bounds.length >= 2) {
+            const ne = bounds[0];
+            const sw = bounds[1];
+            mapBounds = { min_lon: sw[0], min_lat: sw[1], max_lon: ne[0], max_lat: ne[1] };
+          }
+        } catch {
+          // Map not ready yet — use default Đà Nẵng bounds
+        }
+      }
 
       if (isEmergency) {
         const response = await incidentService.getIncidents({ per_page: 50 });
@@ -450,9 +471,6 @@ const MapScreen = () => {
         return;
       }
 
-      const ne = bounds[0];
-      const sw = bounds[1];
-      const mapBounds: MapBounds = { min_lon: sw[0], min_lat: sw[1], max_lon: ne[0], max_lat: ne[1] };
       const filters: any = {};
       if (selectedCategory !== -1) filters.danh_muc = selectedCategory;
 
@@ -505,19 +523,16 @@ const MapScreen = () => {
 
   const fetchLayers = useCallback(async () => {
     try {
-      const [traffic, flood, shelterRes] = await Promise.allSettled([
-        mapService.getTrafficEdges(),
+      // Traffic layer removed — only fetch flood zones and shelters
+      const [flood, shelterRes] = await Promise.allSettled([
         mapService.getFloodZones(),
         mapService.getShelters(),
       ]);
-      if (traffic.status === 'fulfilled' && traffic.value?.type === 'FeatureCollection') {
-        setTrafficGeoJSON(traffic.value);
-      }
-      
+
       if (flood.status === 'fulfilled' && flood.value) {
         setFloodZonesGeoJSON(flood.value);
       }
-      
+
       if (shelterRes.status === 'fulfilled' && (shelterRes.value as any)?.success) {
         setShelters((shelterRes.value as any).data || []);
       }
@@ -528,16 +543,20 @@ const MapScreen = () => {
 
   useEffect(() => { fetchLayers(); }, [fetchLayers]);
 
+  // Fetch data immediately on mount (don't wait for map tiles).
+  // Also re-fetch when the selected category changes.
+  // When mapLoaded becomes true, do one more fetch with real visible bounds.
   useEffect(() => {
-    if (mapLoaded) {
-      const timer = setTimeout(fetchMapReports, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [mapLoaded, fetchMapReports]);
+    fetchMapReports();
+  }, [selectedCategory]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (mapLoaded) fetchMapReports();
-  }, [selectedCategory, mapLoaded, fetchMapReports]);
+    if (mapLoaded) {
+      // Map is now fully rendered — refetch with precise visible bounds.
+      const timer = setTimeout(fetchMapReports, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [mapLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const target = routeParams?.shelterRoute;
@@ -606,18 +625,19 @@ const MapScreen = () => {
   useEffect(() => {
     if (!activeShelterRoute) {
       setRealRouteGeoJSON(null);
+      setSafeRouteGeoJSON(null);
       return;
     }
     const dest = toCoordinate(activeShelterRoute.longitude, activeShelterRoute.latitude);
-    if (!dest) { setRealRouteGeoJSON(null); return; }
+    if (!dest) { setRealRouteGeoJSON(null); setSafeRouteGeoJSON(null); return; }
 
     const origin: [number, number] = isValidCoordinate(userLocation)
       ? [userLocation![0], userLocation![1]]
       : [108.2122, 16.0680];
 
     const isFlooded = (coords: [number, number][]) => {
-      if (!floodZonesGeoJSON || !floodZonesGeoJSON.features) return false;
-      // Kiểm tra mỗi điểm thứ 3 để tối ưu hiệu năng
+      if (!floodZonesGeoJSON?.features) return false;
+      // Sample every 3rd point for performance
       for (let i = 0; i < coords.length; i += 3) {
         const [lng, lat] = coords[i];
         for (const f of floodZonesGeoJSON.features) {
@@ -633,125 +653,129 @@ const MapScreen = () => {
       return false;
     };
 
+    const osrmRoute = async (waypoints: [number, number][]) => {
+      const wStr = waypoints.map(([lng, lat]) => `${lng},${lat}`).join(';');
+      const res = await fetch(
+        `https://router.project-osrm.org/route/v1/driving/${wStr}?overview=full&geometries=geojson&alternatives=true`
+      );
+      return res.json();
+    };
+
+    const makeGeoJSON = (id: string, name: string, coords: [number, number][]) => ({
+      type: 'FeatureCollection' as const,
+      features: [{
+        type: 'Feature' as const,
+        id,
+        properties: { name },
+        geometry: { type: 'LineString' as const, coordinates: coords },
+      }],
+    });
+
     const runSafeRouting = async () => {
       try {
-        const url = `https://router.project-osrm.org/route/v1/driving/${origin[0]},${origin[1]};${dest[0]},${dest[1]}?overview=full&geometries=geojson&alternatives=true`;
-        const res = await fetch(url);
-        const data = await res.json();
-        
-        const coords = data?.routes?.[0]?.geometry?.coordinates
-          || data?.route?.geometry?.coordinates
-          || data?.paths?.[0]?.points?.coordinates
-          || null;
+        // 1. Fetch shortest + alternative in one call
+        const data = await osrmRoute([origin, dest]);
 
-        if (!coords || coords.length < 2) {
-          // Fallback đường thẳng
-          setRealRouteGeoJSON({
-            type: 'FeatureCollection',
-            features: [{
-              type: 'Feature',
-              id: `route_${activeShelterRoute.id}`,
-              properties: { name: activeShelterRoute.name },
-              geometry: { type: 'LineString', coordinates: [origin, dest] },
-            }],
-          });
-          const safeCoords = generateSafeArcRoute([origin, dest]);
-          setSafeRouteGeoJSON({
-            type: 'FeatureCollection',
-            features: [{
-              type: 'Feature',
-              id: `safe_route_${activeShelterRoute.id}`,
-              properties: { name: 'Tuyến an toàn vòng cung (AI)' },
-              geometry: { type: 'LineString', coordinates: safeCoords },
-            }],
-          });
+        const mainCoords: [number, number][] | null =
+          data?.routes?.[0]?.geometry?.coordinates ?? null;
+
+        if (!mainCoords || mainCoords.length < 2) {
+          // OSRM failed entirely — show straight line only
+          setRealRouteGeoJSON(makeGeoJSON(
+            `route_${activeShelterRoute.id}`,
+            activeShelterRoute.name,
+            [origin, dest]
+          ));
+          setSafeRouteGeoJSON(null);
           return;
         }
 
-        // Set route ngắn nhất (nguy hiểm)
-        setRealRouteGeoJSON({
-          type: 'FeatureCollection',
-          features: [{
-            type: 'Feature',
-            id: `route_${activeShelterRoute.id}`,
-            properties: { name: activeShelterRoute.name },
-            geometry: { type: 'LineString', coordinates: coords },
-          }],
-        });
+        // 2. Set main (shortest) route
+        setRealRouteGeoJSON(makeGeoJSON(
+          `route_${activeShelterRoute.id}`,
+          activeShelterRoute.name,
+          mainCoords
+        ));
 
-        const setSafe = (safeCoords: [number, number][]) => {
-          setSafeRouteGeoJSON({
-            type: 'FeatureCollection',
-            features: [{
-              type: 'Feature',
-              id: `safe_route_${activeShelterRoute.id}`,
-              properties: { name: 'Tuyến an toàn vòng cung (AI)' },
-              geometry: { type: 'LineString', coordinates: safeCoords },
-            }],
-          });
-        };
-
-        // Nếu tuyến thay thế OSRM an toàn thì dùng luôn
-        let altCoords = data?.routes?.[1]?.geometry?.coordinates;
+        // 3. Check if OSRM alternative is safe
+        const altCoords: [number, number][] | null =
+          data?.routes?.[1]?.geometry?.coordinates ?? null;
         if (altCoords && altCoords.length >= 2 && !isFlooded(altCoords)) {
-          return setSafe(altCoords);
+          setSafeRouteGeoJSON(makeGeoJSON(
+            `safe_route_${activeShelterRoute.id}`,
+            'Tuyến an toàn (đề xuất)',
+            altCoords
+          ));
+          return;
         }
 
-        // AI Probing: Tìm đường vòng với bán kính tăng dần để tìm lộ trình an toàn ngắn nhất
+        // 4. If main route not flooded — no need for alternate route
+        if (!isFlooded(mainCoords)) {
+          setSafeRouteGeoJSON(null);
+          return;
+        }
+
+        // 5. Probe candidate waypoints IN PARALLEL to find a safe detour
         const dx = dest[0] - origin[0];
         const dy = dest[1] - origin[1];
-        
-        const candidates = [
-          // Lách nhẹ 10%
-          [(origin[0] + dest[0])/2 + dy * 0.1, (origin[1] + dest[1])/2 - dx * 0.1],
-          [(origin[0] + dest[0])/2 - dy * 0.1, (origin[1] + dest[1])/2 + dx * 0.1],
-          // Vòng vừa 20%
-          [(origin[0] + dest[0])/2 + dy * 0.2, (origin[1] + dest[1])/2 - dx * 0.2],
-          [(origin[0] + dest[0])/2 - dy * 0.2, (origin[1] + dest[1])/2 + dx * 0.2],
-          // Vòng trung bình 35%
-          [(origin[0] + dest[0])/2 + dy * 0.35, (origin[1] + dest[1])/2 - dx * 0.35],
-          [(origin[0] + dest[0])/2 - dy * 0.35, (origin[1] + dest[1])/2 + dx * 0.35],
-          // Vòng xa 50%
-          [(origin[0] + dest[0])/2 + dy * 0.5, (origin[1] + dest[1])/2 - dx * 0.5],
-          [(origin[0] + dest[0])/2 - dy * 0.5, (origin[1] + dest[1])/2 + dx * 0.5],
+        const midLng = (origin[0] + dest[0]) / 2;
+        const midLat = (origin[1] + dest[1]) / 2;
+
+        const candidates: [number, number][] = [
+          [midLng + dy * 0.15, midLat - dx * 0.15],
+          [midLng - dy * 0.15, midLat + dx * 0.15],
+          [midLng + dy * 0.30, midLat - dx * 0.30],
+          [midLng - dy * 0.30, midLat + dx * 0.30],
+          [midLng + dy * 0.50, midLat - dx * 0.50],
+          [midLng - dy * 0.50, midLat + dx * 0.50],
         ];
 
-        for (const mid of candidates) {
-          const r2 = await fetch(`https://router.project-osrm.org/route/v1/driving/${origin[0]},${origin[1]};${mid[0]},${mid[1]};${dest[0]},${dest[1]}?overview=full&geometries=geojson`);
-          const d2 = await r2.json();
-          const sc = d2?.routes?.[0]?.geometry?.coordinates;
+        // Fetch all candidates in parallel
+        const results = await Promise.allSettled(
+          candidates.map(mid => osrmRoute([origin, mid, dest]))
+        );
+
+        for (const result of results) {
+          if (result.status !== 'fulfilled') continue;
+          const sc: [number, number][] | null =
+            result.value?.routes?.[0]?.geometry?.coordinates ?? null;
           if (sc && sc.length >= 2 && !isFlooded(sc)) {
-            return setSafe(sc);
+            setSafeRouteGeoJSON(makeGeoJSON(
+              `safe_route_${activeShelterRoute.id}`,
+              'Tuyến vòng tránh ngập (AI)',
+              sc
+            ));
+            return;
           }
         }
 
-        // Nếu vẫn không né được (vùng ngập quá to), chọn tạm ứng viên đầu tiên
-        const bestEffort = candidates[0];
-        const r3 = await fetch(`https://router.project-osrm.org/route/v1/driving/${origin[0]},${origin[1]};${bestEffort[0]},${bestEffort[1]};${dest[0]},${dest[1]}?overview=full&geometries=geojson`);
-        const d3 = await r3.json();
-        const fallbackSc = d3?.routes?.[0]?.geometry?.coordinates || generateSafeArcRoute(coords);
-        setSafe(fallbackSc);
+        // 6. All detours through flood zones too — show best effort (first candidate)
+        const bestEffortCoords = results
+          .find(r => r.status === 'fulfilled' && r.value?.routes?.[0]?.geometry?.coordinates)
+          ?.status === 'fulfilled'
+          ? (results.find(r => r.status === 'fulfilled' && r.value?.routes?.[0]?.geometry?.coordinates) as any)
+              ?.value?.routes?.[0]?.geometry?.coordinates
+          : null;
+
+        if (bestEffortCoords && bestEffortCoords.length >= 2) {
+          setSafeRouteGeoJSON(makeGeoJSON(
+            `safe_route_${activeShelterRoute.id}`,
+            'Tuyến đề xuất (có thể ngập)',
+            bestEffortCoords
+          ));
+        } else {
+          // No usable detour found — hide safe route line
+          setSafeRouteGeoJSON(null);
+        }
 
       } catch (e) {
-        // Lỗi mạng fallback đường thẳng
-        setRealRouteGeoJSON({
-          type: 'FeatureCollection',
-          features: [{
-            type: 'Feature',
-            id: `route_${activeShelterRoute.id}`,
-            properties: {},
-            geometry: { type: 'LineString', coordinates: [origin, dest] },
-          }],
-        });
-        setSafeRouteGeoJSON({
-          type: 'FeatureCollection',
-          features: [{
-            type: 'Feature',
-            id: `safe_route_${activeShelterRoute.id}`,
-            properties: { name: 'Tuyến an toàn vòng cung (AI)' },
-            geometry: { type: 'LineString', coordinates: generateSafeArcRoute([origin, dest]) },
-          }],
-        });
+        // Network error — show straight fallback line only
+        setRealRouteGeoJSON(makeGeoJSON(
+          `route_${activeShelterRoute.id}`,
+          activeShelterRoute.name,
+          [origin, dest]
+        ));
+        setSafeRouteGeoJSON(null);
       }
     };
 
@@ -1037,8 +1061,15 @@ const MapScreen = () => {
         logoEnabled={false}
         attributionEnabled={false}
         onDidFinishLoadingMap={() => setMapLoaded(true)}
-        onRegionDidChange={() => {
+        onRegionDidChange={async () => {
           if (!mapLoaded) return;
+          // Sync current zoom level from map
+          if (mapRef.current) {
+            try {
+              const zoom = await mapRef.current.getZoom();
+              if (typeof zoom === 'number') setCurrentZoom(Math.round(zoom));
+            } catch { /* ignore */ }
+          }
           if (mapFetchTimer.current) clearTimeout(mapFetchTimer.current);
           mapFetchTimer.current = setTimeout(fetchMapReports, 450);
         }}
@@ -1105,12 +1136,11 @@ const MapScreen = () => {
 
         {/* Traffic Lines Layer is removed to focus strictly on flood prevention */}
 
-        {/* Flood Zones */}
-        {floodZonesGeoJSON && (
+        {/* Flood Zones — only render when layer is active */}
+        {floodZonesGeoJSON && activeLayers.has('flood_zones') && (
           <MapboxGL.ShapeSource id="floodZonesSource" shape={floodZonesGeoJSON}>
             <MapboxGL.FillLayer
               id="floodZonesFill"
-              visible={activeLayers.has('flood_zones')}
               style={{
                 fillColor: ['match', ['get', 'risk_level'], 'High', '#EF4444', 'Medium', '#F59E0B', 'Low', '#3B82F6', '#3B82F6'] as any,
                 fillOpacity: 0.35,
@@ -1118,7 +1148,6 @@ const MapScreen = () => {
             />
             <MapboxGL.LineLayer
               id="floodZonesOutline"
-              visible={activeLayers.has('flood_zones')}
               style={{
                 lineColor: ['match', ['get', 'risk_level'], 'High', '#B91C1C', 'Medium', '#B45309', 'Low', '#1D4ED8', '#1D4ED8'] as any,
                 lineWidth: 2,
@@ -1127,11 +1156,10 @@ const MapScreen = () => {
             />
             <MapboxGL.SymbolLayer
               id="floodZonesLabel"
-              visible={activeLayers.has('flood_zones')}
               style={{
                 textField: [
-                  'format', 
-                  'Vùng ngập ', 
+                  'format',
+                  'Vùng ngập ',
                   ['match', ['get', 'risk_level'], 'High', 'Cao', 'Medium', 'Trung bình', 'Low', 'Thấp', 'Thấp']
                 ],
                 textSize: 12,
@@ -1146,7 +1174,8 @@ const MapScreen = () => {
         )}
 
         {/* Real flood reports: historical point floods and flooded streets */}
-        {floodReportsGeoJSON && (
+        {/* Render ShapeSource when at least one sub-layer is active */}
+        {floodReportsGeoJSON && (activeLayers.has('flood_streets') || activeLayers.has('flood_points')) && (
           <MapboxGL.ShapeSource
             id="floodReportsSource"
             shape={floodReportsGeoJSON}
@@ -1155,35 +1184,37 @@ const MapScreen = () => {
               if (feature) handleFloodReportSelect(feature);
             }}
           >
-            <MapboxGL.LineLayer
-              id="floodReportStreets"
-              filter={['==', ['geometry-type'], 'LineString']}
-              visible={activeLayers.has('flood_streets')}
-              style={{
-                lineColor: ['coalesce', ['get', 'color'], '#3B82F6'] as any,
-                lineWidth: ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 4] as any,
-                lineOpacity: 0.9,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
-            <MapboxGL.CircleLayer
-              id="floodReportPoints"
-              filter={['==', ['geometry-type'], 'Point']}
-              visible={activeLayers.has('flood_points')}
-              style={{
-                circleRadius: ['interpolate', ['linear'], ['zoom'], 10, 5, 14, 10] as any,
-                circleColor: ['coalesce', ['get', 'color'], '#3B82F6'] as any,
-                circleStrokeWidth: 2,
-                circleStrokeColor: '#ffffff',
-                circleOpacity: 0.95,
-              }}
-            />
+            {activeLayers.has('flood_streets') && (
+              <MapboxGL.LineLayer
+                id="floodReportStreets"
+                filter={['==', ['geometry-type'], 'LineString']}
+                style={{
+                  lineColor: ['coalesce', ['get', 'color'], '#3B82F6'] as any,
+                  lineWidth: ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 4] as any,
+                  lineOpacity: 0.9,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                }}
+              />
+            )}
+            {activeLayers.has('flood_points') && (
+              <MapboxGL.CircleLayer
+                id="floodReportPoints"
+                filter={['==', ['geometry-type'], 'Point']}
+                style={{
+                  circleRadius: ['interpolate', ['linear'], ['zoom'], 10, 5, 14, 10] as any,
+                  circleColor: ['coalesce', ['get', 'color'], '#3B82F6'] as any,
+                  circleStrokeWidth: 2,
+                  circleStrokeColor: '#ffffff',
+                  circleOpacity: 0.95,
+                }}
+              />
+            )}
           </MapboxGL.ShapeSource>
         )}
 
-        {/* Shelter Markers */}
-        {shelters.length > 0 && (
+        {/* Shelter Markers — only render when layer is active */}
+        {shelters.length > 0 && activeLayers.has('shelters') && (
           <MapboxGL.ShapeSource
             id="sheltersSource"
             shape={{ type: 'FeatureCollection', features: getShelterFeatures() }}
@@ -1198,7 +1229,6 @@ const MapScreen = () => {
           >
             <MapboxGL.CircleLayer
               id="shelterCircles"
-              visible={activeLayers.has('shelters')}
               style={{
                 circleRadius: ['interpolate', ['linear'], ['zoom'], 10, 8, 14, 13] as any,
                 circleColor: ['get', '_color'] as any,
@@ -1209,7 +1239,6 @@ const MapScreen = () => {
             />
             <MapboxGL.SymbolLayer
               id="shelterIcons"
-              visible={activeLayers.has('shelters')}
               style={{
                 iconImage: 'icon_shelter',
                 iconSize: 0.45,
@@ -1220,60 +1249,60 @@ const MapScreen = () => {
           </MapboxGL.ShapeSource>
         )}
 
-        {/* Markers */}
-        <MapboxGL.ShapeSource
-          id="reportsSource"
-          cluster={false}
-          shape={{ type: 'FeatureCollection', features: getFeatures() }}
-          onPress={(e) => {
-            const f = e.features[0];
-            if (f?.properties) {
-              if (f.properties._isIncident) {
-                setSelectedIncident(f.properties as any);
-                setSelectedReport(null);
-              } else {
-                handleMarkerSelect(f.properties as MapReport);
+        {/* Markers (reports + incidents) — ShapeSource always mounted for onPress,
+            but layers are conditionally rendered based on active layers state */}
+        {(activeLayers.has('alerts') || activeLayers.has('flood_points')) && (
+          <MapboxGL.ShapeSource
+            id="reportsSource"
+            cluster={false}
+            shape={{ type: 'FeatureCollection', features: getFeatures() }}
+            onPress={(e) => {
+              const f = e.features[0];
+              if (f?.properties) {
+                if (f.properties._isIncident) {
+                  setSelectedIncident(f.properties as any);
+                  setSelectedReport(null);
+                } else {
+                  handleMarkerSelect(f.properties as MapReport);
+                }
               }
-            }
-          }}
-        >
-          {isEmergency ? (
+            }}
+          >
+            {isEmergency && activeLayers.has('alerts') ? (
+              <MapboxGL.CircleLayer
+                id="criticalRing"
+                filter={['==', ['get', '_isCritical'], 1]}
+                belowLayerID="markerCircles"
+                style={{ circleRadius: 22, circleColor: 'transparent', circleStrokeWidth: 3, circleStrokeColor: '#EF444480' }}
+              />
+            ) : (
+              <MapboxGL.CircleLayer id="criticalRingPlaceholder" style={{ circleRadius: 0, circleOpacity: 0 }} />
+            )}
             <MapboxGL.CircleLayer
-              id="criticalRing"
-              filter={['==', ['get', '_isCritical'], 1]}
-              belowLayerID="markerCircles"
-              visible={activeLayers.has('alerts')}
-              style={{ circleRadius: 22, circleColor: 'transparent', circleStrokeWidth: 3, circleStrokeColor: '#EF444480' }}
+              id="markerCircles"
+              style={{
+                circleRadius: ['interpolate', ['linear'], ['zoom'], 10, isEmergency ? 8 : 6, 14, isEmergency ? 14 : 11] as any,
+                circleColor: isEmergency
+                  ? (['get', '_severityColor'] as any)
+                  : (['match', ['get', 'danh_muc'], 1, '#FF9500', 2, '#34C759', 3, '#FF3B30', 4, '#8E6F3E', 5, '#007AFF', '#8E8E93'] as any),
+                circleStrokeWidth: 2.5,
+                circleStrokeColor: '#ffffff',
+                circleOpacity: 0.95,
+              }}
             />
-          ) : (
-            <MapboxGL.CircleLayer id="criticalRingPlaceholder" style={{ circleRadius: 0, circleOpacity: 0 }} />
-          )}
-          <MapboxGL.CircleLayer
-            id="markerCircles"
-            visible={activeLayers.has('alerts') || activeLayers.has('flood_points')}
-            style={{
-              circleRadius: ['interpolate', ['linear'], ['zoom'], 10, isEmergency ? 8 : 6, 14, isEmergency ? 14 : 11] as any,
-              circleColor: isEmergency
-                ? (['get', '_severityColor'] as any)
-                : (['match', ['get', 'danh_muc'], 1, '#FF9500', 2, '#34C759', 3, '#FF3B30', 4, '#8E6F3E', 5, '#007AFF', '#8E8E93'] as any),
-              circleStrokeWidth: 2.5,
-              circleStrokeColor: '#ffffff',
-              circleOpacity: 0.95,
-            }}
-          />
-          <MapboxGL.SymbolLayer
-            id="reportsLayer"
-            visible={activeLayers.has('alerts') || activeLayers.has('flood_points')}
-            style={{
-              iconImage: isEmergency
-                ? (['match', ['get', 'type'], 'flood', 'icon_flood', 'heavy_rain', 'icon_heavy_rain', 'landslide', 'icon_landslide', 'dam_failure', 'icon_dam_failure', 'camera', 'icon_camera', 'patrol', 'icon_patrol', 'icon_default'] as any)
-                : (['match', ['get', 'danh_muc'], 1, 'icon_traffic', 2, 'icon_environment', 3, 'icon_fire', 4, 'icon_trash', 5, 'icon_flood', 7, 'icon_shelter', 'icon_default'] as any),
-              iconSize: isEmergency ? 0.45 : 0.5,
-              iconAllowOverlap: true,
-              iconAnchor: 'center',
-            }}
-          />
-        </MapboxGL.ShapeSource>
+            <MapboxGL.SymbolLayer
+              id="reportsLayer"
+              style={{
+                iconImage: isEmergency
+                  ? (['match', ['get', 'type'], 'flood', 'icon_flood', 'heavy_rain', 'icon_heavy_rain', 'landslide', 'icon_landslide', 'dam_failure', 'icon_dam_failure', 'camera', 'icon_camera', 'patrol', 'icon_patrol', 'icon_default'] as any)
+                  : (['match', ['get', 'danh_muc'], 1, 'icon_traffic', 2, 'icon_environment', 3, 'icon_fire', 4, 'icon_trash', 5, 'icon_flood', 7, 'icon_shelter', 'icon_default'] as any),
+                iconSize: isEmergency ? 0.45 : 0.5,
+                iconAllowOverlap: true,
+                iconAnchor: 'center',
+              }}
+            />
+          </MapboxGL.ShapeSource>
+        )}
       </MapboxGL.MapView>
 
       {/* Loading */}
@@ -1472,6 +1501,30 @@ const MapScreen = () => {
           <Icon name="layers" size={20} color={showLayers ? colors.primary : colors.textSecondary} />
         </TouchableOpacity>
 
+        {/* Zoom In Button */}
+        <TouchableOpacity
+          style={[styles.layerBtn, { borderBottomLeftRadius: 4, borderBottomRightRadius: 4 }]}
+          onPress={() => {
+            const next = Math.min(currentZoom + 1, 20);
+            setCurrentZoom(next);
+            cameraRef.current?.setCamera({ zoomLevel: next, animationDuration: 250 });
+          }}
+        >
+          <Icon name="plus" size={22} color={colors.text} />
+        </TouchableOpacity>
+
+        {/* Zoom Out Button */}
+        <TouchableOpacity
+          style={[styles.layerBtn, { borderTopLeftRadius: 4, borderTopRightRadius: 4 }]}
+          onPress={() => {
+            const next = Math.max(currentZoom - 1, 1);
+            setCurrentZoom(next);
+            cameraRef.current?.setCamera({ zoomLevel: next, animationDuration: 250 });
+          }}
+        >
+          <Icon name="minus" size={22} color={colors.text} />
+        </TouchableOpacity>
+
         {/* Legend Toggle Button */}
         <TouchableOpacity style={styles.legendBtn} onPress={() => setShowLegend(!showLegend)}>
           <Icon name="map-marker" size={18} color={showLegend ? colors.primary : colors.textSecondary} />
@@ -1498,35 +1551,99 @@ const MapScreen = () => {
             <Icon name="close" size={16} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
-        {LAYER_CONFIGS.map(cfg => {
-          const isActive = activeLayers.has(cfg.key);
-          return (
-            <TouchableOpacity
-              key={cfg.key}
-              style={styles.layerItem}
-              onPress={() => toggleLayer(cfg.key)}
-            >
-              <Icon name={cfg.icon} size={18} color={isActive ? cfg.color : colors.textTertiary} />
-              <Text style={[styles.layerItemLabel, { color: isActive ? colors.text : colors.textTertiary }]}>
-                {cfg.key === 'flood_zones' ? t('citizen.map.floodZones') :
-                 cfg.key === 'flood_streets' ? t('citizen.map.floodStreets') :
-                 cfg.key === 'flood_points' ? t('citizen.map.floodPoints') :
-                 cfg.key === 'alerts' ? t('citizen.map.activeAlerts', 'Alerts') :
-                 cfg.key === 'shelters' ? t('citizen.map.shelters') :
-                 cfg.label}
-              </Text>
-              <View style={[
-                styles.layerToggle,
-                { backgroundColor: isActive ? colors.primary : colors.border }
-              ]}>
+
+        {/* Enable/disable all shortcut */}
+        <View style={styles.layerPanelActions}>
+          <TouchableOpacity
+            onPress={() => setActiveLayers(new Set(['alerts', 'shelters', 'flood_zones', 'flood_streets', 'flood_points'] as LayerKey[]))}
+            style={styles.layerActionBtn}
+          >
+            <Text style={[styles.layerActionText, { color: colors.primary }]}>Bật tất cả</Text>
+          </TouchableOpacity>
+          <View style={{ width: 1, height: 14, backgroundColor: colors.border }} />
+          <TouchableOpacity
+            onPress={() => setActiveLayers(new Set())}
+            style={styles.layerActionBtn}
+          >
+            <Text style={[styles.layerActionText, { color: colors.textTertiary }]}>Tắt tất cả</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+          keyboardShouldPersistTaps="handled"
+          style={{ maxHeight: 300 }}
+        >
+          {LAYER_CONFIGS.map(cfg => {
+            const isActive = activeLayers.has(cfg.key);
+
+            // Compute count for each layer
+            const count = (() => {
+              switch (cfg.key) {
+                case 'flood_zones':
+                  return floodZonesGeoJSON?.features?.length ?? 0;
+                case 'flood_streets':
+                  return floodReportsGeoJSON?.features?.filter((f: any) => f.geometry?.type === 'LineString').length ?? 0;
+                case 'flood_points':
+                  return floodReportsGeoJSON?.features?.filter((f: any) => f.geometry?.type === 'Point').length ?? 0;
+                case 'alerts':
+                  return isEmergency ? mapIncidents.length : mapReports.length;
+                case 'shelters':
+                  return shelters.length;
+                default: return 0;
+              }
+            })();
+
+            return (
+              <TouchableOpacity
+                key={cfg.key}
+                style={styles.layerItem}
+                onPress={() => toggleLayer(cfg.key)}
+                activeOpacity={0.7}
+              >
+                {/* Color indicator strip */}
+                <View style={[styles.layerColorStrip, { backgroundColor: isActive ? cfg.color : colors.border }]} />
+
+                {/* Icon */}
+                <Icon name={cfg.icon} size={18} color={isActive ? cfg.color : colors.textTertiary} />
+
+                {/* Text info */}
+                <View style={{ flex: 1, marginLeft: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={[styles.layerItemLabel, { color: isActive ? colors.text : colors.textTertiary, marginLeft: 0 }]}>
+                      {cfg.key === 'flood_zones' ? t('citizen.map.floodZones', cfg.label) :
+                       cfg.key === 'flood_streets' ? t('citizen.map.floodStreets', cfg.label) :
+                       cfg.key === 'flood_points' ? t('citizen.map.floodPoints', cfg.label) :
+                       cfg.key === 'alerts' ? t('citizen.map.activeAlerts', cfg.label) :
+                       cfg.key === 'shelters' ? t('citizen.map.shelters', cfg.label) :
+                       cfg.label}
+                    </Text>
+                    {count > 0 && (
+                      <View style={[styles.layerCountBadge, { backgroundColor: isActive ? cfg.color + '22' : colors.borderLight }]}>
+                        <Text style={[styles.layerCountText, { color: isActive ? cfg.color : colors.textTertiary }]}>{count}</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={[styles.layerDesc, { color: isActive ? colors.textSecondary : colors.textTertiary }]}>
+                    {cfg.desc}
+                  </Text>
+                </View>
+
+                {/* Toggle */}
                 <View style={[
-                  styles.layerToggleDot,
-                  { transform: [{ translateX: isActive ? 12 : 2 }] }
-                ]} />
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+                  styles.layerToggle,
+                  { backgroundColor: isActive ? cfg.color : colors.border }
+                ]}>
+                  <View style={[
+                    styles.layerToggleDot,
+                    { transform: [{ translateX: isActive ? 12 : 2 }] }
+                  ]} />
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </Animated.View>
 
       {/* Legend Panel */}
@@ -2048,7 +2165,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 8,
-    minWidth: 180,
+    minWidth: 230,
     overflow: 'hidden',
   },
   layerPanelHeader: {
@@ -2073,14 +2190,52 @@ const getStyles = (colors: any) => StyleSheet.create({
   layerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 10,
-    gap: 10,
+    gap: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
+  layerColorStrip: {
+    width: 3,
+    height: 36,
+    borderRadius: 2,
+    marginRight: 2,
   },
   layerItemLabel: {
-    flex: 1,
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginLeft: 0,
+  },
+  layerDesc: {
+    fontSize: 11,
+    marginTop: 1,
+  },
+  layerCountBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+  },
+  layerCountText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  layerPanelActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+    gap: 12,
+  },
+  layerActionBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  layerActionText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   layerToggle: {
     width: 32,
