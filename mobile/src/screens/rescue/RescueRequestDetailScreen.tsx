@@ -412,12 +412,6 @@ const RescueRequestDetailScreen = () => {
                 </MapboxGL.MapView>
             </View>
 
-            {/* Navigate button */}
-            <TouchableOpacity style={styles.navigateBtn} onPress={openExternalMaps} disabled={!hasCoords}>
-                <Icon name="navigation-variant" size={20} color="#fff" />
-                <Text style={styles.navigateBtnText}>Mở Chỉ Đường (Apple / Google Maps)</Text>
-            </TouchableOpacity>
-
             {/* Destination address */}
             <View style={styles.addressCard}>
                 <View style={styles.addressIcon}>

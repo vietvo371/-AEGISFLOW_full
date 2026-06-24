@@ -5,7 +5,7 @@ import {
     Alert, Animated, ScrollView
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from '../../hooks/useTranslation';
 import PageHeader from '../../component/PageHeader';
 import { theme as staticTheme, SPACING, FONT_SIZE, BORDER_RADIUS, SCREEN_PADDING } from '../../theme';
@@ -103,14 +103,27 @@ const MissionListScreen = () => {
         }
     }, [myTeamId]);
 
-    useEffect(() => {
-        const init = async () => {
-            const team = await rescueService.getMyTeam();
-            if (team) setMyTeamId(team.id);
-            await fetchMissions(false, team?.id ?? undefined);
-        };
-        init();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            const init = async () => {
+                const team = await rescueService.getMyTeam();
+                if (team) setMyTeamId(team.id);
+                // Nếu đã có data thì refresh ngầm (ẩn loading to), ngược lại thì hiện loading
+                const isSilentRefresh = all.length > 0;
+                if (!isSilentRefresh) setLoading(true);
+                
+                try {
+                    const resolvedTeamId = team?.id ?? myTeamId;
+                    const params = resolvedTeamId ? { assigned_team_id: resolvedTeamId } : undefined;
+                    const data = await rescueService.getRequests(params);
+                    setAll(data || []);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            init();
+        }, [myTeamId, all.length])
+    );
 
     // ─── Real-time Refresh ─────────────────────────────────────────────────────
     useEffect(() => {
