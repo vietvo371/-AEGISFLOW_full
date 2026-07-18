@@ -58,6 +58,9 @@ logs/
 # Model files
 *.pkl
 !models/flood_risk_model.pkl
+# Susceptibility model (Phase 03) — PHẢI commit để serve/CI clean-clone chạy được
+# (serve image không có rasterio nên KHÔNG thể regen; xem plans/260716-flood-model-redesign).
+!models/flood_susceptibility_model.pkl
 *.h5
 *.pt
 *.pth

@@ -81,11 +81,25 @@ def extract_timeseries_features(
     recent_readings: list of {"value": float, "timestamp": str, "rainfall": float (optional)}
     Sorted newest first (index 0 = most recent).
     """
+    # SERVING-SKEW FIX: phân biệt "readings KHÔNG mang dữ liệu mưa" vs "mưa thật = 0".
+    # Backend gửi readings chỉ có {value (mực nước), recorded_at} — KHÔNG có key mưa.
+    # Nếu cứ sum() các số 0 này thì rain_6h/soil_saturation bị PIN về 0 dù trời đang mưa
+    # (lượng mưa được truyền RIÊNG qua tham số scalar rainfall_mm) → dự báo lệch LOW một cách sai.
+    # => Chỉ cộng dồn từ readings khi chúng THẬT SỰ chứa dữ liệu mưa; ngược lại ước lượng từ rainfall_mm.
+    # Phát hiện theo GIÁ TRỊ khác None (KHÔNG chỉ theo sự tồn tại của KEY): reading {'rainfall': null}
+    # vẫn có key nhưng không mang dữ liệu → nếu tin nó, ta lại cộng số 0 và pin về 0, che mất chính bản vá này.
+    has_rain_data = any(
+        isinstance(r, dict) and (r.get("rainfall") is not None or r.get("rainfall_mm") is not None)
+        for r in recent_readings
+    )
+
     if not recent_readings or len(recent_readings) < 2:
+        rain_6h = float(min(rainfall_mm * 2, 500.0))  # rough estimate from current intensity
         return {
             "water_level_trend": 0.0,
-            "rain_6h": min(rainfall_mm * 2, 500.0),  # rough estimate
-            "soil_saturation": 0.0,
+            "rain_6h": rain_6h,
+            # trend=0 khi thiếu chuỗi → độ bão hòa ước lượng từ chính rain_6h (không còn pin về 0)
+            "soil_saturation": float(min(100.0, rain_6h * 0.5)),
         }
 
     # Extract water level values (newest first)
@@ -106,35 +120,43 @@ def extract_timeseries_features(
     else:
         trend = 0.0
 
-    # 6h cumulative rainfall from readings
-    rain_values = []
-    for r in recent_readings[:6]:
-        try:
-            val = float(r.get("rainfall") or r.get("rainfall_mm") or 0.0)
-            rain_values.append(val)
-        except (TypeError, ValueError):
-            rain_values.append(0.0)
-
-    rain_6h = sum(rain_values) if rain_values else rainfall_mm
+    # 6h cumulative rainfall from readings — CHỈ khi readings có dữ liệu mưa.
+    if has_rain_data:
+        rain_values = []
+        for r in recent_readings[:6]:
+            try:
+                val = float(r.get("rainfall") or r.get("rainfall_mm") or 0.0)
+                rain_values.append(val)
+            except (TypeError, ValueError):
+                rain_values.append(0.0)
+        rain_6h = sum(rain_values) if rain_values else rainfall_mm
+        # Belt-and-suspenders: có key mưa nhưng 6 readings đầu tổng = 0 mà scalar báo đang mưa
+        # → tin ước lượng từ rainfall_mm thay vì con số 0 rỗng.
+        if rain_6h == 0.0 and rainfall_mm > 0:
+            rain_6h = rainfall_mm * 2.0
+    else:
+        # Không có dữ liệu mưa trong readings → ước lượng từ cường độ mưa hiện tại
+        # thay vì cộng dồn các số 0 (nguồn gốc của serving-skew).
+        rain_6h = rainfall_mm * 2.0
     rain_6h = float(min(rain_6h, 500.0))
 
-    # Soil saturation: proxy from extended rain history (readings 6-24h back)
+    # Soil saturation: proxy from extended rain history (readings 6-24h back) nếu CÓ dữ liệu mưa.
     extended_rain = []
-    for r in recent_readings[6:24]:
-        try:
-            val = float(r.get("rainfall") or r.get("rainfall_mm") or 0.0)
-            extended_rain.append(val)
-        except (TypeError, ValueError):
-            extended_rain.append(0.0)
+    if has_rain_data:
+        for r in recent_readings[6:24]:
+            try:
+                val = float(r.get("rainfall") or r.get("rainfall_mm") or 0.0)
+                extended_rain.append(val)
+            except (TypeError, ValueError):
+                extended_rain.append(0.0)
 
-    # If no extended rain history, estimate from current conditions
-    if not extended_rain:
-        # Rough estimate: if it's been raining heavily for 6h, soil is moderately saturated
-        soil_saturation = min(100.0, rain_6h * 0.5 + trend * 15)
-    else:
+    if extended_rain:
         # 3-day equivalent proxy: saturate based on past 18h rain
         past_18h_rain = sum(extended_rain)
         soil_saturation = min(100.0, (rain_6h * 0.6 + past_18h_rain * 0.3))
+    else:
+        # Không có lịch sử mưa mở rộng → ước lượng từ rain_6h + xu hướng nước dâng
+        soil_saturation = min(100.0, rain_6h * 0.5 + trend * 15)
 
     soil_saturation = float(max(0.0, soil_saturation))
 

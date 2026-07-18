@@ -1,9 +1,15 @@
 {
   "version": "4.1.0",
+  "validated": false,
+  "validation_note": "CÁC SỐ accuracy/f1/auc DƯỚI ĐÂY LÀ 'rule-recovery' — model chỉ học lại hàm ngưỡng compute_label() sinh ra chính nhãn, đo trên dữ liệu ~88% synthetic. KHÔNG phải năng lực thật, KHÔNG được trích dẫn như '98.81% accuracy' với giám khảo. Đánh giá TRUNG THỰC sẽ đến từ flood_susceptibility_model (spatial-CV PR-AUC, Phase 03).",
+  "label_source": "compute_label() — hàm ngưỡng suy từ CHÍNH các feature đầu vào (nhãn CIRCULAR)",
+  "synthetic_fraction": 0.88,
+  "data_quality_note": "Nhãn circular + oversample-trước-split gây rò rỉ train/test (~51% dòng trùng). Bị thay thế bởi Flood Susceptibility Mapping (nhãn = điểm ngập thật 14/10/2022 + điểm kinh niên). Xem plans/260716-flood-model-redesign/.",
   "accuracy": 0.988125,
   "weighted_f1": 0.9881225995834135,
   "macro_f1": 0.9881225995834134,
   "auc_roc_weighted_ovr": 0.9998468749999999,
+  "metrics_are": "rule-recovery on ~88% synthetic data; NOT validated on independent floods",
   "features": [
     "water_level_m",
     "rainfall_mm",
@@ -31,5 +37,5 @@
     "medium"
   ],
   "algorithm": "Stacking: RF+ET+GB+LightGBM+XGBoost -> LogisticRegression",
-  "dataset": "flood_danang_clean_balanced.csv (8000 rows, balanced 2000/class)"
+  "dataset": "flood_danang_clean_balanced.csv (8000 rows, balanced 2000/class) — ~88% synthetic, nhãn circular"
 }

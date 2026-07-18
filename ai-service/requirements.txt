@@ -9,7 +9,17 @@ requests==2.32.3
 joblib==1.4.2
 networkx==3.2.1
 numpy==2.0.2
+# pandas: import Ở MODULE-LEVEL trong services/flood_calculator.py — KHÔNG phải dep transitive
+# của gói nào ở trên → thiếu nó là service crash ngay lúc khởi động (uvicorn import fail).
+pandas==2.2.3
+# pyarrow: đọc feature_grid.parquet ở serve-time (feature_builder.lookup_features). pandas KHÔNG
+# tự kéo pyarrow. (scipy đến gián tiếp qua scikit-learn — cKDTree dùng trong lookup_features.)
+pyarrow==17.0.0
 scikit-learn==1.6.0
 
 # ML Training dependencies
 xgboost>=2.0.0
+# LightGBM: base learner của stacking ensemble (model_type=='stacking').
+# THIẾU nó → joblib.load base_models ném lỗi và model âm thầm rơi fallback rule-based.
+# Cần gói hệ thống libgomp1 trong Docker (xem Dockerfile). Pin version để .pkl load ổn định.
+lightgbm==4.6.0

@@ -1,10 +1,11 @@
 # AI Service Dockerfile (FastAPI)
 FROM python:3.12-slim
 
-# Install system dependencies for geopandas/shapely
+# Install system dependencies for geopandas/shapely + LightGBM (libgomp1 runtime)
 RUN apt-get update && apt-get install -y \
     libgdal-dev \
     g++ \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

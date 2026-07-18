@@ -402,10 +402,20 @@ def main():
             "dataset_classes": list(label_encoder.classes_),
             "new_features": ["water_level_trend", "rain_6h", "soil_saturation"],
             "prediction_horizons_minutes": [30, 60],
+            # HONESTY MARKERS (bền qua mỗi lần /retrain — KHÔNG hand-edit model_metrics.json nữa).
+            # Các số accuracy/f1/auc dưới đây là "rule-recovery" trên dữ liệu phần lớn synthetic với
+            # nhãn suy từ ngưỡng (circular) → KHÔNG phải năng lực thật, KHÔNG trích dẫn với giám khảo.
+            "validated": False,
+            "validation_note": (
+                "accuracy/f1/auc = rule-recovery trên dữ liệu phần lớn synthetic, nhãn suy từ ngưỡng "
+                "(circular); KHÔNG phải đánh giá trên trận lũ độc lập. Đánh giá TRUNG THỰC = spatial-CV "
+                "PR-AUC của flood_susceptibility_model (Phase 03). Xem plans/260716-flood-model-redesign/."
+            ),
+            "metrics_are": "rule-recovery on largely-synthetic circular-label data; NOT validated on independent floods",
             "data_quality_note": (
-                "v3: Episode-based time-series synthetic data with trend/accumulation features. "
-                "Model captures rising water trends and soil saturation effects. "
-                "Class-balanced training with at least 150 critical samples."
+                "v3: Episode-based time-series SYNTHETIC data với nhãn suy từ ngưỡng (circular). "
+                "Model chỉ học lại quy tắc if-else sinh nhãn → số liệu KHÔNG phản ánh năng lực thật; "
+                "bị thay thế bởi Flood Susceptibility Mapping (nhãn = điểm ngập thật)."
             ),
             "monthly_risk_profile": {str(k): round(v, 4) for k, v in monthly_profile.items()},
             "base_year": base_year,
