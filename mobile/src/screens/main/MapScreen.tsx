@@ -383,6 +383,7 @@ const MapScreen = () => {
 
   // ─── Layer Toggle ───────────────────────────────────────────
   const toggleLayer = (key: LayerKey) => {
+    const willEnable = !activeLayers.has(key);
     setActiveLayers(prev => {
       const next = new Set(prev);
       if (next.has(key)) {
@@ -392,6 +393,15 @@ const MapScreen = () => {
       }
       return next;
     });
+    // Lazy-load lớp Nguy cơ ngập (AI): grid ~1.9MB / 11.5k điểm — chỉ tải khi user BẬT lần đầu.
+    // Tránh tải nền lúc mount cho lớp opt-in (và tránh nguy cơ timeout ở mạng yếu).
+    if (key === 'flood_susceptibility' && willEnable && !susceptibilityGeoJSON) {
+      mapService.getSusceptibility()
+        .then((data) => {
+          if (data?.type === 'FeatureCollection') setSusceptibilityGeoJSON(data);
+        })
+        .catch((e) => console.warn('Lỗi tải lớp Nguy cơ ngập (AI):', e));
+    }
   };
 
   const toggleLayerPanel = () => {
@@ -503,11 +513,11 @@ const MapScreen = () => {
 
   const fetchLayers = useCallback(async () => {
     try {
-      const [traffic, flood, shelterRes, susc] = await Promise.allSettled([
+      // Lớp 'flood_susceptibility' (grid ~1.9MB) KHÔNG tải ở đây — tải lười khi user bật (xem toggleLayer).
+      const [traffic, flood, shelterRes] = await Promise.allSettled([
         mapService.getTrafficEdges(),
         mapService.getFloodZones(),
         mapService.getShelters(),
-        mapService.getSusceptibility(),
       ]);
       if (traffic.status === 'fulfilled' && traffic.value?.type === 'FeatureCollection') {
         setTrafficGeoJSON(traffic.value);
@@ -517,10 +527,6 @@ const MapScreen = () => {
         setFloodZonesGeoJSON(flood.value);
       }
 
-      if (susc.status === 'fulfilled' && susc.value?.type === 'FeatureCollection') {
-        setSusceptibilityGeoJSON(susc.value);
-      }
-      
       if (shelterRes.status === 'fulfilled' && (shelterRes.value as any)?.success) {
         setShelters((shelterRes.value as any).data || []);
       }
@@ -1110,8 +1116,9 @@ const MapScreen = () => {
 
         {/* Traffic Lines Layer is removed to focus strictly on flood prevention */}
 
-        {/* Flood Susceptibility heatmap (AI, Phase 04) — điểm ô lưới tô theo P(vùng dễ ngập). Opt-in. */}
-        {susceptibilityGeoJSON && (
+        {/* Flood Susceptibility heatmap (AI, Phase 04) — điểm ô lưới tô theo P(vùng dễ ngập). Opt-in:
+            chỉ mount ShapeSource khi lớp đang bật → giải phóng native source (11.5k điểm) khi tắt. */}
+        {susceptibilityGeoJSON && activeLayers.has('flood_susceptibility') && (
           <MapboxGL.ShapeSource id="susceptibilitySource" shape={susceptibilityGeoJSON}>
             <MapboxGL.CircleLayer
               id="susceptibilityCircles"

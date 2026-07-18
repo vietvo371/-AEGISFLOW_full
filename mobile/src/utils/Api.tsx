@@ -136,10 +136,16 @@ api.interceptors.response.use(
 
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
       console.log('Timeout after retries:', error);
-      removeToken();
-      ErrorModalManager.showTimeoutError(() => {
-        resetTo('Login');
-      });
+      // KHÔNG đăng xuất khi timeout ở route công khai (vd lớp bản đồ nền /public/*): các request này
+      // không cần auth nên timeout của chúng tuyệt đối không được phá session của người dùng.
+      const url = config?.url || '';
+      const isPublicRoute = url.includes('/public/');
+      if (!isPublicRoute) {
+        removeToken();
+        ErrorModalManager.showTimeoutError(() => {
+          resetTo('Login');
+        });
+      }
       return Promise.reject(error);
     }
 
