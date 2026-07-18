@@ -1,0 +1,171 @@
+{
+  "version": "susceptibility-1.0.0",
+  "created_at": "2026-07-18T15:56:37.126919+00:00",
+  "champion": "random_forest",
+  "cv_scheme": "StratifiedGroupKFold(n=5) theo block ~3.0km",
+  "counts": {
+    "n_total": 1505,
+    "n_pos": 430,
+    "n_neg": 1075
+  },
+  "candidates_cv": {
+    "random_forest": {
+      "n_splits_used": 5,
+      "roc_auc_mean": 0.8691045338201512,
+      "roc_auc_std": 0.02695956145320012,
+      "pr_auc_mean": 0.699351499325396,
+      "pr_auc_std": 0.14088271443497843,
+      "roc_auc_per_fold": [
+        0.8284628872004676,
+        0.8842124779827569,
+        0.8675034867503486,
+        0.9089719626168223,
+        0.8563718545503609
+      ],
+      "pr_auc_per_fold": [
+        0.47006668629555115,
+        0.8355751587731586,
+        0.6454942866188123,
+        0.857717050653688,
+        0.6879043142857706
+      ]
+    },
+    "xgboost": {
+      "n_splits_used": 5,
+      "roc_auc_mean": 0.8620855808112106,
+      "roc_auc_std": 0.03168253907733877,
+      "pr_auc_mean": 0.6694909613936032,
+      "pr_auc_std": 0.15113179499789692,
+      "roc_auc_per_fold": [
+        0.8153857393337229,
+        0.8904236581069807,
+        0.867260930204354,
+        0.8996728971962616,
+        0.8376846792147339
+      ],
+      "pr_auc_per_fold": [
+        0.455722938324001,
+        0.8499898195253205,
+        0.6342122022952281,
+        0.830913442935419,
+        0.576616403888047
+      ]
+    }
+  },
+  "baseline_elevation_only_RAWSCORE_lower_bound": {
+    "roc_auc": 0.4792212006489994,
+    "pr_auc": 0.24784116871092993,
+    "note": "baseline = -elevation (không ML). ML champion phải vượt mức này."
+  },
+  "geometry_baselines": {
+    "rf_dist_coast_only": {
+      "roc_auc_mean": 0.7800393931663476,
+      "pr_auc_mean": 0.5702567034676355
+    },
+    "rf_dist_river_only": {
+      "roc_auc_mean": 0.6070759761239962,
+      "pr_auc_mean": 0.3984384222518281
+    },
+    "rf_elevation_only": {
+      "roc_auc_mean": 0.7671462419883732,
+      "pr_auc_mean": 0.4889369074056991
+    },
+    "note": "So champion với rf_dist_coast_only để biết 'ML value-added' THẬT (đa biến trên hình học). Baseline -elevation thô là SÀN DƯỚI/strawman (hard-neg bị chọn theo elevation<8m nên -elevation phản tương quan), KHÔNG phải mốc công bằng."
+  },
+  "spatial_uncertainty": {
+    "n_blocks_total": 62,
+    "n_blocks_with_positive": 37,
+    "top8_positive_block_share": 0.781,
+    "leave_one_block_out": {
+      "pooled_roc_auc": 0.8378873490751204,
+      "pooled_pr_auc": 0.7066077208316105,
+      "per_block_roc_std": 0.12829959781317005,
+      "per_block_roc_min": 0.4736842105263158,
+      "per_block_roc_max": 1.0,
+      "n_blocks_scored": 37
+    },
+    "note": "Điểm ước lượng bền (pooled LOBO ≈ 5-fold), nhưng ±std 5-fold HẸP GIẢ TẠO: ~37 block chứa positive, top-8 giữ 78% (1 sự kiện). Hiệu năng theo từng khu vực dao động RẤT rộng — đừng đọc ±std như CI chặt."
+  },
+  "oof_neg_subsets": {
+    "oof_all": {
+      "roc_auc": 0.8646014061654949,
+      "pr_auc": 0.6848208877170403,
+      "n_pos": 430,
+      "n_neg": 1075
+    },
+    "oof_pos_vs_hard_neg": {
+      "roc_auc": 0.8313737155219038,
+      "pr_auc": 0.7979212753389905,
+      "n_pos": 430,
+      "n_neg": 430
+    },
+    "oof_pos_vs_easy_neg": {
+      "roc_auc": 0.8867531999278889,
+      "pr_auc": 0.8171667892786801,
+      "n_pos": 430,
+      "n_neg": 645
+    },
+    "note": "⚠️ THẬN TRỌNG: hard-negative KHÔNG được match theo dist_coast/dist_river với positive (hard-neg xa bờ hơn ~3x), nên pos_vs_hard_neg VẪN mang confound khoảng-cách-bờ — -dist_coast đơn lẻ đã đạt ~0.75 trên chính split này. Đọc kèm geometry_baselines để biết phần AUC đến từ hình học vs kỹ năng đa biến. KHÔNG diễn giải như bằng chứng 'không confound'."
+  },
+  "shap_importance": {
+    "dist_coast": 0.1908,
+    "elevation": 0.1147,
+    "dist_river": 0.114,
+    "slope": 0.0862
+  },
+  "library_versions": {
+    "python": "3.12.13",
+    "numpy": "2.0.2",
+    "pandas": "3.0.3",
+    "scikit-learn": "1.6.0",
+    "xgboost": "2.1.4"
+  },
+  "features": [
+    "elevation",
+    "slope",
+    "dist_river",
+    "dist_coast"
+  ],
+  "excluded_leaky_features": [
+    "historical_score"
+  ],
+  "leakage_note": "historical_score bị LOẠI khỏi train vì suy từ chính inventory điểm ngập + buffer Phase 01 tạo margin phân tách cứng → dùng nó làm spatial-CV CIRCULAR. Feature train đều ĐỘC LẬP với label.",
+  "confusion_full_fit_reference": [
+    [
+      1025,
+      50
+    ],
+    [
+      14,
+      416
+    ]
+  ],
+  "classification_report_full_fit_reference": {
+    "0": {
+      "precision": 0.9865255052935515,
+      "recall": 0.9534883720930233,
+      "f1-score": 0.9697256385998108,
+      "support": 1075.0
+    },
+    "1": {
+      "precision": 0.8927038626609443,
+      "recall": 0.9674418604651163,
+      "f1-score": 0.9285714285714286,
+      "support": 430.0
+    },
+    "accuracy": 0.9574750830564784,
+    "macro avg": {
+      "precision": 0.9396146839772479,
+      "recall": 0.9604651162790698,
+      "f1-score": 0.9491485335856197,
+      "support": 1505.0
+    },
+    "weighted avg": {
+      "precision": 0.9597193216842351,
+      "recall": 0.9574750830564784,
+      "f1-score": 0.9579672928774159,
+      "support": 1505.0
+    }
+  },
+  "data_quality_note": "Nhãn từ dữ liệu ngập thật (presence) + pseudo-absence. Metric TRUNG THỰC là spatial-CV PR-AUC. KHÔNG dùng số này như '98.81%' cũ."
+}

@@ -49,7 +49,12 @@ SEED = 42
 N_SPLITS = 5
 SPATIAL_BLOCK_KM = 3.0     # kích thước block không gian cho GroupKFold (chống rò rỉ không gian)
 # Feature TĨNH theo vị trí — PHẢI khớp với feature_builder (Phase 02).
-FEATURE_COLUMNS = ["elevation", "slope", "dist_river", "dist_coast", "historical_score"]
+# ⚠️ LOẠI historical_score khỏi TRAIN (dù feature_builder vẫn sinh nó cho heatmap Phase 04):
+#    nó suy từ CHÍNH tập điểm ngập (label) + buffer 0.4km ở Phase 01 tạo margin phân tách cứng
+#    → train trên nó khiến spatial-CV CIRCULAR (đúng lỗi 98.81% cũ). Model TRUNG THỰC chỉ dùng
+#    feature địa hình/thuỷ văn ĐỘC LẬP với inventory. (adversarial review Phase 01, xem model_card.)
+LEAKY_FEATURES = ["historical_score"]
+FEATURE_COLUMNS = ["elevation", "slope", "dist_river", "dist_coast"]
 LABEL_COL = "label"        # 1 = điểm ngập thật, 0 = pseudo-absence
 
 
@@ -206,6 +211,119 @@ def spatial_cv(model_factory, X: np.ndarray, y: np.ndarray, groups: np.ndarray) 
     }
 
 
+def oof_probabilities(model_factory, X: np.ndarray, y: np.ndarray, groups: np.ndarray) -> np.ndarray:
+    """Xác suất OUT-OF-FOLD cho từng điểm (spatial CV) → dùng đánh giá subset hard/easy."""
+    from sklearn.model_selection import StratifiedGroupKFold
+    from sklearn.base import clone
+    n_splits = int(min(N_SPLITS, len(np.unique(groups))))
+    oof = np.full(len(y), np.nan)
+    if n_splits < 2:
+        return oof
+    skf = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=SEED)
+    for tr, te in skf.split(X, y, groups):
+        m = clone(model_factory)
+        if hasattr(m, "scale_pos_weight"):
+            pos = max(int(y[tr].sum()), 1); neg = max(int((1 - y[tr]).sum()), 1)
+            m.set_params(scale_pos_weight=neg / pos)
+        m.fit(X[tr], y[tr])
+        oof[te] = m.predict_proba(X[te])[:, 1]
+    return oof
+
+
+def evaluate_neg_subsets(y: np.ndarray, oof: np.ndarray, source: np.ndarray) -> dict:
+    """ACID TEST cho lo ngại 'positional gradient' (adversarial review): model có tách được
+    positive khỏi HARD-negative (gần sông/điểm ngập) không, hay chỉ ăn may nhờ easy-negative ở rìa?
+    Dùng dự đoán OOF (spatial CV) để tránh rò rỉ."""
+    from sklearn.metrics import roc_auc_score, average_precision_score
+    valid = ~np.isnan(oof)
+
+    def sub(mask):
+        m = mask & valid
+        yy, pp = y[m], oof[m]
+        if len(np.unique(yy)) < 2:
+            return None
+        return {"roc_auc": float(roc_auc_score(yy, pp)), "pr_auc": float(average_precision_score(yy, pp)),
+                "n_pos": int((yy == 1).sum()), "n_neg": int((yy == 0).sum())}
+
+    pos = y == 1
+    out = {"oof_all": sub(np.ones(len(y), bool))}
+    if source is not None:
+        out["oof_pos_vs_hard_neg"] = sub(pos | (source == "pseudo_absence_hard"))
+        out["oof_pos_vs_easy_neg"] = sub(pos | (source == "pseudo_absence_easy"))
+    out["note"] = ("⚠️ THẬN TRỌNG: hard-negative KHÔNG được match theo dist_coast/dist_river với positive "
+                   "(hard-neg xa bờ hơn ~3x), nên pos_vs_hard_neg VẪN mang confound khoảng-cách-bờ — "
+                   "-dist_coast đơn lẻ đã đạt ~0.75 trên chính split này. Đọc kèm geometry_baselines để biết "
+                   "phần AUC đến từ hình học vs kỹ năng đa biến. KHÔNG diễn giải như bằng chứng 'không confound'.")
+    return out
+
+
+def geometry_baselines(X: np.ndarray, y: np.ndarray, groups: np.ndarray, feature_names: list) -> dict:
+    """Baseline CÔNG BẰNG: RandomForest trên TỪNG feature hình học ĐƠN LẺ (spatial CV).
+    Do negative lấy uniform toàn bbox còn positive co cụm ven bờ/sông, phần lớn AUC có thể đến từ
+    'xa bờ = an toàn' (hình học lấy mẫu), KHÔNG phải kỹ năng. dist_coast-only cho biết SÀN thật sự;
+    'giá trị ML thêm' = champion − dist_coast_only, KHÔNG phải champion − baseline(-elevation)."""
+    from sklearn.ensemble import RandomForestClassifier
+    out = {}
+    for feat in ("dist_coast", "dist_river", "elevation"):
+        if feat not in feature_names:
+            continue
+        j = feature_names.index(feat)
+        rf = RandomForestClassifier(n_estimators=300, min_samples_leaf=3,
+                                    class_weight="balanced", random_state=SEED, n_jobs=-1)
+        rep = spatial_cv(rf, X[:, [j]], y, groups)
+        out[f"rf_{feat}_only"] = {"roc_auc_mean": rep.get("roc_auc_mean"),
+                                  "pr_auc_mean": rep.get("pr_auc_mean")}
+    out["note"] = ("So champion với rf_dist_coast_only để biết 'ML value-added' THẬT (đa biến trên hình học). "
+                   "Baseline -elevation thô là SÀN DƯỚI/strawman (hard-neg bị chọn theo elevation<8m nên "
+                   "-elevation phản tương quan), KHÔNG phải mốc công bằng.")
+    return out
+
+
+def block_uncertainty(model_factory, X, y, groups) -> dict:
+    """Độ bất định TRUNG THỰC theo KHÔNG GIAN. ±std của 5-fold hẹp giả tạo vì positive co cụm
+    (đa số từ 1 trận 14/10/2022). Báo: số block chứa positive, độ tập trung, và leave-one-block-out
+    (pooled OOF AUC + std theo block) để lộ dải rộng thật."""
+    from sklearn.base import clone
+    from sklearn.metrics import roc_auc_score, average_precision_score
+    blocks = np.unique(groups)
+    pos_per_block = np.array([int(y[groups == b].sum()) for b in blocks])
+    n_pos_blocks = int((pos_per_block > 0).sum())
+    order = np.sort(pos_per_block)[::-1]
+    top8_share = float(order[:8].sum() / max(1, pos_per_block.sum()))
+
+    # Leave-one-block-out (chỉ block có positive): pooled OOF + std per-block (nơi tính được AUC)
+    oof = np.full(len(y), np.nan)
+    per_block_roc = []
+    for b in blocks[pos_per_block > 0]:
+        te = groups == b; tr = ~te
+        m = clone(model_factory)
+        if hasattr(m, "scale_pos_weight"):
+            p = max(int(y[tr].sum()), 1); ng = max(int((1 - y[tr]).sum()), 1); m.set_params(scale_pos_weight=ng / p)
+        m.fit(X[tr], y[tr])
+        proba = m.predict_proba(X[te])[:, 1]
+        oof[te] = proba
+        if len(np.unique(y[te])) >= 2:
+            per_block_roc.append(float(roc_auc_score(y[te], proba)))
+    valid = ~np.isnan(oof)
+    pooled_roc = float(roc_auc_score(y[valid], oof[valid])) if valid.sum() and len(np.unique(y[valid])) > 1 else None
+    pooled_pr = float(average_precision_score(y[valid], oof[valid])) if valid.sum() and len(np.unique(y[valid])) > 1 else None
+    return {
+        "n_blocks_total": int(len(blocks)),
+        "n_blocks_with_positive": n_pos_blocks,
+        "top8_positive_block_share": round(top8_share, 3),
+        "leave_one_block_out": {
+            "pooled_roc_auc": pooled_roc, "pooled_pr_auc": pooled_pr,
+            "per_block_roc_std": float(np.std(per_block_roc)) if per_block_roc else None,
+            "per_block_roc_min": float(np.min(per_block_roc)) if per_block_roc else None,
+            "per_block_roc_max": float(np.max(per_block_roc)) if per_block_roc else None,
+            "n_blocks_scored": len(per_block_roc),
+        },
+        "note": ("Điểm ước lượng bền (pooled LOBO ≈ 5-fold), nhưng ±std 5-fold HẸP GIẢ TẠO: "
+                 f"~{n_pos_blocks} block chứa positive, top-8 giữ {top8_share:.0%} (1 sự kiện). "
+                 "Hiệu năng theo từng khu vực dao động RẤT rộng — đừng đọc ±std như CI chặt."),
+    }
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # 6. Baseline tầm thường (chỉ elevation) — chứng minh ML thêm giá trị
 # ══════════════════════════════════════════════════════════════════════════════
@@ -226,13 +344,14 @@ def baseline_elevation_only(df: pd.DataFrame, groups: np.ndarray) -> dict:
 # ══════════════════════════════════════════════════════════════════════════════
 # 7. Lưu artifact + metrics + model_card
 # ══════════════════════════════════════════════════════════════════════════════
-def save_artifacts(best_name, best_model, feature_names, cv_all, baseline, counts, versions, df):
+def save_artifacts(best_name, best_model, feature_names, cv_all, baseline, counts, versions, df,
+                   neg_subsets=None, shap_importance=None, geometry_baselines=None, block_uncertainty=None):
     import joblib
     from sklearn.metrics import classification_report, confusion_matrix
 
     # Confusion trên toàn bộ (train-fit) — chỉ tham khảo; số THẬT là spatial-CV ở trên.
     y = df[LABEL_COL].to_numpy()
-    proba_full = best_model.predict_proba(df[feature_names].to_numpy())[:, 1]
+    proba_full = best_model.predict_proba(df[feature_names])[:, 1]   # DataFrame → khớp feature_names_in_
     pred_full = (proba_full >= 0.5).astype(int)
 
     created = datetime.now(timezone.utc).isoformat()
@@ -260,9 +379,18 @@ def save_artifacts(best_name, best_model, feature_names, cv_all, baseline, count
         "cv_scheme": f"StratifiedGroupKFold(n={N_SPLITS}) theo block ~{SPATIAL_BLOCK_KM}km",
         "counts": counts,
         "candidates_cv": cv_all,
-        "baseline_elevation_only": baseline,
+        "baseline_elevation_only_RAWSCORE_lower_bound": baseline,
+        "geometry_baselines": geometry_baselines,
+        "spatial_uncertainty": block_uncertainty,
+        "oof_neg_subsets": neg_subsets,
+        "shap_importance": shap_importance,
         "library_versions": versions,
         "features": feature_names,
+        "excluded_leaky_features": LEAKY_FEATURES,
+        "leakage_note": (
+            "historical_score bị LOẠI khỏi train vì suy từ chính inventory điểm ngập + buffer Phase 01 "
+            "tạo margin phân tách cứng → dùng nó làm spatial-CV CIRCULAR. Feature train đều ĐỘC LẬP với label."
+        ),
         "confusion_full_fit_reference": confusion_matrix(y, pred_full).tolist(),
         "classification_report_full_fit_reference": classification_report(y, pred_full, output_dict=True, zero_division=0),
         "data_quality_note": "Nhãn từ dữ liệu ngập thật (presence) + pseudo-absence. Metric TRUNG THỰC là spatial-CV PR-AUC. KHÔNG dùng số này như '98.81%' cũ.",
@@ -270,6 +398,11 @@ def save_artifacts(best_name, best_model, feature_names, cv_all, baseline, count
     OUT_METRICS.write_text(json.dumps(metrics, ensure_ascii=False, indent=2), encoding="utf-8")
 
     champ_cv = cv_all.get(best_name, {})
+    geom_display = ({k: v for k, v in geometry_baselines.items() if k != "note"}
+                    if geometry_baselines else None)
+    unc_display = ({k: block_uncertainty[k] for k in
+                    ("n_blocks_with_positive", "top8_positive_block_share", "leave_one_block_out")}
+                   if block_uncertainty else None)
     card = f"""# Model Card — Flood Susceptibility (Đà Nẵng)
 
 **Tạo:** {created} · **Champion:** `{best_name}` · **Loại:** phân loại nhị phân P(vùng dễ ngập)
@@ -285,12 +418,32 @@ def save_artifacts(best_name, best_model, feature_names, cv_all, baseline, count
 - Scheme: StratifiedGroupKFold theo block ~{SPATIAL_BLOCK_KM}km (chống rò rỉ không gian).
 - **PR-AUC:** {champ_cv.get('pr_auc_mean')}  (±{champ_cv.get('pr_auc_std')})
 - **ROC-AUC:** {champ_cv.get('roc_auc_mean')}  (±{champ_cv.get('roc_auc_std')})
-- Baseline (-elevation): PR-AUC={baseline.get('pr_auc')}, ROC-AUC={baseline.get('roc_auc')}. Champion phải vượt baseline.
+
+## ⚠️ ĐỌC KỸ: phần lớn AUC đến từ HÌNH HỌC lấy mẫu, không phải "kỹ năng"
+Negative lấy uniform toàn bbox trong khi positive co cụm ven bờ/sông → "xa bờ = an toàn" bị đóng sẵn
+vào nhãn. Vì vậy phải so với **baseline hình học công bằng** (RF trên 1 feature), KHÔNG phải -elevation thô:
+- Geometry baselines (RF 1-feature, cùng spatial CV): {json.dumps(geom_display, ensure_ascii=False)}
+- **"ML value-added" THẬT = champion − rf_dist_coast_only** (đa biến trên hình học), KHÔNG phải champion − (-elevation).
+- `-elevation` raw-score = SÀN DƯỚI/strawman (hard-neg bị chọn theo elevation<8m → -elevation phản tương quan): ROC={baseline.get('roc_auc')}.
+- SHAP: {json.dumps(shap_importance, ensure_ascii=False) if shap_importance else 'n/a'} (dist_coast áp đảo — đúng như confound).
+
+## Độ bất định KHÔNG GIAN thật (±std 5-fold hẹp giả tạo)
+{json.dumps(unc_display, ensure_ascii=False)}
+→ ~90% positive từ 1 trận (14/10/2022), tập trung ở ~8 block. Hiệu năng theo khu vực dao động RẤT rộng;
+đừng đọc ±0.0x như khoảng tin cậy chặt.
+
+## ACID TEST hard/easy negative (OOF) — CÓ CAVEAT
+- pos vs HARD neg: {(neg_subsets or {}).get('oof_pos_vs_hard_neg')}
+- pos vs EASY neg: {(neg_subsets or {}).get('oof_pos_vs_easy_neg')}
+- ⚠️ hard-neg KHÔNG match theo dist_coast (xa bờ ~3x) → split này VẪN confound; -dist_coast đơn lẻ ~0.75.
+  KHÔNG dùng làm bằng chứng "không confound"; xem geometry baselines.
 
 ## HẠN CHẾ (phải nêu với giám khảo)
 - **Presence-only:** "không có báo cáo" ≠ "không ngập" → pseudo-absence có bias; đã giảm thiểu bằng hard negatives, báo cả PR-AUC.
 - **Một sự kiện:** hiệu chỉnh theo trận 14/10/2022 → khái quát theo KHÔNG GIAN, không theo thời gian.
 - Không dùng để dự báo mực nước theo giờ (thiếu chuỗi thời gian).
+- **CHỐNG CIRCULAR:** đã LOẠI `historical_score` (mật độ báo cáo lịch sử) khỏi train — nó suy từ chính
+  nhãn nên gây rò rỉ; model chỉ dùng feature địa hình/thuỷ văn ĐỘC LẬP (elevation, slope, dist_river, dist_coast).
 
 ## Version thư viện (để tái tạo & load .pkl)
 {json.dumps(versions, ensure_ascii=False)}
@@ -368,32 +521,61 @@ def main():
     baseline = baseline_elevation_only(df, groups)
     print(f"[baseline -elevation] PR-AUC={baseline.get('pr_auc')} ROC-AUC={baseline.get('roc_auc')}")
 
-    # 8) Fit champion trên toàn bộ + lưu
+    # 8) Fit champion trên toàn bộ + lưu.
+    #    Fit trên DataFrame (KHÔNG .to_numpy()) → .pkl mang feature_names_in_ → serve-time sklearn
+    #    tự BÁO LỖI nếu sai tên/thứ tự cột (chống footgun: lookup_features trả 5 cột, model cần 4).
     from sklearn.base import clone
     best_model = clone(models[best_name])
     if hasattr(best_model, "scale_pos_weight"):
         pos = max(int(y.sum()), 1); neg = max(int((1 - y).sum()), 1)
         best_model.set_params(scale_pos_weight=neg / pos)
-    best_model.fit(X, y)
+    best_model.fit(df[FEATURE_COLUMNS], y)
 
-    # 9) SHAP (tùy chọn)
+    # 9) SHAP feature importance (robust cho output nhị phân/nhiều lớp)
+    shap_importance = None
     if not args.no_shap:
         try:
             import shap
-            expl = shap.TreeExplainer(best_model)
-            sv = expl.shap_values(X[: min(len(X), 500)])
-            imp = np.abs(np.array(sv)).mean(axis=tuple(range(np.array(sv).ndim - 1)))
-            order = np.argsort(imp)[::-1]
-            print("[shap importance]", [(FEATURE_COLUMNS[i], round(float(imp[i]), 4)) for i in order])
+            Xs = X[: min(len(X), 500)]
+            sv = np.array(shap.TreeExplainer(best_model).shap_values(Xs))
+            nf = len(FEATURE_COLUMNS)
+            if sv.ndim == 3:
+                if sv.shape[-1] == nf:          # (..., n_features)  e.g. (n_classes, n, f)
+                    imp = np.abs(sv).mean(axis=tuple(range(sv.ndim - 1)))
+                elif sv.shape[1] == nf:         # (n_samples, n_features, n_classes)
+                    imp = np.abs(sv).mean(axis=(0, 2))
+                else:
+                    imp = np.abs(sv).reshape(-1, nf).mean(axis=0)
+            else:                               # (n_samples, n_features)
+                imp = np.abs(sv).mean(axis=0)
+            imp = np.asarray(imp, dtype=float).ravel()[:nf]
+            shap_importance = {FEATURE_COLUMNS[i]: round(float(imp[i]), 4) for i in np.argsort(imp)[::-1]}
+            print("[shap importance]", shap_importance)
         except Exception as e:
             warnings.warn(f"Bỏ qua SHAP: {e}", stacklevel=2)
+
+    # 10) ACID TEST 'positional gradient' (adversarial review): OOF AUC theo subset hard/easy negative
+    oof = oof_probabilities(models[best_name], X, y, groups)
+    source = df["source"].to_numpy() if "source" in df.columns else None
+    neg_subsets = evaluate_neg_subsets(y, oof, source)
+    print("[oof pos_vs_hard_neg]", neg_subsets.get("oof_pos_vs_hard_neg"))
+    print("[oof pos_vs_easy_neg]", neg_subsets.get("oof_pos_vs_easy_neg"))
 
     if args.self_test:
         print("\n✅ SELF-TEST xong: conda env + pipeline chạy OK. "
               "KHÔNG lưu artifact (data giả). Dùng dữ liệu thật (Phase 01/02) để train thật.")
         return
 
-    save_artifacts(best_name, best_model, FEATURE_COLUMNS, cv_all, baseline, counts, versions, df)
+    # 11) HONEST DISCLOSURE (từ adversarial review): geometry-only baselines + độ bất định không gian thật
+    geom_bases = geometry_baselines(X, y, groups, FEATURE_COLUMNS)
+    print("[geometry baselines]", {k: v for k, v in geom_bases.items() if k != "note"})
+    blk_unc = block_uncertainty(models[best_name], X, y, groups)
+    print(f"[block uncertainty] pos_blocks={blk_unc['n_blocks_with_positive']} "
+          f"top8_share={blk_unc['top8_positive_block_share']} LOBO={blk_unc['leave_one_block_out']}")
+
+    save_artifacts(best_name, best_model, FEATURE_COLUMNS, cv_all, baseline, counts, versions, df,
+                   neg_subsets=neg_subsets, shap_importance=shap_importance,
+                   geometry_baselines=geom_bases, block_uncertainty=blk_unc)
     print(f"\n✅ Đã lưu:\n  {OUT_MODEL}\n  {OUT_METRICS}\n  {OUT_CARD}")
     print("→ Nhớ smoke-test load .pkl trong môi trường pip (scikit-learn==1.6.0) rồi git add commit.")
 
