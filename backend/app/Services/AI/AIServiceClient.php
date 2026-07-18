@@ -142,14 +142,15 @@ class AIServiceClient
 
     /**
      * Lấy GeoJSON heatmap nguy cơ ngập nền (Flood Susceptibility, tĩnh) — proxy AI service.
+     * Trả RAW body (chuỗi geo+json) để controller cache + passthrough, tránh decode→re-encode ~1.9MB mỗi request.
      */
-    public function getSusceptibilityGrid(): ?array
+    public function getSusceptibilityGridRaw(): ?string
     {
         try {
             $response = Http::timeout($this->timeout)->get("{$this->baseUrl}/api/susceptibility/grid");
 
             if ($response->successful()) {
-                return $response->json();
+                return $response->body();
             }
 
             Log::error('AI Service Error (susceptibility/grid)', ['status' => $response->status()]);
