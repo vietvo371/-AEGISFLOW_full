@@ -11,6 +11,7 @@
 name: aegisflow-flood
 channels:
   - conda-forge
+  - nodefaults        # KHÔNG dùng kênh mặc định của Anaconda (repo.anaconda.com) — tránh ToS + license
 dependencies:
   - python=3.12            # khớp runtime ai-service (Dockerfile python:3.12) cho pickle an toàn
   # --- ML core (ghim để tương thích .pkl với production) ---

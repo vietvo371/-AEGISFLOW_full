@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Realtime layer (Phần B)"
-status: pending
+status: done
 priority: P2
 effort: "0.5-1d"
 dependencies: [3, 4]

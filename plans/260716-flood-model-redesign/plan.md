@@ -1,6 +1,6 @@
 ---
 title: "AegisFlow — Thiết kế lại mô hình AI ngập lụt (Flood Susceptibility + Realtime)"
-status: pending
+status: done   # Phase 00–06 DONE (xem HANDOFF). Còn lại: build RN/PHP để kiểm thử UI runtime.
 created: 2026-07-16
 scope: project
 context: Hackathon/Demo

@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Tích hợp demo + câu chuyện"
-status: pending
+status: done
 priority: P2
 effort: "0.5-1d"
 dependencies: [4, 5]

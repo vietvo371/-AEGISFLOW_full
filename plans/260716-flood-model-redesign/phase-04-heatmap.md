@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Heatmap susceptibility"
-status: pending
+status: done
 priority: P2
 effort: "0.5d"
 dependencies: [3]

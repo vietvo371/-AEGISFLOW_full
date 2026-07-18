@@ -1,7 +1,7 @@
 ---
 phase: 0
 title: "Vá nhanh chặn rủi ro"
-status: pending
+status: done
 priority: P1
 effort: "2-3h"
 dependencies: []

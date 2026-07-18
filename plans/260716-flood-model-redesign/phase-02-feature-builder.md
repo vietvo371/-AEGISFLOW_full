@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Feature builder (build-time, Windows+conda)"
-status: pending
+status: done
 priority: P1
 effort: "0.5-1d"
 dependencies: [1]

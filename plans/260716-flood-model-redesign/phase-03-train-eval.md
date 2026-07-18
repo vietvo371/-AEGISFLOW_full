@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Train + đánh giá trung thực (Windows+conda)"
-status: pending
+status: done
 priority: P1
 effort: "1d"
 dependencies: [1, 2]
