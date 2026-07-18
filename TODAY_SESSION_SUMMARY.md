@@ -1,5 +1,7 @@
 # 📝 TODAY'S SESSION SUMMARY (26/4/2026)
 
+> ⚠️ **CHỈ SỐ ĐÃ LỖI THỜI** — Các số `F1=0.9886 / accuracy 98.8x%` trong ghi chú này là **ẢO** (nhãn circular, ~88% synthetic, rò rỉ train/test). Số TRUNG THỰC: **spatial-CV ROC-AUC ≈ 0.87** (Flood Susceptibility). Xem `docs/METRICS_CORRECTION.md` + `docs/demo_script.md`.
+
 **Duration**: Full context session  
 **User Request**: Check project readiness, verify all code is complete, check mobile flow  
 **Outcome**: ✅ Project is 98% code-complete and hackathon-ready

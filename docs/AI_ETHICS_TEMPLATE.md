@@ -1,5 +1,7 @@
 # 🤖 AegisFlow AI — Ethics & Fairness Framework
 
+> ⚠️ **CHỈ SỐ ĐÃ LỖI THỜI** — Mọi con số `accuracy 98.8x% / F1 0.9886 / AUC 0.9996` trong tài liệu này là **ẢO** (nhãn circular, ~88% synthetic, rò rỉ train/test) và **KHÔNG được trích dẫn như năng lực thật**. Số TRUNG THỰC: **spatial-CV ROC-AUC ≈ 0.87** (Flood Susceptibility). Xem `docs/METRICS_CORRECTION.md` + `docs/demo_script.md`.
+
 **Document Date**: 26/4/2026  
 **Last Updated**: -  
 **Version**: Draft 1.0

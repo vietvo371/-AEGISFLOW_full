@@ -1,5 +1,7 @@
 # Pitch Deck Outline - AegisFlow AI
 
+> ⚠️ **CHỈ SỐ ĐÃ LỖI THỜI** — Mọi con số `accuracy 98.8x% / F1 0.9886 / AUC 0.9996` trong tài liệu này là **ẢO** (nhãn circular, ~88% synthetic, rò rỉ train/test) và **KHÔNG được trích dẫn như năng lực thật**. Số TRUNG THỰC: **spatial-CV ROC-AUC ≈ 0.87** (Flood Susceptibility). Xem `docs/METRICS_CORRECTION.md` + `docs/demo_script.md`.
+
 ## 1. Title
 
 AegisFlow AI - Real-time flood warning, evacuation, and rescue coordination for Southeast Asian cities.

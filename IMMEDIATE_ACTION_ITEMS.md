@@ -1,5 +1,7 @@
 # ⚡ IMMEDIATE ACTION ITEMS (Next 48 Hours)
 
+> ⚠️ **LỖI THỜI + NGUY HIỂM** — Tài liệu này hướng dẫn "thay F1=0.82 bằng F1=0.9886" và bảo vệ số đó trước giám khảo. Các số `F1=0.9886 / 98.83% / AUC 0.9996` là **ẢO** (nhãn circular). **ĐỪNG làm theo phần metrics/Q&A ở đây.** Số + câu trả lời TRUNG THỰC: `docs/demo_script.md`, `docs/METRICS_CORRECTION.md`. Chỉ số thật: **spatial-CV ROC-AUC ≈ 0.87**.
+
 **Deadline**: 28/4/2026, 11:59 PM  
 **Current Time**: 26/4/2026, ~5 PM (approximate)  
 **Time Available**: ~40 hours

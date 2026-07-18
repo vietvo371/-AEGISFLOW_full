@@ -1,5 +1,7 @@
 # AegisFlow AI Models
 
+> ⚠️ **CHỈ SỐ ĐÃ LỖI THỜI** — Các số `accuracy 97-98% / F1 0.9886 / AUC 0.9996` của model 4-lớp cũ là **ẢO** (nhãn circular, ~88% synthetic, rò rỉ train/test). Model THẬT hiện tại là **Flood Susceptibility** (spatial-CV **ROC-AUC ≈ 0.87**). Xem `docs/METRICS_CORRECTION.md`, `models/model_card.md`, `models/susceptibility_metrics.json`.
+
 ## Current Runtime
 
 The FastAPI service exposes:

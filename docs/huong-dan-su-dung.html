@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hướng dẫn sử dụng — Model AI ngập lụt AegisFlow</title>
+<style>
+  :root{
+    --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:ui-monospace,"SFMono-Regular","Cascadia Code",Menlo,Consolas,monospace;
+    --ground:#eef4f9;--surface:#ffffff;--surface-2:#e7eff6;
+    --ink:#0d2233;--ink-soft:#476375;--ink-faint:#6f8798;--line:#d3e1ec;
+    --accent:#0b7f9c;--accent-2:#0a95b5;--accent-ink:#063f4e;
+    --real:#0e9c74;--warn:#c9762a;--wall:#c23a52;
+    --term-bg:#0e2130;--term-ink:#d6e6f0;--term-cmd:#8fe0c8;--term-cmt:#6f93a6;
+    --shadow:0 1px 2px rgba(13,34,51,.05),0 10px 30px -14px rgba(13,34,51,.22);--radius:14px;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#07131d;--surface:#0f2231;--surface-2:#16303f;
+    --ink:#e6f0f6;--ink-soft:#a2bac8;--ink-faint:#7793a4;--line:#21394a;
+    --accent:#2bb6d6;--accent-2:#46cbe6;--accent-ink:#bfeef8;
+    --real:#2ed3a5;--warn:#f0a85a;--wall:#f0637d;
+    --term-bg:#081521;--term-ink:#cfe3ef;--term-cmd:#7fe6cc;--term-cmt:#5f8598;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 36px -16px rgba(0,0,0,.65);
+  }}
+  :root[data-theme="dark"]{--ground:#07131d;--surface:#0f2231;--surface-2:#16303f;
+    --ink:#e6f0f6;--ink-soft:#a2bac8;--ink-faint:#7793a4;--line:#21394a;
+    --accent:#2bb6d6;--accent-2:#46cbe6;--accent-ink:#bfeef8;--real:#2ed3a5;--warn:#f0a85a;--wall:#f0637d;
+    --term-bg:#081521;--term-ink:#cfe3ef;--term-cmd:#7fe6cc;--term-cmt:#5f8598;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 36px -16px rgba(0,0,0,.65);}
+  :root[data-theme="light"]{--ground:#eef4f9;--surface:#ffffff;--surface-2:#e7eff6;
+    --ink:#0d2233;--ink-soft:#476375;--ink-faint:#6f8798;--line:#d3e1ec;
+    --accent:#0b7f9c;--accent-2:#0a95b5;--accent-ink:#063f4e;--real:#0e9c74;--warn:#c9762a;--wall:#c23a52;
+    --term-bg:#0e2130;--term-ink:#d6e6f0;--term-cmd:#8fe0c8;--term-cmt:#6f93a6;
+    --shadow:0 1px 2px rgba(13,34,51,.05),0 10px 30px -14px rgba(13,34,51,.22);}
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-sans);line-height:1.7;font-size:17px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px;}
+  h1,h2,h3{text-wrap:balance;line-height:1.18;letter-spacing:-.02em;margin:0;}
+  h1{font-size:clamp(1.9rem,5vw,2.9rem);font-weight:820;}
+  h2{font-size:clamp(1.35rem,3vw,1.9rem);font-weight:770;}
+  h3{font-size:1.1rem;font-weight:700;margin-top:22px;}
+  p{margin:0 0 1em;color:var(--ink-soft);} p:last-child{margin-bottom:0;}
+  strong{color:var(--ink);font-weight:680;}
+  code{font-family:var(--font-mono);background:var(--surface-2);padding:1px 6px;border-radius:5px;color:var(--ink-soft);font-size:.88em;}
+  .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+  .eyebrow{font-family:var(--font-mono);font-size:.74rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);display:inline-flex;align-items:center;gap:.55em;}
+  .eyebrow::before{content:"";width:26px;height:2px;background:var(--accent);border-radius:2px;}
+  section{padding:48px 0;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:0;}
+
+  .topbar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--ground) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+  .topbar .row{max-width:880px;margin:0 auto;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .topbar .brand{font-family:var(--font-mono);font-size:.8rem;color:var(--ink-soft);} .topbar .brand b{color:var(--accent-ink);}
+  .tgl{font-family:var(--font-mono);font-size:.74rem;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);border-radius:20px;padding:5px 12px;cursor:pointer;}
+  .tgl:hover{border-color:var(--accent);color:var(--accent);} .tgl:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  .hero{padding:clamp(46px,7vw,74px) 0 40px;border-top:0;}
+  .hero .eyebrow{margin-bottom:16px;} .hero h1{margin-bottom:16px;}
+  .hero .lead{font-size:1.15rem;color:var(--ink-soft);max-width:54ch;}
+
+  /* key callout */
+  .key{margin-top:26px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:0 12px 12px 0;padding:18px 20px;box-shadow:var(--shadow);}
+  .key .h{font-weight:720;color:var(--ink);margin-bottom:4px;}
+  .key p{margin:0;font-size:.98rem;}
+
+  /* terminal command block */
+  pre.cmd{background:var(--term-bg);color:var(--term-ink);border-radius:11px;padding:15px 16px 15px 18px;overflow-x:auto;
+    font-family:var(--font-mono);font-size:.86rem;line-height:1.6;margin:14px 0;border:1px solid rgba(255,255,255,.06);}
+  pre.cmd .c{color:var(--term-cmd);} pre.cmd .m{color:var(--term-cmt);}
+  pre.cmd::-webkit-scrollbar{height:8px;} pre.cmd::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:8px;}
+
+  /* steps */
+  .step{display:grid;grid-template-columns:42px 1fr;gap:16px;padding:18px 0;border-top:1px solid var(--line);}
+  .step:first-of-type{border-top:0;}
+  .step .n{width:36px;height:36px;border-radius:10px;border:1.5px solid color-mix(in srgb,var(--accent) 40%,var(--line));
+    background:var(--surface);color:var(--accent);font-family:var(--font-mono);font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .step h3{margin-top:0;} .step p{font-size:.97rem;}
+
+  /* flow diagram */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:22px 0 6px;}
+  .flow .node{flex:1 1 150px;min-width:140px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 14px;box-shadow:var(--shadow);text-align:center;}
+  .flow .node .t{font-weight:680;font-size:.92rem;color:var(--ink);}
+  .flow .node .s{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-faint);margin-top:3px;}
+  .flow .node.ai{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));}
+  .flow .arr{display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:1.3rem;padding:0 8px;flex:0 0 auto;}
+  @media (max-width:640px){ .flow{flex-direction:column;} .flow .arr{transform:rotate(90deg);padding:6px 0;} }
+
+  /* tables */
+  .tbl-scroll{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:12px;}
+  table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:520px;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  thead th{background:var(--surface-2);font-family:var(--font-mono);font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;}
+  tbody tr:last-child td{border-bottom:0;}
+  td code{background:var(--surface-2);}
+
+  /* notes */
+  .note{border-radius:11px;padding:13px 16px;margin:16px 0;border:1px solid var(--line);background:var(--surface);font-size:.94rem;box-shadow:var(--shadow);}
+  .note .lbl{font-family:var(--font-mono);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;gap:7px;margin-bottom:5px;}
+  .note .lbl::before{content:"";width:12px;height:3px;border-radius:2px;}
+  .note.info{border-color:color-mix(in srgb,var(--accent) 35%,var(--line));} .note.info .lbl{color:var(--accent);} .note.info .lbl::before{background:var(--accent);}
+  .note.warn{border-color:color-mix(in srgb,var(--warn) 40%,var(--line));} .note.warn .lbl{color:var(--warn);} .note.warn .lbl::before{background:var(--warn);}
+  .note.ok{border-color:color-mix(in srgb,var(--real) 40%,var(--line));} .note.ok .lbl{color:var(--real);} .note.ok .lbl::before{background:var(--real);}
+  .note p{margin:0;color:var(--ink-soft);}
+
+  ul.d{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:9px;}
+  ul.d li{position:relative;padding-left:22px;font-size:.96rem;color:var(--ink-soft);}
+  ul.d li::before{content:"";position:absolute;left:3px;top:.62em;width:7px;height:7px;border-radius:2px;background:var(--accent);}
+  ul.d li b{color:var(--ink);}
+
+  footer{padding:34px 0 60px;border-top:1px solid var(--line);color:var(--ink-faint);font-size:.84rem;}
+  footer code{background:var(--surface-2);}
+  @media (max-width:640px){ body{font-size:16px;} }
+  @media print{ .topbar,.tgl{display:none;} body{background:#fff;} pre.cmd{background:#0e2130;} }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="row">
+  <span class="brand">AegisFlow · <b>Hướng dẫn sử dụng model AI ngập lụt</b></span>
+  <button class="tgl" id="tgl" type="button">◐ Sáng / Tối</button>
+</div></div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Hướng dẫn vận hành · Đà Nẵng</div>
+    <h1>Dùng model AI ngập lụt trong project thế nào?</h1>
+    <p class="lead">Hai năng lực: <strong>bản đồ nguy cơ nền (tĩnh)</strong> dùng ngay chỉ bằng cách chạy service, và <strong>lớp rủi ro động (realtime)</strong> cần thêm một tiến trình bơm dữ liệu live định kỳ. Tài liệu này chỉ bạn cả hai — kèm lệnh copy-paste.</p>
+
+    <div class="key">
+      <div class="h">🔑 Nguyên tắc quan trọng nhất: “train” ≠ “dùng”</div>
+      <p>Bạn <strong>không train lại mỗi lần dùng</strong>. Việc train chạy <em>một lần</em> → đẻ ra các file model đã commit sẵn (<code>.pkl</code>, <code>.parquet</code>, <code>.geojson</code>). <strong>Dùng = chạy service đọc các file đó + gọi API.</strong> Model mới cũng <em>chạy song song, không đè</em> model cũ — nó có endpoint riêng.</p>
+    </div>
+
+    <div class="note info" style="margin-top:16px"><div class="lbl">Công cụ cần</div><p>Chỉ cần <strong>Python + pip</strong> (hoặc <strong>Docker</strong>) để chạy/serve — <em>không</em> cần <code>uv</code> hay conda. <code>uv</code> chỉ là shortcut tuỳ chọn nếu máy có sẵn. Conda chỉ cần khi <em>train lại</em> (vì có thư viện bản đồ nặng); còn để DÙNG thì các file model đã đóng gói sẵn, <code>pip install -r requirements.txt</code> là đủ.</p></div>
+  </header>
+
+  <!-- KIẾN TRÚC -->
+  <section id="arch">
+    <div class="eyebrow">Kiến trúc</div>
+    <h2>Dữ liệu chảy như thế nào</h2>
+    <p>App không gọi thẳng AI service, mà đi qua Laravel làm proxy:</p>
+    <div class="flow">
+      <div class="node"><div class="t">Mobile / Web</div><div class="s">bản đồ, layer</div></div>
+      <div class="arr">→</div>
+      <div class="node"><div class="t">Laravel</div><div class="s">:8000 · proxy</div></div>
+      <div class="arr">→</div>
+      <div class="node ai"><div class="t">AI service</div><div class="s">:5005 · model</div></div>
+    </div>
+    <p style="margin-top:16px">AI service phục vụ <strong>2 nhóm endpoint</strong>: <code>/api/susceptibility/*</code> (bản đồ nền tĩnh) và <code>/api/risk/live/*</code> (rủi ro động). Chúng độc lập với endpoint cũ <code>/api/predict-risk</code> — “dùng model mới” nghĩa là trỏ giao diện vào endpoint mới (đã nối sẵn cho lớp bản đồ ở Phase 06).</p>
+  </section>
+
+  <!-- A. STATIC -->
+  <section id="static">
+    <div class="eyebrow">Phần A</div>
+    <h2>Dùng bản đồ NỀN (susceptibility tĩnh)</h2>
+    <p>Đây là cách dùng đơn giản nhất — không đụng gì tới việc train.</p>
+
+    <div class="step">
+      <div class="n">1</div>
+      <div>
+        <h3>Chạy AI service</h3>
+        <p>Cách CHUẨN — chỉ cần <strong>Python + pip</strong> (không cần GDAL/conda). Chạy từ thư mục <code>ai-service</code>:</p>
+        <pre class="cmd"><span class="m"># từ thư mục ai-service/</span>
+python -m venv .venv
+<span class="m"># Windows:</span> .venv\Scripts\Activate.ps1     <span class="m"># Linux/Mac: source .venv/bin/activate</span>
+pip install -r requirements.txt
+uvicorn serve_susceptibility:app --host 0.0.0.0 --port 5005</pre>
+        <p>Mở <code>http://localhost:5005/docs</code> để thử. Hai cách khác: <strong>Docker</strong> (<code>docker compose up ai-service</code>) — hoặc nếu máy có sẵn <code>uv</code> thì <code>uv run --with-requirements requirements.txt uvicorn serve_susceptibility:app --port 5005</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="n">2</div>
+      <div>
+        <h3>Gọi endpoint → app render layer</h3>
+        <pre class="cmd">curl <span class="c">"http://localhost:5005/api/susceptibility/grid"</span>              <span class="m"># heatmap nền (GeoJSON 11.534 ô)</span>
+curl <span class="c">"http://localhost:5005/api/susceptibility/point?lat=16.055&lon=108.216"</span>  <span class="m"># 1 điểm</span></pre>
+        <p>App/mobile đọc GeoJSON này làm một lớp bản đồ. Xong — không cần train lại lần nào.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- B. REALTIME -->
+  <section id="realtime">
+    <div class="eyebrow">Phần B</div>
+    <h2>Dùng lớp REALTIME (rủi ro động)</h2>
+    <p>Realtime = <code>susceptibility × hệ_số(mưa, nước live)</code>. Điểm khác biệt: nó cần <strong>dữ liệu live tươi</strong>, nên phải có một tiến trình bơm dữ liệu định kỳ.</p>
+
+    <div class="flow">
+      <div class="node"><div class="t">fetch (cron)</div><div class="s">crawl muangap</div></div>
+      <div class="arr">→</div>
+      <div class="node"><div class="t">latest_snapshot</div><div class="s">mưa/nước từng trạm</div></div>
+      <div class="arr">→</div>
+      <div class="node ai"><div class="t">/api/risk/live</div><div class="s">model × live</div></div>
+      <div class="arr">→</div>
+      <div class="node"><div class="t">App</div><div class="s">heatmap động</div></div>
+    </div>
+
+    <div class="step">
+      <div class="n">1</div>
+      <div>
+        <h3>Cập nhật dữ liệu live</h3>
+        <p>Script crawl <code>muangap.danang.gov.vn</code> và ghi <code>latest_snapshot.json</code> (đã sửa để ghi CẢ vào <code>ai-service/data/</code> → service dùng ngay, không dính seed cũ). Chỉ cần <code>requests</code> (đã có trong <code>requirements.txt</code>):</p>
+        <pre class="cmd"><span class="m"># dùng chính venv đã tạo ở Phần A (đã có requests)</span>
+python scripts/fetch_live_muangap.py                        <span class="m"># chạy 1 lần</span>
+python scripts/fetch_live_muangap.py --loop --interval 900  <span class="m"># tự động 15'/lần</span></pre>
+        <div class="note info"><div class="lbl">Ghi chú</div><p>Không vào được muangap (mất mạng / firewall) → script tự fallback dùng file trạm tham chiếu. Snapshot vẫn hợp lệ, chỉ là giá trị ~0 (coi như ngày khô).</p></div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="n">2</div>
+      <div>
+        <h3>Gọi endpoint rủi ro động</h3>
+        <pre class="cmd">curl <span class="c">"http://localhost:5005/api/risk/live/grid?min_risk=0.5"</span>       <span class="m"># heatmap ĐỘNG</span>
+curl <span class="c">"http://localhost:5005/api/risk/live?lat=16.055&lon=108.216"</span>  <span class="m"># 1 điểm + công thức</span>
+curl <span class="c">"http://localhost:5005/api/risk/live/status"</span>                  <span class="m"># snapshot tươi hay 'stale'?</span></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="n">3</div>
+      <div>
+        <h3>Demo không cần chờ trời mưa</h3>
+        <p>Thêm tham số <code>sim_rain_mm</code> để <strong>giả lập mưa lớn</strong> — “cần gạt” đáng tin nhất khi trình diễn:</p>
+        <pre class="cmd">curl <span class="c">"http://localhost:5005/api/risk/live?lat=16.055&lon=108.216&sim_rain_mm=120"</span>
+<span class="m"># khô → level 'high' (~0.59) ;  mưa 120mm → 'critical' (1.00)</span></pre>
+      </div>
+    </div>
+
+    <div class="note ok"><div class="lbl">An toàn khi sự cố</div><p>Thiếu snapshot → endpoint tự <strong>fallback về susceptibility tĩnh</strong> (hệ số 1.0), không crash. Snapshot quá cũ → gắn cờ <code>stale</code> trong response để giao diện hiển thị cảnh báo.</p></div>
+  </section>
+
+  <!-- ENDPOINT REFERENCE -->
+  <section id="ref">
+    <div class="eyebrow">Tra cứu</div>
+    <h2>Bảng endpoint</h2>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Client gọi (Laravel :8000)</th><th>AI thật (:5005)</th><th>Công dụng</th></tr></thead>
+      <tbody>
+        <tr><td><code>/api/public/susceptibility/geojson</code></td><td><code>/api/susceptibility/grid</code></td><td>heatmap nền (tĩnh)</td></tr>
+        <tr><td><code>/api/public/risk/live/geojson</code></td><td><code>/api/risk/live/grid</code></td><td>heatmap rủi ro động</td></tr>
+        <tr><td><em>(gọi thẳng AI khi dev)</em></td><td><code>/api/susceptibility/point?lat=&amp;lon=</code></td><td>susceptibility 1 điểm</td></tr>
+        <tr><td><em>(gọi thẳng AI khi dev)</em></td><td><code>/api/risk/live?lat=&amp;lon=[&amp;sim_rain_mm=]</code></td><td>rủi ro động 1 điểm + công thức</td></tr>
+        <tr><td><em>(gọi thẳng AI khi dev)</em></td><td><code>/api/risk/live/status</code></td><td>trạng thái snapshot (tươi/stale)</td></tr>
+        <tr><td><em>(gọi thẳng AI khi dev)</em></td><td><code>/api/susceptibility/info</code></td><td>thông tin model (feature, version)</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- SCHEDULING -->
+  <section id="cron">
+    <div class="eyebrow">Tự động hoá</div>
+    <h2>Lên lịch cập nhật live (chọn 1)</h2>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Bối cảnh</th><th>Cách làm</th></tr></thead>
+      <tbody>
+        <tr><td><b>Dev / Demo</b></td><td>Mở một cửa sổ chạy <code>fetch_live_muangap.py --loop --interval 900</code>, để đó suốt buổi.</td></tr>
+        <tr><td><b>Máy Windows</b></td><td>Task Scheduler → tạo task gọi <code>.venv\Scripts\python.exe scripts\fetch_live_muangap.py</code> (python của venv đã cài requirements) mỗi 15 phút.</td></tr>
+        <tr><td><b>Production</b></td><td>Thêm scheduled command vào Laravel <code>routes/console.php</code> (shell ra python fetch), đồng bộ với các cron sẵn có (đã có job mỗi 15').</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- TROUBLESHOOT -->
+  <section id="trouble">
+    <div class="eyebrow">Xử lý sự cố</div>
+    <h2>Gặp lỗi thì sao?</h2>
+    <ul class="d">
+      <li><b>HTTP 503 “AI service unavailable / thiếu file”:</b> chưa chạy service, hoặc thiếu artifact. Kiểm tra <code>flood_susceptibility_model.pkl</code> + <code>feature_grid.parquet</code> + <code>susceptibility_grid.geojson</code> có trong <code>ai-service/</code> không (nếu chưa, xem <code>docs/CHANGES_AND_RUN.md</code> mục 4 để build lại).</li>
+      <li><b>Realtime luôn ra như nhau dù đã fetch:</b> đã fix — script giờ ghi vào <code>ai-service/data/latest_snapshot.json</code> (nơi service ưu tiên đọc). Nếu vẫn cũ, xoá file seed cũ đó hoặc đặt biến môi trường <code>AEGIS_SNAPSHOT_PATH</code> trỏ tới file mới.</li>
+      <li><b>Demo mà rủi ro không tăng:</b> dùng <code>?sim_rain_mm=120</code> — không phụ thuộc thời tiết thật.</li>
+      <li><b>Cờ <code>stale=true</code>:</b> snapshot cũ hơn 6 giờ. Chạy lại fetch. (Vẫn dùng được, chỉ là cảnh báo.)</li>
+    </ul>
+  </section>
+
+  <footer>
+    Xem thêm: <code>docs/CHANGES_AND_RUN.md</code> (runbook đầy đủ) · <code>docs/demo_script.md</code> (kịch bản demo) · <code>docs/hanh-trinh.html</code> (hành trình + phụ lục ML) · <code>ai-service/models/model_card.md</code>
+  </footer>
+
+</div>
+
+<script>
+  (function(){var b=document.getElementById('tgl');if(!b)return;
+    function cur(){var r=document.documentElement.getAttribute('data-theme');return r||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+    b.addEventListener('click',function(){document.documentElement.setAttribute('data-theme',cur()==='dark'?'light':'dark');});})();
+</script>
+</body>
+</html>

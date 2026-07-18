@@ -1,5 +1,7 @@
 # AegisFlow AI - Tóm tắt Dự án Chi tiết (ASEAN Digital Award)
 
+> ⚠️ **CHỈ SỐ ĐÃ LỖI THỜI** — Mọi con số `Chính xác 98.8% / F1 0.9886 / AUC-ROC 0.9996` trong tài liệu này là **ẢO** (nhãn circular, ~88% synthetic, rò rỉ train/test) và **KHÔNG được trích dẫn như năng lực thật**. Số TRUNG THỰC: **spatial-CV ROC-AUC ≈ 0.87** (Flood Susceptibility). Xem `docs/METRICS_CORRECTION.md` + `docs/demo_script.md`.
+
 ## 1. TỔNG QUAN DỰ ÁN
 
 **AegisFlow AI** là nền tảng AI hỗ trợ quản lý thiên tai lũ lụt đô thị, được thiết kế cho các thành phố Đông Nam Á, triển khai thí điểm tại Đà Nẵng, Việt Nam.

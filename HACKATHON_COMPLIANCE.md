@@ -1,5 +1,7 @@
 # 🎯 HACKATHON COMPLIANCE & AI MODEL VERIFICATION
 
+> ⚠️ **CHỈ SỐ ĐÃ LỖI THỜI** — Mọi con số `accuracy 98.83% / F1 0.9886 / AUC 0.9996` và phần "Q&A" bảo vệ các số đó bên dưới là **ẢO** (nhãn circular, ~88% synthetic, rò rỉ train/test) → **ĐỪNG dùng để trả lời giám khảo**. Số TRUNG THỰC + câu trả lời đúng: `docs/demo_script.md`. Chỉ số thật: **spatial-CV ROC-AUC ≈ 0.87**. Xem `docs/METRICS_CORRECTION.md`.
+
 **Date**: 26/4/2026  
 **Deadline**: 28/4/2026 (48 hours)  
 **Status**: ✅ **READY FOR SUBMISSION** (with minor polish)
