@@ -4,6 +4,7 @@ from typing import Optional
 from api.calculations import router as calculations_router
 from api.alert_generator import router as alert_router
 from api.realtime import router as realtime_router
+from api.susceptibility import router as susceptibility_router
 from services.route_optimizer import get_route_optimizer
 
 app = FastAPI(
@@ -27,6 +28,7 @@ app.add_middleware(
 app.include_router(calculations_router, prefix="/api", tags=["calculations"])
 app.include_router(alert_router, prefix="/api", tags=["cascade-alerts"])
 app.include_router(realtime_router, prefix="/api", tags=["realtime"])
+app.include_router(susceptibility_router, prefix="/api", tags=["susceptibility"])
 
 @app.get("/")
 async def root():

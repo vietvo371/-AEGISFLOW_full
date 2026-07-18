@@ -80,6 +80,26 @@ def extract_stations_list(raw) -> list:
     return []
 
 
+# Map waterStationTypeId -> code. Phân biệt THÁP BÁO NGẬP (flood_1m5/flood_3m: đo ĐỘ SÂU ngập, ~0 khi khô)
+# với TRẠM ĐO MỰC NƯỚC/HỒ (water_level/reservoir_waterlevel: đo CAO ĐỘ TUYỆT ĐỐI nhiều mét, luôn cao).
+# Realtime risk chỉ dùng tháp báo ngập cho hệ số mưa/nước (xem realtime_risk.py).
+_WS_TYPE_MAP = None
+
+
+def _ws_type_map() -> dict:
+    global _WS_TYPE_MAP
+    if _WS_TYPE_MAP is None:
+        _WS_TYPE_MAP = {}
+        p = OUTPUT_DIR / "water_station_types.json"
+        if p.exists():
+            try:
+                for t in json.loads(p.read_text(encoding="utf-8")):
+                    _WS_TYPE_MAP[t.get("_id")] = t.get("code")
+            except Exception:
+                pass
+    return _WS_TYPE_MAP
+
+
 def normalize_water_reading(station: dict) -> dict:
     """Chuẩn hóa record trạm nước thành format thống nhất."""
     loc = station.get("location", {})
@@ -94,6 +114,8 @@ def normalize_water_reading(station: dict) -> dict:
         "latitude": lat,
         "longitude": lng,
         "water_level_m": float(station.get("depth") or station.get("waterLevel") or 0),
+        # loại trạm (flood_1m5/flood_3m = tháp báo ngập; water_level/reservoir_waterlevel = gauge tuyệt đối)
+        "station_type": _ws_type_map().get(station.get("waterStationTypeId")),
         "status": station.get("status", "active"),
         "fetched_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -194,6 +216,15 @@ def save_snapshot(data: dict, timestamped: bool = True):
     with open(latest_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
     log.info(f"Updated: {latest_path.name}")
+
+    # Mirror sang ai-service/data/ — nơi AI service ưu tiên đọc (tránh dùng nhầm seed cũ).
+    ai_data = OUTPUT_DIR.parent.parent / "ai-service" / "data"
+    if ai_data.is_dir():
+        ai_path = ai_data / "latest_snapshot.json"
+        with open(ai_path, "w", encoding="utf-8") as f:
+            json.dump(summary, f, ensure_ascii=False, indent=2)
+        log.info(f"Mirrored: {ai_path}")
+
     return latest_path
 
 
