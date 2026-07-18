@@ -1,0 +1,34 @@
+# AegisFlow — Conda environment cho train Flood Susceptibility Model
+# Máy: Windows + RTX 4080 (GPU KHÔNG dùng cho RandomForest — chọn máy vì conda-forge
+# cài geospatial mượt + workstation ổn định).
+#
+# Cài đặt (mở "Anaconda Prompt" hoặc PowerShell đã `conda init`):
+#   conda env create -f ai-service/environment.yml
+#   conda activate aegisflow-flood
+#
+# ⚠️ CẦU NỐI SỐNG CÒN: scikit-learn PHẢI trùng version với ai-service/requirements.txt (1.6.0),
+# nếu không file .pkl train ra sẽ KHÔNG load được trong production (Docker/pip).
+name: aegisflow-flood
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12            # khớp runtime ai-service (Dockerfile python:3.12) cho pickle an toàn
+  # --- ML core (ghim để tương thích .pkl với production) ---
+  - scikit-learn=1.6.0     # ⚠️ BẮT BUỘC khớp requirements.txt
+  - xgboost>=2.0,<3
+  - numpy=2.0.*            # khớp ai-service (numpy 2.0.2); nới nếu solver conda kẹt
+  - pandas
+  - scipy
+  - joblib
+  - shap                   # giải thích feature (demo)
+  # --- Geospatial (build-time only, qua conda-forge để né GDAL hell trên Windows) ---
+  - geopandas
+  - rasterio
+  - gdal
+  - pyproj
+  - shapely
+  - fiona
+  - pyarrow                # đọc/ghi parquet (feature_grid)
+  # --- Tiện ích ---
+  - matplotlib
+  - jupyterlab
