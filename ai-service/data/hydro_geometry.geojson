@@ -1,0 +1,127 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "note": "Coarse hand-digitized Da Nang rivers; coast is DEM-derived, not here."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "song_han",
+        "kind": "river",
+        "source": "hand-digitized-coarse"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.2285,
+            16.1075
+          ],
+          [
+            108.227,
+            16.095
+          ],
+          [
+            108.2255,
+            16.082
+          ],
+          [
+            108.225,
+            16.07
+          ],
+          [
+            108.2255,
+            16.056
+          ],
+          [
+            108.227,
+            16.043
+          ],
+          [
+            108.2255,
+            16.032
+          ],
+          [
+            108.218,
+            16.024
+          ],
+          [
+            108.21,
+            16.018
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "song_cam_le",
+        "kind": "river",
+        "source": "hand-digitized-coarse"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.21,
+            16.018
+          ],
+          [
+            108.195,
+            16.012
+          ],
+          [
+            108.18,
+            16.006
+          ],
+          [
+            108.165,
+            16.001
+          ],
+          [
+            108.15,
+            15.995
+          ],
+          [
+            108.135,
+            15.992
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "song_cu_de",
+        "kind": "river",
+        "source": "hand-digitized-coarse"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            108.155,
+            16.115
+          ],
+          [
+            108.135,
+            16.112
+          ],
+          [
+            108.115,
+            16.108
+          ],
+          [
+            108.095,
+            16.102
+          ],
+          [
+            108.08,
+            16.095
+          ]
+        ]
+      }
+    }
+  ]
+}
