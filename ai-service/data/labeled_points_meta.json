@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-07-18T15:04:53.704280+00:00",
+  "purpose": "Phase 01 — labeled points cho Flood Susceptibility Mapping (nhãn THẬT, không circular)",
+  "csv": "labeled_points.csv",
+  "csv_sha256": "150066ff126e251757f2068d8f262f73111b40b8309d842ef8c616ddbba41f01",
+  "csv_rows": 1505,
+  "schema": [
+    "lat",
+    "lon",
+    "label",
+    "source",
+    "water_level_cm"
+  ],
+  "label_definition": {
+    "1": "điểm ngập THẬT (báo cáo 14/10/2022 hoặc kinh niên is_frequent=True)",
+    "0": "pseudo-absence (không có báo cáo ngập); KHÔNG khẳng định 'không bao giờ ngập'"
+  },
+  "sources": {
+    "positive_oct14": "scripts/crawled_data/flood_reports_2022_oct14.json",
+    "positive_chronic": "scripts/crawled_data/flood_reports.json",
+    "land_reference": [
+      "scripts/crawled_data/water_stations_all.json",
+      "scripts/crawled_data/rain_stations.json",
+      "ai-service/data/danang_flood_graph.json"
+    ],
+    "NOT_USED": "ai-service/data/flood_danang_*.csv (synthetic + nhãn circular)"
+  },
+  "quota_met": true,
+  "counts": {
+    "n_total": 1505,
+    "n_positive": 430,
+    "n_negative": 1075,
+    "n_pos_oct14": 387,
+    "n_pos_chronic": 43,
+    "n_neg_hard": 430,
+    "n_neg_easy": 645
+  },
+  "params": {
+    "seed": 42,
+    "round_dedup_decimals": 5,
+    "round_output_decimals": 6,
+    "study_bbox": {
+      "lat": [
+        15.95,
+        16.16
+      ],
+      "lon": [
+        108.05,
+        108.3
+      ]
+    },
+    "buffer_km": 0.4,
+    "land_geofence_km": 1.5,
+    "neg_ratio": 2.5,
+    "hard_fraction": 0.4,
+    "elev_split_m": 8.0,
+    "hard_max_km": 1.2
+  },
+  "positive_build_stats": {
+    "n_raw_oct14": 392,
+    "n_raw_chronic": 77,
+    "n_dropped_out_of_bbox": 27,
+    "n_positive_after_dedup": 430,
+    "n_pos_oct14": 387,
+    "n_pos_chronic": 43
+  },
+  "negative_build_stats": {
+    "target_neg": 1075,
+    "target_hard": 430,
+    "target_easy": 645,
+    "n_hard": 430,
+    "n_easy": 645,
+    "quota_met": true,
+    "hit_max_rounds": false,
+    "rounds_used": 1,
+    "neg_d_pos_km": {
+      "p10": 0.5175841823068082,
+      "p50": 1.0296735689738847,
+      "p90": 2.83594952042227
+    },
+    "neg_elev_proxy_m": {
+      "min": 1.0,
+      "p50": 2.0,
+      "max": 150.0
+    }
+  },
+  "library_versions": {
+    "python": "3.11.14",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3"
+  },
+  "caveats": [
+    "Presence-only: nhãn 0 = 'không có báo cáo', KHÔNG phải 'không ngập' → pseudo-absence có bias.",
+    "Đã giảm bias bằng buffer + geofence + 40% hard-negative (elevation thấp/TB, gần điểm ngập).",
+    "elevation-proxy dùng để phân tầng là node đồ thị THÔ (35 node); Phase 02 mới tính DEM chuẩn.",
+    "Chỉ 1 sự kiện lũ lớn (14/10/2022) → khái quát theo KHÔNG GIAN, không theo thời gian.",
+    "Đánh giá TRUNG THỰC = spatial-CV PR-AUC ở Phase 03, KHÔNG phải random split.",
+    "⚠️ LEAKAGE GUARD (Phase 02/03): water_level_cm và source là METADATA nguồn gốc — encode label 1-1 (positive có water_level & source ngập; negative rỗng). TUYỆT ĐỐI KHÔNG dùng làm feature; feature CHỈ suy từ (lat, lon).",
+    "⚠️ CIRCULARITY (Phase 02/03): buffer 0.4km tạo khoảng cách phân tách CỨNG giữa 2 lớp (mọi negative ≥ buffer khỏi mọi positive). Do đó BẤT KỲ feature 'khoảng cách/mật độ tới điểm ngập lịch sử' (vd historical_score) sẽ CIRCULAR và spatial-CV KHÔNG cứu được nếu precompute từ TOÀN BỘ positive. Phải tính FOLD-AWARE (chỉ từ positive trong fold train) hoặc LOẠI feature đó.",
+    "⚠️ POSITIONAL GRADIENT (Phase 03): negative lấy uniform vs positive co cụm → có gradient tỉ lệ theo vị trí (lon lõi ~64% positive, rìa ~4%). KHÔNG dùng lat/lon THÔ làm feature; nên báo PR-AUC RIÊNG cho hard-negative vs easy-negative để lộ mức lệch do lấy mẫu."
+  ]
+}
