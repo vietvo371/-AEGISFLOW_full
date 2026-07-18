@@ -21,9 +21,10 @@ import { useTranslation } from '../../hooks/useTranslation';
 MapboxGL.setAccessToken('');
 
 // ─── Layer Types ─────────────────────────────────────────────
-type LayerKey = 'alerts' | 'shelters' | 'flood_zones' | 'flood_points' | 'flood_streets';
+type LayerKey = 'alerts' | 'shelters' | 'flood_zones' | 'flood_points' | 'flood_streets' | 'flood_susceptibility';
 
 const LAYER_CONFIGS: Array<{ key: LayerKey; label: string; color: string; icon: string }> = [
+  { key: 'flood_susceptibility', label: 'Nguy cơ ngập (AI)', color: '#a50026', icon: 'chart-bubble' },
   { key: 'flood_zones',   label: 'Vùng ngập',     color: '#EF4444', icon: 'map-marker-radius' },
   { key: 'flood_streets', label: 'Đường ngập',    color: '#3B82F6', icon: 'waves' },
   { key: 'flood_points',  label: 'Điểm ngập',     color: '#3B82F6', icon: 'water' },
@@ -314,6 +315,7 @@ const MapScreen = () => {
   const [trafficGeoJSON, setTrafficGeoJSON] = useState<any>(null);
   const [floodZonesGeoJSON, setFloodZonesGeoJSON] = useState<any>(null);
   const [floodReportsGeoJSON, setFloodReportsGeoJSON] = useState<any>(null);
+  const [susceptibilityGeoJSON, setSusceptibilityGeoJSON] = useState<any>(null);
   const [shelters, setShelters] = useState<any[]>([]);
   const [mapIncidents, setMapIncidents] = useState<Incident[]>([]);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
@@ -501,17 +503,22 @@ const MapScreen = () => {
 
   const fetchLayers = useCallback(async () => {
     try {
-      const [traffic, flood, shelterRes] = await Promise.allSettled([
+      const [traffic, flood, shelterRes, susc] = await Promise.allSettled([
         mapService.getTrafficEdges(),
         mapService.getFloodZones(),
         mapService.getShelters(),
+        mapService.getSusceptibility(),
       ]);
       if (traffic.status === 'fulfilled' && traffic.value?.type === 'FeatureCollection') {
         setTrafficGeoJSON(traffic.value);
       }
-      
+
       if (flood.status === 'fulfilled' && flood.value) {
         setFloodZonesGeoJSON(flood.value);
+      }
+
+      if (susc.status === 'fulfilled' && susc.value?.type === 'FeatureCollection') {
+        setSusceptibilityGeoJSON(susc.value);
       }
       
       if (shelterRes.status === 'fulfilled' && (shelterRes.value as any)?.success) {
@@ -1102,6 +1109,22 @@ const MapScreen = () => {
         )}
 
         {/* Traffic Lines Layer is removed to focus strictly on flood prevention */}
+
+        {/* Flood Susceptibility heatmap (AI, Phase 04) — điểm ô lưới tô theo P(vùng dễ ngập). Opt-in. */}
+        {susceptibilityGeoJSON && (
+          <MapboxGL.ShapeSource id="susceptibilitySource" shape={susceptibilityGeoJSON}>
+            <MapboxGL.CircleLayer
+              id="susceptibilityCircles"
+              visible={activeLayers.has('flood_susceptibility')}
+              style={{
+                circleColor: ['get', 'color'] as any,
+                circleRadius: ['interpolate', ['linear'], ['zoom'], 10, 2, 13, 6, 16, 11] as any,
+                circleOpacity: ['interpolate', ['linear'], ['get', 'susceptibility'], 0, 0.12, 1, 0.7] as any,
+                circleBlur: 0.7,
+              }}
+            />
+          </MapboxGL.ShapeSource>
+        )}
 
         {/* Flood Zones */}
         {floodZonesGeoJSON && (

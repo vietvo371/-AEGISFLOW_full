@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\RescueTeamController;
 use App\Http\Controllers\Api\SensorController;
 use App\Http\Controllers\Api\SensorDataController;
 use App\Http\Controllers\Api\ShelterController;
+use App\Http\Controllers\Api\SusceptibilityController;
 use App\Http\Controllers\Api\UploadController;
 use App\Http\Controllers\Api\WeatherDataController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +39,9 @@ Route::prefix('public')->group(function () {
     Route::get('flood-zones/geojson', [FloodZoneController::class, 'geojson']);
     Route::get('alerts/geojson', [AlertController::class, 'geojson']);
     Route::get('map/shelters', [MapController::class, 'shelters']);
+    // Flood Susceptibility (Phase 04) + realtime dynamic risk (Phase 05) — proxy AI service
+    Route::get('susceptibility/geojson', [SusceptibilityController::class, 'grid']);
+    Route::get('risk/live/geojson', [SusceptibilityController::class, 'riskLive']);
 });
 
 Route::prefix('map/geocode')->group(function () {

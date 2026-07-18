@@ -139,4 +139,54 @@ class AIServiceClient
             return null;
         }
     }
+
+    /**
+     * Lấy GeoJSON heatmap nguy cơ ngập nền (Flood Susceptibility, tĩnh) — proxy AI service.
+     */
+    public function getSusceptibilityGrid(): ?array
+    {
+        try {
+            $response = Http::timeout($this->timeout)->get("{$this->baseUrl}/api/susceptibility/grid");
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('AI Service Error (susceptibility/grid)', ['status' => $response->status()]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('AI Service Connection Failed (susceptibility/grid)', ['message' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Lấy GeoJSON rủi ro ĐỘNG realtime (susceptibility × mưa/nước live) — proxy AI service.
+     * $simRainMm: giả lập mưa 24h (mm) cho demo; $minRisk: chỉ trả ô có rủi ro >= ngưỡng.
+     */
+    public function getRiskLiveGrid(?float $simRainMm = null, float $minRisk = 0.0): ?array
+    {
+        try {
+            $query = ['min_risk' => $minRisk];
+            if ($simRainMm !== null) {
+                $query['sim_rain_mm'] = $simRainMm;
+            }
+
+            $response = Http::timeout($this->timeout)->get("{$this->baseUrl}/api/risk/live/grid", $query);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('AI Service Error (risk/live/grid)', ['status' => $response->status()]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('AI Service Connection Failed (risk/live/grid)', ['message' => $e->getMessage()]);
+
+            return null;
+        }
+    }
 }

@@ -51,6 +51,20 @@ export const mapService = {
         return response.data;
     },
 
+    // Heatmap nguy cơ ngập NỀN (Flood Susceptibility, tĩnh) — GeoJSON điểm có `susceptibility`,`level`,`color`
+    getSusceptibility: async (): Promise<any> => {
+        const response = await api.get('/public/susceptibility/geojson');
+        return response.data;
+    },
+
+    // Heatmap rủi ro ĐỘNG (susceptibility × mưa/nước live). simRainMm: giả lập mưa cho demo.
+    getRiskLive: async (simRainMm?: number, minRisk: number = 0): Promise<any> => {
+        const params: any = { min_risk: minRisk };
+        if (simRainMm != null) params.sim_rain_mm = simRainMm;
+        const response = await api.get('/public/risk/live/geojson', { params });
+        return response.data;
+    },
+
     getFloodReports: async (bounds?: MapBounds): Promise<any> => {
         const params: any = {};
         if (bounds) {
