@@ -27,6 +27,10 @@ _GRID_GEOJSON = _DATA / "susceptibility_grid.geojson"
 
 _DANANG_BBOX = {"lat": (15.90, 16.20), "lon": (108.0, 108.35)}
 
+# Bảng màu KHỚP grid tĩnh (scripts/generate_susceptibility_grid.py) — để lớp realtime dùng chung
+# renderer ['get','color'] của client, tránh chấm đen khi tái dùng CircleLayer của lớp tĩnh.
+_LEVEL_COLOR = {"low": "#2c7fb8", "medium": "#fdae61", "high": "#f46d43", "critical": "#a50026"}
+
 
 def _check_bbox(lat: float, lon: float):
     la = _DANANG_BBOX["lat"]; lo = _DANANG_BBOX["lon"]
@@ -95,7 +99,8 @@ def risk_live_grid(sim_rain_mm: float = Query(None, ge=0, le=500),
         "properties": {"dynamic_risk": round(float(r.dynamic_risk), 3),
                        "level": r.dynamic_level,
                        "susceptibility": round(float(r.susceptibility), 3),
-                       "live_factor": round(float(r.live_factor), 3)},
+                       "live_factor": round(float(r.live_factor), 3),
+                       "color": _LEVEL_COLOR.get(r.dynamic_level, "#2c7fb8")},
     } for r in g.itertuples(index=False)]
     return {
         "type": "FeatureCollection",
